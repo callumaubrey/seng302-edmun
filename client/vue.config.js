@@ -13,6 +13,12 @@ module.exports = {
             template: 'public/index.html',
             title: 'Registration',
             chunks: ['chunk-vendors', 'chunk-common', 'registration']
+        },
+        'profile': {
+            entry: './src/pages/Profile/main.js',
+            template: 'public/index.html',
+            title: 'Profile',
+            chunks: ['chunk-vendors', 'chunk-common', 'profile']
         }
     }
 }
