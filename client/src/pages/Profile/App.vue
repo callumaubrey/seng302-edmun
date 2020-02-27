@@ -3,8 +3,11 @@
 <template>
   <div id="app">
     <div class="container">
-    <h1> Here is your account!!!! </h1>
-    <hr> 
+      <div class="row" style="padding: 1em">
+        <h1 class="col-50"> Here is your account!!!! </h1>
+        <custom-button class="col-5">Edit Profile</custom-button>
+      </div>
+    <hr>
       <div class ="row">
         <div class="col-25">
           <label for="fName"> First name:</label>
