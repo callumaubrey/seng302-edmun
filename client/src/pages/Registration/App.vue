@@ -7,7 +7,7 @@
         <div class="row">
           <div class="col-33">
             <label class="field" for="fname"> First name</label>
-            <input id="fname" name="firstname" placeholder="John" required type="text">
+            <input class="name" id="fname" name="firstname" placeholder="John" required type="text" v-model="fname">
           </div>
           <div class="col-33">
             <label class="field" for="mname"> Middle name</label>
@@ -15,7 +15,7 @@
           </div>
           <div class="col-33">
             <label class="field" for="lname"> Last name</label>
-            <input id="lname" name="lastname" placeholder="Doe" required type="text">
+            <input class="name" id="lname" name="lastname" placeholder="Doe" required type="text">
           </div>
         </div>
 
@@ -49,7 +49,8 @@
           </div>
           <div class="col-50">
             <label class="field" for="psw-repeat">Repeat Password</label>
-            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password">
+            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password"
+                   v-on:keyup="checkPassword">
           </div>
         </div>
         <div class="col-100">
@@ -87,10 +88,10 @@
 
         <div class="row">
           <div class="col-100">
-            <button class="sign-up-btn" type="button">Sign Up</button>
+            <input class="sign-up-btn" type="submit" v-on:click="validateFields" value="Sign Up">
           </div>
         </div>
-        <input :onClick="this.validateFields()" type="submit" value="Submit">
+
       </form>
 
     </div>
@@ -108,28 +109,66 @@
       return {
         selectedDate: '',
         currentYear: (new Date).getFullYear().toString(),
+        fname: '',
       }
     },
     methods: {
-      validateFields() {
-        var elements = document.getElementsByTagName("INPUT");
-        for (var i = 0; i < elements.length; i++) {
-          elements[i].onclick = function (e) {
+      validateFields: function () {
+        let elements = document.getElementsByTagName("INPUT");
+        for (let i = 0; i < elements.length; i++) {
+          let elementType = elements[i].type;
+          let msg = " ";
+          switch (elementType) {
+            case "text":
+              if (elements[i].className === "name") {
+                elements[i].pattern = "^[A-Za-z]+$";
+                msg = "What's your name?"
+              }
+              break;
+            case "email":
+              elements[i].pattern = "^(([^<>()[]\\.,;:\\s@\"]+(.[^<>()[]\\.,;:\\s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,24}))$";
+              msg = "This would be your primary email to log in to your account.\n Example of a valid email: t123@.co.in";
+              break;
+            case "password":
+              elements[i].pattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$";
+              msg = "Password should contain at least 8 characters with at least\t\n" +
+                      "- one digit\t\n" +
+                      "- one lower case\t\n" +
+                      "- one upper case";
+              break;
+          }
+
+
+          elements[i].oninvalid = function (e) {
+            e.target.setCustomValidity(msg);
+            e.target.style.borderColor = "red";
+          };
+
+          elements[i].oninput = function (e) {
+            e.target.setCustomValidity(' ');
             e.target.style.borderColor = "white";
           };
-          elements[i].oninvalid = function (e) {
-            e.target.setCustomValidity("");
-            if (!e.target.validity.valid) {
-              e.target.setCustomValidity("This field cannot be left blank");
-              e.target.style.borderColor = "red";
-            }
-          };
-          elements[i].oninput = function (e) {
-            e.target.setCustomValidity("");
 
+          elements[i].onchange = function (e) {
+            e.target.setCustomValidity('');
+            e.target.style.borderColor = "white";
+          };
+
+          elements[i].onclick = function (e) {
+            e.target.reportValidity();
           };
         }
-
+      },
+      checkPassword: function () {
+        let password = document.getElementById("psw");
+        let rpassword = document.getElementById("psw-repeat");
+        if (password.value == rpassword.value) { // warning: may cause type coercion
+          password.style.border = "green";
+          rpassword.style.border = "green";
+        } else {
+          password.style.border = "red";
+          rpassword.style.border = "red";
+        }
       }
     }
   }
@@ -177,6 +216,13 @@
   }
 
   input[type=password] {
+    width: 100%;
+    padding: 12px 12px 12px 12px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  input[type=email] {
     width: 100%;
     padding: 12px 12px 12px 12px;
     border: 1px solid #ccc;
