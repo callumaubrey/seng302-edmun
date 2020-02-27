@@ -44,17 +44,31 @@
       <div class="row">
         <div class="col-50">
           <label for="psw"><b>Password</b></label>
-          <input type="password" id="password" name="password" placeholder="john@example.com" required>
+          <input type="password" id="psw" name="password" placeholder="Password" required>
         </div>
         <div class="col-50">
           <label for="psw-repeat"><b>Repeat Password</b></label>
-          <input type="password" id="rpassword" placeholder="Repeat Password" name="psw-repeat" required>
+          <input type="password" id="psw-repeat" placeholder="Repeat Password" name="psw-repeat" required>
+        </div>
+      </div>
+      <div class ="col-100">
+      <label for="dob">Date of birth</label>
+      </div>
+      <div class ="row">
+        <div class="col-100">
+      <date-dropdown
+              min="1900"
+              :max="currentYear"
+              v-model="selectedDate"
+              months-names="Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec"
+              id="dob">
+      </date-dropdown>
         </div>
       </div>
 
       <div class="row">
         <div class="col-100">
-          <label for="gender">Gender</label>
+          <label>Gender</label>
         </div>
       </div>
 
@@ -74,8 +88,19 @@
 </template>
 
 <script>
-//   import Students from './components/Students'
-  // app Vue instance
+  import DateDropdown from 'vue-date-dropdown'
+
+  export default {
+    components: {
+      DateDropdown
+    },
+    data () {
+      return {
+        selectedDate: '',
+        currentYear: (new Date).getFullYear().toString(),
+      }
+    }
+  }
   
 </script>
 

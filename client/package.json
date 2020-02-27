@@ -14,6 +14,7 @@
     "core-js": "^3.6.4",
     "serve": "^11.3.0",
     "vue": "^2.6.11",
+    "vue-date-dropdown": "^1.0.5",
     "vuejs-logger": "^1.5.4"
   },
   "devDependencies": {
