@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <Students />
+    <Students/>
     <footer class="info">
       <h4>Seng302 Example</h4>
     </footer>
-    <a href=registration.html>Registation</a>
-    <a href=profile.html>Profile</a>
+    <a href="/registration">Registation</a>
+    <a href="/profile">Profile</a>
   </div>
 </template>
 
@@ -19,10 +19,9 @@
     },
     // app initial state
     data: () => {
-      return {
-      }
+      return {}
     }
-  }
+  };
 
   export default app
 </script>
