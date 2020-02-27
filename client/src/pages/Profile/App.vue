@@ -5,7 +5,7 @@
     <div class="container">
       <div class="row" style="padding: 1em">
         <h1 class="col-50"> Here is your account!!!! </h1>
-        <custom-button class="col-5">Edit Profile</custom-button>
+        <custom-button class="button">Edit Profile</custom-button>
       </div>
     <hr>
       <div class ="row">

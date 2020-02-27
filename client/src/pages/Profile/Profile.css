@@ -84,7 +84,20 @@ label {
     padding: 0 16px;
 }
 
+.button {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    color: #333;
+    background-color:#fff;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+button:hover{background-color: #98d3a8;}
 
+button:active {
+    background-color: #75d378;
+}
 
 .container {
     background-color: #f2f2f2;
