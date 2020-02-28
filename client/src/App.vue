@@ -4,6 +4,7 @@
     <footer class="info">
       <h4>Seng302 Example</h4>
     </footer>
+    <a href="/login">Login</a>
     <a href="/registration">Registation</a>
     <a href="/profile">Profile</a>
   </div>
