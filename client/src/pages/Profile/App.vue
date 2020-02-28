@@ -13,13 +13,13 @@
           <label for="fName"> First name:</label>
         </div>
         <div class="col-25">
-          <input type="text" id="fName" name="firstName" placeholder="John" required>
+          <input type="text" :value="firstname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="dob">Date of Birth:</label>
         </div>
         <div class="col-25">
-          <input type="date" id="dob" required>
+          <input type="date" :value="date_of_birth" :disabled="disabled">
         </div>
       </div>
       <div class="row">
@@ -27,7 +27,7 @@
           <label for="lname">Last Name:</label>
         </div>
         <div class="col-25">
-          <input type="text" id="lname" name="lname" placeholder="Doe" required>
+          <input type="text" :value="lastname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label>Gender:</label>
@@ -51,18 +51,18 @@
           <label for="nName"> Nickname:</label>
         </div>
         <div class="col-25">
-          <input type="text" id="nName" name="lastname" placeholder="Johnny" required>
+          <input type="text" :value="nickName" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="fitnessLevel">Fitness Level:</label>
         </div>
         <div class="col-25">
-          <select id="fitnessLevel">
-            <option value="level0">Couch potato</option>
-            <option value="level1">Coming back from injury</option>
-            <option value="level2">Go for walks</option>
-            <option value="level3">Play sport</option>
-            <option value="level4">Marathon runner</option>
+          <select id="fitnessLevel" :value="fitness" :disabled="disabled">
+            <option value="1">Couch potato</option>
+            <option value="2">Coming back from injury</option>
+            <option value="3">Go for walks</option>
+            <option value="4">Play sport</option>
+            <option value="5">Marathon runner</option>
           </select>
         </div>
       </div>
@@ -71,7 +71,7 @@
           <label for="bio">Bio:</label>
         </div>
         <div class="col-50">
-          <input type="body" id="bio" name="bio" placeholder="Something interesting about you!">
+          <input type="body" id="bio" :value="bio" :disabled="disabled" placeholder="Something interesting about you!">
         </div>
       </div>
       <div class="row">
@@ -79,10 +79,10 @@
           <label for="emailInput">Email address:</label>
         </div>
         <div class="col-50">
-          <input type="text" id="emailInput" name="email" placeholder="john@example.com" required>
+          <input type="text" id="emailInput" name="email" :value="emails[0]" :disabled="disabled" placeholder="john@example.com" required>
         </div>
         <div id="emailAdd" class="col-25">
-          <button v-on:click="addEmail" >Add Email</button>
+          <custom-button class="button">Add Email</custom-button>
         </div>
       </div>
       <div class="row">
@@ -112,34 +112,80 @@
 
 </template>
 
+
+
 <script>
+  var User = {
+    name: 'User',
 
-  // app Vue instance
-
-  const User = {
-    el: '#emailAdd',
-    data: {
-      emails: [],
-    },
-    methods: {
-      // button calls function properly but unsure how to add email input into list of emails
-      addEmail: function () {
-        var newEmail = document.getElementById("emailInput").value;
-        console.log(newEmail);
-        // this.emails.push(newEmail);
-        // console.log(this.emails);
+    data: function () {
+      return {
+        profile_id: 17,
+        disabled: true,
+        lastname: "Pocket",
+        firstname: "Poly",
+        nickName:"",
+        emails: ["poly@pocket.com"],
+        bio: "Poly Pocket is so tiny.",
+        date_of_birth: "2000-11-11",
+        gender: "female",
+        fitness: "3",
+        passport: [
+          "United States of America",
+          "Thailand"
+        ]
       }
     }
-  };
+  }
+
+
+  import Vue from "vue";
+  //Custom button
+  Vue.component('custom-button', {
+    template: '\
+    <button class="normal"\
+      :class="type"\
+      :disabled="disabled"\
+      @click="callback($event)"\
+      >\
+        <slot></slot>\
+    </button>\
+  ',
+    props: {
+      type: String,
+      disabled: Boolean,
+    },
+    methods: {
+      callback: function(e) {
+        this.$emit('click', e);
+        User.disabled = !User.disabled
+        console.log("Disable Inputs:",User.disabled)
+      }
+    }
+  });
+  // app Vue instance
+
+
+  // const User = {
+  //   el: '#emailAdd',
+  //   data: {
+  //     emails: [],
+  //   },
+  //   methods: {
+  //     // button calls function properly but unsure how to add email input into list of emails
+  //     addEmail: function () {
+  //       var newEmail = document.getElementById("emailInput").value;
+  //       console.log(newEmail);
+  //       // this.emails.push(newEmail);
+  //       // console.log(this.emails);
+  //     }
+  //   }
+  // };
 
   export default User
-
 </script>
 
 <style scoped>
   @import 'Profile.css';
-
   [v-cloak] { display: none; }
-
-
 </style>
