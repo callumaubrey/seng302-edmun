@@ -5,7 +5,7 @@
     <div class="container">
       <div class="row" style="padding: 1em">
         <h1 class="col-50"> Here is your account!!!! </h1>
-        <custom-button class="button">Edit Profile</custom-button>
+        <custom-button class="button" >Edit Profile</custom-button>
       </div>
     <hr>
       <div class ="row">
@@ -87,22 +87,10 @@
       </div>
       <div class="row">
         <div class="col-50">
-          <table>
-            <th>
-              Available Passport countries
-            </th>
-            <th>
-              Your Passport countries
-            </th>
-            <tr>
-              <td>New Zealand</td>
-              <td>Australia</td>
-            </tr>
-            <tr>
-              <td>Chile</td>
-              <td>China</td>
-            </tr>
-          </table>
+          <body id="availCountriesBody"></body>
+        </div>
+        <div class="col-50">
+          <body id="yourCountriesBody"></body>
         </div>
       </div>
     </div>
@@ -113,13 +101,18 @@
 </template>
 
 <script>
+  // import api from '../Api';
 
   // app Vue instance
 
   const User = {
-    el: '#emailAdd',
-    data: {
+    name: 'User',
+    data: function () {
+      return {
       emails: [],
+      yourCountries: ['China', 'France', 'Germany'],
+      availCountries: ['New Zealand', 'Australia', 'Chile'],
+      }
     },
     methods: {
       // button calls function properly but unsure how to add email input into list of emails
@@ -128,8 +121,67 @@
         console.log(newEmail);
         // this.emails.push(newEmail);
         // console.log(this.emails);
-      }
+      },
+
+      createAvailTable: function () {
+        console.log('create Table is called')
+        var table = document.createElement('table');
+        table.setAttribute('id', 'availCountries');
+
+        var tr = table.insertRow(-1);
+
+        var th = document.createElement('th');
+        th.innerHTML = 'Available Countries';
+        tr.appendChild(th);
+        console.log(this.availCountries);
+
+        for (var c = 0; c < this.availCountries.length; c++) {
+          tr = table.insertRow(-1);
+          var td = document.createElement('td');
+          td = tr.insertCell(-1);
+          td.innerHTML = this.availCountries[c];
+        }
+
+        var element = document.getElementById('availCountriesBody');
+
+        element.appendChild(table);
+      },
+
+      createYourTable: function () {
+        var table = document.createElement('table');
+        table.setAttribute('id', 'yourCountries');
+
+        var tr = table.insertRow(-1);
+
+        var th = document.createElement('th');
+        th.innerHTML = 'Your Countries';
+        tr.appendChild(th);
+
+        for (var c = 0; c < this.yourCountries.length; c++) {
+          tr = table.insertRow(-1);
+          var td = document.createElement('td');
+          td = tr.insertCell(-1);
+          td.innerHTML = this.yourCountries[c];
+        }
+
+        var element = document.getElementById('yourCountriesBody');
+
+        element.appendChild(table);
+      },
+
+
+      // addCountry: function () {
+      //   var newCountry = document.getElementById("NZ").
+      // }
+    },
+
+    // need to create a API
+
+    mounted() {
+      this.createAvailTable();
+      this.createYourTable();
     }
+
   };
 
   export default User
