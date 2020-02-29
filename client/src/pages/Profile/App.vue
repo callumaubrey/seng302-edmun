@@ -13,13 +13,13 @@
           <label for="fName"> First name:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="firstname" :disabled="disabled">
+          <input type="text" id="fName" :value="firstname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="dob">Date of Birth:</label>
         </div>
         <div class="col-25">
-          <input type="date" :value="date_of_birth" :disabled="disabled">
+          <input type="date" id="dob" :value="date_of_birth" :disabled="disabled">
         </div>
       </div>
       <div class="row">
@@ -27,7 +27,7 @@
           <label for="lname">Last Name:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="lastname" :disabled="disabled">
+          <input type="text" id="lname" :value="lastname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label>Gender:</label>
@@ -51,7 +51,7 @@
           <label for="nName"> Nickname:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="nickName" :disabled="disabled">
+          <input type="text" id="nName" :value="nickName" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="fitnessLevel">Fitness Level:</label>
@@ -115,7 +115,7 @@
         disabled: true,
         lastname: "Pocket",
         firstname: "Poly",
-        nickName:"",
+        nickName: "",
         emails: ["poly@pocket.com"],
         bio: "Poly Pocket is so tiny.",
         date_of_birth: "2000-11-11",
@@ -128,6 +128,9 @@
           "Thailand"
         ]
       }
+    },
+
+    methods: {
       createAvailTable: function () {
         console.log('create Table is called')
         var table = document.createElement('table');
@@ -186,7 +189,6 @@
       this.createAvailTable();
       this.createYourTable();
     }
-
   };
 
   //Custom button
