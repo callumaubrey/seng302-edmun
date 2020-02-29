@@ -8,6 +8,12 @@ module.exports = {
             title: 'Home',
             chunks: ['chunk-vendors', 'chunk-common', 'index']
         },
+        'login': {
+            entry: './src/pages/Login/main.js',
+            template: 'public/index.html',
+            title: 'Login',
+            chunks: ['chunk-vendors', 'chunk-common', 'login']
+        },
         'registration': {
             entry: './src/pages/Registration/main.js',
             template: 'public/index.html',
@@ -21,4 +27,4 @@ module.exports = {
             chunks: ['chunk-vendors', 'chunk-common', 'profile']
         }
     }
-}
+};
