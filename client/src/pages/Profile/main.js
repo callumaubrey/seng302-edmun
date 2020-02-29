@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from './App'
+import App from './User'
 
 Vue.config.productionTip = false
 
@@ -14,30 +14,6 @@ const options = {
   separator: '|',
   showConsoleColors: true
 };
-
-
-Vue.component('custom-button', {
-  template: '\
-    <button class="normal"\
-      :class="type"\
-      :disabled="disabled"\
-      @click="callback($event)"\
-      >\
-        <slot></slot>\
-    </button>\
-  ',
-  props: {
-    type: String,
-    disabled: Boolean,
-    editMode: Boolean,
-  },
-  methods: {
-    callback: function(e) {
-      this.$emit('click', e);
-      console.log("HelloWorld")
-    }
-  }
-});
 
 Vue.use(VueLogger, options);
 
