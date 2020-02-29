@@ -49,8 +49,7 @@
           </div>
           <div class="col-50">
             <label class="field" for="psw-repeat">Repeat Password</label>
-            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password"
-                   v-on:keyup="checkPassword">
+            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password">
           </div>
         </div>
         <div class="col-100">
@@ -60,6 +59,7 @@
           <div class="col-100">
             <date-dropdown
                     :max="currentYear"
+                    default="01-01-1995"
                     id="dob"
                     min="1900"
                     months-names="Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec"
@@ -76,13 +76,13 @@
 
         <div class="row">
           <div class="col-33">
-            <label for="male"><input id="male" name="gender" type="radio" value="male">Female</label><br>
+            <label class="gender-label" for="female"><input id="female" name="gender" type="radio">Female</label><br>
           </div>
           <div class="col-33">
-            <label for="female"><input id="female" name="gender" type="radio" value="female">Male</label><br>
+            <label class="gender-label" for="male"><input id="male" name="gender" type="radio">Male</label><br>
           </div>
           <div class="col-33">
-            <label for="other"><input id="other" name="gender" type="radio" value="other">Non-binary</label>
+            <label class="gender-label" for="other"><input id="other" name="gender" type="radio">Non-binary</label>
           </div>
         </div>
 
@@ -109,7 +109,7 @@
       return {
         selectedDate: '',
         currentYear: (new Date).getFullYear().toString(),
-        fname: '',
+        fname: null,
       }
     },
     methods: {
@@ -126,8 +126,8 @@
               }
               break;
             case "email":
-              elements[i].pattern = "^(([^<>()[]\\.,;:\\s@\"]+(.[^<>()[]\\.,;:\\s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,24}))$";
-              msg = "This would be your primary email to log in to your account.\n Example of a valid email: t123@.co.in";
+              elements[i].pattern = "^($|[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+)$";
+              msg = "This will be your primary email to log in to your account";
               break;
             case "password":
               elements[i].pattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$";
@@ -137,11 +137,14 @@
                       "- one upper case";
               break;
           }
-
-
           elements[i].oninvalid = function (e) {
-            e.target.setCustomValidity(msg);
-            e.target.style.borderColor = "red";
+            if (!e.target.validity.valid) {
+              e.target.setCustomValidity(msg);
+              e.target.style.borderColor = "red";
+            } else {
+              e.target.setCustomValidity('');
+              e.target.style.borderColor = "white";
+            }
           };
 
           elements[i].oninput = function (e) {
@@ -155,20 +158,63 @@
           };
 
           elements[i].onclick = function (e) {
+            e.target.setCustomValidity('');
+            console.log(e.target.validity.valid);
             e.target.reportValidity();
           };
+
+          elements[i].onblur = function (e) {
+            console.log("onblur");
+            e.target.setCustomValidity('');
+            if (!e.target.checkValidity()) {
+              e.target.style.borderColor = "red";
+            }
+          }
         }
+        this.validatePassword();
+        this.validateGender()
       },
-      checkPassword: function () {
-        let password = document.getElementById("psw");
+      validatePassword: function () {
         let rpassword = document.getElementById("psw-repeat");
-        if (password.value == rpassword.value) { // warning: may cause type coercion
-          password.style.border = "green";
-          rpassword.style.border = "green";
-        } else {
-          password.style.border = "red";
-          rpassword.style.border = "red";
+        let password = document.getElementById("psw");
+        function check() {
+          console.log(password.value);
+          console.log(rpassword.value);
+          console.log(password.pattern);
+          if (password.value == rpassword.value && password.checkValidity()) {
+            password.style.borderColor = "white";
+            rpassword.style.borderColor = "white";
+          } else {
+            password.style.borderColor = "red";
+            rpassword.style.borderColor = "red";
+          }
         }
+        rpassword.onkeyup = check;
+        password.onkeyup = check;
+      },
+      validateGender: function () {
+        let radios = document.getElementsByName("gender");
+        let genderValid = false;
+
+        for (let i=0; i < radios.length; i++) {
+          radios[i].onclick = function() {
+            let radioLabels = document.getElementsByClassName("gender-label");
+            for (let i=0; i < radioLabels.length; i++) {
+              radioLabels[i].style.border = "";
+            }
+          };
+          if (radios[i].checked) {
+            genderValid= true;
+          }
+        }
+        let radioLabels = document.getElementsByClassName("gender-label");
+        if (!genderValid) {
+          for (let i=0; i < radioLabels.length; i++) {
+            radioLabels[i].style.border = "1px solid red";
+          }
+        }
+        console.log(genderValid);
+        return genderValid;
       }
     }
   }
@@ -230,9 +276,13 @@
   }
 
   input[type=radio] {
-    padding: 0;
+    padding: 20px;
     margin: 0 10px 0 0;
-    border: 0;
+    border: 100px solid red;
+    border-radius: 3px;
+    outline: #75d378;
+    display: inline-block;
+
   }
 
   label {
