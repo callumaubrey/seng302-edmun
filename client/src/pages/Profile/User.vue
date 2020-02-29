@@ -5,7 +5,7 @@
     <div class="container">
       <div class="row" style="padding: 1em">
         <h1 class="col-50"> Here is your account!!!! </h1>
-        <custom-button class="button" >Edit Profile</custom-button>
+        <custom-button class="button">Edit Profile</custom-button>
       </div>
     <hr>
       <div class ="row">
@@ -85,6 +85,7 @@
           <custom-button class="button">Add Email</custom-button>
         </div>
       </div>
+        <div class="row" id = "emailBody"></div>
       <div class="row">
         <div class="col-50">
           <body id="availCountriesBody"></body>
@@ -94,7 +95,7 @@
         </div>
       </div>
     </div>
-      <a href="index.html">Home</a>
+      <a class="button" href="index.html">Log out</a>
   </div>
 
 
@@ -132,7 +133,7 @@
 
     methods: {
       createAvailTable: function () {
-        console.log('create Table is called')
+        console.log('create AvailTable is called')
         var table = document.createElement('table');
         table.setAttribute('id', 'availCountries');
 
@@ -141,13 +142,22 @@
         var th = document.createElement('th');
         th.innerHTML = 'Available Countries';
         tr.appendChild(th);
-        console.log(this.availCountries);
 
         for (var c = 0; c < this.availCountries.length; c++) {
           tr = table.insertRow(-1);
           var td = document.createElement('td');
+          var btn = document.createElement('button')
+          btn.innerText = this.availCountries[c];
+          btn.setAttribute('name', this.availCountries[c]);
+          btn.setAttribute('onclick', function () {
+            this.yourCountries.push(this.availCountries[c]);
+            this.createYourTable();
+          });
+
+          // need to make each of these cells selectable and when selected add the country to your countries
+          // and then maybe call the createYourTable function to re create the your countries table, might not be optimal but only way i can think of at the moment
           td = tr.insertCell(-1);
-          td.innerHTML = this.availCountries[c];
+          td.appendChild(btn);
         }
 
         var element = document.getElementById('availCountriesBody');
@@ -155,6 +165,7 @@
         element.appendChild(table);
       },
 
+      // might be called every time a user adds a country from available countries.
       createYourTable: function () {
         var table = document.createElement('table');
         table.setAttribute('id', 'yourCountries');
@@ -168,19 +179,19 @@
         for (var c = 0; c < this.yourCountries.length; c++) {
           tr = table.insertRow(-1);
           var td = document.createElement('td');
+          // need to make these cells selectable and when selected remove it from your countries
           td = tr.insertCell(-1);
           td.innerHTML = this.yourCountries[c];
         }
 
         var element = document.getElementById('yourCountriesBody');
-
         element.appendChild(table);
       },
 
-
-      // addCountry: function () {
-      //   var newCountry = document.getElementById("NZ").
-      // }
+      addCountry: function (newCountry) {
+        this.yourCountries.push(newCountry);
+        this.createYourTable();
+      }
     },
 
     // need to create a API
@@ -189,6 +200,7 @@
       this.createAvailTable();
       this.createYourTable();
     }
+
   };
 
   //Custom button
