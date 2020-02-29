@@ -1,3 +1,5 @@
+
+
 <template>
   <div id="app">
     <div class="container">
@@ -11,13 +13,13 @@
           <label for="fName"> First name:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="firstname" :disabled="disabled">
+          <input type="text" id="fName" :value="firstname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="dob">Date of Birth:</label>
         </div>
         <div class="col-25">
-          <input type="date" :value="date_of_birth" :disabled="disabled">
+          <input type="date" id="dob" :value="date_of_birth" :disabled="disabled">
         </div>
       </div>
       <div class="row">
@@ -25,7 +27,7 @@
           <label for="lname">Last Name:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="lastname" :disabled="disabled">
+          <input type="text" id="lname" :value="lastname" :disabled="disabled">
         </div>
         <div class="col-25">
           <label>Gender:</label>
@@ -49,7 +51,7 @@
           <label for="nName"> Nickname:</label>
         </div>
         <div class="col-25">
-          <input type="text" :value="nickName" :disabled="disabled">
+          <input type="text" id="nName" :value="nickName" :disabled="disabled">
         </div>
         <div class="col-25">
           <label for="fitnessLevel">Fitness Level:</label>
@@ -86,22 +88,10 @@
         <div class="row" id = "emailBody"></div>
       <div class="row">
         <div class="col-50">
-          <table>
-            <th>
-              Available Passport countries
-            </th>
-            <th>
-              Your Passport countries
-            </th>
-            <tr>
-              <td>New Zealand</td>
-              <td>Australia</td>
-            </tr>
-            <tr>
-              <td>Chile</td>
-              <td>China</td>
-            </tr>
-          </table>
+          <body id="availCountriesBody"></body>
+        </div>
+        <div class="col-50">
+          <body id="yourCountriesBody"></body>
         </div>
       </div>
     </div>
@@ -111,17 +101,13 @@
 
 </template>
 
-<<<<<<< Updated upstream:client/src/pages/Profile/App.vue
 
-=======
+
 <script>
-
   // import api from '../Api';
-  // app Vue instance
->>>>>>> Stashed changes:client/src/pages/Profile/User.vue
+  import Vue from "vue";
 
-<script>
-  var User = {
+  const User = {
     name: 'User',
 
     data: function () {
@@ -130,60 +116,22 @@
         disabled: true,
         lastname: "Pocket",
         firstname: "Poly",
-        nickName:"",
+        nickName: "",
         emails: ["poly@pocket.com"],
         bio: "Poly Pocket is so tiny.",
         date_of_birth: "2000-11-11",
         gender: "female",
         fitness: "3",
+        yourCountries: ['China', 'France', 'Germany'],
+        availCountries: ['New Zealand', 'Australia', 'Chile'],
         passport: [
           "United States of America",
           "Thailand"
         ]
       }
-    }
-  }
-
-
-  import Vue from "vue";
-  //Custom button
-  Vue.component('custom-button', {
-    template: '\
-    <button class="normal"\
-      :class="type"\
-      :disabled="disabled"\
-      @click="callback($event)"\
-      >\
-        <slot></slot>\
-    </button>\
-  ',
-    props: {
-      type: String,
-      disabled: Boolean,
     },
 
     methods: {
-<<<<<<< Updated upstream:client/src/pages/Profile/App.vue
-      callback: function(e) {
-        this.$emit('click', e);
-        User.disabled = !User.disabled
-        console.log("Disable Inputs:",User.disabled)
-      }
-    }
-  });
-  // app Vue instance
-
-=======
-
-      // functions adds email to email list, need to start on creating email input fields on screen for each email
-      addEmail: function () {
-        var newEmail = document.getElementById("emailInput").value;
-        console.log(newEmail);
-        this.emails.push(newEmail);
-        console.log(this.emails);
-      },
-
-      // should only be called when page loads up
       createAvailTable: function () {
         console.log('create AvailTable is called')
         var table = document.createElement('table');
@@ -252,24 +200,32 @@
       this.createAvailTable();
       this.createYourTable();
     }
-  };
->>>>>>> Stashed changes:client/src/pages/Profile/User.vue
 
-  // const User = {
-  //   el: '#emailAdd',
-  //   data: {
-  //     emails: [],
-  //   },
-  //   methods: {
-  //     // button calls function properly but unsure how to add email input into list of emails
-  //     addEmail: function () {
-  //       var newEmail = document.getElementById("emailInput").value;
-  //       console.log(newEmail);
-  //       // this.emails.push(newEmail);
-  //       // console.log(this.emails);
-  //     }
-  //   }
-  // };
+  };
+
+  //Custom button
+  Vue.component('custom-button', {
+    template: '\
+    <button class="normal"\
+      :class="type"\
+      :disabled="disabled"\
+      @click="callback($event)"\
+      >\
+        <slot></slot>\
+    </button>\
+  ',
+    props: {
+      type: String,
+      disabled: Boolean,
+    },
+    methods: {
+      callback: function(e) {
+        this.$emit('click', e);
+        User.disabled = !User.disabled
+        console.log("Disable Inputs:",User.disabled)
+      }
+    }
+  });
 
   export default User
 </script>
