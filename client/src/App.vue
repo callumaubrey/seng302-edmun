@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Students/>
+    <User/>
     <footer class="info">
       <h4>Seng302 Example</h4>
     </footer>
@@ -11,12 +11,12 @@
 </template>
 
 <script>
-  import Students from './components/Students'
+  import User from './pages/Login/App'
   // app Vue instance
   const app = {
     name: 'app',
     components: {
-      Students
+      User
     },
     // app initial state
     data: () => {

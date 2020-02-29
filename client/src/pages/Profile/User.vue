@@ -1,5 +1,3 @@
-
-
 <template>
   <div id="app">
     <div class="container">
@@ -85,6 +83,7 @@
           <custom-button class="button">Add Email</custom-button>
         </div>
       </div>
+        <div class="row" id = "emailBody"></div>
       <div class="row">
         <div class="col-50">
           <table>
@@ -106,13 +105,20 @@
         </div>
       </div>
     </div>
-      <a href="index.html">Home</a>
+      <a class="button" href="index.html">Log out</a>
   </div>
 
 
 </template>
 
+<<<<<<< Updated upstream:client/src/pages/Profile/App.vue
 
+=======
+<script>
+
+  // import api from '../Api';
+  // app Vue instance
+>>>>>>> Stashed changes:client/src/pages/Profile/User.vue
 
 <script>
   var User = {
@@ -155,7 +161,9 @@
       type: String,
       disabled: Boolean,
     },
+
     methods: {
+<<<<<<< Updated upstream:client/src/pages/Profile/App.vue
       callback: function(e) {
         this.$emit('click', e);
         User.disabled = !User.disabled
@@ -165,6 +173,87 @@
   });
   // app Vue instance
 
+=======
+
+      // functions adds email to email list, need to start on creating email input fields on screen for each email
+      addEmail: function () {
+        var newEmail = document.getElementById("emailInput").value;
+        console.log(newEmail);
+        this.emails.push(newEmail);
+        console.log(this.emails);
+      },
+
+      // should only be called when page loads up
+      createAvailTable: function () {
+        console.log('create AvailTable is called')
+        var table = document.createElement('table');
+        table.setAttribute('id', 'availCountries');
+
+        var tr = table.insertRow(-1);
+
+        var th = document.createElement('th');
+        th.innerHTML = 'Available Countries';
+        tr.appendChild(th);
+
+        for (var c = 0; c < this.availCountries.length; c++) {
+          tr = table.insertRow(-1);
+          var td = document.createElement('td');
+          var btn = document.createElement('button')
+          btn.innerText = this.availCountries[c];
+          btn.setAttribute('name', this.availCountries[c]);
+          btn.setAttribute('onclick', function () {
+            this.yourCountries.push(this.availCountries[c]);
+            this.createYourTable();
+          });
+
+          // need to make each of these cells selectable and when selected add the country to your countries
+          // and then maybe call the createYourTable function to re create the your countries table, might not be optimal but only way i can think of at the moment
+          td = tr.insertCell(-1);
+          td.appendChild(btn);
+        }
+
+        var element = document.getElementById('availCountriesBody');
+
+        element.appendChild(table);
+      },
+
+      // might be called every time a user adds a country from available countries.
+      createYourTable: function () {
+        var table = document.createElement('table');
+        table.setAttribute('id', 'yourCountries');
+
+        var tr = table.insertRow(-1);
+
+        var th = document.createElement('th');
+        th.innerHTML = 'Your Countries';
+        tr.appendChild(th);
+
+        for (var c = 0; c < this.yourCountries.length; c++) {
+          tr = table.insertRow(-1);
+          var td = document.createElement('td');
+          // need to make these cells selectable and when selected remove it from your countries
+          td = tr.insertCell(-1);
+          td.innerHTML = this.yourCountries[c];
+        }
+
+        var element = document.getElementById('yourCountriesBody');
+        element.appendChild(table);
+      },
+
+      addCountry: function (newCountry) {
+        this.yourCountries.push(newCountry);
+        this.createYourTable();
+      }
+    },
+
+    // need to create a API
+
+    mounted() {
+      this.createAvailTable();
+      this.createYourTable();
+    }
+  };
+>>>>>>> Stashed changes:client/src/pages/Profile/User.vue
 
   // const User = {
   //   el: '#emailAdd',
