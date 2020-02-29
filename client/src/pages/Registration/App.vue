@@ -3,11 +3,11 @@
     <div class="container">
       <h1> Create a new account </h1>
       <hr>
-      <form method="post">
+      <form method="post" v-on:submit="validateFields">
         <div class="row">
           <div class="col-33">
             <label class="field" for="fname"> First name</label>
-            <input class="name" id="fname" name="firstname" placeholder="John" required type="text" v-model="fname">
+            <input class="name" id="fname" name="firstname" placeholder="John" required type="text">
           </div>
           <div class="col-33">
             <label class="field" for="mname"> Middle name</label>
@@ -109,12 +109,13 @@
       return {
         selectedDate: '',
         currentYear: (new Date).getFullYear().toString(),
-        fname: null,
+        // fname: null,
       }
     },
     methods: {
-      validateFields: function () {
+      validateFields: function (event) {
         let elements = document.getElementsByTagName("INPUT");
+        let isValid = true;
         for (let i = 0; i < elements.length; i++) {
           let elementType = elements[i].type;
           let msg = " ";
@@ -130,6 +131,9 @@
               msg = "This will be your primary email to log in to your account";
               break;
             case "password":
+              console.log("I was here");
+              console.log(elements[i].value.type);
+              // console.log("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$".test(elements[i].value));
               elements[i].pattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$";
               msg = "Password should contain at least 8 characters with at least\t\n" +
                       "- one digit\t\n" +
@@ -139,8 +143,10 @@
           }
           elements[i].oninvalid = function (e) {
             if (!e.target.validity.valid) {
+              console.log("another");
               e.target.setCustomValidity(msg);
               e.target.style.borderColor = "red";
+              isValid = false
             } else {
               e.target.setCustomValidity('');
               e.target.style.borderColor = "white";
@@ -159,38 +165,45 @@
 
           elements[i].onclick = function (e) {
             e.target.setCustomValidity('');
-            console.log(e.target.validity.valid);
             e.target.reportValidity();
           };
 
           elements[i].onblur = function (e) {
-            console.log("onblur");
             e.target.setCustomValidity('');
             if (!e.target.checkValidity()) {
+              isValid = false;
               e.target.style.borderColor = "red";
             }
           }
         }
-        this.validatePassword();
-        this.validateGender()
+
+        let passwordValid = this.validatePassword();
+        let genderValid = this.validateGender();
+
+        if (!isValid || !genderValid || !passwordValid) {
+          event.preventDefault();
+        }
       },
       validatePassword: function () {
         let rpassword = document.getElementById("psw-repeat");
         let password = document.getElementById("psw");
+        let passwordValid = true;
+
         function check() {
-          console.log(password.value);
-          console.log(rpassword.value);
-          console.log(password.pattern);
           if (password.value == rpassword.value && password.checkValidity()) {
             password.style.borderColor = "white";
             rpassword.style.borderColor = "white";
           } else {
             password.style.borderColor = "red";
             rpassword.style.borderColor = "red";
+            passwordValid = false;
           }
         }
+
+        check();
         rpassword.onkeyup = check;
         password.onkeyup = check;
+        return passwordValid;
       },
       validateGender: function () {
         let radios = document.getElementsByName("gender");
@@ -213,7 +226,6 @@
             radioLabels[i].style.border = "1px solid red";
           }
         }
-        console.log(genderValid);
         return genderValid;
       }
     }
