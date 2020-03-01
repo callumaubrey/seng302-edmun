@@ -129,11 +129,34 @@
                 passport: [
                     "United States of America",
                     "Thailand"
-                ]
+                ],
+                blockRemoval: true,
+            }
+        },
+
+        watch: {
+            lines () {
+                this.blockRemoval = this.lines.length <= 1
             }
         },
 
         methods: {
+
+            getCountryData: function() {
+                "GET https://restcountries.eu/rest/v2/name/all"
+            },
+            //isAvailable adding country from available to your countries
+            addLine (index, isAvailable) {
+                if (isAvailable) {
+                    this.yourCountries.push(this.availCountries[index]);
+                    this.availCountries.splice(index, 1);
+                } else {
+                    this.availCountries.push(this.yourCountries[index]);
+                    this.yourCountries.splice(index, 1);
+                }
+            },
+
+            },
 
             createAvailTable: function () {
                 var table = document.createElement('table');
