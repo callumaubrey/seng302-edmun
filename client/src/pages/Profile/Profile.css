@@ -93,7 +93,10 @@ label {
     font-size: 14px;
     cursor: pointer;
 }
-button:hover{background-color: #525252;}
+button:hover{
+    background-color: #787878;
+    color: #ffffff;
+}
 
 button:active {
     background-color: #878787;
@@ -125,6 +128,7 @@ th, td {
 
 th {
     height: 20px;
-    background: #af5b5e;
+    background: #3f3f3f;
+    color: #ffffff;
 
 }

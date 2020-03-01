@@ -8,33 +8,32 @@
             <hr>
             <div class="row">
                 <div class="col-25">
-                    <label for="fName"> First name:</label>
+                    <label style="font-weight: bold" for="fName">First name:</label>
                 </div>
                 <div class="col-25">
-                    <input type="text" id="fName" :value="firstname" :disabled="disabled">
+                    <input type="text" id="fName" :value="firstname" :disabled="disabled" required>
                 </div>
                 <div class="col-25">
-                    <label for="dob">Date of Birth:</label>
+                    <label style="font-weight: bold" for="dob">Date of Birth:</label>
                 </div>
                 <div class="col-25">
-                    <input type="date" id="dob" :value="date_of_birth" :disabled="disabled">
+                    <input type="date" id="dob" :value="date_of_birth" :disabled="disabled" required>
                 </div>
             </div>
             <div class="row">
                 <div class="col-25">
-                    <label for="lname">Last Name:</label>
+                    <label style="font-weight: bold" for="lname">Last Name:</label>
                 </div>
                 <div class="col-25">
-                    <input type="text" id="lname" :value="lastname" :disabled="disabled">
+                    <input type="text" id="lname" :value="lastname" :disabled="disabled" required>
                 </div>
                 <div class="col-25">
-                    <label>Gender:</label>
+                    <label style="font-weight: bold">Gender:</label>
                 </div>
                 <div class="col-25">
                     <div class="row">
                         <div class="col-33">
-                            <label class="gender-label" for="female"><input id="female" name="gender"
-                                                                            type="radio">F</label><br>
+                            <label class="gender-label" for="female"><input id="female" name="gender" type="radio">F</label><br>
                         </div>
                         <div class="col-33">
                             <label class="gender-label" for="male"><input id="male" name="gender" type="radio">M</label><br>
@@ -48,7 +47,7 @@
             </div>
             <div class="row">
                 <div class="col-25">
-                    <label for="nName"> Nickname:</label>
+                    <label for="nName">Nickname:</label>
                 </div>
                 <div class="col-25">
                     <input type="text" id="nName" :value="nickName" :disabled="disabled">
@@ -78,11 +77,11 @@
             <div id="emailBody">
                 <div class="row">
                     <div class="col-25">
-                        <label for="emailInput">Email address:</label>
+                        <label style="font-weight: bold" for="emailInput">Email address:</label>
                     </div>
                     <div class="col-50">
                         <input type="text" id="emailInput" name="email" :value="emails[0]"
-                               placeholder="john@example.com" required :disabled="disabled">
+                               placeholder="john@example.com" required :disabled="true">
                     </div>
                     <div id="emailAdd" class="col-25">
                         <input class="button" type="button" v-on:click="createEmail" value="Add Email"
@@ -200,6 +199,7 @@
                 var row = document.createElement('row');
 
                 var newEmail = document.getElementById("emailInput").value;
+
                 this.emails.push(newEmail);
 
                 var label = document.createElement("label");
@@ -217,21 +217,17 @@
             toggleEdits: function () {
                 this.disabled = !this.disabled
                 if (this.disabled) {
+                    //this.updateUser();
                     this.editButtonText = "Edit Profile"
                 } else {
                     this.editButtonText = "Save Changes"
                 }
             },
-
-            test: function () {
-                console.log("This is a test function")
-            }
         },
 
         // need to create a API
 
         mounted() {
-            this.test();
             this.createAvailTable();
             this.createYourTable();
         }
