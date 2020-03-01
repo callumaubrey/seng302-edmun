@@ -357,10 +357,20 @@
     margin: 0 10px 0 0;
   }
 
+  input:focus {
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+    border: 1px solid rgba(81, 203, 238, 1);
+  }
+
   select[class="dob"] {
     padding: 10px;
     border: 1px solid #ccc;
     margin-right: 6px;
+  }
+
+  select[class="dob"]:focus {
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+    border: 1px solid rgba(81, 203, 238, 1);
   }
 
   label {
