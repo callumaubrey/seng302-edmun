@@ -91,10 +91,26 @@
             <div class="row" id="countriesBody"></div>
             <div class="row">
                 <div class="col-50">
-                    <body id="availCountriesBody"></body>
+                    <div id="availCountriesBody"></div>
+                      <table>
+                        <tr>
+                          <th>Available Countries</th>
+                        </tr>
+                        <div v-for="(country, index) in availCountries" :key="index" class="tr">
+                          <button @click="addLine(index,true)">{{country}}</button>
+                        </div>
+                      </table>
                 </div>
                 <div class="col-50">
-                    <body id="yourCountriesBody"></body>
+                    <div id="yourCountriesBody"></div>
+                        <table>
+                          <tr>
+                            <th>Your Countries</th>
+                          </tr>
+                          <div v-for="(country, index) in yourCountries" :key="index" class="tr">
+                            <button @click="removeLine(index,false)">{{country}}</button>
+                          </div>
+                        </table>
                 </div>
             </div>
         </div>
@@ -125,7 +141,7 @@
                 gender: "female",
                 fitness: "3",
                 yourCountries: ['China', 'France', 'Germany'],
-                availCountries: ['New Zealand', 'Australia', 'Chile'],
+                availCountries: ['New Zealand', 'Australia', 'Chile', 'CHINA'],
                 passport: [
                     "United States of America",
                     "Thailand"
@@ -142,6 +158,7 @@
 
         methods: {
 
+
             getCountryData: function() {
                 "GET https://restcountries.eu/rest/v2/name/all"
             },
@@ -154,8 +171,6 @@
                     this.availCountries.push(this.yourCountries[index]);
                     this.yourCountries.splice(index, 1);
                 }
-            },
-
             },
 
             createAvailTable: function () {
@@ -218,29 +233,31 @@
             createEmail: function () {
                 var emailBody = document.getElementById('emailBody');
 
-        var newEmail = document.getElementById("emailInput").value;
-        this.emails.push(newEmail);
+                var newEmail = document.getElementById("emailInput").value;
+                this.emails.push(newEmail);
 
-        var row = document.createElement('row');
-        row.setAttribute('id', newEmail);
+                var row = document.createElement('row');
+                row.setAttribute('id', newEmail);
 
-        var label = document.createElement("label");
-        label.innerText = newEmail;
-        var delBtn = document.createElement("button");
-        delBtn.innerText = 'Delete';
+                var label = document.createElement("label");
+                label.innerText = newEmail;
+                var delBtn = document.createElement("button");
+                delBtn.setAttribute('v-on:click')
 
-        row.appendChild(label);
-        row.appendChild(delBtn);
-        emailBody.appendChild(row);
-      },
 
-      deleteEmail: function (email) {
-        var emailBody = document.getElementById('emailBody');
+                row.appendChild(label);
+                row.appendChild(delBtn);
+                emailBody.appendChild(row);
+            },
 
-        emailBody.removeChild(document.getElementById(email));
-        // need to delete email from this.emails list
+            deleteEmail: function (email) {
+              var emailBody = document.getElementById('emailBody');
 
-      },
+              emailBody.removeChild(document.getElementById(email));
+              // need to delete email from this.emails list
+
+            },
+
             toggleEdits: function () {
                 this.disabled = !this.disabled
                 if (this.disabled) {
@@ -250,17 +267,11 @@
                     this.editButtonText = "Save Changes"
                 }
             },
-        },
-
-
-
+        }
 
     // need to create a API
 
-        mounted() {
-            this.createAvailTable();
-            this.createYourTable();
-        }
+
     };
 
     export default User

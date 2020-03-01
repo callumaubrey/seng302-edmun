@@ -17,6 +17,19 @@ const options = {
 
 Vue.use(VueLogger, options);
 
+Vue.component('delete-Button', {
+    template: `
+    <div>
+        <button v-on:click='onClick'>Delete</button>
+    </div>
+    `,
+    methods: {
+      onClick() {
+        this.parentNode.parentNode.removeChild(this.parentNode);
+      }
+    }
+});
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
