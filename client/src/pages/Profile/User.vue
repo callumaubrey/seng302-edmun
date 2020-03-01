@@ -1,10 +1,8 @@
-
-
 <template>
   <div id="app">
     <div class="container">
       <div class="row" style="padding: 1em">
-        <h1 class="col-50"> Here is your account!!!! </h1>
+        <h1 class="col-50">Your Profile.</h1>
         <custom-button class="button">Edit Profile</custom-button>
       </div>
     <hr>
@@ -74,18 +72,20 @@
           <input type="body" id="bio" :value="bio" :disabled="disabled" placeholder="Something interesting about you!">
         </div>
       </div>
-      <div class="row">
-        <div class="col-25">
-          <label for="emailInput">Email address:</label>
-        </div>
-        <div class="col-50">
-          <input type="text" id="emailInput" name="email" :value="emails[0]" :disabled="disabled" placeholder="john@example.com" required>
-        </div>
-        <div id="emailAdd" class="col-25">
-          <custom-button class="button">Add Email</custom-button>
+      <div id="emailBody">
+        <div class="row">
+          <div class="col-25">
+            <label for="emailInput">Email address:</label>
+          </div>
+          <div class="col-50">
+            <input type="text" id="emailInput" name="email" :value="emails[0]" placeholder="john@example.com" required>
+          </div>
+          <div id="emailAdd" class="col-25">
+            <custom-button class="button" v-on:click="createEmail">Add Email</custom-button>
+          </div>
         </div>
       </div>
-        <div class="row" id = "emailBody"></div>
+        <div class="row" id = "countriesBody"></div>
       <div class="row">
         <div class="col-50">
           <body id="availCountriesBody"></body>
@@ -132,6 +132,7 @@
     },
 
     methods: {
+
       createAvailTable: function () {
         console.log('create AvailTable is called')
         var table = document.createElement('table');
@@ -149,11 +150,12 @@
           var btn = document.createElement('button')
           btn.innerText = this.availCountries[c];
           btn.setAttribute('name', this.availCountries[c]);
-          btn.setAttribute('onclick', function () {
-            this.yourCountries.push(this.availCountries[c]);
+          btn.setAttribute('v-on:click', function() {
+            this.yourCountries.push(btn.innerText);
+            console.log(this.yourCountries);
             this.createYourTable();
-          });
-
+          })
+          // btn function is not getting called properly  ^^
           // need to make each of these cells selectable and when selected add the country to your countries
           // and then maybe call the createYourTable function to re create the your countries table, might not be optimal but only way i can think of at the moment
           td = tr.insertCell(-1);
@@ -188,11 +190,28 @@
         element.appendChild(table);
       },
 
-      addCountry: function (newCountry) {
-        this.yourCountries.push(newCountry);
-        this.createYourTable();
+      createEmail: function () {
+        var emailBody = document.getElementById('emailBody');
+
+        var row = document.createElement('row');
+
+        var newEmail = document.getElementById("emailInput").value;
+        this.emails.push(newEmail);
+
+        var label = document.createElement("label");
+        label.innerText = newEmail;
+
+        var delBtn = document.createElement("button");
+        delBtn.innerText = 'Delete';
+
+
+        row.appendChild(label);
+        row.appendChild(delBtn);
+        emailBody.appendChild(row);
       }
-    },
+
+
+      },
 
     // need to create a API
 
@@ -202,6 +221,8 @@
     }
 
   };
+
+
 
   //Custom button
   Vue.component('custom-button', {
