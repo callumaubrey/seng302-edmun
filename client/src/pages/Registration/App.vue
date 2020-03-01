@@ -131,9 +131,6 @@
               msg = "This will be your primary email to log in to your account";
               break;
             case "password":
-              console.log("I was here");
-              console.log(elements[i].value.type);
-              // console.log("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$".test(elements[i].value));
               elements[i].pattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$";
               msg = "Password should contain at least 8 characters with at least\t\n" +
                       "- one digit\t\n" +
@@ -141,9 +138,11 @@
                       "- one upper case";
               break;
           }
+          if (!elements[i].validity.valid) {
+            elements[i].style.borderColor = "red";
+          }
           elements[i].oninvalid = function (e) {
             if (!e.target.validity.valid) {
-              console.log("another");
               e.target.setCustomValidity(msg);
               e.target.style.borderColor = "red";
               isValid = false
