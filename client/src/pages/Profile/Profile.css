@@ -87,16 +87,16 @@ label {
 .button {
     padding: 10px 20px;
     border: 1px solid #ddd;
-    color: #333;
-    background-color:#fff;
+    color: #ffffff;
+    background-color: #3f3f3f;
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
 }
-button:hover{background-color: #98d3a8;}
+button:hover{background-color: #525252;}
 
 button:active {
-    background-color: #75d378;
+    background-color: #878787;
 }
 
 .container {
@@ -104,6 +104,11 @@ button:active {
     padding: 5px 20px 15px 20px;
     border: 1px solid lightgrey;
     border-radius: 3px;
+}
+
+input[type=radio] {
+    padding: 20px;
+    margin: 0 10px 0 0;
 }
 
 table {
