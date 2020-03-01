@@ -91,10 +91,26 @@
             <div class="row" id="countriesBody"></div>
             <div class="row">
                 <div class="col-50">
-                    <body id="availCountriesBody"></body>
+                    <div id="availCountriesBody"></div>
+                      <table>
+                        <tr>
+                          <th>Available Countries</th>
+                        </tr>
+                        <div v-for="(country, index) in availCountries" :key="index" class="tr">
+                          <button @click="addLine(index,true)">{{country}}</button>
+                        </div>
+                      </table>
                 </div>
                 <div class="col-50">
-                    <body id="yourCountriesBody"></body>
+                    <div id="yourCountriesBody"></div>
+                        <table>
+                          <tr>
+                            <th>Your Countries</th>
+                          </tr>
+                          <div v-for="(country, index) in yourCountries" :key="index" class="tr">
+                            <button @click="removeLine(index,false)">{{country}}</button>
+                          </div>
+                        </table>
                 </div>
             </div>
         </div>
@@ -107,6 +123,7 @@
 
 <script>
     // import api from '../Api';
+
 
     const User = {
         name: 'User',
@@ -125,7 +142,7 @@
                 gender: "female",
                 fitness: "3",
                 yourCountries: ['China', 'France', 'Germany'],
-                availCountries: ['New Zealand', 'Australia', 'Chile'],
+                availCountries: ['New Zealand', 'Australia', 'Chile', 'CHINA'],
                 passport: [
                     "United States of America",
                     "Thailand"
@@ -134,90 +151,35 @@
         },
 
         methods: {
-
-            createAvailTable: function () {
-                var table = document.createElement('table');
-                table.setAttribute('id', 'availCountries');
-
-                var tr = table.insertRow(-1);
-
-                var th = document.createElement('th');
-                th.innerHTML = 'Available Countries';
-                tr.appendChild(th);
-
-                for (var c = 0; c < this.availCountries.length; c++) {
-                    tr = table.insertRow(-1);
-                    var td = document.createElement('td');
-                    var btn = document.createElement('button')
-                    btn.innerText = this.availCountries[c];
-                    btn.setAttribute('name', this.availCountries[c]);
-                    btn.setAttribute('v-on:click', function () {
-                        this.yourCountries.push(btn.innerText);
-                        console.log(this.yourCountries);
-                        this.createYourTable();
-                    })
-                    // btn function is not getting called properly  ^^
-                    // need to make each of these cells selectable and when selected add the country to your countries
-                    // and then maybe call the createYourTable function to re create the your countries table, might not be optimal but only way i can think of at the moment
-                    td = tr.insertCell(-1);
-                    td.appendChild(btn);
-                }
-
-                var element = document.getElementById('availCountriesBody');
-
-                element.appendChild(table);
-            },
-
-            // might be called every time a user adds a country from available countries.
-            createYourTable: function () {
-                console.log("Create Table")
-                var table = document.createElement('table');
-                table.setAttribute('id', 'yourCountries');
-
-                var tr = table.insertRow(-1);
-
-                var th = document.createElement('th');
-                th.innerHTML = 'Your Countries';
-                tr.appendChild(th);
-
-                for (var c = 0; c < this.yourCountries.length; c++) {
-                    tr = table.insertRow(-1);
-                    var td = document.createElement('td');
-                    // need to make these cells selectable and when selected remove it from your countries
-                    td = tr.insertCell(-1);
-                    td.innerHTML = this.yourCountries[c];
-                }
-
-                var element = document.getElementById('yourCountriesBody');
-                element.appendChild(table);
-            },
-
+          
             createEmail: function () {
                 var emailBody = document.getElementById('emailBody');
 
-        var newEmail = document.getElementById("emailInput").value;
-        this.emails.push(newEmail);
+                var newEmail = document.getElementById("emailInput").value;
+                this.emails.push(newEmail);
 
-        var row = document.createElement('row');
-        row.setAttribute('id', newEmail);
+                var row = document.createElement('row');
+                row.setAttribute('id', newEmail);
 
-        var label = document.createElement("label");
-        label.innerText = newEmail;
-        var delBtn = document.createElement("button");
-        delBtn.innerText = 'Delete';
+                var label = document.createElement("label");
+                label.innerText = newEmail;
+                var delBtn = document.createElement("button");
+                delBtn.setAttribute('v-on:click')
 
-        row.appendChild(label);
-        row.appendChild(delBtn);
-        emailBody.appendChild(row);
-      },
 
-      deleteEmail: function (email) {
-        var emailBody = document.getElementById('emailBody');
+                row.appendChild(label);
+                row.appendChild(delBtn);
+                emailBody.appendChild(row);
+            },
 
-        emailBody.removeChild(document.getElementById(email));
-        // need to delete email from this.emails list
+            deleteEmail: function (email) {
+              var emailBody = document.getElementById('emailBody');
 
-      },
+              emailBody.removeChild(document.getElementById(email));
+              // need to delete email from this.emails list
+
+            },
+
             toggleEdits: function () {
                 this.disabled = !this.disabled
                 if (this.disabled) {
@@ -229,15 +191,9 @@
             },
         },
 
-
-
-
     // need to create a API
 
-        mounted() {
-            this.createAvailTable();
-            this.createYourTable();
-        }
+
     };
 
     export default User
