@@ -39,8 +39,7 @@
                             <label class="gender-label" for="male"><input id="male" name="gender" type="radio">M</label><br>
                         </div>
                         <div class="col-33">
-                            <label class="gender-label" for="other"><input id="other" name="gender"
-                                                                           type="radio">NB</label>
+                            <label class="gender-label" for="other"><input id="other" name="gender" type="radio">NB</label>
                         </div>
                     </div>
                 </div>
@@ -196,24 +195,29 @@
             createEmail: function () {
                 var emailBody = document.getElementById('emailBody');
 
-                var row = document.createElement('row');
+        var newEmail = document.getElementById("emailInput").value;
+        this.emails.push(newEmail);
 
-                var newEmail = document.getElementById("emailInput").value;
+        var row = document.createElement('row');
+        row.setAttribute('id', newEmail);
 
-                this.emails.push(newEmail);
+        var label = document.createElement("label");
+        label.innerText = newEmail;
+        var delBtn = document.createElement("button");
+        delBtn.innerText = 'Delete';
 
-                var label = document.createElement("label");
-                label.innerText = newEmail;
+        row.appendChild(label);
+        row.appendChild(delBtn);
+        emailBody.appendChild(row);
+      },
 
-                var delBtn = document.createElement("button");
-                delBtn.innerText = 'Delete';
+      deleteEmail: function (email) {
+        var emailBody = document.getElementById('emailBody');
 
+        emailBody.removeChild(document.getElementById(email));
+        // need to delete email from this.emails list
 
-                row.appendChild(label);
-                row.appendChild(delBtn);
-                emailBody.appendChild(row);
-            },
-
+      },
             toggleEdits: function () {
                 this.disabled = !this.disabled
                 if (this.disabled) {
@@ -225,7 +229,10 @@
             },
         },
 
-        // need to create a API
+
+
+
+    // need to create a API
 
         mounted() {
             this.createAvailTable();
