@@ -3,7 +3,7 @@
     <div class="container">
       <h1> Create a new account </h1>
       <hr>
-      <form method="post" v-on:submit="validateFields">
+      <form id="register" method="post" v-on:submit="validateFields">
         <div class="row">
           <div class="col-33">
             <label class="field" for="fname"> First name</label>
@@ -53,18 +53,19 @@
           </div>
         </div>
         <div class="col-100">
-          <label class="field" for="dob">Date of birth</label>
+          <label class="field">Date of birth</label>
         </div>
         <div class="row">
           <div class="col-100">
-            <date-dropdown
-                    :max="currentYear"
-                    default="01-01-1995"
-                    id="dob"
-                    min="1900"
-                    months-names="Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec"
-                    v-model="selectedDate">
-            </date-dropdown>
+            <select v-model="selectedDay" form="register" id="day" class="dob" required>
+            </select>
+
+            <select v-model="selectedMonth" form="register" id="month" class="dob" required>
+            </select>
+
+            <select v-model="selectedYear" form="register" id="year" class="dob" required>
+            </select>
+
           </div>
         </div>
 
@@ -99,17 +100,15 @@
 </template>
 
 <script>
-  import DateDropdown from 'vue-date-dropdown'
 
   export default {
     components: {
-      DateDropdown
     },
     data() {
       return {
-        selectedDate: '',
-        currentYear: (new Date).getFullYear().toString(),
-        // fname: null,
+        selectedDay: "1",
+        selectedMonth: "1",
+        selectedYear: "2020",
       }
     },
     methods: {
@@ -148,18 +147,18 @@
               isValid = false
             } else {
               e.target.setCustomValidity('');
-              e.target.style.borderColor = "white";
+              e.target.style.borderColor = "#ccc";
             }
           };
 
           elements[i].oninput = function (e) {
             e.target.setCustomValidity(' ');
-            e.target.style.borderColor = "white";
+            e.target.style.borderColor = "#ccc";
           };
 
           elements[i].onchange = function (e) {
             e.target.setCustomValidity('');
-            e.target.style.borderColor = "white";
+            e.target.style.borderColor = "#ccc";
           };
 
           elements[i].onclick = function (e) {
@@ -178,8 +177,9 @@
 
         let passwordValid = this.validatePassword();
         let genderValid = this.validateGender();
+        let DOBValid = this.validateDOB();
 
-        if (!isValid || !genderValid || !passwordValid) {
+        if (!isValid || !genderValid || !passwordValid || !DOBValid) {
           event.preventDefault();
         }
       },
@@ -190,8 +190,8 @@
 
         function check() {
           if (password.value == rpassword.value && password.checkValidity()) {
-            password.style.borderColor = "white";
-            rpassword.style.borderColor = "white";
+            password.style.borderColor = "#ccc";
+            rpassword.style.borderColor = "#ccc"
           } else {
             password.style.borderColor = "red";
             rpassword.style.borderColor = "red";
@@ -226,7 +226,72 @@
           }
         }
         return genderValid;
+      },
+      validateDOB() {
+
+        let day = document.getElementById("day");
+        let month = document.getElementById("month");
+        let year = document.getElementById("year");
+
+        let validDate;
+        let self = this;
+        function testDate() {
+          let now = new Date();
+          let selected = new Date(parseInt(self.selectedYear), parseInt(self.selectedMonth)-1, parseInt(self.selectedDay));
+          if (selected.getMonth() == parseInt(self.selectedMonth)-1 && selected < now) {
+            validDate = true;
+            day.style.borderColor = "#ccc";
+            month.style.borderColor = "#ccc";
+            year.style.borderColor = "#ccc";
+          } else {
+            validDate = false;
+            day.style.borderColor = "red";
+            month.style.borderColor = "red";
+            year.style.borderColor = "red";
+          }
+        }
+        testDate();
+        day.onchange = testDate;
+        month.onchange = testDate;
+        year.onchange = testDate;
+        return validDate;
+      },
+      setUpDOB() {
+        let today = new Date();
+        let currentYear = today.getFullYear();
+
+        let day = document.getElementById("day");
+        for (let i = 1; i <= 31; i++) {
+          let element = document.createElement("option");
+          element.textContent = i.toString();
+          element.value = i.toString();
+          day.appendChild(element);
+        }
+
+        let month = document.getElementById("month");
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        for(let i = 0; i < months.length; i++) {
+          let option = months[i];
+          let element = document.createElement("option");
+          element.textContent = option;
+          let number = (i+1);
+          element.value = number.toString();
+          month.appendChild(element);
+        }
+
+        let year = document.getElementById("year");
+        let startYear = 1900;
+        for (let i = startYear; i <= currentYear; i++) {
+          let element = document.createElement("option");
+          element.textContent = i.toString();
+          element.value = i.toString();
+          year.appendChild(element);
+        }
+        year.selectedIndex = currentYear-startYear;
       }
+    },
+    mounted() {
+      this.setUpDOB();
     }
   }
 
@@ -270,6 +335,7 @@
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 3px;
+    outline-width: 0px;
   }
 
   input[type=password] {
@@ -289,11 +355,12 @@
   input[type=radio] {
     padding: 20px;
     margin: 0 10px 0 0;
-    border: 100px solid red;
-    border-radius: 3px;
-    outline: #75d378;
-    display: inline-block;
+  }
 
+  select[class="dob"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-right: 6px;
   }
 
   label {
