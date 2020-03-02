@@ -3,19 +3,19 @@
     <div class="container">
       <h1> Create a new account </h1>
       <hr>
-      <form id="register" method="post" v-on:submit="validateFields">
+      <form id="register" v-on:submit="validateFields">
         <div class="row">
           <div class="col-33">
             <label class="field" for="fname"> First name</label>
-            <input class="name" id="fname" name="firstname" placeholder="John" required type="text">
+            <input class="name" id="fname" name="firstname" placeholder="John" required type="text" v-model="firstName">
           </div>
           <div class="col-33">
             <label class="field" for="mname"> Middle name</label>
-            <input id="mname" name="middlename" placeholder="Middle" type="text">
+            <input id="mname" name="middlename" placeholder="Middle" type="text" v-model="middleName">
           </div>
           <div class="col-33">
             <label class="field" for="lname"> Last name</label>
-            <input class="name" id="lname" name="lastname" placeholder="Doe" required type="text">
+            <input class="name" id="lname" name="lastname" placeholder="Doe" required type="text" v-model="lastName">
           </div>
         </div>
 
@@ -26,7 +26,7 @@
         </div>
         <div class="row">
           <div class="col-100">
-            <input id="nname" name="nickname" placeholder="Johnny" type="text">
+            <input id="nname" name="nickname" placeholder="Johnny" type="text" v-model="nickName">
           </div>
         </div>
 
@@ -38,18 +38,19 @@
         </div>
         <div class="row">
           <div class="col-100">
-            <input id="email" name="email" placeholder="john@example.com" required type="email">
+            <input id="email" name="email" placeholder="john@example.com" required type="email" v-model="email">
           </div>
         </div>
 
         <div class="row">
           <div class="col-50">
             <label class="field" for="psw">Password</label>
-            <input id="psw" name="password" placeholder="Password" required type="password">
+            <input id="psw" name="password" placeholder="Password" required type="password" v-model="password">
           </div>
           <div class="col-50">
             <label class="field" for="psw-repeat">Repeat Password</label>
-            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password">
+            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password"
+                   v-model="passwordRepeat">
           </div>
         </div>
         <div class="col-100">
@@ -77,13 +78,16 @@
 
         <div class="row">
           <div class="col-33">
-            <label class="gender-label" for="female"><input id="female" name="gender" type="radio">Female</label><br>
+            <label class="gender-label" for="female"><input id="female" name="gender" type="radio"
+                                                            v-model="selectedGender" value="female">Female</label><br>
           </div>
           <div class="col-33">
-            <label class="gender-label" for="male"><input id="male" name="gender" type="radio">Male</label><br>
+            <label class="gender-label" for="male"><input id="male" name="gender" type="radio" v-model="selectedGender"
+                                                          value="male">Male</label><br>
           </div>
           <div class="col-33">
-            <label class="gender-label" for="other"><input id="other" name="gender" type="radio">Non-binary</label>
+            <label class="gender-label" for="other"><input id="other" name="gender" type="radio"
+                                                           v-model="selectedGender" value="nonBinary">Non-binary</label>
           </div>
         </div>
 
@@ -106,9 +110,18 @@
     },
     data() {
       return {
+        SERVER: "https://69077def-475c-4406-ba02-dfc190024a7f.mock.pstmn.io",
         selectedDay: "1",
         selectedMonth: "1",
         selectedYear: "2020",
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        nickName: "",
+        password: "",
+        email: "",
+        passwordRepeat: "",
+        selectedGender: "",
       }
     },
     methods: {
@@ -180,7 +193,31 @@
         let DOBValid = this.validateDOB();
 
         if (!isValid || !genderValid || !passwordValid || !DOBValid) {
+          console.log("incorrect");
           event.preventDefault();
+        } else {
+          console.log("correct");
+          event.preventDefault();
+          let currentObj = this;
+          this.axios.post(this.SERVER + '/registration', {
+            firstname: this.firstName,
+            middlename: this.middleName,
+            lastname: this.lastName,
+            nickname: this.nickName,
+            email: this.email,
+            password: this.password,
+            dayOfBirth: this.selectedDay,
+            monthOfBirth: this.selectedMonth,
+            yearOfBirth: this.selectedYear,
+            gender: this.selectedGender
+          })
+                  .then(function (response) {
+                    currentObj.output = response.data;
+                    location.href = "/profile";
+                  })
+                  .catch(function (error) {
+                    currentObj.output = error;
+                  });
         }
       },
       validatePassword: function () {
@@ -287,7 +324,10 @@
           element.value = i.toString();
           year.appendChild(element);
         }
-        year.selectedIndex = currentYear-startYear;
+        year.selectedIndex = currentYear - startYear;
+      },
+      captureGenderSelection() {
+
       }
     },
     mounted() {
@@ -335,7 +375,7 @@
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    outline-width: 0px;
+    outline-width: 0;
   }
 
   input[type=password] {
