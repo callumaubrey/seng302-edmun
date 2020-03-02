@@ -108,7 +108,7 @@
                             <th>Your Countries</th>
                           </tr>
                           <div v-for="(country, index) in yourCountries" :key="index" class="tr">
-                            <button @click="removeLine(index,false)">{{country}}</button>
+                            <button @click="addLine(index,false)">{{country}}</button>
                           </div>
                         </table>
                 </div>
@@ -123,6 +123,12 @@
 
 <script>
     // import api from '../Api';
+    import axios from 'axios'
+
+    const countryData = axios.create({
+        baseURL: "https://restcountries.eu/rest/v2/all",
+        timeout: 1000
+    });
 
     const User = {
         name: 'User',
@@ -140,27 +146,27 @@
                 date_of_birth: "2000-11-11",
                 gender: "female",
                 fitness: "3",
-                yourCountries: ['China', 'France', 'Germany'],
-                availCountries: ['New Zealand', 'Australia', 'Chile', 'CHINA'],
+                yourCountries: [],
+                availCountries: [],
                 passport: [
                     "United States of America",
                     "Thailand"
                 ],
-                blockRemoval: true,
             }
         },
 
-        watch: {
-            lines () {
-                this.blockRemoval = this.lines.length <= 1
-            }
-        },
 
         methods: {
 
 
-            getCountryData: function() {
-                "GET https://restcountries.eu/rest/v2/name/all"
+            getCountryData: async function() {
+                var data = await (countryData.get())
+                var countriesLen = data.data.length
+                for (var i =0; i < countriesLen; i++){
+                    this.availCountries.push(data.data[i].name)
+                }
+                console.log(data.data.length)
+
             },
             //isAvailable adding country from available to your countries
             addLine (index, isAvailable) {
@@ -267,6 +273,18 @@
                     this.editButtonText = "Save Changes"
                 }
             },
+
+            // (R)ead
+            getAll: () => countryData.get('students', {
+                transformResponse: [function (data) {
+                    return data? JSON.parse(data).embedded.students : data;
+                }]
+            }),
+        },
+
+        mounted: function () {
+            this.getCountryData()
+
         }
 
     // need to create a API
