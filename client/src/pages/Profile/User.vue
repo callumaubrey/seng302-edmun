@@ -79,13 +79,21 @@
                         <label style="font-weight: bold" for="emailInput">Email address:</label>
                     </div>
                     <div class="col-50">
-                        <input type="text" id="emailInput" name="email" :value="emails[0]"
-                               placeholder="john@example.com" required :disabled="true">
+                        <input type="text" id="emailInput" name="email"
+                               placeholder="john@example.com" required :disabled=false>
                     </div>
                     <div id="emailAdd" class="col-25">
                         <input class="button" type="button" v-on:click="createEmail" value="Add Email"
                                :hidden="disabled">
                     </div>
+                </div>
+                <div v-for="(email, index) in primaryEmail" :key="index" class="row">
+                  <label class="col-50">Your Primary Email: {{email}}</label>
+                </div>
+                <div v-for="(email, index) in emails" :key="index" class="row">
+                  <label class="col-50">{{email}}</label>
+                  <button @click="makePrimary(index)" class="col-25">Make Primary Email</button>
+                  <button @click="deleteEmail(index)" class="col-25">Delete Email</button>
                 </div>
             </div>
             <div class="row" id="countriesBody"></div>
@@ -141,7 +149,8 @@
                 lastname: "Pocket",
                 firstname: "Poly",
                 nickName: "",
-                emails: ["poly@pocket.com"],
+                primaryEmail: ["martin@email.com"],
+                emails: ["poly@pocket.com", "yeet@email.com", "awesome@nice.com"],
                 bio: "Poly Pocket is so tiny.",
                 date_of_birth: "2000-11-11",
                 gender: "female",
@@ -177,6 +186,18 @@
                     this.availCountries.push(this.yourCountries[index]);
                     this.yourCountries.splice(index, 1);
                 }
+            },
+
+            makePrimary(index) {
+              var oldPrimary = this.primaryEmail[0];
+              this.primaryEmail.splice(0,1);
+              this.primaryEmail.push(this.emails[index])
+              this.emails.splice(index,1);
+              this.emails.push(oldPrimary);
+            },
+
+            deleteEmail(index) {
+              this.emails.splice(index, 1);
             },
 
             createAvailTable: function () {
@@ -254,14 +275,6 @@
                 row.appendChild(label);
                 row.appendChild(delBtn);
                 emailBody.appendChild(row);
-            },
-
-            deleteEmail: function (email) {
-              var emailBody = document.getElementById('emailBody');
-
-              emailBody.removeChild(document.getElementById(email));
-              // need to delete email from this.emails list
-
             },
 
             toggleEdits: function () {
