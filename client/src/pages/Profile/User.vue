@@ -80,7 +80,7 @@
                     </div>
                     <div class="col-50">
                         <input type="text" id="emailInput" name="email"
-                               placeholder="john@example.com" required :disabled=false>
+                               placeholder="john@example.com" required :hidden="disabled">
                     </div>
                     <div id="emailAdd" class="col-25">
                         <input class="button" type="button" v-on:click="createEmail" value="Add Email"
@@ -88,21 +88,22 @@
                     </div>
                 </div>
                 <div v-for="(email, index) in primaryEmail" :key="index" class="row">
-                  <label class="col-50">Your Primary Email: {{email}}</label>
+                  <label class="col-50" style="font-weight: bold">Your Primary Email: {{email}}</label>
                 </div>
                 <div v-for="(email, index) in emails" :key="index" class="row">
                   <label class="col-50">{{email}}</label>
-                  <button @click="makePrimary(index)" class="col-25">Make Primary Email</button>
-                  <button @click="deleteEmail(index)" class="col-25">Delete Email</button>
+                  <button @click="makePrimary(index)" class="col-25" :hidden="disabled">Make Primary Email</button>
+                  <button @click="deleteEmail(index)" class="col-25" :hidden="disabled">Delete Email</button>
                 </div>
             </div>
+            <br>
             <div class="row" id="countriesBody"></div>
             <div class="row">
                 <div class="col-50">
                     <div id="availCountriesBody"></div>
+                    <H3>Passport Countries</H3>
                       <table>
                         <tr>
-                          <th>Available Countries</th>
                         </tr>
                         <div v-for="(country, index) in availCountries" :key="index" class="tr">
                           <button @click="addLine(index,true)">{{country}}</button>
@@ -111,9 +112,9 @@
                 </div>
                 <div class="col-50">
                     <div id="yourCountriesBody"></div>
+                    <H3>Passports you hold</H3>
                         <table>
-                          <tr>
-                            <th>Your Countries</th>
+                            <tr>
                           </tr>
                           <div v-for="(country, index) in yourCountries" :key="index" class="tr">
                             <button @click="addLine(index,false)">{{country}}</button>
@@ -121,8 +122,9 @@
                         </table>
                 </div>
             </div>
+            <br>
+            <a class="button" href="index.html">Log out</a>
         </div>
-        <a class="button" href="index.html">Log out</a>
     </div>
 
 
@@ -179,12 +181,14 @@
             },
             //isAvailable adding country from available to your countries
             addLine (index, isAvailable) {
-                if (isAvailable) {
-                    this.yourCountries.push(this.availCountries[index]);
-                    this.availCountries.splice(index, 1);
-                } else {
-                    this.availCountries.push(this.yourCountries[index]);
-                    this.yourCountries.splice(index, 1);
+                if (!this.disabled) {
+                    if (isAvailable) {
+                        this.yourCountries.push(this.availCountries[index]);
+                        this.availCountries.splice(index, 1);
+                    } else {
+                        this.availCountries.push(this.yourCountries[index]);
+                        this.yourCountries.splice(index, 1);
+                    }
                 }
             },
 
