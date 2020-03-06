@@ -1,26 +1,28 @@
 <template>
   <div id="app">
-    <Students />
+    <User/>
     <footer class="info">
       <h4>Seng302 Example</h4>
     </footer>
+    <a href="/login">Login</a>
+    <a href="/registration">Registation</a>
+    <a href="/profile">Profile</a>
   </div>
 </template>
 
 <script>
-  import Students from './components/Students'
+  import User from './pages/Login/App'
   // app Vue instance
   const app = {
     name: 'app',
     components: {
-      Students
+      User
     },
     // app initial state
     data: () => {
-      return {
-      }
+      return {}
     }
-  }
+  };
 
   export default app
 </script>
