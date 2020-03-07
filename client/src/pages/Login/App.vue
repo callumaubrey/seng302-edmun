@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div>
+      <NavBar></NavBar>
+    </div>
     <div class="container">
       <h1> Login </h1>
       <hr>
@@ -29,14 +32,21 @@
           </div>
         </div>
 
+        <a href="/registration">Click here to register</a>
       </form>
-
     </div>
-    <a href="/registration">Click here to register</a>
   </div>
+
 </template>
 
 <script>
+  import NavBar from '@/components/NavBar.vue';
+
+  export default {
+    components: {
+      NavBar
+    }
+  }
 
 </script>
 

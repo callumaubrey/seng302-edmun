@@ -1,5 +1,6 @@
 <template>
     <div id="app">
+        <NavBar></NavBar>
         <div class="container">
             <div class="row" style="padding: 1em">
                 <h1 class="col-50">Your Profile.</h1>
@@ -135,6 +136,7 @@
 <script>
     // import api from '../Api';
     import axios from 'axios'
+    import NavBar from "@/components/NavBar.vue"
 
     const countryData = axios.create({
         baseURL: "https://restcountries.eu/rest/v2/all",
@@ -144,6 +146,9 @@
     const User = {
         name: 'User',
 
+        components: {
+            NavBar
+        },
         data: function () {
             return {
                 editButtonText: "Edit Profile",
@@ -172,9 +177,9 @@
 
 
             getCountryData: async function() {
-                var data = await (countryData.get())
-                var countriesLen = data.data.length
-                for (var i =0; i < countriesLen; i++){
+                var data = await (countryData.get());
+                var countriesLen = data.data.length;
+                for (var i = 0; i < countriesLen; i++) {
                     this.availCountries.push(data.data[i].name)
                 }
                 console.log(data.data.length)
@@ -194,11 +199,11 @@
             },
 
             makePrimary(index) {
-              var oldPrimary = this.primaryEmail[0];
-              this.primaryEmail.splice(0,1);
-              this.primaryEmail.push(this.emails[index])
-              this.emails.splice(index,1);
-              this.emails.push(oldPrimary);
+                var oldPrimary = this.primaryEmail[0];
+                this.primaryEmail.splice(0, 1);
+                this.primaryEmail.push(this.emails[index]);
+                this.emails.splice(index, 1);
+                this.emails.push(oldPrimary);
             },
 
             deleteEmail(index) {
@@ -218,14 +223,14 @@
                 for (var c = 0; c < this.availCountries.length; c++) {
                     tr = table.insertRow(-1);
                     var td = document.createElement('td');
-                    var btn = document.createElement('button')
+                    var btn = document.createElement('button');
                     btn.innerText = this.availCountries[c];
                     btn.setAttribute('name', this.availCountries[c]);
                     btn.setAttribute('v-on:click', function () {
                         this.yourCountries.push(btn.innerText);
                         console.log(this.yourCountries);
                         this.createYourTable();
-                    })
+                    });
                     // btn function is not getting called properly  ^^
                     // need to make each of these cells selectable and when selected add the country to your countries
                     // and then maybe call the createYourTable function to re create the your countries table, might not be optimal but only way i can think of at the moment
@@ -240,7 +245,7 @@
 
             // might be called every time a user adds a country from available countries.
             createYourTable: function () {
-                console.log("Create Table")
+                console.log("Create Table");
                 var table = document.createElement('table');
                 table.setAttribute('id', 'yourCountries');
 
@@ -265,7 +270,7 @@
             createEmail: function () {
                 var numEmails = this.emails.length;
                 if (numEmails >= 4){
-                    console.log("Max Emails (limit is 5)")
+                    console.log("Max Emails (limit is 5)");
                     return
                 }
                 var emailBody = document.getElementById('emailBody');
@@ -282,7 +287,7 @@
                 var label = document.createElement("label");
                 label.innerText = newEmail;
                 var delBtn = document.createElement("button");
-                delBtn.setAttribute('v-on:click')
+                delBtn.setAttribute('v-on:click');
 
 
                 row.appendChild(label);
@@ -291,7 +296,7 @@
             },
 
             toggleEdits: function () {
-                this.disabled = !this.disabled
+                this.disabled = !this.disabled;
                 if (this.disabled) {
                     //this.updateUser();
                     this.editButtonText = "Edit Profile"
