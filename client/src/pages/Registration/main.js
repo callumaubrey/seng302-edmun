@@ -3,6 +3,7 @@ import App from './App'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
+import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue';
 
 Vue.config.productionTip = false;
 
@@ -18,6 +19,10 @@ const options = {
 
 Vue.use(VueLogger, options);
 Vue.use(VueAxios, axios);
+Vue.use(NavbarPlugin);
+Vue.use(BootstrapVue);
+Vue.use(IconsPlugin);
+
 
 Vue.config.productionTip = false;
 

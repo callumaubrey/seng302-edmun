@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <NavBar></NavBar>
     <div class="container">
       <h1> Create a new account </h1>
       <hr>
@@ -104,9 +105,12 @@
 </template>
 
 <script>
+  import NavBar from '@/components/NavBar.vue';
 
   export default {
+
     components: {
+      NavBar
     },
     data() {
       return {

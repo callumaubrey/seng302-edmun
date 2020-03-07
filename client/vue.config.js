@@ -3,16 +3,10 @@ module.exports = {
     publicPath: process.env.VUE_APP_BASE_URL,
     pages: {
         'index': {
-            entry: './src/main.js',
-            template: 'public/index.html',
-            title: 'Home',
-            chunks: ['chunk-vendors', 'chunk-common', 'index']
-        },
-        'login': {
             entry: './src/pages/Login/main.js',
             template: 'public/index.html',
             title: 'Login',
-            chunks: ['chunk-vendors', 'chunk-common', 'login']
+            chunks: ['chunk-vendors', 'chunk-common', 'index']
         },
         'registration': {
             entry: './src/pages/Registration/main.js',

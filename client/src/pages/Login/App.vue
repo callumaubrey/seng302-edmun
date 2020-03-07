@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div>
+      <NavBar></NavBar>
+    </div>
     <div class="container">
       <h1> Login </h1>
       <hr>
@@ -46,8 +49,10 @@
 </template>
 
 <script>
+import NavBar from '@/components/NavBar.vue';
   export default {
     components: {
+      NavBar
     },
     computed: {
       emailState() {
@@ -90,9 +95,9 @@
         this.submitted = true;
         if (this.emailState && this.passwordState) {
           let currentObj = this;
-          this.axios.post('http://localhost:9499/account/login',{
-            email : this.email,
-            password : this.password
+          this.axios.post('http://localhost:9499/account/login', {
+            email: this.email,
+            password: this.password
           })
                   .then(function (response) {
                     currentObj.output = response.data;
@@ -102,8 +107,8 @@
                     currentObj.output = error;
                     console.log(error);
                   });
-        return true;
-      }
+          return true;
+        }
         e.preventDefault();
       }
     }
