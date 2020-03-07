@@ -1,119 +1,175 @@
 <template>
   <div id="app">
     <div class="container">
-      <h1> Create a new account </h1>
-      <hr>
-      <form id="register" v-on:submit="validateFields">
-        <div class="row">
-          <div class="col-33">
-            <label class="field" for="fname"> First name</label>
-            <input class="name" id="fname" name="firstname" placeholder="John" required type="text" v-model="firstName">
-          </div>
-          <div class="col-33">
-            <label class="field" for="mname"> Middle name</label>
-            <input id="mname" name="middlename" placeholder="Middle" type="text" v-model="middleName">
-          </div>
-          <div class="col-33">
-            <label class="field" for="lname"> Last name</label>
-            <input class="name" id="lname" name="lastname" placeholder="Doe" required type="text" v-model="lastName">
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="col-100">
-            <label class="field" for="nname"> Nickname</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-100">
-            <input id="nname" name="nickname" placeholder="Johnny" type="text" v-model="nickName">
-          </div>
-        </div>
+    <b-container fluid>
+      <b-row>
+        <b-col>
+          <h1>Create a new account</h1>
+          <hr>
+        </b-col>
+      </b-row>
+      <b-form novalidate @submit="onSubmit">
+      <b-row class="my-1">
+        <b-col sm="4">
+          <label>First Name</label>
+          <b-form-input id="input-default" placeholder="Enter name" :state="fNameState" v-model ="firstName" required></b-form-input>
+          <b-form-invalid-feedback> Invalid first name</b-form-invalid-feedback>
+        </b-col>
+
+        <b-col sm="4">
+          <label>Middle Name</label>
+          <b-form-input id="input-default" placeholder="Enter middle name" :state="mNameState" v-model ="middleName" required></b-form-input>
+        </b-col>
+        <b-col sm="4">
+          <label>Last Name</label>
+          <b-form-input id="input-default" placeholder="Enter last name" :state="lNameState" v-model ="lastName" required></b-form-input>
+        </b-col>
+
+      </b-row>
+      <b-row class="my-1">
+        <b-col sm="12">
+          <label>Nickname</label>
+          <b-form-input id="input-default" placeholder="Enter nickname" v-model ="nickName" required></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="my-1">
+        <b-col sm="12">
+          <label>Email address</label>
+          <b-form-input id="email" placeholder="Enter email address" :state="emailState" v-model ="email" required></b-form-input>
+          <b-form-invalid-feedback> Invalid email</b-form-invalid-feedback>
+        </b-col>
+      </b-row>
+      <b-row class="my-1">
+        <b-col sm="6">
+          <label>Password</label>
+          <b-form-input type="password" id="input-default" placeholder="Enter password" :state="passwordState" v-model ="password" required></b-form-input>
+          <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case, one upper case</b-form-invalid-feedback>
 
 
-        <div class="row">
-          <div class="col-100">
-            <label class="field" for="email">Email address</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-100">
-            <input id="email" name="email" placeholder="john@example.com" required type="email" v-model="email">
-          </div>
-        </div>
+        </b-col>
 
-        <div class="row">
-          <div class="col-50">
-            <label class="field" for="psw">Password</label>
-            <input id="psw" name="password" placeholder="Password" required type="password" v-model="password">
-          </div>
-          <div class="col-50">
-            <label class="field" for="psw-repeat">Repeat Password</label>
-            <input id="psw-repeat" name="psw-repeat" placeholder="Repeat Password" required type="password"
-                   v-model="passwordRepeat">
-          </div>
-        </div>
-        <div class="col-100">
-          <label class="field">Date of birth</label>
-        </div>
-        <div class="row">
-          <div class="col-100">
-            <select v-model="selectedDay" form="register" id="day" class="dob" required>
-            </select>
+        <b-col sm="6">
+          <label>Repeat Password</label>
+          <b-form-input id="input-default" type="password" placeholder="Enter password again" :state="rPasswordState" v-model ="passwordRepeat" required></b-form-input>
+          <b-form-invalid-feedback> Passwords should be the same</b-form-invalid-feedback>
+        </b-col>
 
-            <select v-model="selectedMonth" form="register" id="month" class="dob" required>
-            </select>
+      </b-row>
+      <b-row class="my-1">
+        <b-col sm="12">
+          <label>Date of birth</label>
+          <b-form-input id="input-default" type="date" placeholder="Enter date of birth" :state="dateOfBirthState" v-model ="date" required></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="12">
+        <label>Gender</label>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="12">
+          <b-form-select class="mb-3" required >
 
-            <select v-model="selectedYear" form="register" id="year" class="dob" required>
-            </select>
+            <b-form-select-option value="C">Male</b-form-select-option>
+            <b-form-select-option value="D">Female</b-form-select-option>
+            <b-form-select-option value="D">Non-Binary</b-form-select-option>
+          </b-form-select>
 
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="col-100">
-            <label class="field">Gender</label>
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="col-33">
-            <label class="gender-label" for="female"><input id="female" name="gender" type="radio"
-                                                            v-model="selectedGender" value="female">Female</label><br>
-          </div>
-          <div class="col-33">
-            <label class="gender-label" for="male"><input id="male" name="gender" type="radio" v-model="selectedGender"
-                                                          value="male">Male</label><br>
-          </div>
-          <div class="col-33">
-            <label class="gender-label" for="other"><input id="other" name="gender" type="radio"
-                                                           v-model="selectedGender" value="nonBinary">Non-binary</label>
-          </div>
-        </div>
+        </b-col>
 
-        <div class="row">
-          <div class="col-100">
-            <input class="sign-up-btn" type="submit" v-on:click="validateFields" value="Sign Up">
-          </div>
-        </div>
 
-      </form>
+      </b-row>
+      <b-button type="submit" variant="primary" >Submit</b-button>
 
-    </div>
+
+
+</b-form>
+    </b-container>
   </div>
+  </div>
+
 </template>
 
 <script>
 
   export default {
-    components: {
+
+    computed: {
+      emailState() {
+        let state = false;
+        if (this.email) {
+          let pattern = new RegExp("^($|[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+)$");
+          state = pattern.test(this.email);
+        } else {
+          state = null;
+        }
+        return state;
+      },
+      fNameState() {
+        let state = false;
+        if (this.firstName) {
+          let pattern = new RegExp("^[A-Za-z]+$");
+          state = pattern.test(this.firstName);
+        } else {
+          state = null;
+        }
+        return state;
+      },
+      mNameState() {
+        let state = false;
+        if (this.middleName) {
+          let pattern = new RegExp("^[A-Za-z]+$");
+          state = pattern.test(this.middleName);
+        } else {
+          state = null;
+        }
+        return state;
+      },
+      lNameState() {
+        let state = false;
+        if (this.lastName) {
+          let pattern = new RegExp("^[A-Za-z]+$");
+          state = pattern.test(this.lastName);
+        } else {
+          state = null;
+        }
+        return state;
+      },
+      passwordState() {
+        let state = false;
+        if (this.password) {
+          let pattern = new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$");
+          state = pattern.test(this.password);
+        } else {
+          state = null;
+        }
+        return state;
+      },
+      rPasswordState() {
+        let state = false;
+        if (this.passwordRepeat) {
+          if (this.password !== this.passwordRepeat) {
+            return state;
+          } else {
+            state = true;
+          }
+        } else {
+          state = null;
+        }
+        return state;
+      }
     },
+
     data() {
       return {
         SERVER: "https://69077def-475c-4406-ba02-dfc190024a7f.mock.pstmn.io",
         selectedDay: "1",
         selectedMonth: "1",
         selectedYear: "2020",
+        date:"",
         firstName: "",
         middleName: "",
         lastName: "",
@@ -125,6 +181,13 @@
       }
     },
     methods: {
+      onSubmit: function (event) {
+        if (this.emailState && this.fNameState) {
+          return true;
+        }
+        event.preventDefault();
+
+      },
       validateFields: function (event) {
         let elements = document.getElementsByTagName("INPUT");
         let isValid = true;
@@ -337,12 +400,15 @@
 
 
 
+
 </script>
+
 
 <style scoped>
   [v-cloak] {
     display: none;
   }
+
 
   .row {
     display: -ms-flexbox; /* IE10 */
@@ -425,9 +491,10 @@
 
   .container {
     background-color: #f2f2f2;
-    padding: 5px 40px 15px 20px;
+    padding: 20px 20px 20px 20px;
     border: 1px solid lightgrey;
     border-radius: 3px;
+    width:65%;
   }
 
   .sign-up-btn {
