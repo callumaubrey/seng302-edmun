@@ -3,13 +3,13 @@ import App from './App'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 // Install BootstrapVue
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
 
 Vue.config.productionTip = false;
 
@@ -25,6 +25,10 @@ const options = {
 
 Vue.use(VueLogger, options);
 Vue.use(VueAxios, axios);
+Vue.use(NavbarPlugin);
+Vue.use(BootstrapVue);
+Vue.use(IconsPlugin);
+
 
 Vue.config.productionTip = false;
 

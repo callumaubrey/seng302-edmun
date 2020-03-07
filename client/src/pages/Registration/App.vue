@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <NavBar></NavBar>
     <div class="container">
 
     <b-container fluid>
@@ -94,9 +95,12 @@
 </template>
 
 <script>
+  import NavBar from '@/components/NavBar.vue';
 
   export default {
-
+  components: {
+    NavBar
+  },
     computed: {
       emailState() {
         let state = false;
