@@ -3,6 +3,8 @@ import App from './App'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
+import Vuelidate from 'vuelidate'
+Vue.use(Vuelidate)
 // Install BootstrapVue
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
