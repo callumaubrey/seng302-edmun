@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div>
-      <NavBar></NavBar>
+      <NavBar isLoggedIn=false></NavBar>
     </div>
     <div class="container">
       <h1> Login </h1>
@@ -49,7 +49,8 @@
 </template>
 
 <script>
-import NavBar from '@/components/NavBar.vue';
+  import NavBar from '@/components/NavBar.vue';
+
   export default {
     components: {
       NavBar
@@ -102,10 +103,12 @@ import NavBar from '@/components/NavBar.vue';
                   .then(function (response) {
                     currentObj.output = response.data;
                     console.log(response.data);
+                    this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', true);
                   })
                   .catch(function (error) {
                     currentObj.output = error;
                     console.log(error);
+                    this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', false);
                   });
           return true;
         }
