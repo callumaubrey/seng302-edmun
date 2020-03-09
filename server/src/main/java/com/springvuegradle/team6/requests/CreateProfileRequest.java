@@ -11,16 +11,12 @@ public class CreateProfileRequest {
     @NotEmpty
     public String firstname;
 
-    @NotNull
-    @NotEmpty
     public String middlename;
 
     @NotNull
     @NotEmpty
     public String lastname;
 
-    @NotNull
-    @NotEmpty
     public String nickname;
 
     @NotNull

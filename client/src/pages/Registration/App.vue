@@ -39,7 +39,7 @@
       <b-row class="my-1">
         <b-col sm="12">
           <label>Email address</label>
-          <b-form-input id="email" placeholder="Enter email address" :state="validateState('primary_email')" v-model ="primary_email" required></b-form-input>
+          <b-form-input id="email" placeholder="Enter email address" :state="validateState('primary_email')" v-model ="$v.primary_email.$model" required></b-form-input>
           <b-form-invalid-feedback>Invalid email</b-form-invalid-feedback>
         </b-col>
       </b-row>
@@ -73,9 +73,9 @@
       <b-row>
         <b-col sm="12">
           <b-form-select class="mb-3" required :state="validateState('gender')" v-model="$v.gender.$model">
-            <b-form-select-option value="C">Male</b-form-select-option>
-            <b-form-select-option value="D">Female</b-form-select-option>
-            <b-form-select-option value="D">Non-Binary</b-form-select-option>
+            <b-form-select-option value="male">Male</b-form-select-option>
+            <b-form-select-option value="female">Female</b-form-select-option>
+            <b-form-select-option value="nonbinary">Non-Binary</b-form-select-option>
           </b-form-select>
 
         </b-col>
@@ -157,7 +157,29 @@
         if (this.$v.$anyError) {
           return;
         }
+        let currentObj = this;
+        this.axios.post('http://localhost:9499/profile/', {
+          dob: this.date_of_birth,
+          firstname: this.firstname,
+          middlename: this.middlename,
+          lastname: this.lastname,
+          nickname: this.nickname,
+          password: this.password,
+          email: this.primary_email,
+          gender: this.gender
+        })
+                .then(function (response) {
+                  currentObj.output = response.data;
+                  console.log(response.data);
 
+                })
+                .catch(function (error) {
+                  currentObj.output = error;
+                  console.log("hello");
+                  console.log(error.response.data)
+                  console.log(error);
+                  console.log(error.response.status)
+                });
         alert("Form submitted!");
       }
     }

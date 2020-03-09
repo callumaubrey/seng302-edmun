@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
+@CrossOrigin
 @Controller @RequestMapping("/profile")
 public class UserProfileController {
 
