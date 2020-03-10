@@ -3,6 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
+import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,6 +138,26 @@ class UserProfileControllerTest {
 
         mvc.perform(
                 patch(editPassUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void editPassports() throws Exception {
+        String updateUrl = "/profile/1";
+
+        MockHttpSession session = new MockHttpSession();
+        TestDataGenerator.createJohnDoeUser(mvc, mapper);
+        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+
+        EditProfileRequest request = new EditProfileRequest();
+        request.passports = new ArrayList<>();
+        request.passports.add("NZD");
+
+        mvc.perform(
+                patch(updateUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)

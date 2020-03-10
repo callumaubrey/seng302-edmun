@@ -1,7 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.exceptions.NotLoggedInException;
-import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
+import com.springvuegradle.team6.models.Country;
+import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
@@ -26,9 +26,11 @@ import java.util.Optional;
 public class UserProfileController {
 
     private final ProfileRepository repository;
+    private final CountryRepository countryRepository;
 
-    UserProfileController(ProfileRepository rep) {
+    UserProfileController(ProfileRepository rep, CountryRepository countryRepository) {
         this.repository = rep;
+        this.countryRepository = countryRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer request_id, HttpSession session) {
@@ -52,6 +54,36 @@ public class UserProfileController {
     public ResponseEntity<String> getProfile(@PathVariable Integer id) {
         Profile p = repository.findById(id).get();
         return ResponseEntity.ok("Signed in users name" + p.getFirstname());
+    }
+
+    /**
+     * Put request to: Update a user profile with specified Id given in request body,
+     * this user must be logged in. New data is contained in request body, empty fields
+     * are unchanged
+     *
+     * @param request EditProfileRequest form with Id of profile to edit and new info to update
+     * @return returns response entity with details of update
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> updateProfile(@PathVariable Integer id, @RequestBody EditProfileRequest request, HttpSession session) {
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            Profile edit = p.get();
+
+            // Check if authorised
+            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            if (authorisedResponse != null) {
+                return authorisedResponse;
+            }
+
+            // Edit profile
+            request.editProfileFromRequest(edit, countryRepository);
+            repository.save(edit);
+            return ResponseEntity.ok("User no." + edit.getId() + ": " + edit.getEmail() + " was updated.");
+        } else {
+            return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @GetMapping("/")
