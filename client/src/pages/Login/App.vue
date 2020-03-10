@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div>
-      <NavBar isLoggedIn=false></NavBar>
+      <NavBar></NavBar>
     </div>
     <div class="container">
       <h1> Login </h1>
@@ -49,7 +49,10 @@
         <b-button type="submit" variant="primary">Submit</b-button>
       </b-form>
     </div>
-    <a href="/registration" id="signup-link">Sign up for Hakinakima</a>
+    <b-container class="b-container">
+      <a href="/registration" id="signup-link">Sign up for Hakinakima</a>
+    </b-container>
+
   </div>
 
 </template>
@@ -95,7 +98,6 @@
         email: "",
         password: "",
         submitted: false,
-        response: ""
       }
     },
     methods: {
@@ -109,21 +111,29 @@
           })
                   .then(function (response) {
                     currentObj.output = response.data;
-                    currentObj.response = response.data;
                     console.log(response.data);
+                    currentObj.getUserData();
                     window.location.href = '/profile';
-                    // this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', true);
                   })
                   .catch(function (error) {
                     currentObj.output = error;
                     console.log(error.response.data);
                     document.getElementById("user-error-feedback").textContent = error.response.data + '\n';
-                    // document.getElementById("user-error-feedback").style.visibility = "visible";
-                    // console.log(currentObj.response);
-                    // this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', false);
                   });
         }
         e.preventDefault();
+      },
+      getUserData() {
+        let currentObj = this;
+        this.axios.get('http://localhost:9499/profile/user')
+                .then(function (response) {
+                  console.log(response.data);
+                  currentObj.isLoggedIn = true;
+                })
+                .catch(function (error) {
+                  console.log(error.response.data);
+                  currentObj.isLoggedIn = false;
+                });
       }
     }
   }
@@ -147,10 +157,9 @@
     padding-top: 10px;
   }
 
-  #signup-link {
-    position: absolute;
-    left: 17.5%;
-    padding-top: 5px;
+  .b-container {
+    background-color: white;
+    border: 0 white;
   }
 
 </style>

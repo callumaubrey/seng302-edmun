@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar></NavBar>
+        <NavBar isLoggedIn=true></NavBar>
         <div class="container">
             <div class="row" style="padding: 1em">
                 <h1 class="col-50">Your Profile.</h1>
@@ -169,6 +169,7 @@
                     "United States of America",
                     "Thailand"
                 ],
+                isLoggedIn: false
             }
         },
 
@@ -308,14 +309,26 @@
             // (R)ead
             getAll: () => countryData.get('students', {
                 transformResponse: [function (data) {
-                    return data? JSON.parse(data).embedded.students : data;
+                    return data ? JSON.parse(data).embedded.students : data;
                 }]
             }),
+            getUserData() {
+                let currentObj = this;
+                this.axios.get('http://localhost:9499/profile/user')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.isLoggedIn = true;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                    });
+            }
         },
 
         mounted: function () {
-            this.getCountryData()
-
+            this.getCountryData();
+            this.getUserData();
         }
 
     // need to create a API

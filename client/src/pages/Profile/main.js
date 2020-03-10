@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import App from './User'
 import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue';
+import axios from 'axios'
+import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
 
 Vue.config.productionTip = false;
@@ -19,6 +21,7 @@ Vue.use(VueLogger, options);
 Vue.use(NavbarPlugin);
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
+Vue.use(VueAxios, axios);
 
 Vue.component('delete-Button', {
     template: `
