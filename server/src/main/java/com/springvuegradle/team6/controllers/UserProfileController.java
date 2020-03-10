@@ -207,35 +207,6 @@ public class UserProfileController {
         return ResponseEntity.ok("Email Successfully Edited");
     }
 
-    /**
-     * Put request to: Update a user profile with specified Id given in request body,
-     * this user must be logged in. New data is contained in request body, empty fields
-     * are unchanged
-     *
-     * @param request EditProfileRequest form with Id of profile to edit and new info to update
-     * @return returns response entity with details of update
-     */
-     @PutMapping("/update")
-     public ResponseEntity<String> updateProfile(@RequestBody EditProfileRequest request, HttpSession session) {
-        Optional<Profile> p = repository.findById(request.id);
-        if (!p.isEmpty()) {
-            Profile edit = p.get();
-
-            // Check if authorised
-            ResponseEntity<String> authorised_response = this.checkAuthorised(request.id, session);
-            if (authorised_response != null) {
-                return authorised_response;
-            }
-
-            // Edit profile
-            request.editProfileFromRequest(edit);
-            repository.save(edit);
-            return ResponseEntity.ok("User no." + edit.getId() + ": " + edit.getEmail() + " was updated.");
-        } else {
-            return new ResponseEntity("Profile does not exist", HttpStatus.NOT_FOUND);
-        }
-
-     }
 
      @GetMapping("/countrytest")
      public static void getAllCountries() {
