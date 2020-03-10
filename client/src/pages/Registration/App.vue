@@ -39,8 +39,8 @@
       <b-row class="my-1">
         <b-col sm="12">
           <label>Email address</label>
-          <b-form-input id="email" placeholder="Enter email address" :state="validateState('primary_email')" v-model ="$v.primary_email.$model" required></b-form-input>
-          <b-form-invalid-feedback>Invalid email</b-form-invalid-feedback>
+          <b-form-input id="email" type="email" placeholder="Enter email address" :state="validateState('primary_email')" v-model ="$v.primary_email.$model" required v-on:input="serverCheckReset"></b-form-input>
+          <b-form-invalid-feedback>{{emailErrMsg}}</b-form-invalid-feedback>
         </b-col>
       </b-row>
       <b-row class="my-1">
@@ -55,14 +55,14 @@
         <b-col sm="6">
           <label>Repeat Password</label>
           <b-form-input id="input-default" type="password" placeholder="Enter password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
-          <b-form-invalid-feedback> Passwords should be the same</b-form-invalid-feedback>
+          <b-form-invalid-feedback id="email-error"> Passwords should be the same</b-form-invalid-feedback>
         </b-col>
 
       </b-row>
       <b-row class="my-1">
         <b-col sm="12">
           <label>Date of birth</label>
-          <b-form-input id="input-default" type="date_of_birth" placeholder="Enter date of birth" :state="validateState('date_of_birth')" v-model ="$v.date_of_birth.$model" required></b-form-input>
+          <b-form-input id="input-default" type="date" placeholder="Enter date of birth" :state="validateState('date_of_birth')" v-model ="$v.date_of_birth.$model" required></b-form-input>
         </b-col>
       </b-row>
       <b-row>
@@ -92,9 +92,9 @@
 
 <script>
   import NavBar from '@/components/NavBar.vue';
-
   import { required, alpha, email, helpers, sameAs, alphaNum} from 'vuelidate/lib/validators'
   const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+
   export default {
   components: {
     NavBar
@@ -111,6 +111,8 @@
         primary_email: null,
         passwordRepeat: null,
         gender: null,
+        serverError: true,
+        emailErrMsg: "Invalid Email"
       }
     },
     validations: {
@@ -130,7 +132,10 @@
       },
       primary_email: {
         required,
-        email
+        email,
+        serverCheck() {
+          return this.serverError;
+        }
       },
       password: {
         required,
@@ -145,7 +150,7 @@
       },
       gender: {
         required
-      }
+      },
     },
     methods: {
       validateState: function(name) {
@@ -169,18 +174,24 @@
           gender: this.gender
         })
                 .then(function (response) {
-                  currentObj.output = response.data;
-                  console.log(response.data);
-
+                    // Todo: Navigate to profile page and sign in
+                  console.log(response);
                 })
                 .catch(function (error) {
-                  currentObj.output = error;
-                  console.log("hello");
-                  console.log(error.response.data)
-                  console.log(error);
-                  console.log(error.response.status)
+                  currentObj.emailErrMsg = error.response.data
+                  currentObj.serverError = false;
+                  currentObj.$v.$reset();
+                  currentObj.$v.$touch();
                 });
+        console.log(this.serverError);
+
         alert("Form submitted!");
+      },
+      serverCheckReset() {
+        if (!this.serverError) {
+          this.emailErrMsg = "Invalid Email"
+          this.serverError = true;
+        }
       }
     }
   }
