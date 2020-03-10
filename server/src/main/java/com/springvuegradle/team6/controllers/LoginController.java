@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 
-
+@CrossOrigin
 @Controller
-@RequestMapping(value = "account")
+@RequestMapping("/account")
 public class LoginController {
     private ProfileRepository repository;
 
