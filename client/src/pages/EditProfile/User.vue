@@ -151,7 +151,7 @@
         },
         data: function () {
             return {
-                editButtonText: "Edit Profile",
+                editButtonText: "Edit EditProfile",
                 profile_id: 17,
                 disabled: true,
                 lastname: "Pocket",
@@ -300,7 +300,7 @@
                 this.disabled = !this.disabled;
                 if (this.disabled) {
                     //this.updateUser();
-                    this.editButtonText = "Edit Profile"
+                    this.editButtonText = "Edit EditProfile"
                 } else {
                     this.editButtonText = "Save Changes"
                 }
