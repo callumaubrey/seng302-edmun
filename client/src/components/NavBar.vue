@@ -35,7 +35,9 @@
         components: {},
         props: ['isLoggedIn'],
         data: function () {
-            return 0;
+            return {
+                name: ""
+            }
         },
         watch: {
             isLoggedIn: function (newVal, oldVal) {

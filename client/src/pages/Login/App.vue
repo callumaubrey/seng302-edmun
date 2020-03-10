@@ -9,16 +9,17 @@
       <b-form @submit="onSubmit" novalidate class="needs-validation">
         <b-form-group id="input-group-1" label="Email address" label-for="input-1">
           <b-form-input
-            id="input-1"
-            type="email"
-            v-model="email"
-            required
-            placeholder="Enter email"
-            class="input-s"
-            :state="emailState"
-            aria-describedby="input-live-feedback"
-            trim
-            ></b-form-input>
+                  :state="emailState"
+                  aria-describedby="input-live-feedback"
+                  class="input-s"
+                  id="input-1"
+                  placeholder="Enter email"
+                  required
+                  trim
+                  type="email"
+                  v-model="email"
+                  value="jacky@google.com"
+          ></b-form-input>
 
           <!-- This will only be shown if the preceding input has an invalid state -->
           <b-form-invalid-feedback id="input-live-feedback">
@@ -28,22 +29,27 @@
         </b-form-group>
         <b-form-group id="input-group-2" label="Password" label-for="input-2">
           <b-form-input
-            id="input-2"
-            v-model="password"
-            type="password"
-            required
-            placeholder="Enter password"
-            :state="passwordState"
-            aria-describedby="input-live-feedback"
+                  :state="passwordState"
+                  aria-describedby="input-live-feedback"
+                  id="input-2"
+                  placeholder="Enter password"
+                  required
+                  type="password"
+                  v-model="password"
+                  value="JackysSecuredPwd1"
           ></b-form-input>
 
           <b-form-invalid-feedback id="input-live-feedback">
             Enter your password
           </b-form-invalid-feedback>
+
+          <p id="user-error-feedback"></p>
+
         </b-form-group>
         <b-button type="submit" variant="primary">Submit</b-button>
       </b-form>
     </div>
+    <a href="/registration" id="signup-link">Sign up for Hakinakima</a>
   </div>
 
 </template>
@@ -86,15 +92,16 @@
     },
     data() {
       return {
-          email: "",
-          password: "",
-        submitted: false
+        email: "",
+        password: "",
+        submitted: false,
+        response: ""
       }
     },
     methods: {
       onSubmit(e) {
         this.submitted = true;
-        if (this.emailState && this.passwordState) {
+        if (this.emailState != false && this.passwordState != false) {
           let currentObj = this;
           this.axios.post('http://localhost:9499/account/login', {
             email: this.email,
@@ -102,15 +109,19 @@
           })
                   .then(function (response) {
                     currentObj.output = response.data;
+                    currentObj.response = response.data;
                     console.log(response.data);
-                    this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', true);
+                    window.location.href = '/profile';
+                    // this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', true);
                   })
                   .catch(function (error) {
                     currentObj.output = error;
-                    console.log(error);
-                    this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', false);
+                    console.log(error.response.data);
+                    document.getElementById("user-error-feedback").textContent = error.response.data + '\n';
+                    // document.getElementById("user-error-feedback").style.visibility = "visible";
+                    // console.log(currentObj.response);
+                    // this.getElementsByTagName('NavBar').setAttribute('isLoggedIn', false);
                   });
-          return true;
         }
         e.preventDefault();
       }
@@ -129,6 +140,17 @@
     padding: 5px 40px 15px 20px;
     border: 1px solid lightgrey;
     border-radius: 3px;
+  }
+
+  #user-error-feedback {
+    color: red;
+    padding-top: 10px;
+  }
+
+  #signup-link {
+    position: absolute;
+    left: 17.5%;
+    padding-top: 5px;
   }
 
 </style>
