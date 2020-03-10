@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -202,5 +203,14 @@ public class UserProfileController {
             return new ResponseEntity("Profile does not exist", HttpStatus.NOT_FOUND);
         }
 
+     }
+
+     @GetMapping("/countrytest")
+     public static void getAllCountries() {
+
+         final String url = "https://restcountries.eu/rest/v2/all";
+         RestTemplate restTemplate = new RestTemplate();
+         String result = restTemplate.getForObject(url, String.class);
+         System.out.println(result);
      }
 }
