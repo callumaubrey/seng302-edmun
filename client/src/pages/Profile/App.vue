@@ -6,11 +6,50 @@
             <b-container fluid>
                 <b-row>
                     <b-col>
-                        <b-input :value="userData.firstname"></b-input>
+                        <h3>{{userData.firstname}} {{userData.lastname}}</h3>
                         <hr>
                     </b-col>
                 </b-row>
             </b-container>
+
+            <b-row>
+                <b-col>
+                    <b-card style="margin: 1em" title="User Information:">
+                        <b-row>
+                            <b-col><b>Your Countries:</b></b-col>
+                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                        </b-row>
+                    </b-card>
+
+                    <b-card style="margin: 1em" title="Email(s):">
+                        <b-row>
+                            <b-col><b>Primary Email:</b></b-col>
+                            <b-col><p>{{userData.email}}</p></b-col>
+                        </b-row>
+                        <p>(Max 5 emails)</p>
+                    </b-card>
+                </b-col>
+
+                <b-col>
+                    <b-card style="margin: 1em" title="Passport Info:">
+                        <b-row>
+                            <b-col><b>Your Countries:</b></b-col>
+                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                        </b-row>
+                    </b-card>
+
+                    <b-card style="margin: 1em" title="Fitness Info:">
+                        <b-row>
+                            <b-col><b>Primary Email:</b></b-col>
+                            <b-col><p>{{userData.fitness}}</p></b-col>
+                        </b-row>
+                    </b-card>
+                </b-col>
+
+            </b-row>
+
+
+
         </div>
     </div>
 </template>
