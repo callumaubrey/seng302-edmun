@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.springvuegradle.team6.models.Country;
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
@@ -18,9 +20,7 @@ import javax.validation.Valid;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 @Controller @RequestMapping("/profile")
 public class UserProfileController {
@@ -206,14 +206,4 @@ public class UserProfileController {
 
         return ResponseEntity.ok("Email Successfully Edited");
     }
-
-
-     @GetMapping("/countrytest")
-     public static void getAllCountries() {
-
-         final String url = "https://restcountries.eu/rest/v2/all";
-         RestTemplate restTemplate = new RestTemplate();
-         String result = restTemplate.getForObject(url, String.class);
-         System.out.println(result);
-     }
 }

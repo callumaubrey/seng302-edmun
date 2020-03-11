@@ -3,6 +3,7 @@ package com.springvuegradle.team6.models;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Objects;
 
 @Entity
 public class Country {
@@ -40,5 +41,19 @@ public class Country {
     @Override
     public String toString() {
         return isoCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Country country = (Country) o;
+        return isoCode.equals(country.isoCode) &&
+                Objects.equals(countryName, country.countryName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isoCode);
     }
 }
