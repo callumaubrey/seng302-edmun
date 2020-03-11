@@ -6,7 +6,7 @@
             <b-container fluid>
                 <b-row>
                     <b-col>
-                        <h4>Callum Aubrey</h4>
+                        <b-input :value="userData.firstname"></b-input>
                         <hr>
                     </b-col>
                 </b-row>
@@ -20,10 +20,33 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
+    import axios from 'axios'
 
-    export default {
+    const profileData = axios.create({
+        baseURL: "http://localhost:9499/profile/1",
+        timeout: 1000
+    });
+
+    const App = {
+        name: 'App',
         components: {
             NavBar
+        },
+        data: function() {
+            return {
+                userData: null
+            }
+        },
+        methods: {
+            getProfileData: async function() {
+                var data = await (profileData.get());
+                this.userData = data.data;
+            }
+        },
+        mounted: function () {
+            this.getProfileData();
         }
-    }
+    };
+
+    export default App;
 </script>
