@@ -113,8 +113,7 @@
                   .then(function (response) {
                     currentObj.output = response.data;
                     console.log(response.data);
-                    currentObj.getUserData();
-                    //window.location.href = '/profile';
+                    window.location.href = '/profile';
                   })
                   .catch(function (error) {
                     currentObj.output = error;
@@ -124,19 +123,6 @@
         }
         e.preventDefault();
       },
-      getUserData() {
-        let currentObj = this;
-        this.axios.defaults.withCredentials = true;
-        this.axios.get('http://localhost:9499/profile/user')
-                .then(function (response) {
-                  console.log(response.data);
-                  currentObj.isLoggedIn = true;
-                })
-                .catch(function (error) {
-                  console.log(error.response.data);
-                  currentObj.isLoggedIn = false;
-                });
-      }
     }
   }
 

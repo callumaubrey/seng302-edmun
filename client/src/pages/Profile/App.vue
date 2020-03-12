@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
 
         <div class="container">
             <b-container fluid>
@@ -87,17 +87,32 @@
         },
         data: function() {
             return {
-                userData: null
+                userData: null,
+                isLoggedIn: false
             }
         },
         methods: {
-            getProfileData: async function() {
+            getProfileData: async function () {
                 var data = await (profileData.get());
                 this.userData = data.data;
+            },
+            getUserSession: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profile/user')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.isLoggedIn = true;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                    });
             }
         },
         mounted: function () {
             this.getProfileData();
+            this.getUserSession();
         }
     };
 
