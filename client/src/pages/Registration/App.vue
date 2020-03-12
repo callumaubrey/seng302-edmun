@@ -197,8 +197,8 @@
           gender: this.gender
         })
                 .then(function (response) {
-                    // Todo: Navigate to profile page and sign in
                   console.log(response);
+                  window.location.href = '/profile';
                 })
                 .catch(function (error) {
                   currentObj.emailErrMsg = error.response.data
