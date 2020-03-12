@@ -5,6 +5,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import java.util.Set;
 
 @Entity
 public class Profile {
@@ -34,7 +36,8 @@ public class Profile {
     
     private Integer fitness;
 
-    private String passport;
+    @ManyToMany
+    private Set<Country> passports;
 
     public Profile() {}
 
@@ -111,8 +114,8 @@ public class Profile {
         this.fitness = fitness;
     }
 
-    public void setPassport(String passports) {
-        this.passport = passports;
+    public void setPassports(Set<Country> passports) {
+        this.passports = passports;
     }
 
     public void setGender(String gender) {
@@ -156,7 +159,7 @@ public class Profile {
                 ", gender='" + gender + '\'' +
                 ", fitness=" + fitness + '\'' +
                 ", additionalemail='" + additionalemail + '\'' +
-                ", passports='" + passport + '\'' +
+                ", passports='" + passports + '\'' +
                 '}';
     }
 }
