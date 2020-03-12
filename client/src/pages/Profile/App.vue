@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
 
         <div class="container">
             <b-container fluid>
@@ -43,7 +43,15 @@
                     <b-card style="margin: 1em" title="Passport Info:">
                         <b-row>
                             <b-col><b>Your Passport Countries:</b></b-col>
-                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                            <b-col>
+                                <p>
+                                    <ul>
+                                        <li v-for="item in passports" :key="item">
+                                            {{ item }}
+                                        </li>
+                                    </ul>
+                                </p>
+                            </b-col>
                         </b-row>
                     </b-card>
 
@@ -87,17 +95,36 @@
         },
         data: function() {
             return {
-                userData: null
+                userData: null,
+                passports: [],
+                isLoggedIn: false
             }
         },
         methods: {
-            getProfileData: async function() {
+            getProfileData: async function () {
                 var data = await (profileData.get());
+                for (var i = 0; i < data.data.passports.length; i++) {
+                    this.passports.push(data.data.passports[i].countryName);
+                }
                 this.userData = data.data;
+            },
+            getUserSession: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profile/user')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.isLoggedIn = true;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                    });
             }
         },
         mounted: function () {
             this.getProfileData();
+            this.getUserSession();
         }
     };
 

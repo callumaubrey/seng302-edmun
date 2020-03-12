@@ -53,9 +53,9 @@ public class UserProfileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getProfile(@PathVariable Integer id) {
+    public ResponseEntity<Profile> getProfile(@PathVariable Integer id) {
         Profile p = repository.findById(id).get();
-        return ResponseEntity.ok("Signed in users name" + p.getFirstname());
+        return ResponseEntity.ok(p);
     }
 
     /**
