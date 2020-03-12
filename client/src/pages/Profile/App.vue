@@ -104,7 +104,7 @@
             getProfileData: async function () {
                 var data = await (profileData.get());
                 for (var i = 0; i < data.data.passports.length; i++) {
-                    this.passports.push(data.data.passports[i].countryName)
+                    this.passports.push(data.data.passports[i].countryName);
                 }
                 this.userData = data.data;
             },
