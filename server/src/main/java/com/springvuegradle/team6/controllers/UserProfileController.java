@@ -1,27 +1,24 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.springvuegradle.team6.models.Country;
 import com.springvuegradle.team6.models.CountryRepository;
+import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.EditProfileRequest;
-import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditEmailRequest;
+import com.springvuegradle.team6.requests.EditPasswordRequest;
+import com.springvuegradle.team6.requests.EditProfileRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
-
-import java.util.*;
-
+@CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
 @Controller @RequestMapping("/profile")
 public class UserProfileController {
 
@@ -88,7 +85,7 @@ public class UserProfileController {
 
     @GetMapping("/")
     public ResponseEntity<String> getAll() {
-        List<Profile> all = (List<Profile>) repository.findAll();
+        List<Profile> all = repository.findAll();
         StringBuilder response = new StringBuilder();
         for (Profile p : all) {
             response.append(p.toString());
