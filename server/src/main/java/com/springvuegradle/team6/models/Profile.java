@@ -90,6 +90,10 @@ public class Profile {
         return this.gender;
     }
 
+    public Set<Country> getPassports() {
+        return this.passports;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }

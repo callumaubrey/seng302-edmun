@@ -43,7 +43,15 @@
                     <b-card style="margin: 1em" title="Passport Info:">
                         <b-row>
                             <b-col><b>Your Passport Countries:</b></b-col>
-                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                            <b-col>
+                                <p>
+                                    <ul>
+                                        <li v-for="item in passports" :key="item">
+                                            {{ item }}
+                                        </li>
+                                    </ul>
+                                </p>
+                            </b-col>
                         </b-row>
                     </b-card>
 
@@ -88,12 +96,16 @@
         data: function() {
             return {
                 userData: null,
+                passports: [],
                 isLoggedIn: false
             }
         },
         methods: {
             getProfileData: async function () {
                 var data = await (profileData.get());
+                for (var i = 0; i < data.data.passports.length; i++) {
+                    this.passports.push(data.data.passports[i].countryName)
+                }
                 this.userData = data.data;
             },
             getUserSession: function () {
