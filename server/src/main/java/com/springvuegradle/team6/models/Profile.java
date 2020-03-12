@@ -2,10 +2,7 @@ package com.springvuegradle.team6.models;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -24,7 +21,8 @@ public class Profile {
 
     private String email;
 
-    private String additionalemail;
+    @ManyToMany(cascade = CascadeType.ALL)
+    private Set<Email> additionalemail;
 
     private String password;
 
@@ -94,6 +92,10 @@ public class Profile {
         return this.passports;
     }
 
+    public Set<Email> getAdditionalemail() {
+        return this.additionalemail;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -106,7 +108,7 @@ public class Profile {
         this.email = email;
     }
 
-    public void setAdditionalemail(String emails) {
+    public void setAdditionalemail(Set<Email> emails) {
         this.additionalemail = emails;
     }
 

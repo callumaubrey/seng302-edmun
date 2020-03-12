@@ -35,6 +35,21 @@
                             <b-col><b>Primary Email:</b></b-col>
                             <b-col><p>{{userData.email}}</p></b-col>
                         </b-row>
+                        <b-row>
+                            <b-col><b>Additional Emails:</b></b-col>
+                            <b-col v-if="additionalEmails == []">
+                                <p>No additional emails</p>
+                            </b-col>
+                            <b-col v-else>
+                                <p>
+                                    <ul>
+                                        <li v-for="item in additionalEmails" :key="item">
+                                            {{ item }}
+                                        </li>
+                                    </ul>
+                                </p>
+                            </b-col>
+                        </b-row>
                         <p>(Max 5 emails)</p>
                     </b-card>
                 </b-col>
@@ -97,6 +112,7 @@
             return {
                 userData: null,
                 passports: [],
+                additionalEmails: [],
                 isLoggedIn: false
             }
         },
@@ -106,6 +122,10 @@
                 for (var i = 0; i < data.data.passports.length; i++) {
                     this.passports.push(data.data.passports[i].countryName);
                 }
+                for (var j = 0; j < data.data.additionalemail.length; j++) {
+                    this.additionalEmails.push(data.data.additionalemail[j].email);
+                }
+                console.log(data.data);
                 this.userData = data.data;
             },
             getUserSession: function () {

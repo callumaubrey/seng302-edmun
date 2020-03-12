@@ -2,6 +2,7 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditEmailRequest;
@@ -14,9 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
 @Controller @RequestMapping("/profile")
@@ -177,7 +176,7 @@ public class UserProfileController {
 
         Profile profile = repository.findById(request.id).get();
 
-        List<String> validEmails = new ArrayList<String>();
+        Set<Email> validEmails = new HashSet<>();
         if (request.additionalemail != null && request.additionalemail.size() > 0) {
             for (String email: request.additionalemail) {
                 if (email.equals(request.primaryemail)) {
@@ -185,7 +184,8 @@ public class UserProfileController {
                 } else if (request.isValidEmail(email) == false) {
                     return new ResponseEntity("Email is not valid", HttpStatus.BAD_REQUEST);
                 } else {
-                    validEmails.add(email);
+                    Email emailObj = new Email(email);
+                    validEmails.add(emailObj);
                 }
             }
 
@@ -195,7 +195,7 @@ public class UserProfileController {
         }
 
         if (validEmails.isEmpty() == false) {
-            profile.setAdditionalemail(String.join(",", validEmails));
+            profile.setAdditionalemail(validEmails);
         }
 
         profile.setEmail(request.primaryemail);
