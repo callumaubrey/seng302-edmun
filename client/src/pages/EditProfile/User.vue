@@ -85,6 +85,11 @@
                             </b-form-group>
                         </b-col>
                     </b-row>
+                    <b-row>
+                        <b-col>
+                            <b-button v-on:click="saveProfileInfo()" >Save</b-button>
+                        </b-col>
+                    </b-row>
                 </b-container>
             </b-collapse>
             <hr>
@@ -157,7 +162,7 @@
                     <div v-for="(country, index) in yourCountries" :key="index">
                         <b-row>
                             <b-col>
-                                <label>{{country}}</label>
+                                <label>{{country[0]}}</label>
                             </b-col>
                             <b-col>
                                 <b-button class="invisible-btn" style="float: right;" @click="deletePassport(index)">Remove</b-button>
@@ -192,6 +197,11 @@
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
 
+    const profileData = axios.create({
+        baseURL: "http://localhost:9499/profile/2",
+        timeout: 1000
+    });
+
     const countryData = axios.create({
         baseURL: "https://restcountries.eu/rest/v2/all",
         timeout: 1000
@@ -205,25 +215,21 @@
         },
         data: function () {
             return {
-                editButtonText: "Edit EditProfile",
-                profile_id: 17,
+                profile_id: null,
                 disabled: true,
-                lastname: "Pocket",
+                lastname: "",
                 middlename: null,
-                firstname: "Poly",
+                firstname: "",
                 nickName: "",
-                primaryEmail: ["martin@email.com"],
-                emails: ["poly@pocket.com", "yeet@email.com", "awesome@nice.com"],
-                bio: "Poly Pocket is so tiny.",
-                date_of_birth: "2000-11-11",
+                primaryEmail: [],
+                emails: [],
+                bio: "",
+                date_of_birth: "",
                 gender: null,
-                fitness: "3",
+                fitness: "",
                 yourCountries: [],
+                passportsCode: [],
                 availCountries: [],
-                passport: [
-                    "United States of America",
-                    "Thailand"
-                ],
                 isLoggedIn: false,
                 selectedCountry: null,
                 fitnessOptions: [
@@ -237,12 +243,30 @@
                     "Male",
                     "Female",
                     "Non-binary"
-                ]
+                ],
+                userData: null,
             }
         },
 
 
         methods: {
+            saveProfileInfo() {
+                this.axios.defaults.withCredentials = true;
+                this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
+                      firstname: this.firstname,
+                      middlename: this.middlename,
+                      lastname: this.lastname,
+                      nickname: this.nickName,
+                      dob: this.date_of_birth,
+                      gender: this.gender.toLowerCase(),
+                      fitness: this.fitness,
+                      bio: this.bio
+                  }).then(function (response) {
+                      console.log(response);
+                  }).catch(function (error) {
+                      console.log(error);
+                  });
+            },
             totalPassports() {
               return this.yourCountries.length;
             },
@@ -250,21 +274,35 @@
                 return this.primaryEmail.length + this.emails.length;
             },
             addPassport() {
-                if (this.selectedCountry && !this.yourCountries.includes(this.selectedCountry)) {
+                if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
+                    console.log(this.selectedCountry);
                     this.yourCountries.push(this.selectedCountry);
+                    this.passportsCode.push(this.selectedCountry[1]);
+                    this.passportPatchRequest();
                 }
             },
             deletePassport(index) {
                 this.yourCountries.splice(index, 1);
+                this.passportsCode.splice(index, 1);
+                this.passportPatchRequest();
+            },
+            passportPatchRequest() {
+                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    passports: this.passportsCode
+                }).then(function (response) {
+                    console.log(response);
+                }).catch(function (error) {
+                    console.log(error);
+                });
             },
             getCountryData: async function() {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
                 for (var i = 0; i < countriesLen; i++) {
-                    this.availCountries.push(data.data[i].name)
+                    this.availCountries.push({ text: data.data[i].name, value: [data.data[i].name, data.data[i].alpha3Code]})
                 }
                 console.log(data.data.length)
-
+                console.log(this.availCountries);
             },
             makePrimary(index) {
                 var oldPrimary = this.primaryEmail[0];
@@ -294,8 +332,29 @@
                     return data ? JSON.parse(data).embedded.students : data;
                 }]
             }),
-            getUserData() {
+            getProfileData: async function () {
+                this.axios.defaults.withCredentials = true;
+                var data = await (profileData.get());
+                for (var i = 0; i < data.data.passports.length; i++) {
+                    this.passportsCode.push(data.data.passports[i].isoCode);
+                    this.yourCountries.push([data.data.passports[i].countryName, data.data.passports[i].isoCode]);
+                }
+                this.userData = data.data;
+                console.log(this.userData);
+                this.firstname = this.userData.firstname;
+                this.middlename = this.userData.middlename;
+                this.lastname = this.userData.lastname;
+                this.nickName = this.userData.nickname;
+                this.gender = this.userData.gender;
+                this.gender = this.gender.charAt(0).toUpperCase() + this.gender.slice(1);
+                this.date_of_birth = this.userData.dob;
+                this.primaryEmail = [this.userData.email];
+                this.fitness = this.userData.fitness;
+                this.bio = this.userData.bio;
+            },
+            getUserSession: function () {
                 let currentObj = this;
+                this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/user')
                     .then(function (response) {
                         console.log(response.data);
@@ -305,12 +364,28 @@
                         console.log(error.response.data);
                         currentObj.isLoggedIn = false;
                     });
+            },
+            getUserId: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profile/id')
+                .then(function (response) {
+                    currentObj.profile_id = response.data;
+                    console.log(currentObj.profile_id);
+                })
+                .catch(function (error) {
+                    console.log(error.response.data);
+                });
             }
         },
 
         mounted: function () {
+            this.getUserId();
+            this.getProfileData();
+            this.getUserSession();
+        },
+        beforeMount() {
             this.getCountryData();
-            this.getUserData();
         }
 
     // need to create a API
