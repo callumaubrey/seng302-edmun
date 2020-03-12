@@ -1,5 +1,10 @@
 package com.springvuegradle.team6.controllers;
 
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.exceptions.NotLoggedInException;
+import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
@@ -100,14 +105,16 @@ public class UserProfileController {
      * or error(4xx) user is not logged in
      */
     @GetMapping("/user")
-    public ResponseEntity<String> getProfile2(HttpSession session){
+    public ResponseEntity<String> getProfile2(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
         }
         else {
             int intId = (int) session.getAttribute("id");
-            return ResponseEntity.ok("Signed in users name " + repository.findById(intId).getFirstname());
+            ObjectMapper mapper = new ObjectMapper();
+            String postJson = mapper.writeValueAsString(repository.findById(intId));
+            return ResponseEntity.ok(postJson);
         }
     }
 
