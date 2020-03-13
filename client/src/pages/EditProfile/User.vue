@@ -177,7 +177,12 @@
                             >
                                 <b-form-select v-model="selectedCountry" :options="availCountries"></b-form-select>
                             </b-form-group>
-
+                            <b-form-valid-feedback :state='passportsUpdateMessage != ""'>
+                                {{passportsUpdateMessage}}
+                            </b-form-valid-feedback>
+                            <b-form-invalid-feedback :state='passportsErrorMessage != ""'>
+                                {{passportsErrorMessage}}
+                            </b-form-invalid-feedback>
                         </b-col>
                         <b-col>
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Add</b-button>
@@ -245,6 +250,8 @@
                     "Non-binary"
                 ],
                 userData: null,
+                passportsUpdateMessage: "",
+                passportsErrorMessage: ""
             }
         },
 
@@ -276,23 +283,45 @@
             addPassport() {
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
                     console.log(this.selectedCountry);
+                    const vueObj = this;
                     this.yourCountries.push(this.selectedCountry);
+                    const addedPassport = this.selectedCountry;
                     this.passportsCode.push(this.selectedCountry[1]);
-                    this.passportPatchRequest();
+                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                        passports: this.passportsCode
+                    }).then(function (response) {
+                        console.log(response);
+                        console.log(response.status)
+                        if (response.status == 200) {
+                            vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports"
+                        }
+                    }).catch(function (error) {
+                        if (error.response.status == 400) {
+                            vueObj.passportsUpdateMessage = "";
+                            vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports";
+                            vueObj.yourCountries.push(addedPassport);
+                            vueObj.passportsCode.push(addedPassport[1]);
+                        }
+                    });
                 }
             },
             deletePassport(index) {
-                this.yourCountries.splice(index, 1);
+                const vueObj = this;
+                const removedPassport = (this.yourCountries.splice(index, 1))[0];
                 this.passportsCode.splice(index, 1);
-                this.passportPatchRequest();
-            },
-            passportPatchRequest() {
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
                     passports: this.passportsCode
                 }).then(function (response) {
-                    console.log(response);
+                    if (response.status == 200) {
+                        vueObj.passportsUpdateMessage = removedPassport[0] + " has been successfully removed from passports"
+                    }
                 }).catch(function (error) {
-                    console.log(error);
+                    if (error.response.status == 400) {
+                        vueObj.passportsUpdateMessage = "";
+                        vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports";
+                        vueObj.yourCountries.push(removedPassport);
+                        vueObj.passportsCode.push(removedPassport[1]);
+                    }
                 });
             },
             getCountryData: async function() {
@@ -417,6 +446,9 @@
     }
     .invisible-btn:hover {
         background-color: lightblue;
+    }
+    .update-message {
+        font-size: 13px;
     }
 </style>
 >
