@@ -3,6 +3,7 @@ package com.springvuegradle.team6.controllers;
 import javax.servlet.http.HttpSession;
 
 import com.springvuegradle.team6.exceptions.NotLoggedInException;
+import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -38,7 +39,7 @@ public class LoginController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<String> login(@RequestBody LoginRequest loginDetail,
                                         HttpSession session) {
-        Profile user = repository.findByEmail(loginDetail.getEmail());
+        Profile user = repository.findByEmail(new Email(loginDetail.getEmail()));
         session.removeAttribute("id");
         if(user != null) {
             if (user.comparePassword(loginDetail.getPassword())) {

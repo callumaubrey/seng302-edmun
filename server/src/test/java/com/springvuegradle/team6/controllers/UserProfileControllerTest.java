@@ -163,4 +163,55 @@ class UserProfileControllerTest {
                         .session(session)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void editEmails() throws Exception {
+        String updateUrl = "/profile/1";
+
+        MockHttpSession session = new MockHttpSession();
+        TestDataGenerator.createJohnDoeUser(mvc, mapper);
+        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+
+        // Sets Primary email and
+        EditProfileRequest request = new EditProfileRequest();
+        request.primaryemail = "valid@email.com";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworld@gmail.com");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().isOk());
+
+        // Bad primary
+        request = new EditProfileRequest();
+        request.primaryemail = "validemailcom";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworld@gmail.com");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().is4xxClientError());
+
+        //  Bad Additional
+        request = new EditProfileRequest();
+        request.primaryemail = "valid@email.com";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworldgmailcom");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().is4xxClientError());
+    }
 }

@@ -2,7 +2,12 @@ package com.springvuegradle.team6.requests;
 
 import com.springvuegradle.team6.models.Country;
 import com.springvuegradle.team6.models.CountryRepository;
+import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.Email;
+import com.springvuegradle.team6.validators.EmailCollection;
+import org.hibernate.validator.constraints.Length;
+
 import javax.validation.constraints.*;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +60,17 @@ public class EditProfileRequest {
     /**
      * New passport country list for profile unchanged if empty
      */
-    public List<String> passports;
+    public List<@Length(min = 3, max = 3) String> passports;
+
+
+    @javax.validation.constraints.Email(message = "Email should be valid")
+    public String primaryemail;
+
+    /**
+     * List of additional emails
+     */
+    @EmailCollection @Size(min=0, max=5)
+    public List<String> additionalemail;
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
@@ -63,7 +78,7 @@ public class EditProfileRequest {
      *
      * @param edit the profile to be edited
      */
-    public void editProfileFromRequest(Profile edit, CountryRepository countries) {
+    public void editProfileFromRequest(Profile edit, CountryRepository countries, EmailRepository emailRepository) {
         if (this.firstname != null && this.firstname != "") {
             edit.setFirstname(this.firstname);
         }
@@ -98,6 +113,25 @@ public class EditProfileRequest {
                 }
             }
             edit.setPassports(validPassports);
+        }
+
+        if (this.primaryemail != null) {
+            Email newEmail = new Email(primaryemail);
+            emailRepository.save(newEmail);
+            edit.setEmail(newEmail);
+        }
+
+        if (this.additionalemail != null) {
+            Set<Email> emails = new HashSet<>();
+
+            for (String address : this.additionalemail) {
+                Email newEmail = new Email(address);
+
+                emailRepository.save(newEmail);
+                emails.add(newEmail);
+            }
+
+            edit.setAdditionalemail(emails);
         }
     }
 }

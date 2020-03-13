@@ -2,10 +2,8 @@ package com.springvuegradle.team6.models;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -22,9 +20,11 @@ public class Profile {
 
     private String nickname;
 
-    private String email;
+    @OneToOne
+    private Email email;
 
-    private String additionalemail;
+    @OneToMany
+    private Set<Email> additionalemail;
 
     private String password;
 
@@ -70,7 +70,7 @@ public class Profile {
         return this.nickname;
     }
 
-    public String getEmail() {
+    public Email getEmail() {
         return this.email;
     }
 
@@ -98,12 +98,20 @@ public class Profile {
         this.dob = dob;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(Email email) {
         this.email = email;
+
+        // Remove if primary email is in additional emails
+        if (this.additionalemail != null) {
+            this.additionalemail.removeIf(additionalEmail -> this.email.equals(additionalEmail));
+        }
     }
 
-    public void setAdditionalemail(String emails) {
+    public void setAdditionalemail(Set<Email> emails) {
         this.additionalemail = emails;
+
+        // Remove if primary email is in additional emails
+        this.additionalemail.removeIf(additionalEmail -> this.email.equals(additionalEmail));
     }
 
     public void setFirstname(String firstname) {
