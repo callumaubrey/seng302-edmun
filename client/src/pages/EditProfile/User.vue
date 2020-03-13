@@ -26,18 +26,18 @@
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
-                            <b-form-input id="input-default" placeholder="Enter name"  v-model ="firstname" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name"  v-model ="firstname" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
                         </b-col>
 
                         <b-col sm="4">
                             <label>Middle Name</label>
-                            <b-form-input id="input-default" placeholder="Enter middle name" v-model ="middlename" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" v-model ="middlename" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid middle name</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="4">
                             <label>Last Name</label>
-                            <b-form-input id="input-default" placeholder="Enter last name" v-model ="lastname" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" v-model ="lastname" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -47,7 +47,7 @@
                             <b-form-group
                                 label="Nickname"
                             >
-                                <b-form-input v-model="nickName"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" v-model="nickName"></b-form-input>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -55,14 +55,14 @@
                                     label="Date of birth"
 
                             >
-                                <b-form-input type="date" v-model="date_of_birth"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" type="date" v-model="date_of_birth"></b-form-input>
                             </b-form-group>
                         </b-col>
                         <b-col>
                             <b-form-group
                                     label="Gender"
                             >
-                                <b-form-select :options="genderOptions" v-model="gender"></b-form-select>
+                                <b-form-select v-on:change="resetProfileMessage()" :options="genderOptions" v-model="gender"></b-form-select>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -72,7 +72,7 @@
                             <b-form-group
                                     label="Fitness level"
                             >
-                                <b-form-select :options="fitnessOptions" v-model="fitness"></b-form-select>
+                                <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions" v-model="fitness"></b-form-select>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -81,13 +81,19 @@
                             <b-form-group
                                     label="Bio"
                             >
-                                <b-form-textarea v-model="bio"></b-form-textarea>
+                                <b-form-textarea v-on:input="resetProfileMessage()" v-model="bio"></b-form-textarea>
                             </b-form-group>
                         </b-col>
                     </b-row>
                     <b-row>
                         <b-col>
                             <b-button v-on:click="saveProfileInfo()" >Save</b-button>
+                            <b-form-valid-feedback :state='profileUpdateMessage != ""'>
+                                {{profileUpdateMessage}}
+                            </b-form-valid-feedback>
+                            <b-form-invalid-feedback :state='profileErrorMessage != ""'>
+                                {{profileErrorMessage}}
+                            </b-form-invalid-feedback>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -251,13 +257,20 @@
                 ],
                 userData: null,
                 passportsUpdateMessage: "",
-                passportsErrorMessage: ""
+                passportsErrorMessage: "",
+                profileUpdateMessage: "",
+                profileErrorMessage: ""
             }
         },
 
 
         methods: {
+            resetProfileMessage() {
+              this.profileUpdateMessage = "";
+              this.profileErrorMessage = "";
+            },
             saveProfileInfo() {
+                const vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
                       firstname: this.firstname,
@@ -269,9 +282,15 @@
                       fitness: this.fitness,
                       bio: this.bio
                   }).then(function (response) {
-                      console.log(response);
+                      if (response.status == 200) {
+                          vueObj.profileErrorMessage = "";
+                          vueObj.profileUpdateMessage = "Profile successfully updated";
+                      }
                   }).catch(function (error) {
-                      console.log(error);
+                       if (error.response.status == 400) {
+                           vueObj.profileUpdateMessage = "";
+                           vueObj.profileErrorMessage = "Failed to update profile, please try again later";
+                       }
                   });
             },
             totalPassports() {
@@ -298,7 +317,7 @@
                     }).catch(function (error) {
                         if (error.response.status == 400) {
                             vueObj.passportsUpdateMessage = "";
-                            vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports";
+                            vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
                             vueObj.yourCountries.push(addedPassport);
                             vueObj.passportsCode.push(addedPassport[1]);
                         }
@@ -318,7 +337,7 @@
                 }).catch(function (error) {
                     if (error.response.status == 400) {
                         vueObj.passportsUpdateMessage = "";
-                        vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports";
+                        vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
                         vueObj.yourCountries.push(removedPassport);
                         vueObj.passportsCode.push(removedPassport[1]);
                     }
