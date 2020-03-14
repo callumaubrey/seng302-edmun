@@ -1,5 +1,10 @@
 package com.springvuegradle.team6.controllers;
 
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.exceptions.NotLoggedInException;
+import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.Email;
@@ -8,6 +13,7 @@ import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditEmailRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
+import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,7 +23,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
+@CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller @RequestMapping("/profile")
 public class UserProfileController {
 
@@ -99,16 +105,35 @@ public class UserProfileController {
      * or error(4xx) user is not logged in
      */
     @GetMapping("/user")
-    public ResponseEntity<String> getProfile2(HttpSession session){
+    public ResponseEntity<String> getProfile2(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
         }
         else {
             int intId = (int) session.getAttribute("id");
-            return ResponseEntity.ok("Signed in users name " + repository.findById(intId).getFirstname());
+            ObjectMapper mapper = new ObjectMapper();
+            String postJson = mapper.writeValueAsString(repository.findById(intId));
+            return ResponseEntity.ok(postJson);
         }
     }
+
+    /**
+     * Get request to return the id of the current user logged into the session
+     * @param
+     * @return
+     */
+    @GetMapping("/id")
+    public ResponseEntity<String> getUserId(HttpSession session) throws JsonProcessingException {
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
+        }
+        else {
+            return ResponseEntity.ok().body(id.toString());
+        }
+    }
+
 
     /**
      * Creates a new user

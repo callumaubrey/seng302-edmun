@@ -43,8 +43,8 @@
                             <b-col v-else>
                                 <p>
                                     <ul>
-                                        <li v-for="item in additionalEmails" :key="item">
-                                            {{ item }}
+                                        <li v-for="item in additionalEmails" :key="item.email">
+                                            {{ item.email }}
                                         </li>
                                     </ul>
                                 </p>
@@ -61,8 +61,8 @@
                             <b-col>
                                 <p>
                                     <ul>
-                                        <li v-for="item in passports" :key="item">
-                                            {{ item }}
+                                        <li v-for="item in passports" :key="item.countryName">
+                                            {{ item.countryName }}
                                         </li>
                                     </ul>
                                 </p>
@@ -96,12 +96,6 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
-    import axios from 'axios'
-
-    const profileData = axios.create({
-        baseURL: "http://localhost:9499/profile/1",
-        timeout: 1000
-    });
 
     const App = {
         name: 'App',
@@ -117,23 +111,15 @@
             }
         },
         methods: {
-            getProfileData: async function () {
-                var data = await (profileData.get());
-                for (var i = 0; i < data.data.passports.length; i++) {
-                    this.passports.push(data.data.passports[i].countryName);
-                }
-                for (var j = 0; j < data.data.additionalemail.length; j++) {
-                    this.additionalEmails.push(data.data.additionalemail[j].email);
-                }
-                console.log(data.data);
-                this.userData = data.data;
-            },
             getUserSession: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/user')
                     .then(function (response) {
                         console.log(response.data);
+                        currentObj.userData = response.data;
+                        currentObj.passports = response.data.passports;
+                        currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
                     })
                     .catch(function (error) {
@@ -143,7 +129,6 @@
             }
         },
         mounted: function () {
-            this.getProfileData();
             this.getUserSession();
         }
     };
