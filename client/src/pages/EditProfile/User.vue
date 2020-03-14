@@ -26,18 +26,18 @@
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name"  v-model ="firstname" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name" :state="validateState('firstname')"  v-model ="$v.firstname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
                         </b-col>
 
                         <b-col sm="4">
                             <label>Middle Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" v-model ="middlename" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" :state="validateState('middlename')" v-model ="$v.middlename.$model" ></b-form-input>
                             <b-form-invalid-feedback>Invalid middle name</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="4">
                             <label>Last Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" v-model ="lastname" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" :state="validateState('lastname')" :max="5" v-model ="$v.lastname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -47,7 +47,7 @@
                             <b-form-group
                                 label="Nickname"
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" v-model="nickName"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" :state="validateState('nickname')" v-model ="$v.nickname.$model" ></b-form-input>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -55,7 +55,8 @@
                                     label="Date of birth"
 
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" type="date" v-model="date_of_birth"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" type="date" :state="validateState('date_of_birth')" v-model ="$v.date_of_birth.$model"></b-form-input>
+                                <b-form-invalid-feedback>Invalid date of birth</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -72,7 +73,7 @@
                             <b-form-group
                                     label="Fitness level"
                             >
-                                <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions" v-model="fitness"></b-form-select>
+                                <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="fitness"></b-form-select>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -81,7 +82,7 @@
                             <b-form-group
                                     label="Bio"
                             >
-                                <b-form-textarea v-on:input="resetProfileMessage()" v-model="bio"></b-form-textarea>
+                                <b-form-textarea v-on:input="resetProfileMessage()" :state="validateState('bio')" v-model="$v.bio.$model"></b-form-textarea>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -207,6 +208,9 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
+    import {required, helpers, maxLength} from 'vuelidate/lib/validators'
+    //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+    const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
 
     const profileData = axios.create({
         baseURL: "http://localhost:9499/profile/2",
@@ -262,14 +266,57 @@
                 profileErrorMessage: ""
             }
         },
+        validations: {
+            firstname: {
+                required,
+                nameValidate,
+                maxLength: maxLength(40)
+            },
+            middlename: {
+                nameValidate,
+                maxLength: maxLength(40)
+            },
+            lastname: {
+                required,
+                nameValidate,
+                maxLength: maxLength(40)
+            },
+            nickname: {
+                maxLength: maxLength(3),
+            },
+            date_of_birth: {
+                required,
+                dateValidate(value) {
+                    const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
+                    const date = new Date(value);
+                    const today = new Date();
+                    return date <= today && date >= oldestDate;
+                },
+            },
+            bio: {
+                maxLength: maxLength(200)
+                },
+            gender: {
+                required
+            },
+        },
+
 
 
         methods: {
+            validateState: function(name) {
+                const { $dirty, $error } = this.$v[name];
+                return $dirty ? !$error : null;
+            },
             resetProfileMessage() {
               this.profileUpdateMessage = "";
               this.profileErrorMessage = "";
             },
             saveProfileInfo() {
+                this.$v.$touch();
+                if (this.$v.$anyError) {
+                    return;
+                }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
