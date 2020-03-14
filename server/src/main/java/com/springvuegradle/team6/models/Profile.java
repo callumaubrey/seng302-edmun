@@ -34,6 +34,9 @@ public class Profile {
     
     private Integer fitness;
 
+    @OneToMany
+    private Set<ActivityType> activityTypes;
+
     @ManyToMany
     private Set<Country> passports;
 
@@ -96,6 +99,10 @@ public class Profile {
         return this.additionalemail;
     }
 
+    public Set<ActivityType> getActivityTypes() {
+        return this.activityTypes;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -122,6 +129,10 @@ public class Profile {
 
     public void setPassports(Set<Country> passports) {
         this.passports = passports;
+    }
+
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
     }
 
     public void setGender(String gender) {
