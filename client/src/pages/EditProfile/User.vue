@@ -230,11 +230,14 @@
                         </b-col>
                     </b-row>
                     <b-row>
-                        <b-button align="left" v-on:click="savePassword" padding="100">Save</b-button>
+                        <b-col sm="1">
+                            <b-button align="left" v-on:click="savePassword" >Save</b-button>
+                        </b-col>
                     </b-row>
-
                     <b-row>
-                        <b-label id="passwordMessage"></b-label>
+                        <b-col sm="3">
+                            <b-label id="passwordMessage"></b-label>
+                        </b-col>
                     </b-row>
                 </b-container>
             </b-collapse>
@@ -544,10 +547,12 @@
                     if (response.status == 200) {
                         currentObj.output = response.data;
                         document.getElementById("passwordMessage").textContent = response.data;
+                        document.getElementById("passwordMessage").style.color = "green";
                     }
                 }).catch(function (error) {
                     currentObj.output = error.response.data;
                     document.getElementById("passwordMessage").textContent = error.response.data;
+                    document.getElementById("passwordMessage").style.color = "red";
                 })
             }
         },
