@@ -86,7 +86,7 @@ class UserProfileControllerTest {
         ).andExpect(status().is4xxClientError());
 
         // Login
-        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        request.id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
 
         // Passwords don't match
         request.oldpassword = "SuperSecurePassword123";
@@ -133,7 +133,6 @@ class UserProfileControllerTest {
         ).andExpect(status().is4xxClientError());
 
         // Everything is correct
-        request.id = 1;
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1234";
@@ -148,11 +147,12 @@ class UserProfileControllerTest {
 
     @Test
     void editPassports() throws Exception {
-        String updateUrl = "/profile/1";
-
         MockHttpSession session = new MockHttpSession();
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+
+        String updateUrl = "/profile/%d";
+        updateUrl = String.format(updateUrl, id);
 
         EditProfileRequest request = new EditProfileRequest();
         request.passports = new ArrayList<>();
@@ -168,11 +168,12 @@ class UserProfileControllerTest {
 
     @Test
     void editEmails() throws Exception {
-        String updateUrl = "/profile/1";
-
         MockHttpSession session = new MockHttpSession();
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+
+        String updateUrl = "/profile/%d";
+        updateUrl = String.format(updateUrl, id);
 
         // Sets Primary email and
         EditProfileRequest request = new EditProfileRequest();

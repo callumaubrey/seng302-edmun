@@ -9,6 +9,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -36,7 +37,7 @@ public class TestDataGenerator {
         ).andExpect(status().isOk());
     }
 
-    public static void loginJohnDoeUser(MockMvc mvc, ObjectMapper mapper, MockHttpSession session) throws Exception {
+    public static int loginJohnDoeUser(MockMvc mvc, ObjectMapper mapper, MockHttpSession session) throws Exception {
         String login_url = "/account/login";
         LoginRequest login_request = new LoginRequest();
         login_request.email = "johndoe@uclive.ac.nz";
@@ -48,6 +49,12 @@ public class TestDataGenerator {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().isOk());
+
+        String body = mvc.perform(
+                get("/profile/id").session(session)
+        ).andReturn().getResponse().getContentAsString();
+
+        return Integer.parseInt(body);
     }
 
 }

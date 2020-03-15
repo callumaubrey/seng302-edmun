@@ -64,9 +64,6 @@ public class LoginController {
                 }
             }
         }
-
-            return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
-        }
         return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
     }
 

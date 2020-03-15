@@ -4,16 +4,12 @@ import com.springvuegradle.team6.models.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.exceptions.NotLoggedInException;
-import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.EditEmailRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
