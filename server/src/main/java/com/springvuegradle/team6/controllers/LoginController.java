@@ -34,7 +34,7 @@ public class LoginController {
      * Takes JSON post data, checks the data and logs user into specific account if it exists
      *
      * @param loginDetail the request entity
-     * @return ResponseEntity which can be success(2xx) or error(4xx)
+     * @return ResponseEntity whch can be success(2xx) or error(4xx)
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<String> login(@RequestBody LoginRequest loginDetail,
