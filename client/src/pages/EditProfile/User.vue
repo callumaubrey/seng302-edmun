@@ -45,7 +45,7 @@
                     <b-row>
                         <b-col>
                             <b-form-group
-                                label="Nickname"
+                                    label="Nickname"
                             >
                                 <b-form-input v-on:input="resetProfileMessage()" :state="validateState('nickname')" v-model ="$v.nickname.$model" ></b-form-input>
                             </b-form-group>
@@ -114,40 +114,40 @@
                 </b-container>
             </div>
             <b-collapse id="collapse-1">
-                    <b-container>
-                        <hr>
-                        <div id="emailBody">
-                            <div v-for="(email, index) in primaryEmail" :key="index">
-                                <b-row>
-                                    <b-col><label style="font-weight: bold">{{email}}</label></b-col>
-                                    <b-col><h6 align="right">Primary</h6></b-col>
-                                </b-row>
-                                <hr>
-                            </div>
-                            <div v-for="(email, index) in emails" :key="index" >
-                                <b-row>
-                                    <b-col><label>{{email}}</label></b-col>
-                                    <b-col>
-                                        <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">Remove</b-button>
-                                        <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">Make Primary</b-button>
-                                    </b-col>
-                                </b-row>
-                                <hr>
-                            </div>
+                <b-container>
+                    <hr>
+                    <div id="emailBody">
+                        <div v-for="(email, index) in primaryEmail" :key="index">
                             <b-row>
-                                <b-col >
-                                    <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" id="emailInput" name="email"
-                                             placeholder="john@example.com" required></b-input>
-                                    </b-form-group>
-                                </b-col>
-                                <b-col id="emailAdd" class="col-25">
-                                    <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                                <b-col><label style="font-weight: bold">{{email}}</label></b-col>
+                                <b-col><h6 align="right">Primary</h6></b-col>
+                            </b-row>
+                            <hr>
+                        </div>
+                        <div v-for="(email, index) in emails" :key="index" >
+                            <b-row>
+                                <b-col><label>{{email}}</label></b-col>
+                                <b-col>
+                                    <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">Remove</b-button>
+                                    <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">Make Primary</b-button>
                                 </b-col>
                             </b-row>
+                            <hr>
                         </div>
+                        <b-row>
+                            <b-col >
+                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
+                                    <b-input type="email" id="emailInput" name="email"
+                                             placeholder="john@example.com" required></b-input>
+                                </b-form-group>
+                            </b-col>
+                            <b-col id="emailAdd" class="col-25">
+                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                            </b-col>
+                        </b-row>
+                    </div>
 
-                    </b-container>
+                </b-container>
             </b-collapse>
             <hr>
 
@@ -180,7 +180,7 @@
                     <b-row>
                         <b-col>
                             <b-form-group
-                                description="Add a new passport"
+                                    description="Add a new passport"
                             >
                                 <b-form-select v-model="selectedCountry" :options="availCountries"></b-form-select>
                             </b-form-group>
@@ -193,6 +193,49 @@
                         </b-col>
                         <b-col>
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Add</b-button>
+                        </b-col>
+                    </b-row>
+
+                </b-container>
+            </b-collapse>
+            <hr>
+            <div v-b-toggle="'collapse-4'">
+                <b-container>
+                    <b-row>
+                        <b-col><h3 class=edit-title>Activities</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Add or remove activities from your account</b-col>
+                        <b-col><h6 align="right">{{totalPassports()}} </h6></b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <b-collapse id="collapse-4">
+                <b-container>
+                    <hr>
+                    <div v-for="(activites, index) in yourActivites" :key="index">
+                        <b-row>
+                            <b-col>
+                                <label>{{activites}}</label>
+                            </b-col>
+                            <b-col>
+                                <b-button class="invisible-btn" style="float: right;" @click="deleteActivity(index)">Remove</b-button>
+                            </b-col>
+                        </b-row>
+                        <hr>
+                    </div>
+                    <b-row>
+                        <b-col>
+                            <b-form-group
+                                    description="Add a new activity"
+                            >
+                                <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
+                            </b-form-group>
+
+                        </b-col>
+                        <b-col>
+                            <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Add</b-button>
                         </b-col>
                     </b-row>
 
@@ -243,10 +286,13 @@
                 gender: null,
                 fitness: "",
                 yourCountries: [],
+                yourActivites: ["Hiking"],
                 passportsCode: [],
                 availCountries: [],
+                availActivitys: ["Hiking", "Running", "Swimming", "Diving"],
                 isLoggedIn: false,
                 selectedCountry: null,
+                selectedActivity: null,
                 fitnessOptions: [
                     {text: "Couch potato", value: 0},
                     {text: "Coming back from injury", value: 1},
@@ -295,7 +341,7 @@
             },
             bio: {
                 maxLength: maxLength(200)
-                },
+            },
             gender: {
                 required
             },
@@ -309,8 +355,8 @@
                 return $dirty ? !$error : null;
             },
             resetProfileMessage() {
-              this.profileUpdateMessage = "";
-              this.profileErrorMessage = "";
+                this.profileUpdateMessage = "";
+                this.profileErrorMessage = "";
             },
             saveProfileInfo() {
                 this.$v.$touch();
@@ -320,28 +366,28 @@
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
-                      firstname: this.firstname,
-                      middlename: this.middlename,
-                      lastname: this.lastname,
-                      nickname: this.nickName,
-                      dob: this.date_of_birth,
-                      gender: this.gender.toLowerCase(),
-                      fitness: this.fitness,
-                      bio: this.bio
-                  }).then(function (response) {
-                      if (response.status == 200) {
-                          vueObj.profileErrorMessage = "";
-                          vueObj.profileUpdateMessage = "Profile successfully updated";
-                      }
-                  }).catch(function (error) {
-                       if (error.response.status == 400) {
-                           vueObj.profileUpdateMessage = "";
-                           vueObj.profileErrorMessage = "Failed to update profile, please try again later";
-                       }
-                  });
+                    firstname: this.firstname,
+                    middlename: this.middlename,
+                    lastname: this.lastname,
+                    nickname: this.nickName,
+                    dob: this.date_of_birth,
+                    gender: this.gender.toLowerCase(),
+                    fitness: this.fitness,
+                    bio: this.bio
+                }).then(function (response) {
+                    if (response.status == 200) {
+                        vueObj.profileErrorMessage = "";
+                        vueObj.profileUpdateMessage = "Profile successfully updated";
+                    }
+                }).catch(function (error) {
+                    if (error.response.status == 400) {
+                        vueObj.profileUpdateMessage = "";
+                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
+                    }
+                });
             },
             totalPassports() {
-              return this.yourCountries.length;
+                return this.yourCountries.length;
             },
             totalEmails() {
                 return this.primaryEmail.length + this.emails.length;
@@ -371,6 +417,11 @@
                     });
                 }
             },
+            addActivity() {
+                if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
+                    this.yourActivites.push(this.selectedActivity);
+                }
+            },
             deletePassport(index) {
                 const vueObj = this;
                 const removedPassport = (this.yourCountries.splice(index, 1))[0];
@@ -390,6 +441,9 @@
                     }
                 });
             },
+            deleteActivity(index) {
+                this.yourActivites.splice(index, 1);
+            },
             getCountryData: async function() {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
@@ -407,7 +461,7 @@
                 this.emails.push(oldPrimary);
             },
             deleteEmail(index) {
-              this.emails.splice(index, 1);
+                this.emails.splice(index, 1);
             },
             createEmail: function () {
                 var numEmails = this.emails.length;
@@ -464,13 +518,13 @@
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/id')
-                .then(function (response) {
-                    currentObj.profile_id = response.data;
-                    console.log(currentObj.profile_id);
-                })
-                .catch(function (error) {
-                    console.log(error.response.data);
-                });
+                    .then(function (response) {
+                        currentObj.profile_id = response.data;
+                        console.log(currentObj.profile_id);
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                    });
             }
         },
 
@@ -483,7 +537,7 @@
             this.getCountryData();
         }
 
-    // need to create a API
+        // need to create a API
     };
 
     export default User
@@ -517,4 +571,3 @@
         font-size: 13px;
     }
 </style>
->
