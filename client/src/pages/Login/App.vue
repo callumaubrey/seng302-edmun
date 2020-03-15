@@ -105,6 +105,7 @@
         this.submitted = true;
         if (this.emailState != false && this.passwordState != false) {
           let currentObj = this;
+          this.axios.defaults.withCredentials = true;
           this.axios.post('http://localhost:9499/account/login', {
             email: this.email,
             password: this.password
@@ -112,7 +113,6 @@
                   .then(function (response) {
                     currentObj.output = response.data;
                     console.log(response.data);
-                    currentObj.getUserData();
                     window.location.href = '/profile';
                   })
                   .catch(function (error) {
@@ -123,18 +123,6 @@
         }
         e.preventDefault();
       },
-      getUserData() {
-        let currentObj = this;
-        this.axios.get('http://localhost:9499/profile/user')
-                .then(function (response) {
-                  console.log(response.data);
-                  currentObj.isLoggedIn = true;
-                })
-                .catch(function (error) {
-                  console.log(error.response.data);
-                  currentObj.isLoggedIn = false;
-                });
-      }
     }
   }
 

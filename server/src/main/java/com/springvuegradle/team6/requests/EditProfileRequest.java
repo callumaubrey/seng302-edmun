@@ -1,17 +1,14 @@
 package com.springvuegradle.team6.requests;
 
+import com.springvuegradle.team6.models.Country;
+import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
 import javax.validation.constraints.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class EditProfileRequest {
-
-    /**
-     * The Id of the profile to be edited
-     */
-    @NotNull
-    @NotEmpty
-    public Integer id;
 
     /**
      * New first name for profile unchanged if empty
@@ -58,7 +55,7 @@ public class EditProfileRequest {
     /**
      * New passport country list for profile unchanged if empty
      */
-    public List<String> passport;
+    public List<String> passports;
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
@@ -66,7 +63,7 @@ public class EditProfileRequest {
      *
      * @param edit the profile to be edited
      */
-    public void editProfileFromRequest(Profile edit) {
+    public void editProfileFromRequest(Profile edit, CountryRepository countries) {
         if (this.firstname != null && this.firstname != "") {
             edit.setFirstname(this.firstname);
         }
@@ -91,10 +88,16 @@ public class EditProfileRequest {
         if (this.fitness != null) {
             edit.setFitness(this.fitness);
         }
-        if (this.passport != null) {
-            if (this.passport.isEmpty() == false) {
-                edit.setPassport(String.join(",", this.passport));
+        if (this.passports != null) {
+            Set<Country> validPassports = new HashSet<>();
+
+            for(String iso : this.passports) {
+                Country country = countries.findByIsoCode(iso);
+                if (country != null) {
+                    validPassports.add(country);
+                }
             }
+            edit.setPassports(validPassports);
         }
     }
 }
