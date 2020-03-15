@@ -11,7 +11,6 @@ public class LoginRequest {
     public String email;
 
     @NotNull
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
     public String password;
 
     public String getPassword() {
