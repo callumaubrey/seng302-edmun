@@ -214,13 +214,13 @@
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
-                            <b-form-input type="password" id="input-default" placeholder="Enter current password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="oldPassword" required></b-form-input>
                         </b-col>
                     </b-row>
                     <b-row class="my-1">
                         <b-col sm="6">
                             <label>New Password</label>
-                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model="$v.password.$model" required></b-form-input>
                             <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="6">
@@ -230,7 +230,11 @@
                         </b-col>
                     </b-row>
                     <b-row>
-                        <b-button align="left">Save</b-button>
+                        <b-button align="left" v-on:click="savePassword" padding="100">Save</b-button>
+                    </b-row>
+
+                    <b-row>
+                        <b-label id="passwordMessage"></b-label>
                     </b-row>
                 </b-container>
             </b-collapse>
@@ -302,8 +306,9 @@
                 profileErrorMessage: "",
                 oldPassword: null,
                 password: null,
-                passwordRepeat: null
-
+                passwordRepeat: null,
+                passwordErrorMessage: "",
+                passwordUpdateMessage: ""
             }
         },
         validations: {
@@ -519,6 +524,31 @@
                 .catch(function (error) {
                     console.log(error.response.data);
                 });
+            },
+            savePassword: function () {
+                console.log(this.oldPassword);
+                console.log(this.password);
+                console.log(this.passwordRepeat);
+                let currentObj = this;
+                this.$v.$touch();
+                if (this.$v.$anyError) {
+                    return;
+                }
+                this.axios.defaults.withCredentials = true;
+                this.axios.patch("http://localhost:9499/profile/editpassword",{
+                    id: this.profile_id,
+                    oldpassword: this.oldPassword,
+                    newpassword: this.password,
+                    repeatedpassword: this.passwordRepeat
+                }).then(function (response) {
+                    if (response.status == 200) {
+                        currentObj.output = response.data;
+                        document.getElementById("passwordMessage").textContent = response.data;
+                    }
+                }).catch(function (error) {
+                    currentObj.output = error.response.data;
+                    document.getElementById("passwordMessage").textContent = error.response.data;
+                })
             }
         },
 
