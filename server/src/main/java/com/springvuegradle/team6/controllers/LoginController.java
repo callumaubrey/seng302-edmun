@@ -2,6 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
+import com.springvuegradle.team6.models.Email;
+import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,19 +18,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpSession;
 
+import java.util.Optional;
+
+
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller
 @RequestMapping("/account")
 public class LoginController {
-    private ProfileRepository repository;
+    private ProfileRepository profileRepository;
+    private EmailRepository emailRepository;
 
     /**
-     * Constructor for class gets the database repo
-     * @param repo
+     *
+     * @param profileRepository
+     * @param emailRepository
      */
-    LoginController(ProfileRepository repo) {
-        this.repository = repo;
+    public LoginController(ProfileRepository profileRepository, EmailRepository emailRepository) {
+        this.profileRepository = profileRepository;
+        this.emailRepository = emailRepository;
     }
+
+
 
     /**
      * Logs user into a session
@@ -35,15 +48,22 @@ public class LoginController {
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginDetail,
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginDetail,
                                         HttpSession session) {
-        Profile user = repository.findByEmail(loginDetail.getEmail());
-        session.removeAttribute("id");
-        if(user != null) {
-            if (user.comparePassword(loginDetail.getPassword())) {
-                session.setAttribute("id", user.getId());
-                return ResponseEntity.ok("Password Correct");
+        // Check email exists
+        Optional<Email> email = emailRepository.findById(loginDetail.getEmail());
+        if (email.isPresent()) {
+            // Check if email associates to users primary email
+            Profile user = profileRepository.findByEmail(email.get());
+
+            session.removeAttribute("id");
+            if(user != null) {
+                if (user.comparePassword(loginDetail.getPassword())) {
+                    session.setAttribute("id", user.getId());
+                    return ResponseEntity.ok("Password Correct");
+                }
             }
+        }
 
             return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
         }
@@ -61,7 +81,7 @@ public class LoginController {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
         }
         int intId = (int) session.getAttribute("id");
-        Profile profile = repository.findById(intId);
+        Profile profile = profileRepository.findById(intId);
         session.removeAttribute("id");
         return ResponseEntity.ok("Successfully logged out from the user: " + profile.getFirstname());
     }

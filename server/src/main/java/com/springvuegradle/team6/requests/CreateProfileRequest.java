@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.requests;
 
+import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.Email;
 
 import javax.validation.constraints.*;
 
@@ -20,7 +22,7 @@ public class CreateProfileRequest {
     public String nickname;
 
     @NotNull
-    @Email(message = "Email should be valid")
+    @javax.validation.constraints.Email(message = "Email should be valid")
     public String email;
 
     @NotNull
@@ -42,13 +44,17 @@ public class CreateProfileRequest {
     public Integer fitness = 0;
 
 
-    public Profile generateProfile() {
+    public Profile generateProfile(EmailRepository emailRepository) {
         Profile profile = new Profile();
         profile.setFirstname(firstname);
         profile.setMiddlename(middlename);
         profile.setLastname(lastname);
         profile.setNickname(nickname);
-        profile.setEmail(email);
+
+        Email newEmail = new Email(email);
+        emailRepository.save(newEmail);
+        profile.setEmail(newEmail);
+
         profile.setPassword(password);
         profile.setBio(bio);
         profile.setDob(dob);

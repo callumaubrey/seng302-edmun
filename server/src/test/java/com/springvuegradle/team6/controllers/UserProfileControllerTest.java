@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserProfileControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -162,5 +164,56 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().isOk());
+    }
+
+    @Test
+    void editEmails() throws Exception {
+        String updateUrl = "/profile/1";
+
+        MockHttpSession session = new MockHttpSession();
+        TestDataGenerator.createJohnDoeUser(mvc, mapper);
+        TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+
+        // Sets Primary email and
+        EditProfileRequest request = new EditProfileRequest();
+        request.primaryemail = "valid@email.com";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworld@gmail.com");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().isOk());
+
+        // Bad primary
+        request = new EditProfileRequest();
+        request.primaryemail = "validemailcom";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworld@gmail.com");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().is4xxClientError());
+
+        //  Bad Additional
+        request = new EditProfileRequest();
+        request.primaryemail = "valid@email.com";
+        request.additionalemail = new ArrayList<String>();
+        request.additionalemail.add("test@gmail.com");
+        request.additionalemail.add("helloworldgmailcom");
+
+        mvc.perform(
+                patch(updateUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().is4xxClientError());
     }
 }
