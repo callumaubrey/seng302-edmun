@@ -1,4 +1,4 @@
-package com.springvuegradle.team6;
+package com.springvuegradle.team6.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

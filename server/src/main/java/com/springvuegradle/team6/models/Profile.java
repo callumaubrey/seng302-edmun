@@ -2,10 +2,8 @@ package com.springvuegradle.team6.models;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
+import java.util.Collection;
 import java.util.Set;
 
 @Entity
@@ -38,6 +36,15 @@ public class Profile {
 
     @ManyToMany
     private Set<Country> passports;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
 
     public Profile() {}
 
@@ -94,6 +101,10 @@ public class Profile {
         return this.passports;
     }
 
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -136,6 +147,10 @@ public class Profile {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void setRoles(final Collection<Role> roles) {
+        this.roles = roles;
     }
 
     /**
