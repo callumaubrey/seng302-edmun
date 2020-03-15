@@ -179,9 +179,7 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <b-form-group
-                                description="Add a new passport"
-                            >
+                            <b-form-group description="Add a new passport">
                                 <b-form-select v-model="selectedCountry" :options="availCountries"></b-form-select>
                             </b-form-group>
                             <b-form-valid-feedback :state='passportsUpdateMessage != ""'>
@@ -199,6 +197,43 @@
                 </b-container>
             </b-collapse>
             <hr>
+            <div v-b-toggle="'collapse-4'">
+                <b-container>
+                    <b-row>
+                        <b-col><h3 class=edit-title>Password</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Change your password</b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <b-collapse id = "collapse-4">
+                <b-container>
+                    <hr>
+                    <b-row>
+                        <b-col sm="6">
+                            <label>Current Password</label>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
+                        </b-col>
+                    </b-row>
+                    <b-row class="my-1">
+                        <b-col sm="6">
+                            <label>New Password</label>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
+                            <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
+                        </b-col>
+                        <b-col sm="6">
+                            <label>Repeat New Password</label>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
+                            <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-button align="left">Save</b-button>
+                    </b-row>
+                </b-container>
+            </b-collapse>
         </b-container>
     </div>
 </template>
@@ -208,9 +243,10 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
-    import {required, helpers, maxLength} from 'vuelidate/lib/validators'
+    import {required, helpers, maxLength, sameAs} from 'vuelidate/lib/validators'
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
+    const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
     const profileData = axios.create({
         baseURL: "http://localhost:9499/profile/2",
@@ -263,7 +299,11 @@
                 passportsUpdateMessage: "",
                 passportsErrorMessage: "",
                 profileUpdateMessage: "",
-                profileErrorMessage: ""
+                profileErrorMessage: "",
+                oldPassword: null,
+                password: null,
+                passwordRepeat: null
+
             }
         },
         validations: {
@@ -298,6 +338,14 @@
                 },
             gender: {
                 required
+            },
+            password: {
+                required,
+                passwordValidate
+            },
+            passwordRepeat: {
+                required,
+                sameAsPassword: sameAs('password')
             },
         },
 
