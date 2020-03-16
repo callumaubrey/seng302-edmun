@@ -34,7 +34,7 @@ public class Profile {
     
     private Integer fitness;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.ALL)
     private Set<ActivityType> activityTypes;
 
     @ManyToMany
