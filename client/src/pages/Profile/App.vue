@@ -81,6 +81,10 @@
                             <b-col v-else><p>Edit your profile to add a fitness level!</p></b-col>
                         </b-row>
                     </b-card>
+
+                    <b-card style="margin: 1em; height: 16em" title="Location Info:">
+                        <b-input class="form-control" type="text"></b-input>
+                    </b-card>
                 </b-col>
 
             </b-row>
@@ -104,7 +108,7 @@
         },
         data: function() {
             return {
-                userData: null,
+                userData: '',
                 passports: [],
                 additionalEmails: [],
                 isLoggedIn: false
@@ -126,10 +130,26 @@
                         console.log(error.response.data);
                         currentObj.isLoggedIn = false;
                     });
+            },
+            getLocationData: async function () {
+                this.axios.get('https://nominatim.openstreetmap.org/search?q="Christchurch"&format=json&limit=5', {
+                    headers: {
+                        'Access-Control-Allow-Origin': "*"
+                    }}
+                )
+                    .then(function (response) {
+                        console.log(response);
+                        return response
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        return error
+                    });
             }
         },
         mounted: function () {
             this.getUserSession();
+            this.getLocationData();
         }
     };
 
