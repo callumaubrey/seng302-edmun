@@ -1,12 +1,15 @@
 package com.springvuegradle.team6.models;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 public class Email {
-    @Id @javax.validation.constraints.Email
+    @Id @GeneratedValue
+    private int id;
+
+    @javax.validation.constraints.Email
+    @Column(unique=true)
     private String address;
 
     public Email() { }

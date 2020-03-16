@@ -51,7 +51,7 @@ public class LoginController {
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginDetail,
                                         HttpSession session) {
         // Check email exists
-        Optional<Email> email = emailRepository.findById(loginDetail.getEmail());
+        Optional<Email> email = emailRepository.findByAddress(loginDetail.getEmail());
         if (email.isPresent()) {
             // Check if email associates to users primary email
             Profile user = profileRepository.findByEmail(email.get());

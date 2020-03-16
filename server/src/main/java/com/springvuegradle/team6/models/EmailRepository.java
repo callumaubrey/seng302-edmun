@@ -7,6 +7,5 @@ import java.util.Optional;
 
 @RepositoryRestResource
 public interface EmailRepository extends JpaRepository<Email, String>  {
-    @Override
-    Optional<Email> findById(String s);
+    Optional<Email> findByAddress(String s);
 }
