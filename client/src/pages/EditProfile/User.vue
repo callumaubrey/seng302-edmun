@@ -207,7 +207,7 @@
                     </b-row>
                     <b-row>
                         <b-col>Add or remove activities from your account</b-col>
-                        <b-col><h6 align="right">{{totalPassports()}} </h6></b-col>
+                        <b-col><h6 align="right">{{totalActivitys()}} activity </h6></b-col>
                     </b-row>
                 </b-container>
             </div>
@@ -234,6 +234,12 @@
                             >
                                 <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
                             </b-form-group>
+                            <b-form-valid-feedback :state='activityUpdateMessage != ""'>
+                                {{activityUpdateMessage}}
+                            </b-form-valid-feedback>
+                            <b-form-invalid-feedback :state='activityErrorMessage != ""'>
+                                {{activityErrorMessage}}
+                            </b-form-invalid-feedback>
 
                         </b-col>
                         <b-col>
@@ -311,7 +317,9 @@
                 passportsUpdateMessage: "",
                 passportsErrorMessage: "",
                 profileUpdateMessage: "",
-                profileErrorMessage: ""
+                profileErrorMessage: "",
+                activityUpdateMessage: "",
+                activityErrorMessage: ""
             }
         },
         validations: {
@@ -394,6 +402,9 @@
             totalEmails() {
                 return this.primaryEmail.length + this.emails.length;
             },
+            totalActivitys() {
+                return this.yourActivites.length;
+            },
             addPassport() {
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
                     console.log(this.selectedCountry);
@@ -420,12 +431,8 @@
                 }
             },
             addActivity() {
-                alert(this.selectedActivity);
-                alert(this.yourActivites);
-
                 if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
                     this.yourActivites.push(this.selectedActivity);
-                    alert("hi");
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
                     this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
@@ -462,19 +469,18 @@
                 });
             },
             deleteActivity(index) {
-                this.yourActivites.splice(index, 1);
                 const vueObj = this;
-                const deletedActivity = this.yourActivites.splice(index, 1);
+                const deletedActivity = (this.yourActivites.splice(index, 1));
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
                     activityTypes: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
-                        vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activity's"
+                        vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
                     }
                 }).catch(function (error) {
                     if (error.response.status == 400) {
                         vueObj.activityUpdateMessage = "";
-                        vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activitys";
+                        vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activities";
                     }
                 });
             },
@@ -522,6 +528,9 @@
                     this.passportsCode.push(data.data.passports[i].isoCode);
                     this.yourCountries.push([data.data.passports[i].countryName, data.data.passports[i].isoCode]);
                 }
+                for (var x = 0; x < data.data.activityTypes.length; x++) {
+                    this.yourActivites.push(data.data.activityTypes[x].activity);
+                }
                 this.userData = data.data;
                 console.log(this.userData);
                 this.firstname = this.userData.firstname;
@@ -534,7 +543,6 @@
                 this.primaryEmail = [this.userData.email];
                 this.fitness = this.userData.fitness;
                 this.bio = this.userData.bio;
-                this.yourActivites = this.userData.activityTypes;
             },
             getUserSession: function () {
                 let currentObj = this;
