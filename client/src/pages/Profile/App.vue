@@ -82,8 +82,11 @@
                         </b-row>
                     </b-card>
 
-                    <b-card style="margin: 1em; height: 16em" title="Location Info:">
-                        <b-input class="form-control" type="text"></b-input>
+                    <b-card style="margin: 1em;" title="Location Info:">
+                        <b-input id="locationInput" class="form-control" type="text" @keyup.native="getLocationData"></b-input>
+                            <div v-for="i in locations" :key="i.place_id">
+                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
+                            </div>
                     </b-card>
                 </b-col>
 
@@ -111,7 +114,8 @@
                 userData: '',
                 passports: [],
                 additionalEmails: [],
-                isLoggedIn: false
+                isLoggedIn: false,
+                locations: []
             }
         },
         methods: {
@@ -132,19 +136,22 @@
                     });
             },
             getLocationData: async function () {
-                this.axios.get('https://nominatim.openstreetmap.org/search?q="Christchurch"&format=json&limit=5', {
-                    headers: {
-                        'Access-Control-Allow-Origin': "*"
-                    }}
-                )
-                    .then(function (response) {
-                        console.log(response);
-                        return response
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                        return error
-                    });
+                var locationText = document.getElementById("locationInput").value
+                if (locationText == ''){
+                    return
+                }
+                var locationData = this.axios.create({
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
+                    timeout: 1000,
+                    withCredentials: false,
+                });
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5')
+                var data = await (locationData.get())
+                this.locations = data.data
+            },
+            setLocationInput: function (location) {
+                document.getElementById("locationInput").value = location.display_name
+                this.locations = []
             }
         },
         mounted: function () {
