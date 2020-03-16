@@ -211,6 +211,8 @@
                     </b-row>
                 </b-container>
             </div>
+
+
             <b-collapse id="collapse-4">
                 <b-container>
                     <hr>
@@ -286,7 +288,7 @@
                 gender: null,
                 fitness: "",
                 yourCountries: [],
-                yourActivites: ["Hiking"],
+                yourActivites: [],
                 passportsCode: [],
                 availCountries: [],
                 availActivitys: ["Hiking", "Running", "Swimming", "Diving"],
@@ -418,8 +420,26 @@
                 }
             },
             addActivity() {
+                alert(this.selectedActivity);
+                alert(this.yourActivites);
+
                 if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
                     this.yourActivites.push(this.selectedActivity);
+                    alert("hi");
+                    const vueObj = this;
+                    const addedActivity = this.selectedActivity;
+                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                        activityTypes: this.yourActivites
+                    }).then(function (response) {
+                        if (response.status == 200) {
+                            vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
+                        }
+                    }).catch(function (error) {
+                        if (error.response.status == 400) {
+                            vueObj.activityUpdateMessage = "";
+                            vueObj.activityUpdateMessage = "Failed to add " + addedActivity + " to activitys, please try again later";
+                        }
+                    });
                 }
             },
             deletePassport(index) {
@@ -443,6 +463,20 @@
             },
             deleteActivity(index) {
                 this.yourActivites.splice(index, 1);
+                const vueObj = this;
+                const deletedActivity = this.yourActivites.splice(index, 1);
+                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    activityTypes: this.yourActivites
+                }).then(function (response) {
+                    if (response.status == 200) {
+                        vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activity's"
+                    }
+                }).catch(function (error) {
+                    if (error.response.status == 400) {
+                        vueObj.activityUpdateMessage = "";
+                        vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activitys";
+                    }
+                });
             },
             getCountryData: async function() {
                 var data = await (countryData.get());
@@ -500,6 +534,7 @@
                 this.primaryEmail = [this.userData.email];
                 this.fitness = this.userData.fitness;
                 this.bio = this.userData.bio;
+                this.yourActivites = this.userData.activityTypes;
             },
             getUserSession: function () {
                 let currentObj = this;

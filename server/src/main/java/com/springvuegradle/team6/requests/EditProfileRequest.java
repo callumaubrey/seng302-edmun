@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.requests;
 
+import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.Country;
 import com.springvuegradle.team6.models.CountryRepository;
 import com.springvuegradle.team6.models.Profile;
@@ -49,13 +50,15 @@ public class EditProfileRequest {
     /**
      * New fiteness level for profile unchanged if empty
      */
-    @Min(value = 0) @Max(value = 3)
+    @Min(value = 0)
+    @Max(value = 3)
     public Integer fitness = 0;
 
     /**
      * New passport country list for profile unchanged if empty
      */
     public List<String> passports;
+    public List<String> activityTypes;
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
@@ -91,13 +94,22 @@ public class EditProfileRequest {
         if (this.passports != null) {
             Set<Country> validPassports = new HashSet<>();
 
-            for(String iso : this.passports) {
+            for (String iso : this.passports) {
                 Country country = countries.findByIsoCode(iso);
                 if (country != null) {
                     validPassports.add(country);
                 }
             }
             edit.setPassports(validPassports);
+        }
+
+        if (this.activityTypes != null) {
+            Set<ActivityType> activitysList = new HashSet<>();
+            for (String activity : this.activityTypes) {
+                ActivityType singleActivityObject = new ActivityType(activity);
+                activitysList.add(singleActivityObject);
+            }
+            edit.setActivityTypes(activitysList);
         }
     }
 }
