@@ -26,18 +26,18 @@
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name" :state="validateState('firstname')"  v-model ="$v.firstname.$model" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name" :state="validateState('firstname')"  v-model ="$v.profileForm.firstname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
                         </b-col>
 
                         <b-col sm="4">
                             <label>Middle Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" :state="validateState('middlename')" v-model ="$v.middlename.$model" ></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" :state="validateState('middlename')" v-model ="$v.profileForm.middlename.$model" ></b-form-input>
                             <b-form-invalid-feedback>Invalid middle name</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="4">
                             <label>Last Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" :state="validateState('lastname')" :max="5" v-model ="$v.lastname.$model" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" :state="validateState('lastname')" :max="5" v-model ="$v.profileForm.lastname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -47,7 +47,7 @@
                             <b-form-group
                                     label="Nickname"
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" :state="validateState('nickname')" v-model ="$v.nickname.$model" ></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" placeholder="Enter nickname" :state="validateState('nickname')" v-model ="$v.profileForm.nickname.$model" ></b-form-input>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -55,7 +55,7 @@
                                     label="Date of birth"
 
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" type="date" :state="validateState('date_of_birth')" v-model ="$v.date_of_birth.$model"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" type="date" :state="validateState('date_of_birth')" v-model ="$v.profileForm.date_of_birth.$model"></b-form-input>
                                 <b-form-invalid-feedback>Invalid date of birth</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
@@ -63,7 +63,7 @@
                             <b-form-group
                                     label="Gender"
                             >
-                                <b-form-select v-on:change="resetProfileMessage()" :options="genderOptions" v-model="gender"></b-form-select>
+                                <b-form-select v-on:change="resetProfileMessage()" :options="genderOptions" v-model="$v.profileForm.gender.$model"></b-form-select>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -72,8 +72,9 @@
                         <b-col>
                             <b-form-group
                                     label="Fitness level"
+                                    description="How fit are you?"
                             >
-                                <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="fitness"></b-form-select>
+                                <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="profileForm.fitness"></b-form-select>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -82,7 +83,7 @@
                             <b-form-group
                                     label="Bio"
                             >
-                                <b-form-textarea v-on:input="resetProfileMessage()" :state="validateState('bio')" v-model="$v.bio.$model"></b-form-textarea>
+                                <b-form-textarea v-on:input="resetProfileMessage()" placeholder="Let others know more about you" :state="validateState('bio')" v-model="$v.profileForm.bio.$model"></b-form-textarea>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -137,8 +138,8 @@
                         <b-row>
                             <b-col >
                                 <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" v-model=emailInput name="email"
-                                             placeholder="john@example.com" required></b-input>
+                                    <b-input type="email" name="email"
+                                             placeholder="john@example.com" :state="validateEmail('emailInput')" v-model="$v.emailForm.emailInput.$model"></b-input>
                                 </b-form-group>
                                 <b-form-valid-feedback :state='emailUpdateMessage != ""'>
                                     {{emailUpdateMessage}}
@@ -217,7 +218,7 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
-    import {required, helpers, maxLength} from 'vuelidate/lib/validators'
+    import {required, helpers, maxLength, email} from 'vuelidate/lib/validators'
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
 
@@ -239,19 +240,24 @@
         },
         data: function () {
             return {
+                profileForm: {
+                    lastname: "",
+                    middlename: null,
+                    firstname: "",
+                    nickName: "",
+                    bio: "",
+                    date_of_birth: "",
+                    gender: null,
+                    fitness: ""
+                },
+                emailForm: {
+                    emailInput : ""
+                },
                 profile_id: null,
                 disabled: true,
-                lastname: "",
-                middlename: null,
-                firstname: "",
-                nickName: "",
                 primaryEmail: [],
                 emails: [],
-                emailInput : "",
-                bio: "",
-                date_of_birth: "",
-                gender: null,
-                fitness: "",
+
                 yourCountries: [],
                 passportsCode: [],
                 availCountries: [],
@@ -279,45 +285,64 @@
             }
         },
         validations: {
-            firstname: {
-                required,
-                nameValidate,
-                maxLength: maxLength(40)
-            },
-            middlename: {
-                nameValidate,
-                maxLength: maxLength(40)
-            },
-            lastname: {
-                required,
-                nameValidate,
-                maxLength: maxLength(40)
-            },
-            nickname: {
-                maxLength: maxLength(3),
-            },
-            date_of_birth: {
-                required,
-                dateValidate(value) {
-                    const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
-                    const date = new Date(value);
-                    const today = new Date();
-                    return date <= today && date >= oldestDate;
+            profileForm: {
+                firstname: {
+                    required,
+                    nameValidate,
+                    maxLength: maxLength(40)
+                },
+                middlename: {
+                    nameValidate,
+                    maxLength: maxLength(40)
+                },
+                lastname: {
+                    required,
+                    nameValidate,
+                    maxLength: maxLength(40)
+                },
+                nickname: {
+                    maxLength: maxLength(3),
+                },
+                date_of_birth: {
+                    required,
+                    dateValidate(value) {
+                        const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
+                        const date = new Date(value);
+                        const today = new Date();
+                        return date <= today && date >= oldestDate;
+                    },
+                },
+                bio: {
+                    maxLength: maxLength(200)
+                },
+                gender: {
+                    required
                 },
             },
-            bio: {
-                maxLength: maxLength(200)
-            },
-            gender: {
-                required
-            },
+            emailForm: {
+                emailInput : {
+                    required,
+                    email,
+                    uniqueEmail() {
+                        if (this.emails.includes(this.emailForm.emailInput) || this.primaryEmail.includes(this.emailForm.emailInput)) {
+                            return false
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+            }
         },
 
 
 
         methods: {
             validateState: function(name) {
-                const { $dirty, $error } = this.$v[name];
+                const { $dirty, $error } = this.$v['profileForm'][name];
+                return $dirty ? !$error : null;
+            },
+            validateEmail: function(name) {
+                const { $dirty, $error } = this.$v['emailForm'][name];
                 return $dirty ? !$error : null;
             },
             resetProfileMessage() {
@@ -325,21 +350,21 @@
                 this.profileErrorMessage = "";
             },
             saveProfileInfo() {
-                this.$v.$touch();
-                if (this.$v.$anyError) {
+                this.$v.profileForm.$touch();
+                if (this.$v.profileForm.$anyError) {
                     return;
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
-                    firstname: this.firstname,
-                    middlename: this.middlename,
-                    lastname: this.lastname,
-                    nickname: this.nickName,
-                    dob: this.date_of_birth,
-                    gender: this.gender.toLowerCase(),
-                    fitness: this.fitness,
-                    bio: this.bio
+                    firstname: this.profileForm.firstname,
+                    middlename: this.profileForm.middlename,
+                    lastname: this.profileForm.lastname,
+                    nickname: this.profileForm.nickName,
+                    dob: this.profileForm.date_of_birth,
+                    gender: this.profileForm.gender.toLowerCase(),
+                    fitness: this.profileForm.fitness,
+                    bio: this.profileForm.bio
                 }).then(function (response) {
                     if (response.status == 200) {
                         vueObj.profileErrorMessage = "";
@@ -419,8 +444,6 @@
                 this.emails.splice(index, 1);
                 this.emails.push(oldPrimary);
                 const vueObj = this;
-                console.log(newPrimary);
-                console.log(this.emails);
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
                     primaryemail: newPrimary,
                     additionalemail: this.emails
@@ -444,27 +467,26 @@
                     if (response.status == "200") {
                         vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails"
                     }
-                    console.log(response);
-                    console.log(response.status)
+
                 }).catch(function (error) {
                     console.log(error);
                     if (error.response.status == 400) {
-                        console.log(error);
                         vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                     }
                 });
 
             },
             createEmail: function () {
+                this.$v.emailForm.$touch();
+                if (this.$v.emailForm.$anyError) {
+                    return;
+                }
                 var numEmails = this.emails.length;
                 if (numEmails >= 4){
                     console.log("Max Emails (limit is 5)");
                     return
                 }
-                var newEmail = this.emailInput;
-                if (!newEmail.includes("@")){
-                    return
-                }
+                var newEmail = this.emailForm.emailInput;
                 this.emails.push(newEmail);
                 console.log(this.emails);
                 console.log(this.profile_id);
@@ -505,16 +527,16 @@
                 console.log(this.emails);
                 this.userData = data.data;
                 console.log(this.userData);
-                this.firstname = this.userData.firstname;
-                this.middlename = this.userData.middlename;
-                this.lastname = this.userData.lastname;
-                this.nickName = this.userData.nickname;
-                this.gender = this.userData.gender;
-                this.gender = this.gender.charAt(0).toUpperCase() + this.gender.slice(1);
-                this.date_of_birth = this.userData.dob;
+                this.profileForm.firstname = this.userData.firstname;
+                this.profileForm.middlename = this.userData.middlename;
+                this.profileForm.lastname = this.userData.lastname;
+                this.profileForm.nickName = this.userData.nickname;
+                this.profileForm.gender = this.userData.gender;
+                this.profileForm.gender = this.profileForm.gender.charAt(0).toUpperCase() + this.profileForm.gender.slice(1);
+                this.profileForm.date_of_birth = this.userData.dob;
                 this.primaryEmail = [this.userData.email.address];
-                this.fitness = this.userData.fitness;
-                this.bio = this.userData.bio;
+                this.profileForm.fitness = this.userData.fitness;
+                this.profileForm.bio = this.userData.bio;
             },
             getUserSession: function () {
                 let currentObj = this;
