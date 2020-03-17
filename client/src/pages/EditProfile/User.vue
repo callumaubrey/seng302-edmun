@@ -222,11 +222,6 @@
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
 
-    const profileData = axios.create({
-        baseURL: "http://localhost:9499/profile/2",
-        timeout: 1000
-    });
-
     const countryData = axios.create({
         baseURL: "https://restcountries.eu/rest/v2/all",
         timeout: 1000
@@ -385,7 +380,6 @@
             },
             addPassport() {
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
-                    console.log(this.selectedCountry);
                     const vueObj = this;
                     this.yourCountries.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
@@ -393,8 +387,6 @@
                     this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
                         passports: this.passportsCode
                     }).then(function (response) {
-                        console.log(response);
-                        console.log(response.status)
                         if (response.status == 200) {
                             vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports"
                         }
@@ -433,8 +425,6 @@
                 for (var i = 0; i < countriesLen; i++) {
                     this.availCountries.push({ text: data.data[i].name, value: [data.data[i].name, data.data[i].alpha3Code]})
                 }
-                console.log(data.data.length)
-                console.log(this.availCountries);
             },
             makePrimary(index) {
                 let oldPrimary = this.primaryEmail[0];
@@ -452,7 +442,6 @@
                         vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary"
                     }
                 }).catch(function (error) {
-                    console.log(error);
                     if (error.response.status == 400) {
                         vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later"
                     }
@@ -514,41 +503,33 @@
                 }]
             }),
             getProfileData: async function () {
-                this.axios.defaults.withCredentials = true;
-                let data = await (profileData.get());
-                for (let i = 0; i < data.data.passports.length; i++) {
-                    this.passportsCode.push(data.data.passports[i].isoCode);
-                    this.yourCountries.push([data.data.passports[i].countryName, data.data.passports[i].isoCode]);
-                }
-                console.log(data.data.additionalemail);
-                for (let j = 0; j < data.data.additionalemail.length; j++) {
-                    this.emails.push(data.data.additionalemail[j].address);
-                }
-                console.log(this.emails);
-                this.userData = data.data;
-                console.log(this.userData);
-                this.profileForm.firstname = this.userData.firstname;
-                this.profileForm.middlename = this.userData.middlename;
-                this.profileForm.lastname = this.userData.lastname;
-                this.profileForm.nickName = this.userData.nickname;
-                this.profileForm.gender = this.userData.gender;
-                this.profileForm.gender = this.profileForm.gender.charAt(0).toUpperCase() + this.profileForm.gender.slice(1);
-                this.profileForm.date_of_birth = this.userData.dob;
-                this.primaryEmail = [this.userData.email.address];
-                this.profileForm.fitness = this.userData.fitness;
-                this.profileForm.bio = this.userData.bio;
-            },
-            getUserSession: function () {
-                let currentObj = this;
+                let vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/user')
                     .then(function (response) {
-                        console.log(response.data);
-                        currentObj.isLoggedIn = true;
+                        for (let i = 0; i < response.data.passports.length; i++) {
+                            vueObj.passportsCode.push(response.data.passports[i].isoCode);
+                            vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
+                        }
+
+                        for (let j = 0; j < response.data.additionalemail.length; j++) {
+                            vueObj.emails.push(response.data.additionalemail[j].address);
+                        }
+                        vueObj.profileForm.firstname = response.data.firstname;
+                        vueObj.profileForm.middlename = response.data.middlename;
+                        vueObj.profileForm.lastname = response.data.lastname;
+                        vueObj.profileForm.nickName = response.data.nickname;
+                        vueObj.profileForm.gender = response.data.gender;
+                        vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+                        vueObj.profileForm.date_of_birth = response.data.dob;
+                        vueObj.primaryEmail = [response.data.email.address];
+                        vueObj.profileForm.fitness = response.data.fitness;
+                        vueObj.profileForm.bio = response.data.bio;
+                        vueObj.isLoggedIn = true;
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
-                        currentObj.isLoggedIn = false;
+                        vueObj.isLoggedIn = false;
                     });
             },
             getUserId: function () {
@@ -556,8 +537,8 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/id')
                     .then(function (response) {
+                        console.log(response.data);
                         currentObj.profile_id = response.data;
-                        console.log(currentObj.profile_id);
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -568,7 +549,6 @@
         mounted: function () {
             this.getUserId();
             this.getProfileData();
-            this.getUserSession();
         },
         beforeMount() {
             this.getCountryData();

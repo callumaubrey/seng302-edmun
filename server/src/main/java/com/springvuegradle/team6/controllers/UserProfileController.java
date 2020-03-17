@@ -39,10 +39,10 @@ public class UserProfileController {
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
         Object id = session.getAttribute("id");
         if (id == null) {
-            return new ResponseEntity<>("Muse be logged in", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
         }
 
-        if (id != requestId) {
+        if (!(id.toString().equals(requestId.toString()))) {
             return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
         }
 
