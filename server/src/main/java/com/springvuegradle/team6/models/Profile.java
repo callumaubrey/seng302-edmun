@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
@@ -9,8 +10,10 @@ import java.util.Set;
 @Entity
 public class Profile {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
 
     private String firstname;
 
@@ -37,7 +40,7 @@ public class Profile {
     @ManyToMany
     private Set<Country> passports;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(
@@ -47,6 +50,7 @@ public class Profile {
     private Collection<Role> roles;
 
     public Profile() {}
+
 
     public Integer getId() {
         return this.id;
@@ -153,6 +157,7 @@ public class Profile {
         this.roles = roles;
     }
 
+
     /**
      * Hashes a plain text password and compares to stored password hash. If the hashes match returns True.
      * @param password plaintext password
@@ -181,4 +186,5 @@ public class Profile {
                 ", passports='" + passports + '\'' +
                 '}';
     }
+
 }

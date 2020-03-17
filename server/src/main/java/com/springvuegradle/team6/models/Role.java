@@ -11,17 +11,8 @@ public class Role {
 
     private String name;
 
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     private Collection<Profile> users;
-
-    @ManyToMany
-    @JoinTable(
-            name = "roles_privileges",
-            joinColumns = @JoinColumn(
-                    name = "role_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(
-                    name = "privilege_id", referencedColumnName = "id"))
-    private Collection<Privilege> privileges;
 
     public Role() {
         super();
@@ -32,7 +23,8 @@ public class Role {
         this.name = name;
     }
 
-    public void setPrivileges(final Collection<Privilege> privileges) {
-        this.privileges = privileges;
+    public String getRoleName() {
+        return name;
     }
+
 }
