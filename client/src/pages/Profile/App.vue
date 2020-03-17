@@ -33,7 +33,22 @@
                     <b-card style="margin: 1em" title="Email(s):">
                         <b-row>
                             <b-col><b>Primary Email:</b></b-col>
-                            <b-col><p>{{userData.email}}</p></b-col>
+                            <b-col><p>{{userData.email.address}}</p></b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col><b>Additional Emails:</b></b-col>
+                            <b-col v-if="additionalEmails == []">
+                                <p>No additional emails</p>
+                            </b-col>
+                            <b-col v-else>
+                                <p>
+                                    <ul>
+                                        <li v-for="item in additionalEmails" :key="item.email">
+                                            {{ item.email }}
+                                        </li>
+                                    </ul>
+                                </p>
+                            </b-col>
                         </b-row>
                         <p>(Max 5 emails)</p>
                     </b-card>
@@ -46,8 +61,8 @@
                             <b-col>
                                 <p>
                                     <ul>
-                                        <li v-for="item in passports" :key="item">
-                                            {{ item }}
+                                        <li v-for="item in passports" :key="item.countryName">
+                                            {{ item.countryName }}
                                         </li>
                                     </ul>
                                 </p>
@@ -81,12 +96,6 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
-    import axios from 'axios'
-
-    const profileData = axios.create({
-        baseURL: "http://localhost:9499/profile/1",
-        timeout: 1000
-    });
 
     const App = {
         name: 'App',
@@ -97,23 +106,20 @@
             return {
                 userData: null,
                 passports: [],
+                additionalEmails: [],
                 isLoggedIn: false
             }
         },
         methods: {
-            getProfileData: async function () {
-                var data = await (profileData.get());
-                for (var i = 0; i < data.data.passports.length; i++) {
-                    this.passports.push(data.data.passports[i].countryName);
-                }
-                this.userData = data.data;
-            },
             getUserSession: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/user')
                     .then(function (response) {
                         console.log(response.data);
+                        currentObj.userData = response.data;
+                        currentObj.passports = response.data.passports;
+                        currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
                     })
                     .catch(function (error) {
@@ -123,7 +129,6 @@
             }
         },
         mounted: function () {
-            this.getProfileData();
             this.getUserSession();
         }
     };

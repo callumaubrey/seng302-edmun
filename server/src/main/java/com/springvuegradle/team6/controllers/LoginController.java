@@ -38,8 +38,6 @@ public class LoginController {
         this.emailRepository = emailRepository;
     }
 
-
-
     /**
      * Logs user into a session
      * Takes JSON post data, checks the data and logs user into specific account if it exists
