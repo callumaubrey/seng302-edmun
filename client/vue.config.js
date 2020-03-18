@@ -19,6 +19,19 @@ module.exports = {
             template: 'public/index.html',
             title: 'Profile',
             chunks: ['chunk-vendors', 'chunk-common', 'profile']
+        },
+        'editProfile': {
+            entry: './src/pages/EditProfile/main.js',
+            template: 'public/index.html',
+            title: 'EditProfile',
+            chunks: ['chunk-vendors', 'chunk-common', 'editProfile']
+        },
+        'adminProfile': {
+            entry: './src/pages/AdminProfile/main.js',
+            template: 'public/index.html',
+            title: 'AdminProfile',
+            chunks: ['chunk-vendors', 'chunk-common', 'adminProfile']
         }
+
     }
 };
