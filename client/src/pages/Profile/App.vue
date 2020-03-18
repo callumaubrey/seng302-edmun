@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
 
         <div class="container">
             <b-container fluid>
@@ -14,10 +14,19 @@
 
             <b-row>
                 <b-col>
-                    <b-card style="margin: 1em" title="User Information:">
+                    <b-card style="margin: 1em" title="About:">
                         <b-row>
-                            <b-col><b>Your Countries:</b></b-col>
-                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                            <b-col><b>Nickname:</b></b-col>
+                            <b-col v-if="userData.nickName != null"><p >{{userData.nickName}}</p></b-col>
+                            <b-col v-else><p>No nickname</p></b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col><b>Date of Birth:</b></b-col>
+                            <b-col><p>{{userData.dob}}</p></b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col><b>Gender:</b></b-col>
+                            <b-col><p>{{userData.gender}}</p></b-col>
                         </b-row>
                     </b-card>
 
@@ -33,15 +42,28 @@
                 <b-col>
                     <b-card style="margin: 1em" title="Passport Info:">
                         <b-row>
-                            <b-col><b>Your Countries:</b></b-col>
-                            <b-col><p>{{userData.yourCountries}}</p></b-col>
+                            <b-col><b>Your Passport Countries:</b></b-col>
+                            <b-col>
+                                <p>
+                                    <ul>
+                                        <li v-for="item in passports" :key="item">
+                                            {{ item }}
+                                        </li>
+                                    </ul>
+                                </p>
+                            </b-col>
                         </b-row>
                     </b-card>
 
                     <b-card style="margin: 1em" title="Fitness Info:">
                         <b-row>
-                            <b-col><b>Primary Email:</b></b-col>
-                            <b-col><p>{{userData.fitness}}</p></b-col>
+                            <b-col><b>Fitness Level:</b></b-col>
+                            <b-col v-if="userData.fitness == 1"><p>Couch potato</p></b-col>
+                            <b-col v-if="userData.fitness == 2"><p>Some activity</p></b-col>
+                            <b-col v-if="userData.fitness == 3"><p>Average fitness level</p></b-col>
+                            <b-col v-if="userData.fitness == 4"><p>Above average fitness</p></b-col>
+                            <b-col v-if="userData.fitness == 5"><p>Serious athlete</p></b-col>
+                            <b-col v-else><p>Edit your profile to add a fitness level!</p></b-col>
                         </b-row>
                     </b-card>
                 </b-col>
@@ -73,17 +95,36 @@
         },
         data: function() {
             return {
-                userData: null
+                userData: null,
+                passports: [],
+                isLoggedIn: false
             }
         },
         methods: {
-            getProfileData: async function() {
+            getProfileData: async function () {
                 var data = await (profileData.get());
+                for (var i = 0; i < data.data.passports.length; i++) {
+                    this.passports.push(data.data.passports[i].countryName);
+                }
                 this.userData = data.data;
+            },
+            getUserSession: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profile/user')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.isLoggedIn = true;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                    });
             }
         },
         mounted: function () {
             this.getProfileData();
+            this.getUserSession();
         }
     };
 

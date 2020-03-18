@@ -4,8 +4,10 @@ import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue';
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
+import Vuelidate from 'vuelidate'
 
 Vue.config.productionTip = false;
+
 
 const options = {
     isEnabled: true,
@@ -22,6 +24,7 @@ Vue.use(NavbarPlugin);
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 Vue.use(VueAxios, axios);
+Vue.use(Vuelidate);
 
 Vue.component('delete-Button', {
     template: `

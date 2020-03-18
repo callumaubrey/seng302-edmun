@@ -32,6 +32,5 @@ module.exports = {
             title: 'AdminProfile',
             chunks: ['chunk-vendors', 'chunk-common', 'adminProfile']
         }
-
     }
 };
