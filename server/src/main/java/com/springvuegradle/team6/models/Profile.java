@@ -1,10 +1,14 @@
 package com.springvuegradle.team6.models;
 
 
+import com.springvuegradle.team6.exceptions.DuplicateRoleException;
+import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -155,6 +159,26 @@ public class Profile {
 
     public void setRoles(final Collection<Role> roles) {
         this.roles = roles;
+    }
+
+    public void addRole(Role newRole) throws DuplicateRoleException {
+        for (Role role : roles) {
+            if (role.getRoleName().equals(newRole.getRoleName())) {
+                throw new DuplicateRoleException();
+            }
+        }
+        roles.add(newRole);
+    }
+
+    public void removeRole(String roleName) throws RoleNotFoundException {
+        List<Role> initialRoles = new ArrayList(roles);
+        for (int i = 0; i < roles.size(); i++) {
+            if (initialRoles.get(i).getRoleName().equals(roleName)) {
+                roles.remove(initialRoles.get(i));
+                return;
+            }
+        }
+        throw new RoleNotFoundException();
     }
 
 

@@ -8,5 +8,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface ProfileRepository extends JpaRepository<Profile, Integer> {
     Profile findByEmail(String email);
     Profile findById(int id);
+
+    Integer removeByEmail(String email);
     boolean existsByEmail(String email);
 }
