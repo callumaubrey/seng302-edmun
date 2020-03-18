@@ -93,7 +93,7 @@
                             <b-form-valid-feedback :state='profileUpdateMessage != ""'>
                                 {{profileUpdateMessage}}
                             </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='profileErrorMessage != ""'>
+                            <b-form-invalid-feedback :state='profileErrorMessage == ""'>
                                 {{profileErrorMessage}}
                             </b-form-invalid-feedback>
                         </b-col>
@@ -144,10 +144,11 @@
                                 <b-form-valid-feedback :state='emailUpdateMessage != ""'>
                                     {{emailUpdateMessage}}
                                 </b-form-valid-feedback>
-                                <b-form-invalid-feedback :state='emailErrorMessage != ""'>
+                                <b-form-invalid-feedback :state='emailErrorMessage == ""'>
                                     {{emailErrorMessage}}
                                 </b-form-invalid-feedback>
                             </b-col>
+
                             <b-col id="emailAdd" class="col-25">
                                 <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
                             </b-col>
@@ -197,7 +198,7 @@
                             <b-form-valid-feedback :state='passportsUpdateMessage != ""'>
                                 {{passportsUpdateMessage}}
                             </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='passportsErrorMessage != ""'>
+                            <b-form-invalid-feedback :state='passportsErrorMessage == ""'>
                                 {{passportsErrorMessage}}
                             </b-form-invalid-feedback>
                         </b-col>
@@ -364,12 +365,13 @@
                     if (response.status == 200) {
                         vueObj.profileErrorMessage = "";
                         vueObj.profileUpdateMessage = "Profile successfully updated";
-                    }
-                }).catch(function (error) {
-                    if (error.response.status == 400) {
+                    } else {
                         vueObj.profileUpdateMessage = "";
                         vueObj.profileErrorMessage = "Failed to update profile, please try again later";
                     }
+                }).catch(function () {
+                        vueObj.profileUpdateMessage = "";
+                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
                 });
             },
             totalPassports() {
@@ -380,43 +382,49 @@
             },
             addPassport() {
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
+                    const tempPassports = this.yourCountries.slice();
+                    const tempCodes = this.passportsCode.slice();
                     const vueObj = this;
-                    this.yourCountries.push(this.selectedCountry);
+                    tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
-                    this.passportsCode.push(this.selectedCountry[1]);
+                    tempCodes.push(this.selectedCountry[1]);
                     this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                        passports: this.passportsCode
+                        passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
                             vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports"
-                        }
-                    }).catch(function (error) {
-                        if (error.response.status == 400) {
+                            vueObj.yourCountries = tempPassports;
+                            vueObj.passportsCode = tempCodes;
+                        } else {
                             vueObj.passportsUpdateMessage = "";
                             vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
-                            vueObj.yourCountries.push(addedPassport);
-                            vueObj.passportsCode.push(addedPassport[1]);
                         }
+                    }).catch(function () {
+                            vueObj.passportsUpdateMessage = "";
+                            vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
                     });
                 }
             },
             deletePassport(index) {
                 const vueObj = this;
-                const removedPassport = (this.yourCountries.splice(index, 1))[0];
-                this.passportsCode.splice(index, 1);
+                const tempPassports = this.yourCountries.slice();
+                const tempCodes = this.passportsCode.slice();
+                const removedPassport = (tempPassports.splice(index, 1))[0];
+                tempCodes.splice(index, 1);
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    passports: this.passportsCode
+                    passports: tempCodes
                 }).then(function (response) {
                     if (response.status == 200) {
-                        vueObj.passportsUpdateMessage = removedPassport[0] + " has been successfully removed from passports"
-                    }
-                }).catch(function (error) {
-                    if (error.response.status == 400) {
+                        vueObj.passportsUpdateMessage = removedPassport[0] + " has been successfully removed from passports";
+                        vueObj.yourCountries = tempPassports;
+                        vueObj.passportsCode = tempCodes;
+                    } else {
                         vueObj.passportsUpdateMessage = "";
                         vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
-                        vueObj.yourCountries.push(removedPassport);
-                        vueObj.passportsCode.push(removedPassport[1]);
                     }
+                }).catch(function () {
+                        vueObj.passportsUpdateMessage = "";
+                        vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
                 });
             },
             getCountryData: async function() {
@@ -427,41 +435,52 @@
                 }
             },
             makePrimary(index) {
-                let oldPrimary = this.primaryEmail[0];
-                this.primaryEmail.splice(0, 1);
-                let newPrimary = this.emails[index];
-                this.primaryEmail.push(newPrimary);
-                this.emails.splice(index, 1);
-                this.emails.push(oldPrimary);
+                const tempEmails = this.emails.slice();
+                const tempPrimary = this.primaryEmail.slice();
+                let oldPrimary = tempPrimary[0];
+                tempPrimary.splice(0, 1);
+                let newPrimary = tempEmails[index];
+                tempPrimary.push(newPrimary);
+                tempEmails.splice(index, 1);
+                tempEmails.push(oldPrimary);
                 const vueObj = this;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    primaryemail: newPrimary,
-                    additionalemail: this.emails
+                    primaryemail: tempPrimary,
+                    additionalemail: tempEmails
                 }).then(function (response) {
                     if (response.status == 200) {
-                        vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary"
+                        vueObj.emailErrorMessage = null;
+                        vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary";
+                        vueObj.emails = tempEmails;
+                        vueObj.primaryEmail = tempPrimary;
+                    } else {
+                        vueObj.emailUpdateMessage = null;
+                        vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                     }
-                }).catch(function (error) {
-                    if (error.response.status == 400) {
-                        vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later"
-                    }
+                }).catch(function () {
+                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                 });
             },
             deleteEmail(index) {
-                const removedEmail = this.emails.splice(index, 1)[0];
+                const tempEmails= this.emails.slice();
+                const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: this.emails
+                    additionalemail: tempEmails
                 }).then(function (response) {
                     if (response.status == "200") {
+                        vueObj.emailErrorMessage = null;
                         vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails"
-                    }
-
-                }).catch(function (error) {
-                    console.log(error);
-                    if (error.response.status == 400) {
+                        vueObj.emails = tempEmails;
+                    } else {
+                        vueObj.emailUpdateMessage = null;
                         vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                     }
+
+                }).catch(function () {
+                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                 });
 
             },
@@ -476,24 +495,24 @@
                     return
                 }
                 var newEmail = this.emailForm.emailInput;
-                this.emails.push(newEmail);
-                console.log(this.emails);
-                console.log(this.profile_id);
+                let newEmails = this.emails.slice();
+                newEmails.push(newEmail);
                 const vueObj = this;
                 this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: this.emails
+                    additionalemail: newEmails
                 }).then(function (response) {
                     if (response.status == "200") {
+                        vueObj.emailErrorMessage = null;
                         vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails"
-                    }
-                    console.log(response);
-                    console.log(response.status)
-                }).catch(function (error) {
-                    console.log(error);
-                    if (error.response.status == 400) {
-                        console.log(error);
+                        vueObj.emails = newEmails;
+                        this.$v.emailForm.$reset();
+                    } else {
+                        vueObj.emailUpdateMessage = null;
                         vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
                     }
+                }).catch(function () {
+                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
                 });
             },
             // (R)ead
@@ -527,8 +546,7 @@
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
                     })
-                    .catch(function (error) {
-                        console.log(error.response.data);
+                    .catch(function () {
                         vueObj.isLoggedIn = false;
                     });
             },
@@ -537,11 +555,9 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/id')
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.profile_id = response.data;
                     })
-                    .catch(function (error) {
-                        console.log(error.response.data);
+                    .catch(function () {
                     });
             }
         },
