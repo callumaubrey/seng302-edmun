@@ -297,7 +297,7 @@
                 yourActivites: [],
                 passportsCode: [],
                 availCountries: [],
-                availActivitys: ["Hiking", "Running", "Swimming", "Diving"],
+                availActivitys: ["Hike", "Run", "Bike", "Swim", "Walk"],
                 isLoggedIn: false,
                 selectedCountry: null,
                 selectedActivity: null,

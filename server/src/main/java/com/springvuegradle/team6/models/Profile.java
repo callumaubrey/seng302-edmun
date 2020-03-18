@@ -3,7 +3,9 @@ package com.springvuegradle.team6.models;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 public class Profile {
@@ -34,7 +36,8 @@ public class Profile {
     
     private Integer fitness;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @ElementCollection(targetClass=ActivityType.class)
+    @Enumerated(EnumType.ORDINAL)
     private Set<ActivityType> activityTypes;
 
     @ManyToMany
