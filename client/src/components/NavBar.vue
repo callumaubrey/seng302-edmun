@@ -24,8 +24,9 @@
                 </b-button>
                 <b-nav-item-dropdown right v-else>
                     <template v-slot:button-content>
-                        <em>anything</em>
+                        <em>Users Name</em>
                     </template>
+                    <b-dropdown-item @click="goToEdit">Edit Profile</b-dropdown-item>
                     <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
                 </b-nav-item-dropdown>
             </b-navbar-nav>
@@ -63,6 +64,9 @@
                     .catch(function (error) {
                         console.log(error.response.data);
                     });
+            },
+            goToEdit() {
+                window.location.href = '/editProfile';
             }
         }
     };
