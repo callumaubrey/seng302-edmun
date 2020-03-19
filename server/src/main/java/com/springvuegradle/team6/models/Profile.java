@@ -7,18 +7,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class Profile {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue
     private Integer id;
 
     private String firstname;
@@ -44,6 +38,10 @@ public class Profile {
     private String gender;
     
     private Integer fitness;
+
+    @ElementCollection(targetClass=ActivityType.class)
+    @Enumerated(EnumType.ORDINAL)
+    private Set<ActivityType> activityTypes;
 
     @ManyToMany
     private Set<Country> passports;
@@ -120,6 +118,10 @@ public class Profile {
         return this.additionalemail;
     }
 
+    public Set<ActivityType> getActivityTypes() {
+        return this.activityTypes;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -154,6 +156,10 @@ public class Profile {
 
     public void setPassports(Set<Country> passports) {
         this.passports = passports;
+    }
+
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
     }
 
     public void setGender(String gender) {

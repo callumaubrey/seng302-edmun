@@ -157,6 +157,39 @@
 
                         </b-row>
                     </div>
+                </b-container>
+                <b-container>
+                    <hr>
+                    <div id="emailBody">
+                        <div v-for="(email, index) in primaryEmail" :key="index">
+                            <b-row>
+                                <b-col><label style="font-weight: bold">{{email}}</label></b-col>
+                                <b-col><h6 align="right">Primary</h6></b-col>
+                            </b-row>
+                            <hr>
+                        </div>
+                        <div v-for="(email, index) in emails" :key="index" >
+                            <b-row>
+                                <b-col><label>{{email}}</label></b-col>
+                                <b-col>
+                                    <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">Remove</b-button>
+                                    <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">Make Primary</b-button>
+                                </b-col>
+                            </b-row>
+                            <hr>
+                        </div>
+                        <b-row>
+                            <b-col >
+                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
+                                    <b-input type="email" id="emailInput" name="email"
+                                             placeholder="john@example.com" required></b-input>
+                                </b-form-group>
+                            </b-col>
+                            <b-col id="emailAdd" class="col-25">
+                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                            </b-col>
+                        </b-row>
+                    </div>
 
                 </b-container>
             </b-collapse>
@@ -213,6 +246,57 @@
             <div v-b-toggle="'collapse-4'">
                 <b-container>
                     <b-row>
+                        <b-col><h3 class=edit-title>Activities</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Add or remove activities from your account</b-col>
+                        <b-col><h6 align="right">{{totalActivitys()}} activity </h6></b-col>
+                    </b-row>
+                </b-container>
+            </div>
+
+
+            <b-collapse id="collapse-4">
+                <b-container>
+                    <hr>
+                    <div v-for="(activites, index) in yourActivites" :key="index">
+                        <b-row>
+                            <b-col>
+                                <label>{{activites}}</label>
+                            </b-col>
+                            <b-col>
+                                <b-button class="invisible-btn" style="float: right;" @click="deleteActivity(index)">Remove</b-button>
+                            </b-col>
+                        </b-row>
+                        <hr>
+                    </div>
+                    <b-row>
+                        <b-col>
+                            <b-form-group
+                                    description="Add a new activity"
+                            >
+                                <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
+                            </b-form-group>
+                            <b-form-valid-feedback :state='activityUpdateMessage != ""'>
+                                {{activityUpdateMessage}}
+                            </b-form-valid-feedback>
+                            <b-form-invalid-feedback :state='activityErrorMessage != ""'>
+                                {{activityErrorMessage}}
+                            </b-form-invalid-feedback>
+
+                        </b-col>
+                        <b-col>
+                            <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Add</b-button>
+                        </b-col>
+                    </b-row>
+
+                </b-container>
+            </b-collapse>
+            <hr>
+            <div v-b-toggle="'collapse-5'">
+                <b-container>
+                    <b-row>
                         <b-col><h3 class=edit-title>Password</h3></b-col>
                         <b-col><h5 align="right">Change</h5></b-col>
                     </b-row>
@@ -221,7 +305,7 @@
                     </b-row>
                 </b-container>
             </div>
-            <b-collapse id = "collapse-4">
+            <b-collapse id = "collapse-5">
                 <b-container>
                     <hr>
                     <b-row>
@@ -300,10 +384,13 @@
                 emails: [],
 
                 yourCountries: [],
+                yourActivites: [],
                 passportsCode: [],
                 availCountries: [],
+                availActivitys: ["Hike", "Run", "Bike", "Swim", "Walk"],
                 isLoggedIn: false,
                 selectedCountry: null,
+                selectedActivity: null,
                 fitnessOptions: [
                     {text: "Couch potato", value: 0},
                     {text: "Coming back from injury", value: 1},
@@ -327,7 +414,9 @@
                 password: null,
                 passwordRepeat: null,
                 passwordErrorMessage: "",
-                passwordUpdateMessage: ""
+                passwordUpdateMessage: "",
+                activityUpdateMessage: "",
+                activityErrorMessage: ""
             }
         },
         validations: {
@@ -442,6 +531,9 @@
             totalEmails() {
                 return this.primaryEmail.length + this.emails.length;
             },
+            totalActivitys() {
+                return this.yourActivites.length;
+            },
             addPassport() {
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
                     const tempPassports = this.yourCountries.slice();
@@ -467,6 +559,25 @@
                     });
                 }
             },
+            addActivity() {
+                if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
+                    this.yourActivites.push(this.selectedActivity);
+                    const vueObj = this;
+                    const addedActivity = this.selectedActivity;
+                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                        activityTypes: this.yourActivites
+                    }).then(function (response) {
+                        if (response.status == 200) {
+                            vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
+                        }
+                    }).catch(function (error) {
+                        if (error.response.status == 400) {
+                            vueObj.activityUpdateMessage = "";
+                            vueObj.activityUpdateMessage = "Failed to add " + addedActivity + " to activitys, please try again later";
+                        }
+                    });
+                }
+            },
             deletePassport(index) {
                 const vueObj = this;
                 const tempPassports = this.yourCountries.slice();
@@ -487,6 +598,22 @@
                 }).catch(function () {
                         vueObj.passportsUpdateMessage = "";
                         vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
+                });
+            },
+            deleteActivity(index) {
+                const vueObj = this;
+                const deletedActivity = (this.yourActivites.splice(index, 1));
+                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    activityTypes: this.yourActivites
+                }).then(function (response) {
+                    if (response.status == 200) {
+                        vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
+                    }
+                }).catch(function (error) {
+                    if (error.response.status == 400) {
+                        vueObj.activityUpdateMessage = "";
+                        vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activities";
+                    }
                 });
             },
             getCountryData: async function() {
@@ -693,4 +820,3 @@
         font-size: 13px;
     }
 </style>
->

@@ -1,14 +1,12 @@
 package com.springvuegradle.team6.requests;
 
-import com.springvuegradle.team6.models.Country;
-import com.springvuegradle.team6.models.CountryRepository;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.Email;
+import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
-
-import javax.validation.constraints.*;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +58,7 @@ public class EditProfileRequest {
     /**
      * New passport country list for profile unchanged if empty
      */
+    public Set<ActivityType> activityTypes;
     public List<@Length(min = 3, max = 3) String> passports;
 
 
@@ -106,7 +105,7 @@ public class EditProfileRequest {
         if (this.passports != null) {
             Set<Country> validPassports = new HashSet<>();
 
-            for(String iso : this.passports) {
+            for (String iso : this.passports) {
                 Country country = countries.findByIsoCode(iso);
                 if (country != null) {
                     validPassports.add(country);
@@ -132,6 +131,10 @@ public class EditProfileRequest {
             }
 
             edit.setAdditionalemail(emails);
+        }
+
+        if (this.activityTypes != null) {
+            edit.setActivityTypes(this.activityTypes);
         }
     }
 }
