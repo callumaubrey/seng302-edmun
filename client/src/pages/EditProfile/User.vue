@@ -26,18 +26,18 @@
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name" :state="validateState('firstname')"  v-model ="$v.profileForm.firstname.$model" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name" :state="validateProfile('firstname')"  v-model ="$v.profileForm.firstname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
                         </b-col>
 
                         <b-col sm="4">
                             <label>Middle Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" :state="validateState('middlename')" v-model ="$v.profileForm.middlename.$model" ></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter middle name" :state="validateProfile('middlename')" v-model ="$v.profileForm.middlename.$model" ></b-form-input>
                             <b-form-invalid-feedback>Invalid middle name</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="4">
                             <label>Last Name</label>
-                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" :state="validateState('lastname')" :max="5" v-model ="$v.profileForm.lastname.$model" required trim></b-form-input>
+                            <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter last name" :state="validateProfile('lastname')" :max="5" v-model ="$v.profileForm.lastname.$model" required trim></b-form-input>
                             <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -47,7 +47,7 @@
                             <b-form-group
                                     label="Nickname"
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" placeholder="Enter nickname" :state="validateState('nickname')" v-model ="$v.profileForm.nickname.$model" ></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" placeholder="Enter nickname" :state="validateProfile('nickname')" v-model ="$v.profileForm.nickname.$model" ></b-form-input>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -55,7 +55,7 @@
                                     label="Date of birth"
 
                             >
-                                <b-form-input v-on:input="resetProfileMessage()" type="date" :state="validateState('date_of_birth')" v-model ="$v.profileForm.date_of_birth.$model"></b-form-input>
+                                <b-form-input v-on:input="resetProfileMessage()" type="date" :state="validateProfile('date_of_birth')" v-model ="$v.profileForm.date_of_birth.$model"></b-form-input>
                                 <b-form-invalid-feedback>Invalid date of birth</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
@@ -83,7 +83,7 @@
                             <b-form-group
                                     label="Bio"
                             >
-                                <b-form-textarea v-on:input="resetProfileMessage()" placeholder="Let others know more about you" :state="validateState('bio')" v-model="$v.profileForm.bio.$model"></b-form-textarea>
+                                <b-form-textarea v-on:input="resetProfileMessage()" placeholder="Let others know more about you" :state="validateProfile('bio')" v-model="$v.profileForm.bio.$model"></b-form-textarea>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -210,6 +210,50 @@
                 </b-container>
             </b-collapse>
             <hr>
+            <div v-b-toggle="'collapse-4'">
+                <b-container>
+                    <b-row>
+                        <b-col><h3 class=edit-title>Password</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Change your password</b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <b-collapse id = "collapse-4">
+                <b-container>
+                    <hr>
+                    <b-row>
+                        <b-col sm="6">
+                            <label>Current Password</label>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="oldPassword" required></b-form-input>
+                        </b-col>
+                    </b-row>
+                    <b-row class="my-1">
+                        <b-col sm="6">
+                            <label>New Password</label>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model="$v.password.$model" required></b-form-input>
+                            <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
+                        </b-col>
+                        <b-col sm="6">
+                            <label>Repeat New Password</label>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
+                            <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col sm="1">
+                            <b-button align="left" v-on:click="savePassword" >Save</b-button>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col sm="3">
+                            <b-label id="passwordMessage"></b-label>
+                        </b-col>
+                    </b-row>
+                </b-container>
+            </b-collapse>
         </b-container>
     </div>
 </template>
@@ -219,9 +263,10 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
-    import {required, helpers, maxLength, email} from 'vuelidate/lib/validators'
+    import {required, helpers, maxLength, email, sameAs} from 'vuelidate/lib/validators'
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
+    const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
     const countryData = axios.create({
         baseURL: "https://restcountries.eu/rest/v2/all",
@@ -277,7 +322,12 @@
                 profileUpdateMessage: "",
                 profileErrorMessage: "",
                 emailUpdateMessage: "",
-                emailErrorMessage: ""
+                emailErrorMessage: "",
+                oldPassword: null,
+                password: null,
+                passwordRepeat: null,
+                passwordErrorMessage: "",
+                passwordUpdateMessage: ""
             }
         },
         validations: {
@@ -327,13 +377,25 @@
                         }
                     }
                 }
-            }
+            },
+            password: {
+                required,
+                passwordValidate
+            },
+            passwordRepeat: {
+                required,
+                sameAsPassword: sameAs('password')
+            },
         },
 
 
 
         methods: {
             validateState: function(name) {
+                const { $dirty, $error } = this.$v[name];
+                return $dirty ? !$error : null;
+            },
+            validateProfile: function(name) {
                 const { $dirty, $error } = this.$v['profileForm'][name];
                 return $dirty ? !$error : null;
             },
@@ -559,6 +621,33 @@
                     })
                     .catch(function () {
                     });
+            },
+            savePassword: function () {
+                console.log(this.oldPassword);
+                console.log(this.password);
+                console.log(this.passwordRepeat);
+                let currentObj = this;
+                this.$v.$touch();
+                if (this.$v.$anyError) {
+                    return;
+                }
+                this.axios.defaults.withCredentials = true;
+                this.axios.patch("http://localhost:9499/profile/editpassword",{
+                    id: this.profile_id,
+                    oldpassword: this.oldPassword,
+                    newpassword: this.password,
+                    repeatedpassword: this.passwordRepeat
+                }).then(function (response) {
+                    if (response.status == 200) {
+                        currentObj.output = response.data;
+                        document.getElementById("passwordMessage").textContent = response.data;
+                        document.getElementById("passwordMessage").style.color = "green";
+                    }
+                }).catch(function (error) {
+                    currentObj.output = error.response.data;
+                    document.getElementById("passwordMessage").textContent = error.response.data;
+                    document.getElementById("passwordMessage").style.color = "red";
+                })
             }
         },
 
