@@ -3,10 +3,7 @@ package com.springvuegradle.team6.requests;
 import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.Email;
-
 import javax.validation.constraints.*;
-
-
 
 public class CreateProfileRequest {
     @NotNull
