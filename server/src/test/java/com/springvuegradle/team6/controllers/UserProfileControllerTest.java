@@ -34,8 +34,23 @@ class UserProfileControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
+    private CreateProfileRequest getDummyProfile() {
+        CreateProfileRequest validRequest = new CreateProfileRequest();
+        validRequest.firstname = "John";
+        validRequest.middlename = "S";
+        validRequest.lastname = "Doe";
+        validRequest.nickname = "Big J";
+        validRequest.bio = "Just another plain jane";
+        validRequest.primary_email = "johndoe@uclive.ac.nz";
+        validRequest.password = "SuperSecurePassword123";
+        validRequest.date_of_birth = "12-03-2000";
+        validRequest.gender = "male";
+        validRequest.fitness = 0;
+        return validRequest;
+    }
+
     @Test
-    void createProfileFailCases() throws Exception {
+    void createProfileEmptyFailCases() throws Exception {
         String createProfileUrl = "/profile/";
         CreateProfileRequest validRequest = new CreateProfileRequest();
         validRequest.firstname = "John";
@@ -62,14 +77,6 @@ class UserProfileControllerTest {
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk());
-
-        // Email already exists
-        mvc.perform(
-                post(createProfileUrl)
-                        .content(mapper.writeValueAsString(validRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-
 
         // Empty lastname
         validRequest.lastname = "";
@@ -131,6 +138,112 @@ class UserProfileControllerTest {
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileEmailExists() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+
+        // Success Case
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        // Email already exists because we just added it
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidPassword() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.password = "jacky";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidDateFormat() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.date_of_birth = "1985/12/20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidDateRange() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.date_of_birth = "2021-12-20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        request.date_of_birth = "1800-12-20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidEmail() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.primary_email = "test.com";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidNames() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        // Invalid nickname
+        request.nickname = "#mynickname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Invalid first name
+        request.nickname = "nick";
+        request.firstname = "#firstname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Invalid last name
+        request.firstname = "firstname";
+        request.lastname = "@lastname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }

@@ -30,6 +30,7 @@ public class CreateProfileRequest {
 
     @NotNull
     @NotEmpty
+    @Pattern(regexp = "([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))")
     public String date_of_birth;
 
     @NotNull
@@ -47,17 +48,14 @@ public class CreateProfileRequest {
         profile.setMiddlename(middlename);
         profile.setLastname(lastname);
         profile.setNickname(nickname);
-
         Email newEmail = new Email(primary_email);
         emailRepository.save(newEmail);
         profile.setEmail(newEmail);
-
         profile.setPassword(password);
         profile.setBio(bio);
         profile.setDob(date_of_birth);
         profile.setGender(gender);
         profile.setFitness(fitness);
-
         return profile;
     }
 }
