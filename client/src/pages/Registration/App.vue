@@ -187,13 +187,13 @@
         }
         let currentObj = this;
         this.axios.post('http://localhost:9499/profile/', {
-          dob: this.date_of_birth,
+          date_of_birth: this.date_of_birth,
           firstname: this.firstname,
           middlename: this.middlename,
           lastname: this.lastname,
           nickname: this.nickname,
           password: this.password,
-          email: this.primary_email,
+          primary_email: this.primary_email,
           gender: this.gender
         })
                 .then(function (response) {

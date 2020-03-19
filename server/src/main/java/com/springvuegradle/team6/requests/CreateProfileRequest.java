@@ -23,7 +23,7 @@ public class CreateProfileRequest {
 
     @NotNull
     @javax.validation.constraints.Email(message = "Email should be valid")
-    public String email;
+    public String primary_email;
 
     @NotNull
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
@@ -33,7 +33,7 @@ public class CreateProfileRequest {
 
     @NotNull
     @NotEmpty
-    public String dob;
+    public String date_of_birth;
 
     @NotNull
     @NotEmpty
@@ -51,13 +51,13 @@ public class CreateProfileRequest {
         profile.setLastname(lastname);
         profile.setNickname(nickname);
 
-        Email newEmail = new Email(email);
+        Email newEmail = new Email(primary_email);
         emailRepository.save(newEmail);
         profile.setEmail(newEmail);
 
         profile.setPassword(password);
         profile.setBio(bio);
-        profile.setDob(dob);
+        profile.setDob(date_of_birth);
         profile.setGender(gender);
         profile.setFitness(fitness);
 
