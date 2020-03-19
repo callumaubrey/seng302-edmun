@@ -137,4 +137,22 @@ public class EditProfileRequest {
             edit.setActivityTypes(this.activityTypes);
         }
     }
+
+    public String checkForError() {
+        String error = "";
+        if (this.firstname == null || this.firstname == "") {
+            error += "First name cannot be empty. ";
+        }
+        if (this.lastname == null || this.lastname == "") {
+            error += "Last name cannot be empty. ";
+        }
+        if (this.dob == null || this.dob == "") {
+            error += "Enter a valid date of birth. ";
+        }
+        if (this.gender == null || this.dob == "") {
+            error += "Please select a gender. ";
+        }
+
+        return error;
+    }
 }
