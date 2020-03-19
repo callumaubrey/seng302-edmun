@@ -3,11 +3,13 @@ package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Profile {
@@ -192,10 +194,10 @@ public class Profile {
     }
 
     public void removeRole(String roleName) throws RoleNotFoundException {
-        List<Role> initialRoles = new ArrayList(roles);
+        List<Role> roleList = new ArrayList(roles);
         for (int i = 0; i < roles.size(); i++) {
-            if (initialRoles.get(i).getRoleName().equals(roleName)) {
-                roles.remove(initialRoles.get(i));
+            if (roleList.get(i).getRoleName().equals(roleName)) {
+                roles.remove(roleList.get(i));
                 return;
             }
         }

@@ -89,10 +89,16 @@ public class UserProfileController {
                 return authorisedResponse;
             }
 
+            //Check for invalid fields in request
+            String error = request.checkForError();
+            if (error != "") {
+                return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+            }
+
             // Edit profile
             request.editProfileFromRequest(edit, countryRepository, emailRepository);
             repository.save(edit);
-            return ResponseEntity.ok("User no." + edit.getId() + ": " + edit.getEmail() + " was updated.");
+            return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
             return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
         }

@@ -513,16 +513,11 @@
                     fitness: this.profileForm.fitness,
                     bio: this.profileForm.bio
                 }).then(function (response) {
-                    if (response.status == 200) {
-                        vueObj.profileErrorMessage = "";
-                        vueObj.profileUpdateMessage = "Profile successfully updated";
-                    } else {
-                        vueObj.profileUpdateMessage = "";
-                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
-                    }
-                }).catch(function () {
-                        vueObj.profileUpdateMessage = "";
-                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
+                    vueObj.emailErrorMessage = "";
+                    vueObj.profileUpdateMessage = response.data;
+                }).catch(function (error) {
+                    vueObj.profileUpdateMessage = "";
+                    vueObj.profileErrorMessage = error.response.data;
                 });
             },
             totalPassports() {

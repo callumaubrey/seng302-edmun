@@ -3,11 +3,7 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Role;
+import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.AddRoleRequest;
 import com.springvuegradle.team6.requests.DeleteProfileRequest;
 import com.springvuegradle.team6.requests.DeleteRoleRequest;
@@ -30,18 +26,21 @@ public class AdminController {
 
     private final ProfileRepository profileRepository;
     private final EmailRepository emailRepository;
+    private final RoleRepository roleRepository;
 
-    AdminController(ProfileRepository profileRep, EmailRepository emailRep) {
+    AdminController(ProfileRepository profileRep, EmailRepository emailRep, RoleRepository roleRep) {
         this.profileRepository = profileRep;
         this.emailRepository = emailRep;
+        this.roleRepository = roleRep;
     }
 
     @Transactional
     @DeleteMapping("/profile")
     public ResponseEntity<String> removeProfile(@RequestBody DeleteProfileRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
-        if (profileRepository.existsByEmail(email.get())) {
+        if (email.isPresent()) {
             profileRepository.removeByEmail(email.get());
+            emailRepository.delete(email.get());
             return ResponseEntity.ok("User account with email: " + request.getEmail() + " is terminated");
         } else {
             return new ResponseEntity("No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);
@@ -51,12 +50,13 @@ public class AdminController {
     @PostMapping("/profile/role")
     public ResponseEntity<String> addRole(@RequestBody AddRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
-        if (profileRepository.existsByEmail(email.get())) {
+        if (email.isPresent()) {
             Profile profile = profileRepository.findByEmail(email.get());
             if (request.getRole().equals("ROLE_ADMIN") || request.getRole().equals("ROLE_USER")) {
-                Role role = new Role(request.getRole());
+                Role role = roleRepository.findByName(request.getRole());
                 try {
                     profile.addRole(role);
+                    profileRepository.save(profile);
                 } catch (DuplicateRoleException e) {
                     return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
                 }
@@ -72,11 +72,12 @@ public class AdminController {
     @DeleteMapping("/profile/role")
     public ResponseEntity<String> deleteRole(@RequestBody DeleteRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
-        if (profileRepository.existsByEmail(email.get())) {
+        if (email.isPresent()) {
             Profile profile = profileRepository.findByEmail(email.get());
             if (request.getRole().equals("ROLE_ADMIN") || request.getRole().equals("ROLE_USER")) {
                 try {
                     profile.removeRole(request.getRole());
+                    profileRepository.save(profile);
                 } catch (RoleNotFoundException e) {
                     return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
                 }
