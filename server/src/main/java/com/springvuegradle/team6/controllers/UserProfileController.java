@@ -185,7 +185,7 @@ public class UserProfileController {
             return new ResponseEntity("Date must be less than current date", HttpStatus.BAD_REQUEST);
         }
 
-        //repository.save(profile);
+        repository.save(profile);
         return new ResponseEntity("User Created Successfully", HttpStatus.CREATED);
     }
 
