@@ -101,8 +101,8 @@
                                 <b-col>
                                     <p>
                                     <ul>
-                                        <li v-for="item in activites" :key="item.activity">
-                                            {{ item.activity }}
+                                        <li v-for="item in activites" :key="item">
+                                            {{ item }}
                                         </li>
                                     </ul>
                                     </p>
@@ -151,6 +151,7 @@
                         currentObj.activites = response.data.activityTypes;
                         currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
+                        console.log(currentObj.activites)
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
