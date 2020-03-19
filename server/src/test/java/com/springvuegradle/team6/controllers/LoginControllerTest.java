@@ -43,7 +43,9 @@ public class LoginControllerTest {
         LoginRequest loginRequestIncorrectPass = new LoginRequest();
         LoginRequest loginRequestCorrectPass = new LoginRequest();
         LoginRequest loginRequestIncorrectUser = new LoginRequest();
-
+        LoginRequest loginInvalidEmail = new LoginRequest();
+        LoginRequest loginEmptyPass = new LoginRequest();
+        LoginRequest loginEmptyUser = new LoginRequest();
 
         mvc.perform(
                 post(login_url)
@@ -75,6 +77,29 @@ public class LoginControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is4xxClientError());
 
+        loginInvalidEmail.email = "invalidEmail.com";
+        loginInvalidEmail.password = "tester";
+        mvc.perform(
+                post(login_url)
+                        .content(mapper.writeValueAsString(loginInvalidEmail))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().is4xxClientError());
+
+        loginEmptyPass.email = "johndoe@uclive.ac.nz";
+        loginEmptyPass.password = "";
+        mvc.perform(
+                post(login_url)
+                        .content(mapper.writeValueAsString(loginEmptyPass))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().is4xxClientError());
+
+        loginEmptyUser.email = "";
+        loginEmptyUser.password = "SuperSecurePassword123";
+        mvc.perform(
+                post(login_url)
+                        .content(mapper.writeValueAsString(loginEmptyUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().is4xxClientError());
     }
 }
 
