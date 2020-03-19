@@ -20,7 +20,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller @RequestMapping("/profile")
@@ -172,8 +175,12 @@ public class UserProfileController {
             return new ResponseEntity("Email must be unique", HttpStatus.BAD_REQUEST);
         }
 
-        repository.save(profile);
-        return ResponseEntity.ok("User Created Successfully");
+        if (request.isValidDate(profile.getDob()) == false) {
+            return new ResponseEntity("Date must be less than current date", HttpStatus.BAD_REQUEST);
+        }
+
+        //repository.save(profile);
+        return new ResponseEntity("User Created Successfully", HttpStatus.CREATED);
     }
 
     /**

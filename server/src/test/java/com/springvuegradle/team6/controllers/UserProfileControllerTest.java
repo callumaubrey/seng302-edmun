@@ -43,7 +43,7 @@ class UserProfileControllerTest {
         validRequest.bio = "Just another plain jane";
         validRequest.primary_email = "johndoe@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "12-03-2000";
+        validRequest.date_of_birth = "1999-12-20";
         validRequest.gender = "male";
         validRequest.fitness = 0;
         return validRequest;
@@ -52,17 +52,7 @@ class UserProfileControllerTest {
     @Test
     void createProfileEmptyFailCases() throws Exception {
         String createProfileUrl = "/profile/";
-        CreateProfileRequest validRequest = new CreateProfileRequest();
-        validRequest.firstname = "John";
-        validRequest.middlename = "S";
-        validRequest.lastname = "Doe";
-        validRequest.nickname = "Big J";
-        validRequest.bio = "Just another plain jane";
-        validRequest.primary_email = "johndoe@uclive.ac.nz";
-        validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "12-03-2000";
-        validRequest.gender = "male";
-        validRequest.fitness = 0;
+        CreateProfileRequest validRequest = getDummyProfile();
 
         // Empty test
         mvc.perform(
@@ -76,7 +66,7 @@ class UserProfileControllerTest {
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isOk());
+                ).andExpect(status().isCreated());
 
         // Empty lastname
         validRequest.lastname = "";
@@ -197,6 +187,7 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
+        request.primary_email = "anotheremail@gmail.com";
         request.date_of_birth = "1800-12-20";
         mvc.perform(
                 post(createProfileUrl)
