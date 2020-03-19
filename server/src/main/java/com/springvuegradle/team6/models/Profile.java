@@ -1,8 +1,15 @@
 package com.springvuegradle.team6.models;
 
+
+import com.springvuegradle.team6.exceptions.DuplicateRoleException;
+import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +17,8 @@ import java.util.Set;
 @Entity
 public class Profile {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     private String firstname;
@@ -39,6 +47,15 @@ public class Profile {
 
     @ManyToMany
     private Set<Country> passports;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
 
     public Profile() {}
 
@@ -93,6 +110,10 @@ public class Profile {
 
     public Set<Country> getPassports() {
         return this.passports;
+    }
+
+    public Collection<Role> getRoles() {
+        return roles;
     }
 
     public Set<Email> getAdditionalemail() {
@@ -150,6 +171,31 @@ public class Profile {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
+
+    public void setRoles(final Collection<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role newRole) throws DuplicateRoleException {
+        for (Role role : roles) {
+            if (role.getRoleName().equals(newRole.getRoleName())) {
+                throw new DuplicateRoleException();
+            }
+        }
+        roles.add(newRole);
+    }
+
+    public void removeRole(String roleName) throws RoleNotFoundException {
+        List<Role> initialRoles = new ArrayList(roles);
+        for (int i = 0; i < roles.size(); i++) {
+            if (initialRoles.get(i).getRoleName().equals(roleName)) {
+                roles.remove(initialRoles.get(i));
+                return;
+            }
+        }
+        throw new RoleNotFoundException();
+    }
+
 
     /**
      * Hashes a plain text password and compares to stored password hash. If the hashes match returns True.

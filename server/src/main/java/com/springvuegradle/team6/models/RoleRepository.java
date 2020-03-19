@@ -4,8 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource
-public interface AdminRepository extends JpaRepository<Admin, Integer> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
 
-    Admin findById(int adminId);
-    Admin findByUsername(String username);
+    Role findByName(String name);
+
+    @Override
+    void delete(Role role);
+
 }

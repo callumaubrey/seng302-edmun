@@ -8,4 +8,5 @@ public interface ProfileRepository extends JpaRepository<Profile, Integer> {
     Profile findByEmail(Email email);
     Profile findById(int id);
     boolean existsByEmail(Email email);
+    Integer removeByEmail(Email email);
 }
