@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.Email;
@@ -27,8 +28,9 @@ public class CreateProfileRequest {
 
     @NotNull
     @NotEmpty
+    @JsonProperty("primary_email")
     @javax.validation.constraints.Email(message = "Email should be valid")
-    public String primary_email;
+    public String email;
 
     @NotNull
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
@@ -39,7 +41,8 @@ public class CreateProfileRequest {
     @NotNull
     @NotEmpty
     @Pattern(regexp = "([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))")
-    public String date_of_birth;
+    @JsonProperty("date_of_birth")
+    public String dob;
 
     @NotNull
     @NotEmpty
@@ -55,12 +58,12 @@ public class CreateProfileRequest {
         profile.setMiddlename(middlename);
         profile.setLastname(lastname);
         profile.setNickname(nickname);
-        Email newEmail = new Email(primary_email);
+        Email newEmail = new Email(email);
         emailRepository.save(newEmail);
         profile.setEmail(newEmail);
         profile.setPassword(password);
         profile.setBio(bio);
-        profile.setDob(date_of_birth);
+        profile.setDob(dob);
         profile.setGender(gender);
         profile.setFitness(fitness);
         return profile;

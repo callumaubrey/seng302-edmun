@@ -41,9 +41,9 @@ class UserProfileControllerTest {
         validRequest.lastname = "Doe";
         validRequest.nickname = "Big J";
         validRequest.bio = "Just another plain jane";
-        validRequest.primary_email = "johndoe@uclive.ac.nz";
+        validRequest.email = "johndoe@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "1999-12-20";
+        validRequest.dob = "1999-12-20";
         validRequest.gender = "male";
         validRequest.fitness = 0;
         return validRequest;
@@ -88,7 +88,7 @@ class UserProfileControllerTest {
         // Empty primary email
         validRequest.lastname = "Doe";
         validRequest.firstname = "John";
-        validRequest.primary_email = "";
+        validRequest.email = "";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(validRequest))
@@ -98,7 +98,7 @@ class UserProfileControllerTest {
         // Empty password
         validRequest.lastname = "Doe";
         validRequest.firstname = "John";
-        validRequest.primary_email = "johndoe@uclive.ac.nz";
+        validRequest.email = "johndoe@uclive.ac.nz";
         validRequest.password = "";
         mvc.perform(
                 post(createProfileUrl)
@@ -109,9 +109,9 @@ class UserProfileControllerTest {
         // Empty date of birth
         validRequest.lastname = "Doe";
         validRequest.firstname = "John";
-        validRequest.primary_email = "johndoe@uclive.ac.nz";
+        validRequest.email = "johndoe@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "";
+        validRequest.dob = "";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(validRequest))
@@ -121,9 +121,9 @@ class UserProfileControllerTest {
         // Empty Gender
         validRequest.lastname = "Doe";
         validRequest.firstname = "John";
-        validRequest.primary_email = "johndoe@uclive.ac.nz";
+        validRequest.email = "johndoe@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "12-03-2000";
+        validRequest.dob = "12-03-2000";
         validRequest.gender = "male";
         mvc.perform(
                 post(createProfileUrl)
@@ -168,7 +168,7 @@ class UserProfileControllerTest {
     void createProfileInvalidDateFormat() throws Exception {
         String createProfileUrl = "/profile/";
         CreateProfileRequest request = getDummyProfile();
-        request.date_of_birth = "1985/12/20";
+        request.dob = "1985/12/20";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(request))
@@ -180,15 +180,15 @@ class UserProfileControllerTest {
     void createProfileInvalidDateRange() throws Exception {
         String createProfileUrl = "/profile/";
         CreateProfileRequest request = getDummyProfile();
-        request.date_of_birth = "2021-12-20";
+        request.dob = "2021-12-20";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
-        request.primary_email = "anotheremail@gmail.com";
-        request.date_of_birth = "1800-12-20";
+        request.email = "anotheremail@gmail.com";
+        request.dob = "1800-12-20";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(request))
@@ -200,7 +200,7 @@ class UserProfileControllerTest {
     void createProfileInvalidEmail() throws Exception {
         String createProfileUrl = "/profile/";
         CreateProfileRequest request = getDummyProfile();
-        request.primary_email = "test.com";
+        request.email = "test.com";
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(request))
