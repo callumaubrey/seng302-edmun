@@ -49,7 +49,7 @@ public class CreateProfileRequest {
     @Pattern(regexp = "(male)|(female)|(nonbinary)")
     public String gender;
 
-    @Min(value = 0) @Max(value = 3)
+    @Min(value = 0) @Max(value = 4)
     public Integer fitness = 0;
 
     public Profile generateProfile(EmailRepository emailRepository) {
