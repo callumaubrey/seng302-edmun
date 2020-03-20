@@ -41,9 +41,9 @@ class AdminControllerTest {
         validRequest.lastname = "Doe";
         validRequest.nickname = "Big J";
         validRequest.bio = "Just another plain jane";
-        validRequest.primary_email = "john@uclive.ac.nz";
+        validRequest.email = "john@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
-        validRequest.date_of_birth = "1999-12-20";
+        validRequest.dob = "1999-12-20";
         validRequest.gender = "male";
         validRequest.fitness = 0;
 
