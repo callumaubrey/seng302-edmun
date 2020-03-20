@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.transaction.Transactional;
 import java.util.Optional;
 
+/**
+ * Controller for "/admin" endpoints
+ */
+
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin")
 @Controller
@@ -28,12 +32,25 @@ public class AdminController {
     private final EmailRepository emailRepository;
     private final RoleRepository roleRepository;
 
+    /**
+     * Constructor for AdminController class which gets the profile, email and role repository
+     *
+     * @param profileRep
+     * @param emailRep
+     * @param roleRep
+     */
     AdminController(ProfileRepository profileRep, EmailRepository emailRep, RoleRepository roleRep) {
         this.profileRepository = profileRep;
         this.emailRepository = emailRep;
         this.roleRepository = roleRep;
     }
 
+    /**
+     * Delete user profile based on user's primary email
+     *
+     * @param request DeleteProfileRequest
+     * @return ResponseEntity which can be success(2xx) or error(4xx)
+     */
     @Transactional
     @DeleteMapping("/profile")
     public ResponseEntity<String> removeProfile(@RequestBody DeleteProfileRequest request) {
@@ -47,6 +64,12 @@ public class AdminController {
         }
     }
 
+    /**
+     * Add role to user's list of roles, identify user based on their primary email
+     *
+     * @param request AddRoleRequest
+     * @return ResponseEntity which can be success(2xx) or error(4xx)
+     */
     @PostMapping("/profile/role")
     public ResponseEntity<String> addRole(@RequestBody AddRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
@@ -69,6 +92,12 @@ public class AdminController {
         }
     }
 
+    /**
+     * Remove role from user's list of role, identify user by primary email
+     *
+     * @param request DeleteRoleRequest
+     * @return ResponseEntity which can be success(2xx) or error(4xx)
+     */
     @DeleteMapping("/profile/role")
     public ResponseEntity<String> deleteRole(@RequestBody DeleteRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
