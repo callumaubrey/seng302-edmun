@@ -12,6 +12,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
+/**
+ * SetupDataLoader class to check for default admin account. If there isn't one, a default admin account will be created
+ */
+
 @Component
 public class SetupDataLoader implements
         ApplicationListener<ContextRefreshedEvent> {
@@ -25,6 +29,11 @@ public class SetupDataLoader implements
     @Autowired
     private EmailRepository emailRepository;
 
+    /**
+     * Create a default admin account if it is not found in the database
+     *
+     * @param event ContextRefreshedEvent
+     */
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -45,12 +54,22 @@ public class SetupDataLoader implements
         user.setRoles(roles);
     }
 
+    /**
+     * Check if default admin account is already setup
+     *
+     * @return True if found or else False
+     */
     private boolean isAlreadySetup() {
         Optional<Email> email = emailRepository.findByAddress("test@test.com");
         return email.isPresent();
     }
 
 
+    /**
+     * Create an object of Role class and save to role repository if not found
+     *
+     * @param name role name
+     */
     @Transactional
     public void createRoleIfNotFound(String name) {
 
