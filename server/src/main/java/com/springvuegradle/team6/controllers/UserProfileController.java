@@ -77,7 +77,7 @@ public class UserProfileController {
      * @param request EditProfileRequest form with Id of profile to edit and new info to update
      * @return returns response entity with details of update
      */
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<String> updateProfile(@PathVariable Integer id, @Valid @RequestBody EditProfileRequest request, HttpSession session) {
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
@@ -87,12 +87,6 @@ public class UserProfileController {
             ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
             if (authorisedResponse != null) {
                 return authorisedResponse;
-            }
-
-            //Check for invalid fields in request
-            String error = request.checkForError();
-            if (error != "") {
-                return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
             }
 
             // Edit profile

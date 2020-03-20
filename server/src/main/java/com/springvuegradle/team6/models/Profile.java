@@ -14,7 +14,9 @@ import java.util.Set;
 @Entity
 public class Profile {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
     private Integer id;
 
     private String firstname;
@@ -25,7 +27,8 @@ public class Profile {
 
     private String nickname;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "email_id", referencedColumnName = "id")
     private Email email;
 
     @OneToMany

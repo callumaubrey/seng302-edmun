@@ -5,12 +5,17 @@ import java.util.Objects;
 
 @Entity
 public class Email {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
     private int id;
 
     @javax.validation.constraints.Email
     @Column(unique=true)
     private String address;
+
+    @OneToOne(mappedBy = "email")
+    private Profile profile;
 
     public Email() { }
 
