@@ -34,34 +34,209 @@ class UserProfileControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
+    private CreateProfileRequest getDummyProfile() {
+        CreateProfileRequest validRequest = new CreateProfileRequest();
+        validRequest.firstname = "John";
+        validRequest.middlename = "S";
+        validRequest.lastname = "Doe";
+        validRequest.nickname = "Big J";
+        validRequest.bio = "Just another plain jane";
+        validRequest.email = "johndoe@uclive.ac.nz";
+        validRequest.password = "SuperSecurePassword123";
+        validRequest.dob = "1999-12-20";
+        validRequest.gender = "male";
+        validRequest.fitness = 0;
+        return validRequest;
+    }
+
     @Test
-    void createProfileFailCases() throws Exception {
-        String create_profile_url = "/profile/";
-        CreateProfileRequest valid_request = new CreateProfileRequest();
-        valid_request.firstname = "John";
-        valid_request.middlename = "S";
-        valid_request.lastname = "Doe";
-        valid_request.nickname = "Big J";
-        valid_request.bio = "Just another plain jane";
-        valid_request.email = "johndoe@uclive.ac.nz";
-        valid_request.password = "SuperSecurePassword123";
-        valid_request.dob = "12-03-2000";
-        valid_request.gender = "male";
-        valid_request.fitness = 0;
+    void createProfileEmptyFailCases() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest validRequest = getDummyProfile();
 
         // Empty test
         mvc.perform(
-                post(create_profile_url)
+                post(createProfileUrl)
                         .content("{}")
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().is4xxClientError());
 
         // Success Case
         mvc.perform(
-                post(create_profile_url)
-                        .content(mapper.writeValueAsString(valid_request))
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isOk());
+                ).andExpect(status().isCreated());
+
+        // Empty lastname
+        validRequest.lastname = "";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Empty firstname
+        validRequest.lastname = "Doe";
+        validRequest.firstname = "";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Empty primary email
+        validRequest.lastname = "Doe";
+        validRequest.firstname = "John";
+        validRequest.email = "";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Empty password
+        validRequest.lastname = "Doe";
+        validRequest.firstname = "John";
+        validRequest.email = "johndoe@uclive.ac.nz";
+        validRequest.password = "";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Empty date of birth
+        validRequest.lastname = "Doe";
+        validRequest.firstname = "John";
+        validRequest.email = "johndoe@uclive.ac.nz";
+        validRequest.password = "SuperSecurePassword123";
+        validRequest.dob = "";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Empty Gender
+        validRequest.lastname = "Doe";
+        validRequest.firstname = "John";
+        validRequest.email = "johndoe@uclive.ac.nz";
+        validRequest.password = "SuperSecurePassword123";
+        validRequest.dob = "12-03-2000";
+        validRequest.gender = "male";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(validRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileEmailExists() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+
+        // Success Case
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        // Email already exists because we just added it
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidPassword() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.password = "jacky";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidDateFormat() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.dob = "1985/12/20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidDateRange() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.dob = "2021-12-20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        request.email = "anotheremail@gmail.com";
+        request.dob = "1800-12-20";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidEmail() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        request.email = "test.com";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileInvalidNames() throws Exception {
+        String createProfileUrl = "/profile/";
+        CreateProfileRequest request = getDummyProfile();
+        // Invalid nickname
+        request.nickname = "#mynickname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Invalid first name
+        request.nickname = "nick";
+        request.firstname = "#firstname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+
+        // Invalid last name
+        request.firstname = "firstname";
+        request.lastname = "@lastname";
+        mvc.perform(
+                post(createProfileUrl)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 
     @Test

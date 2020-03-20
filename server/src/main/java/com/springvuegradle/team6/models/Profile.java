@@ -1,9 +1,14 @@
 package com.springvuegradle.team6.models;
 
+
+import com.springvuegradle.team6.exceptions.DuplicateRoleException;
+import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -36,8 +41,21 @@ public class Profile {
     
     private Integer fitness;
 
+    @ElementCollection(targetClass=ActivityType.class)
+    @Enumerated(EnumType.ORDINAL)
+    private Set<ActivityType> activityTypes;
+
     @ManyToMany
     private Set<Country> passports;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
 
     public Profile() {}
 
@@ -94,6 +112,18 @@ public class Profile {
         return this.passports;
     }
 
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    public Set<Email> getAdditionalemail() {
+        return this.additionalemail;
+    }
+
+    public Set<ActivityType> getActivityTypes() {
+        return this.activityTypes;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -130,6 +160,10 @@ public class Profile {
         this.passports = passports;
     }
 
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
+    }
+
     public void setGender(String gender) {
         this.gender = gender;
     }
@@ -145,6 +179,31 @@ public class Profile {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
+
+    public void setRoles(final Collection<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role newRole) throws DuplicateRoleException {
+        for (Role role : roles) {
+            if (role.getRoleName().equals(newRole.getRoleName())) {
+                throw new DuplicateRoleException();
+            }
+        }
+        roles.add(newRole);
+    }
+
+    public void removeRole(String roleName) throws RoleNotFoundException {
+        List<Role> roleList = new ArrayList(roles);
+        for (int i = 0; i < roles.size(); i++) {
+            if (roleList.get(i).getRoleName().equals(roleName)) {
+                roles.remove(roleList.get(i));
+                return;
+            }
+        }
+        throw new RoleNotFoundException();
+    }
+
 
     /**
      * Hashes a plain text password and compares to stored password hash. If the hashes match returns True.

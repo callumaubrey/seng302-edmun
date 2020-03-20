@@ -6,7 +6,9 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.Optional;
 
 @RepositoryRestResource
-public interface EmailRepository extends JpaRepository<Email, String>  {
+public interface EmailRepository extends JpaRepository<Email, String> {
+    Optional<Email> findByAddress(String s);
+
     @Override
-    Optional<Email> findById(String s);
+    void delete(Email email);
 }

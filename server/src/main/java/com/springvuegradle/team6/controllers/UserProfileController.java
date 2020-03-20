@@ -4,23 +4,26 @@ import com.springvuegradle.team6.models.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.CountryRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.exceptions.NotLoggedInException;
+import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
+import com.springvuegradle.team6.models.RoleRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
+import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
-
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller @RequestMapping("/profile")
@@ -28,21 +31,28 @@ public class UserProfileController {
 
     private final ProfileRepository repository;
     private final CountryRepository countryRepository;
+    private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
 
-    UserProfileController(ProfileRepository rep, CountryRepository countryRepository, EmailRepository emailRepository) {
+    UserProfileController(
+            ProfileRepository rep,
+            CountryRepository countryRepository,
+            EmailRepository emailRepository,
+            RoleRepository roleRep
+    ) {
         this.repository = rep;
         this.countryRepository = countryRepository;
+        this.roleRepository = roleRep;
         this.emailRepository = emailRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
         Object id = session.getAttribute("id");
         if (id == null) {
-            return new ResponseEntity<>("Muse be logged in", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
         }
 
-        if (id != requestId) {
+        if (!(id.toString().equals(requestId.toString()))) {
             return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
         }
 
@@ -79,10 +89,16 @@ public class UserProfileController {
                 return authorisedResponse;
             }
 
+            //Check for invalid fields in request
+            String error = request.checkForError();
+            if (error != "") {
+                return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+            }
+
             // Edit profile
             request.editProfileFromRequest(edit, countryRepository, emailRepository);
             repository.save(edit);
-            return ResponseEntity.ok("User no." + edit.getId() + ": " + edit.getEmail() + " was updated.");
+            return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
             return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
         }
@@ -129,9 +145,21 @@ public class UserProfileController {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
-        }
-        else {
+        } else {
             return ResponseEntity.ok().body(id.toString());
+        }
+    }
+
+    @GetMapping("/role")
+    public ResponseEntity<String> getRole(HttpSession session) throws JsonProcessingException {
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
+        } else {
+            int intId = (int) session.getAttribute("id");
+            ObjectMapper mapper = new ObjectMapper();
+            String postJson = mapper.writeValueAsString(repository.findById(intId).getRoles());
+            return ResponseEntity.ok(postJson);
         }
     }
 
@@ -146,14 +174,19 @@ public class UserProfileController {
     @PostMapping("/")
     @ResponseBody
     public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request) {
-        Profile profile = request.generateProfile(emailRepository);
+        Profile profile = request.generateProfile(emailRepository, countryRepository);
+        profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
         if (repository.existsByEmail(profile.getEmail())) {
             return new ResponseEntity("Email must be unique", HttpStatus.BAD_REQUEST);
         }
 
+        if (request.isValidDate(profile.getDob()) == false) {
+            return new ResponseEntity("Date must be less than current date", HttpStatus.BAD_REQUEST);
+        }
+
         repository.save(profile);
-        return ResponseEntity.ok("User Created Successfully");
+        return new ResponseEntity("User Created Successfully", HttpStatus.CREATED);
     }
 
     /**
