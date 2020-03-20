@@ -174,7 +174,7 @@ public class UserProfileController {
     @PostMapping("/")
     @ResponseBody
     public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request) {
-        Profile profile = request.generateProfile(emailRepository);
+        Profile profile = request.generateProfile(emailRepository, countryRepository);
         profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
         if (repository.existsByEmail(profile.getEmail())) {

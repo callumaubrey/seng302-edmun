@@ -1,13 +1,18 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.Email;
+import com.springvuegradle.team6.validators.EmailCollection;
+import org.hibernate.validator.constraints.Length;
+
 import javax.validation.constraints.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CreateProfileRequest {
     @NotNull
@@ -32,6 +37,15 @@ public class CreateProfileRequest {
     @javax.validation.constraints.Email(message = "Email should be valid")
     public String email;
 
+    @EmailCollection
+    @Size(min=0, max=5)
+    @JsonProperty("additional_email")
+    public List<String> additionalemail;
+
+    @JsonProperty("activities")
+    public Set<ActivityType> activityTypes;
+    public List<@Length(min = 3, max = 3) String> passports;
+
     @NotNull
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
     public String password;
@@ -52,20 +66,52 @@ public class CreateProfileRequest {
     @Min(value = 0) @Max(value = 3)
     public Integer fitness = 0;
 
-    public Profile generateProfile(EmailRepository emailRepository) {
+    public Profile generateProfile(
+            EmailRepository emailRepository,
+            CountryRepository countryRepository
+    ) {
         Profile profile = new Profile();
         profile.setFirstname(firstname);
         profile.setMiddlename(middlename);
         profile.setLastname(lastname);
         profile.setNickname(nickname);
-        Email newEmail = new Email(email);
-        emailRepository.save(newEmail);
-        profile.setEmail(newEmail);
+        Email primaryEmail = new Email(email);
+        emailRepository.save(primaryEmail);
+        profile.setEmail(primaryEmail);
         profile.setPassword(password);
         profile.setBio(bio);
         profile.setDob(dob);
         profile.setGender(gender);
         profile.setFitness(fitness);
+
+        if (this.passports != null) {
+            Set<Country> validPassports = new HashSet<>();
+
+            for (String iso : this.passports) {
+                Country country = countryRepository.findByIsoCode(iso);
+                if (country != null) {
+                    validPassports.add(country);
+                }
+            }
+            profile.setPassports(validPassports);
+        }
+
+        if (this.additionalemail != null) {
+            Set<Email> emails = new HashSet<>();
+
+            for (String address : this.additionalemail) {
+                Email newEmail = new Email(address);
+
+                emailRepository.save(newEmail);
+                emails.add(newEmail);
+            }
+
+            profile.setAdditionalemail(emails);
+        }
+
+        if (this.activityTypes != null) {
+            profile.setActivityTypes(this.activityTypes);
+        }
         return profile;
     }
 
