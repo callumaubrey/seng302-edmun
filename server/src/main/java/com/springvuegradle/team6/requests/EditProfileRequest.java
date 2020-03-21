@@ -1,6 +1,9 @@
 package com.springvuegradle.team6.requests;
 
 import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.location.OSMElementID;
+import com.springvuegradle.team6.models.location.OSMLocation;
+import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.Pattern;
@@ -72,12 +75,17 @@ public class EditProfileRequest {
     public List<String> additionalemail;
 
     /**
+     *  Location set
+     */
+    public OSMElementID location;
+
+    /**
      * Takes a profile and uses the info stored in its attributes from a Json
      * to edit the profile
      *
      * @param edit the profile to be edited
      */
-    public void editProfileFromRequest(Profile edit, CountryRepository countries, EmailRepository emailRepository) {
+    public void editProfileFromRequest(Profile edit, CountryRepository countries, EmailRepository emailRepository, OSMLocationRepository locationRepository) {
         if (this.firstname != null && this.firstname != "") {
             edit.setFirstname(this.firstname);
         }
@@ -136,23 +144,12 @@ public class EditProfileRequest {
         if (this.activityTypes != null) {
             edit.setActivityTypes(this.activityTypes);
         }
-    }
 
-    public String checkForError() {
-        String error = "";
-        if (this.firstname == null || this.firstname == "") {
-            error += "First name cannot be empty. ";
+        if(this.location != null) {
+            OSMLocation osmLocation = new OSMLocation(this.location);
+            locationRepository.save(osmLocation);
+            edit.setLocation(osmLocation);
+            edit.getLocation().updateLocationData();
         }
-        if (this.lastname == null || this.lastname == "") {
-            error += "Last name cannot be empty. ";
-        }
-        if (this.dob == null || this.dob == "") {
-            error += "Enter a valid date of birth. ";
-        }
-        if (this.gender == null || this.dob == "") {
-            error += "Please select a gender. ";
-        }
-
-        return error;
     }
 }

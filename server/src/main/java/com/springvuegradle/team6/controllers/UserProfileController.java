@@ -5,25 +5,18 @@ import com.springvuegradle.team6.models.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.exceptions.NotLoggedInException;
-import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.RoleRepository;
+import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller @RequestMapping("/profile")
@@ -33,17 +26,19 @@ public class UserProfileController {
     private final CountryRepository countryRepository;
     private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
+    private final OSMLocationRepository locationRepository;
 
     UserProfileController(
             ProfileRepository rep,
             CountryRepository countryRepository,
             EmailRepository emailRepository,
-            RoleRepository roleRep
-    ) {
+            RoleRepository roleRep,
+            OSMLocationRepository locationRepository) {
         this.repository = rep;
         this.countryRepository = countryRepository;
         this.roleRepository = roleRep;
         this.emailRepository = emailRepository;
+        this.locationRepository = locationRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
@@ -89,14 +84,8 @@ public class UserProfileController {
                 return authorisedResponse;
             }
 
-            //Check for invalid fields in request
-            String error = request.checkForError();
-            if (error != "") {
-                return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
-            }
-
             // Edit profile
-            request.editProfileFromRequest(edit, countryRepository, emailRepository);
+            request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
             repository.save(edit);
             return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
