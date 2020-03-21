@@ -44,36 +44,40 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginDetail,
                                         HttpSession session) {
-        Optional<Email> email = emailRepository.findByAddress(loginDetail.getEmail());
-        Profile user = profileRepository.findByEmail(email.get());
-        session.removeAttribute("id");
-        if(user != null) {
-            if (user.comparePassword(loginDetail.getPassword())) {
-                boolean isAdmin = false;
-                session.setAttribute("id", user.getId());
-                List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList();
-                for (Role role : user.getRoles()) {
-                    if (role.getRoleName().equals("ROLE_ADMIN")) {
-                        isAdmin = true;
+        try {
+            Optional<Email> email = emailRepository.findByAddress(loginDetail.getEmail());
+            Profile user = profileRepository.findByEmail(email.get());
+            session.removeAttribute("id");
+            if (user != null) {
+                if (user.comparePassword(loginDetail.getPassword())) {
+                    boolean isAdmin = false;
+                    session.setAttribute("id", user.getId());
+                    List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList();
+                    for (Role role : user.getRoles()) {
+                        if (role.getRoleName().equals("ROLE_ADMIN")) {
+                            isAdmin = true;
+                        }
+                        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getRoleName());
+                        updatedAuthorities.add(authority);
                     }
-                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getRoleName());
-                    updatedAuthorities.add(authority);
+
+                    SecurityContextHolder.getContext().setAuthentication(
+                            new UsernamePasswordAuthenticationToken(
+                                    SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+                                    SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+                                    updatedAuthorities));
+                    if (isAdmin) {
+                        return ResponseEntity.ok("Password Correct, User is Admin");
+                    }
+                    return ResponseEntity.ok("Password Correct");
                 }
 
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                                SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
-                                SecurityContextHolder.getContext().getAuthentication().getCredentials(),
-                                updatedAuthorities));
-                if (isAdmin) {
-                    return ResponseEntity.ok("Password Correct, User is Admin");
-                }
-                return ResponseEntity.ok("Password Correct");
+                return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
             }
-
             return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
     }
 
     /**

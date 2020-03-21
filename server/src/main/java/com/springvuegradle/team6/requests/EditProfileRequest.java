@@ -96,52 +96,6 @@ public class EditProfileRequest {
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
-     * to edit the primary email and additional emails of the profile
-     * @param profile THe profile to update
-     * @return returns an response entity if duplicated emails in the db and null if success
-     */
-    public ResponseEntity<String> editEmails(Profile profile, EmailRepository emailRepository) {
-        // Check if primary email is being used by another user
-        if (emailRepository.findByAddress(this.primaryemail).isPresent() && !(profile.getEmail().getAddress().equals(this.primaryemail)) ) {
-            return new ResponseEntity<>(this.primaryemail + " is already being used", HttpStatus.BAD_REQUEST);
-        }
-        profile.getEmail().setAddress(this.primaryemail);
-
-        // Create a set containing all the emails requested
-        Set<Email> newEmails = new HashSet<>();
-        if (this.additionalemail != null) {
-            for (String email : this.additionalemail) {
-                newEmails.add(new Email(email));
-            }
-            // Find out which emails the user is associated with already from the emails requested
-            for (Iterator<Email> i = profile.getAdditionalemail().iterator(); i.hasNext();) {
-                Email email = i.next();
-                if (!(newEmails.contains(email))) {
-                    i.remove();
-                }
-            }
-
-            // Add the ones that are requested but not associated with the user
-            for (Email email : newEmails) {
-                if (!(profile.getAdditionalemail().contains(email))) {
-                    // Check if the email is being used by another user
-                    if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
-                        return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
-                    } else {
-                        profile.getAdditionalemail().add(email);
-                    }
-                }
-            }
-        } else {
-            profile.getAdditionalemail().clear();
-        }
-
-
-        return null;
-    }
-
-    /**
-     * Takes a profile and uses the info stored in its attributes from a Json
      * to edit the profile
      * Note: The emails is edited in a separate function called editEmails
      *

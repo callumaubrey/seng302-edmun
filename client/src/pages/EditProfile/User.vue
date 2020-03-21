@@ -158,40 +158,6 @@
                         </b-row>
                     </div>
                 </b-container>
-                <b-container>
-                    <hr>
-                    <div id="emailBody">
-                        <div v-for="(email, index) in primaryEmail" :key="index">
-                            <b-row>
-                                <b-col><label style="font-weight: bold">{{email}}</label></b-col>
-                                <b-col><h6 align="right">Primary</h6></b-col>
-                            </b-row>
-                            <hr>
-                        </div>
-                        <div v-for="(email, index) in emails" :key="index" >
-                            <b-row>
-                                <b-col><label>{{email}}</label></b-col>
-                                <b-col>
-                                    <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">Remove</b-button>
-                                    <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">Make Primary</b-button>
-                                </b-col>
-                            </b-row>
-                            <hr>
-                        </div>
-                        <b-row>
-                            <b-col >
-                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" id="emailInput" name="email"
-                                             placeholder="john@example.com" required></b-input>
-                                </b-form-group>
-                            </b-col>
-                            <b-col id="emailAdd" class="col-25">
-                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
-                            </b-col>
-                        </b-row>
-                    </div>
-
-                </b-container>
             </b-collapse>
             <hr>
 
@@ -281,7 +247,7 @@
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
                                 {{activityUpdateMessage}}
                             </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='activityErrorMessage != ""'>
+                            <b-form-invalid-feedback :state='activityErrorMessage == ""'>
                                 {{activityErrorMessage}}
                             </b-form-invalid-feedback>
 
@@ -649,21 +615,21 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    primaryemail: tempPrimary,
-                    additionalemail: tempEmails
+                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                    primary_email: tempPrimary[0],
+                    additional_email: tempEmails
                 }).then(function (response) {
                     if (response.status == 200) {
-                        vueObj.emailErrorMessage = null;
+                        vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary";
                         vueObj.emails = tempEmails;
                         vueObj.primaryEmail = tempPrimary;
                     } else {
-                        vueObj.emailUpdateMessage = null;
+                        vueObj.emailUpdateMessage = "";
                         vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                     }
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailUpdateMessage = "";
                     vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                 });
             },
@@ -671,20 +637,21 @@
                 const tempEmails= this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: tempEmails
+                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                    primary_email: this.primaryEmail[0],
+                    additional_email: tempEmails
                 }).then(function (response) {
                     if (response.status == "200") {
-                        vueObj.emailErrorMessage = null;
+                        vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails"
                         vueObj.emails = tempEmails;
                     } else {
-                        vueObj.emailUpdateMessage = null;
+                        vueObj.emailUpdateMessage = "";
                         vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                     }
 
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailUpdateMessage = "";
                     vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                 });
 
@@ -703,21 +670,23 @@
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: newEmails
+                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                    primary_email: this.primaryEmail[0],
+                    additional_email: newEmails
                 }).then(function (response) {
                     if (response.status == "200") {
-                        vueObj.emailErrorMessage = null;
-                        vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails"
+                        console.log("hello");
+                        vueObj.emailErrorMessage = "";
+                        vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails";
                         vueObj.emails = newEmails;
-                        this.$v.emailForm.$reset();
+                        vueObj.$v.emailForm.$reset();
                     } else {
-                        vueObj.emailUpdateMessage = null;
-                        vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
+                        vueObj.emailUpdateMessage = "";
+                        vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
                     }
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
-                    vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
+                    vueObj.emailUpdateMessage = "";
+                    vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
                 });
             },
             // (R)ead

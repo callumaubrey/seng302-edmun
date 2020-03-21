@@ -61,42 +61,10 @@ public class EmailsController {
                 return authorisedResponse;
             }
 
-            // Check if primary email is being used by another user
-            if (emailRepository.findByAddress(request.primaryEmail).isPresent() && !(profile.getEmail().getAddress().equals(request.primaryEmail)) ) {
-                return new ResponseEntity<>(request.primaryEmail + " is already being used", HttpStatus.BAD_REQUEST);
+            ResponseEntity<String> editEmailsResponse = EditEmailsRequest.editEmails(profile, emailRepository, request.additionalEmail, request.primaryEmail);
+            if (editEmailsResponse != null) {
+                return editEmailsResponse;
             }
-            profile.getEmail().setAddress(request.primaryEmail);
-
-            if (request.additionalEmail != null) {
-                // Create a set containing all the emails requested
-                Set<Email> newEmails = new HashSet<>();
-                for (String email : request.additionalEmail) {
-                    newEmails.add(new Email(email));
-                }
-
-                // Find out which emails the user is associated with already from the emails requested
-                for (Iterator<Email> i = profile.getAdditionalemail().iterator(); i.hasNext(); ) {
-                    Email email = i.next();
-                    if (!(newEmails.contains(email))) {
-                        i.remove();
-                    }
-                }
-
-                // Add the ones that are requested but not associated with the user
-                for (Email email : newEmails) {
-                    if (!(profile.getAdditionalemail().contains(email))) {
-                        // Check if the email is being used by another user
-                        if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
-                            return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
-                        } else {
-                            profile.getAdditionalemail().add(email);
-                        }
-                    }
-                }
-            } else {
-                profile.getAdditionalemail().clear();
-            }
-
             repository.save(profile);
 
             return ResponseEntity.ok("Profile updated successfully");

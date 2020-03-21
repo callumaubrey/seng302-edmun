@@ -11,6 +11,7 @@ import com.springvuegradle.team6.exceptions.NotLoggedInException;
 import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.RoleRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import net.minidev.json.JSONObject;
@@ -92,7 +93,7 @@ public class UserProfileController {
 
             // Edit profile
             request.editProfileFromRequest(edit, countryRepository, emailRepository);
-            ResponseEntity<String> editEmailsResponse = request.editEmails(edit, emailRepository);
+            ResponseEntity<String> editEmailsResponse = EditEmailsRequest.editEmails(edit, emailRepository, request.additionalemail, request.primaryemail);
             if (editEmailsResponse != null) {
                 return editEmailsResponse;
             }
