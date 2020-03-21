@@ -1,7 +1,27 @@
 package com.springvuegradle.team6.models.location;
 
 
-public class Location {
+import javax.persistence.*;
+import java.io.Serializable;
+
+/**
+ * Location is a base class for defining a location in the world.
+ * It has three members:
+ * locationID: The stored generated id for the database
+ * name: The associated name of the location
+ * lat & lon: The geo coordinates of the feature
+ * This class can be used to define a feature point.
+ * Right now it is used to define a users location but
+ * it can be extended to be used for instance for vertices
+ * in event routes.
+ */
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Location implements Serializable {
+
+    @Id
+    @GeneratedValue
+    private long locationID = 0;
 
     private String name = "";
 

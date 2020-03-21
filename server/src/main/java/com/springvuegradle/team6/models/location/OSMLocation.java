@@ -3,6 +3,11 @@ package com.springvuegradle.team6.models.location;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 /**
  * Open Street Map Location,
  * This class extends the Location class. It has added functionality of
@@ -10,9 +15,13 @@ import org.springframework.web.client.RestTemplate;
  * It does this via requests to the Nomination OSM API. For more
  * information on this API you can look here: https://nominatim.org/release-docs/latest/api/Reverse/
  */
+@Entity
 public class OSMLocation extends Location {
     // OpenStreetMap Unique ID
+    @Column(unique = true)
     private OSMElementID osmID = null;
+
+    public OSMLocation() { }
 
     public OSMLocation(OSMElementID id) {
         setOsmID(id);
@@ -28,13 +37,14 @@ public class OSMLocation extends Location {
 
     /**
      * Makes API call to Open Street Map to check if the display name or coordinate of a location has changed.
-     * Requires that osmID is set
+     * If it has changed it will set the name and geo coordinates to the newest version.
+     * Requires that osmID is set.
      */
     public void updateLocationData() {
         if(osmID != null) {
             // Setup URL
             String url = "https://nominatim.openstreetmap.org/lookup?osm_ids=%s&format=json";
-            url = String.format(url, osmID.getUniqueCode());
+            url = String.format(url, osmID.uniqueCode());
 
             // Query OSM
             RestTemplate restTemplate = new RestTemplate();

@@ -7,6 +7,7 @@ package com.springvuegradle.team6.models.location;
  * Relations: Describes the relationship between two or more elements.
  * For more information look here: https://wiki.openstreetmap.org/wiki/Elements
  */
+
 public enum OSMElementType {
     NODE('N'),
     RELATION('R'),
