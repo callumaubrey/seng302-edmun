@@ -142,7 +142,7 @@ class UserProfileControllerTest {
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isCreated());
 
         // Email already exists because we just added it
         mvc.perform(
