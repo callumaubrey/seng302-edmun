@@ -5,9 +5,12 @@ import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import javax.validation.constraints.*;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -93,19 +96,66 @@ public class EditProfileRequest {
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
-     * to edit the profile
-     *
-     * @param edit the profile to be edited
+     * to edit the primary email and additional emails of the profile
+     * @param profile THe profile to update
+     * @return returns an response entity if duplicated emails in the db and null if success
      */
-    public void editProfileFromRequest(Profile edit, CountryRepository countries, EmailRepository emailRepository) {
-            edit.setFirstname(this.firstname);
-            edit.setLastname(this.lastname);
-            edit.setBio(this.bio);
-            edit.setNickname(this.nickname);
-            edit.setDob(this.dob);
-            edit.setGender(this.gender);
-            edit.setMiddlename(this.middlename);
-            edit.setFitness(this.fitness);
+    public ResponseEntity<String> editEmails(Profile profile, EmailRepository emailRepository) {
+        // Check if primary email is being used by another user
+        if (emailRepository.findByAddress(this.primaryemail).isPresent() && !(profile.getEmail().getAddress().equals(this.primaryemail)) ) {
+            return new ResponseEntity<>(this.primaryemail + " is already being used", HttpStatus.BAD_REQUEST);
+        }
+        profile.getEmail().setAddress(this.primaryemail);
+
+        // Create a set containing all the emails requested
+        Set<Email> newEmails = new HashSet<>();
+        if (this.additionalemail != null) {
+            for (String email : this.additionalemail) {
+                newEmails.add(new Email(email));
+            }
+            // Find out which emails the user is associated with already from the emails requested
+            for (Iterator<Email> i = profile.getAdditionalemail().iterator(); i.hasNext();) {
+                Email email = i.next();
+                if (!(newEmails.contains(email))) {
+                    i.remove();
+                }
+            }
+
+            // Add the ones that are requested but not associated with the user
+            for (Email email : newEmails) {
+                if (!(profile.getAdditionalemail().contains(email))) {
+                    // Check if the email is being used by another user
+                    if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
+                        return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
+                    } else {
+                        profile.getAdditionalemail().add(email);
+                    }
+                }
+            }
+        } else {
+            profile.getAdditionalemail().clear();
+        }
+
+
+        return null;
+    }
+
+    /**
+     * Takes a profile and uses the info stored in its attributes from a Json
+     * to edit the profile
+     * Note: The emails is edited in a separate function called editEmails
+     *
+     * @param profile the profile to be edited
+     */
+    public void editProfileFromRequest(Profile profile, CountryRepository countries, EmailRepository emailRepository) {
+            profile.setFirstname(this.firstname);
+            profile.setLastname(this.lastname);
+            profile.setBio(this.bio);
+            profile.setNickname(this.nickname);
+            profile.setDob(this.dob);
+            profile.setGender(this.gender);
+            profile.setMiddlename(this.middlename);
+            profile.setFitness(this.fitness);
             Set<Country> validPassports = new HashSet<>();
             if (this.passports != null) {
                 for (String iso : this.passports) {
@@ -115,18 +165,7 @@ public class EditProfileRequest {
                     }
                 }
             }
-            edit.setPassports(validPassports);
-            edit.getEmail().setAddress(primaryemail);
-            Set<Email> emails = new HashSet<>();
-            if (this.additionalemail != null) {
-                for (String address : this.additionalemail) {
-                    Email newEmail = new Email(address);
-
-                    emailRepository.save(newEmail);
-                    emails.add(newEmail);
-                }
-            }
-            edit.setAdditionalemail(emails);
-            edit.setActivityTypes(this.activityTypes);
+            profile.setPassports(validPassports);
+            profile.setActivityTypes(this.activityTypes);
     }
 }

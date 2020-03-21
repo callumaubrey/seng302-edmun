@@ -31,7 +31,7 @@ public class Profile {
     @JoinColumn(name = "email_id", referencedColumnName = "id")
     private Email email;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<Email> additionalemail;
 
     private String password;

@@ -14,6 +14,7 @@ import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import net.minidev.json.JSONObject;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -91,12 +92,16 @@ public class UserProfileController {
 
             // Edit profile
             request.editProfileFromRequest(edit, countryRepository, emailRepository);
+            ResponseEntity<String> editEmailsResponse = request.editEmails(edit, emailRepository);
+            if (editEmailsResponse != null) {
+                return editEmailsResponse;
+            }
             repository.save(edit);
+
             return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
             return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
         }
-
     }
 
     @GetMapping("/")
