@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
-@Controller @RequestMapping("/profile")
+@Controller @RequestMapping("/profiles")
 public class UserProfileController {
 
     private final ProfileRepository repository;

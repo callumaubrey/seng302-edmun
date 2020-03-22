@@ -41,7 +41,7 @@ public class EditEmailsTest {
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
         mvc.perform(MockMvcRequestBuilders
-                .post("/profile/")
+                .post("/profiles/")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
@@ -58,7 +58,7 @@ public class EditEmailsTest {
         ).andExpect(status().isOk());
 
         String body = mvc.perform(
-                get("/profile/id").session(session)
+                get("/profiles/id").session(session)
         ).andReturn().getResponse().getContentAsString();
         id = Integer.parseInt(body);
     }
@@ -71,7 +71,7 @@ public class EditEmailsTest {
                 "  ]\n" +
                 "}\n";
         mvc.perform(MockMvcRequestBuilders
-                .put("/profile/{profileId}/emails", id)
+                .put("/profiles/{profileId}/emails", id)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
@@ -85,7 +85,7 @@ public class EditEmailsTest {
                 "  ]\n" +
                 "}\n";
         mvc.perform(MockMvcRequestBuilders
-                .put("/profile/{profileId}/emails", id)
+                .put("/profiles/{profileId}/emails", id)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
@@ -103,7 +103,7 @@ public class EditEmailsTest {
                 "  ]\n" +
                 "}\n";
         mvc.perform(MockMvcRequestBuilders
-                .put("/profile/{profileId}/emails", id)
+                .put("/profiles/{profileId}/emails", id)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)

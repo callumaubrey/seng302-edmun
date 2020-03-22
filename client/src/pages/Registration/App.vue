@@ -192,7 +192,7 @@
         }
         let currentObj = this;
         this.axios.defaults.withCredentials = true;
-        this.axios.post('http://localhost:9499/profile/', {
+        this.axios.post('http://localhost:9499/profiles/', {
           date_of_birth: this.date_of_birth,
           firstname: this.firstname,
           middlename: this.middlename,

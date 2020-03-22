@@ -470,7 +470,7 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.put("http://localhost:9499/profile/" + this.profile_id,{
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -506,7 +506,7 @@
                     tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
                     tempCodes.push(this.selectedCountry[1]);
-                    this.axios.put("http://localhost:9499/profile/" + this.profile_id, {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
                         firstname: this.profileForm.firstname,
                         middlename: this.profileForm.middlename,
                         lastname: this.profileForm.lastname,
@@ -537,7 +537,7 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
                         activityTypes: this.yourActivites
                     }).then(function (response) {
                         if (response.status == 200) {
@@ -557,7 +557,7 @@
                 const tempCodes = this.passportsCode.slice();
                 const removedPassport = (tempPassports.splice(index, 1))[0];
                 tempCodes.splice(index, 1);
-                this.axios.put("http://localhost:9499/profile/" + this.profile_id, {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -585,7 +585,7 @@
             deleteActivity(index) {
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
                     activityTypes: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -615,7 +615,7 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
                     primary_email: tempPrimary[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -637,7 +637,7 @@
                 const tempEmails= this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -666,7 +666,7 @@
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profile/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: newEmails
                 }).then(function (response) {
@@ -694,7 +694,7 @@
             getProfileData: async function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/user')
+                this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
@@ -725,7 +725,7 @@
             getUserId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/id')
+                this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profile_id = response.data;
                     })
@@ -742,7 +742,7 @@
                     return;
                 }
                 this.axios.defaults.withCredentials = true;
-                this.axios.patch("http://localhost:9499/profile/editpassword",{
+                this.axios.patch("http://localhost:9499/profiles/editpassword",{
                     id: this.profile_id,
                     oldpassword: this.oldPassword,
                     newpassword: this.password,

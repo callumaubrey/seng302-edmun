@@ -47,7 +47,7 @@ class AdminControllerTest {
         validRequest.gender = "male";
         validRequest.fitness = 0;
 
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
 
         mvc.perform(
                 post(createProfileUrl)
@@ -61,7 +61,7 @@ class AdminControllerTest {
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void deleteProfile() throws Exception {
 
-        String deleteProfileUrl = "/admin/profile";
+        String deleteProfileUrl = "/admin/profiles";
 
         //Delete existing primary email
         DeleteProfileRequest request = new DeleteProfileRequest();
@@ -87,7 +87,7 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void addRole() throws Exception {
-        String addRoleUrl = "/admin/profile/role";
+        String addRoleUrl = "/admin/profiles/role";
 
         // Add new role to existing user
         AddRoleRequest request = new AddRoleRequest();
@@ -137,7 +137,7 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void deleteRole() throws Exception {
-        String deleteRoleUrl = "/admin/profile/role";
+        String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete existing role from existing user
         DeleteRoleRequest request = new DeleteRoleRequest();

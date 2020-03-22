@@ -52,7 +52,7 @@ public class AdminController {
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
     @Transactional
-    @DeleteMapping("/profile")
+    @DeleteMapping("/profiles")
     public ResponseEntity<String> removeProfile(@RequestBody DeleteProfileRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
@@ -70,7 +70,7 @@ public class AdminController {
      * @param request AddRoleRequest
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PostMapping("/profile/role")
+    @PostMapping("/profiles/role")
     public ResponseEntity<String> addRole(@RequestBody AddRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
@@ -98,7 +98,7 @@ public class AdminController {
      * @param request DeleteRoleRequest
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @DeleteMapping("/profile/role")
+    @DeleteMapping("/profiles/role")
     public ResponseEntity<String> deleteRole(@RequestBody DeleteRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {

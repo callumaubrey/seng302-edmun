@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class TestDataGenerator {
     public static void createJohnDoeUser(MockMvc mvc, ObjectMapper mapper) throws Exception {
-        String create_profile_url = "/profile/";
+        String create_profile_url = "/profiles/";
         CreateProfileRequest valid_request = new CreateProfileRequest();
         valid_request.firstname = "John";
         valid_request.middlename = "S";
@@ -51,7 +51,7 @@ public class TestDataGenerator {
         ).andExpect(status().isOk());
 
         String body = mvc.perform(
-                get("/profile/id").session(session)
+                get("/profiles/id").session(session)
         ).andReturn().getResponse().getContentAsString();
 
         return Integer.parseInt(body);
