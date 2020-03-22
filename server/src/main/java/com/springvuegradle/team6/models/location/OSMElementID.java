@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -14,7 +15,10 @@ import java.io.Serializable;
 @Embeddable
 public class OSMElementID implements Serializable {
 
+    @NotNull
     private Long id;
+
+    @NotNull
     private OSMElementType type;
 
     public OSMElementID() {}
