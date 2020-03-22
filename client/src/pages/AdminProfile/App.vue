@@ -15,18 +15,26 @@
                     <b-tab title="About" active>
                         <b-card style="margin: 1em" title="About:">
                             <b-row>
-                                <b-col><b>Nickname:</b></b-col>
-                                <b-col v-if="userData.nickName != null"><p >{{userData.nickName}}</p></b-col>
+                                <b-col><b>Email:</b></b-col>
+                                <b-col v-if="primaryEmail != null"><p>{{primaryEmail}}</p></b-col>
                                 <b-col v-else><p>No nickname</p></b-col>
                             </b-row>
                             <b-row>
-                                <b-col><b>Date of Birth:</b></b-col>
-                                <b-col><p>{{userData.dob}}</p></b-col>
+                                <b-col><b>Roles:</b></b-col>
+                                <b-col>
+                                    <div v-bind:key="role" v-for="role in userRoles">
+                                        {{ role.roleName }}
+                                    </div>
+                                </b-col>
                             </b-row>
-                            <b-row>
-                                <b-col><b>Gender:</b></b-col>
-                                <b-col><p>{{userData.gender}}</p></b-col>
-                            </b-row>
+                            <!--                            <b-row>-->
+                            <!--                                <b-col><b>Date of Birth:</b></b-col>-->
+                            <!--                                <b-col><p>{{userData.dob}}</p></b-col>-->
+                            <!--                            </b-row>-->
+                            <!--                            <b-row>-->
+                            <!--                                <b-col><b>Gender:</b></b-col>-->
+                            <!--                                <b-col><p>{{userData.gender}}</p></b-col>-->
+                            <!--                            </b-row>-->
                         </b-card>
                     </b-tab>
 
@@ -56,7 +64,9 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: []
+                locations: [],
+                primaryEmail: "",
+                userRoles: []
             }
         },
         methods: {
@@ -72,6 +82,18 @@
                         currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
+                        currentObj.primaryEmail = response.data.email.address;
+                        currentObj.userRoles = response.data.roles;
+                        let isAdmin = false;
+                        for (let i = 0; i < currentObj.userRoles.length; i++) {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                                isAdmin = true;
+                            }
+                        }
+                        if (isAdmin === false) {
+                            window.alert("User is not an admin");
+                            window.location.href = '/login';
+                        }
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
