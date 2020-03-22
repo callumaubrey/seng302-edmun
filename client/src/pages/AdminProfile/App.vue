@@ -15,26 +15,18 @@
                     <b-tab title="About" active>
                         <b-card style="margin: 1em" title="About:">
                             <b-row>
-                                <b-col><b>Email:</b></b-col>
+                                <b-col><strong>Email:</strong></b-col>
                                 <b-col v-if="primaryEmail != null"><p>{{primaryEmail}}</p></b-col>
                                 <b-col v-else><p>No nickname</p></b-col>
                             </b-row>
                             <b-row>
-                                <b-col><b>Roles:</b></b-col>
+                                <b-col><strong>Roles:</strong></b-col>
                                 <b-col>
                                     <div v-bind:key="role" v-for="role in userRoles">
                                         {{ role.roleName }}
                                     </div>
                                 </b-col>
                             </b-row>
-                            <!--                            <b-row>-->
-                            <!--                                <b-col><b>Date of Birth:</b></b-col>-->
-                            <!--                                <b-col><p>{{userData.dob}}</p></b-col>-->
-                            <!--                            </b-row>-->
-                            <!--                            <b-row>-->
-                            <!--                                <b-col><b>Gender:</b></b-col>-->
-                            <!--                                <b-col><p>{{userData.gender}}</p></b-col>-->
-                            <!--                            </b-row>-->
                         </b-card>
                     </b-tab>
 
@@ -91,13 +83,13 @@
                             }
                         }
                         if (isAdmin === false) {
-                            window.alert("User is not an admin");
-                            window.location.href = '/login';
+                            window.location.href = '/profile';
                         }
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
                         currentObj.isLoggedIn = false;
+                        window.location.href = '/login';
                     });
             },
             getLocationData: async function () {
