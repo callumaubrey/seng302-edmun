@@ -16,6 +16,7 @@
           <label>First Name</label>
           <b-form-input id="input-default" placeholder="Enter name" :state="validateState('firstname')" v-model ="$v.firstname.$model" required trim></b-form-input>
           <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
+          <b-form-text>Required</b-form-text>
         </b-col>
 
         <b-col sm="4">
@@ -27,6 +28,7 @@
           <label>Last Name</label>
           <b-form-input id="input-default" placeholder="Enter last name" :state="validateState('lastname')" v-model ="$v.lastname.$model" required trim></b-form-input>
           <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
+          <b-form-text>Required</b-form-text>
         </b-col>
 
       </b-row>
@@ -42,6 +44,7 @@
           <label>Email address</label>
           <b-form-input id="email" type="email" placeholder="Enter email address" :state="validateState('primary_email')" v-model ="$v.primary_email.$model" required trim v-on:input="serverCheckReset"></b-form-input>
           <b-form-invalid-feedback>{{emailErrMsg}}</b-form-invalid-feedback>
+          <b-form-text>Required</b-form-text>
         </b-col>
       </b-row>
       <b-row class="my-1">
@@ -49,14 +52,14 @@
           <label>Password</label>
           <b-form-input type="password" id="input-default" placeholder="Enter password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
           <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case, one upper case</b-form-invalid-feedback>
-
-
+          <b-form-text>Required</b-form-text>
         </b-col>
 
         <b-col sm="6">
           <label>Repeat Password</label>
           <b-form-input id="input-default" type="password" placeholder="Enter password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
           <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
+          <b-form-text>Required</b-form-text>
         </b-col>
 
       </b-row>
@@ -65,6 +68,7 @@
           <b-form-group
                   id="dob-field"
                   label="Date of birth"
+                  description="Required"
                   label-for="dob-input"
                   :state="validateState('date_of_birth')"
                   invalid-feedback="Please select a valid date"
@@ -84,15 +88,15 @@
           <b-form-group
                   id="gender-field"
                   label="Gender"
+                  description="Required"
                   label-for = "gender-input"
                   :state="validateState('gender')"
                   invalid-feedback="Please select a gender"
           >
-          <b-form-select id = "gender-input" class="mb-3" required :state="validateState('gender')" v-model="$v.gender.$model">
+          <b-form-select id = "gender-input" required :state="validateState('gender')" v-model="$v.gender.$model">
             <b-form-select-option value="male">Male</b-form-select-option>
             <b-form-select-option value="female">Female</b-form-select-option>
             <b-form-select-option value="nonbinary">Non-Binary</b-form-select-option>
-
           </b-form-select>
         </b-form-group>
         </b-col>
