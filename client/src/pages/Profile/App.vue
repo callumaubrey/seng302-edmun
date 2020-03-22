@@ -100,7 +100,7 @@
                                 <b-col>
                                     <p>
                                     <ul>
-                                        <li v-for="item in activites" :key="item">
+                                        <li :key="item" v-for="item in activities">
                                             {{ item }}
                                         </li>
                                     </ul>
@@ -132,7 +132,7 @@
             return {
                 userData: '',
                 passports: [],
-                activites: [],
+                activities: [],
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",

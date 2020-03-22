@@ -1,6 +1,5 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Optional;
-import java.util.Set;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @RestController
@@ -65,9 +63,7 @@ public class ActivityController {
                 return authorisedResponse;
             }
 
-            Set<ActivityType> activities = user.getActivityTypes();
-            activities.addAll(request.getActivities());
-            user.setActivityTypes(activities);
+            user.setActivityTypes(request.getActivities());
             profileRepository.save(user);
         }
         return ResponseEntity.ok("User activity types updated");

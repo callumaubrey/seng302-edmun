@@ -548,9 +548,10 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
-                        activityTypes: this.yourActivites
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
+                        activities: this.yourActivites
                     }).then(function (response) {
+                        console.log(vueObj.yourActivites);
                         if (response.status == 200) {
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
                         }
@@ -597,7 +598,7 @@
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
                 // Need to change to the new activities api
-                this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
                     activities: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -731,6 +732,7 @@
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
+                        vueObj.yourActivites = response.data.activities;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
@@ -762,21 +764,21 @@
                     repeat_password: this.passwordForm.passwordRepeat
                 }).then(function (response) {
                     if (response.status == 200) {
-                        console.log("anything")
+                        console.log("anything");
                         currentObj.output = response.data;
-                        currentObj.passwordForm.oldPassword = null
-                        currentObj.passwordForm.password = null
-                        currentObj.passwordForm.passwordRepeat = null
-                        currentObj.$v.passwordForm.$reset()
+                        currentObj.passwordForm.oldPassword = null;
+                        currentObj.passwordForm.password = null;
+                        currentObj.passwordForm.passwordRepeat = null;
+                        currentObj.$v.passwordForm.$reset();
                         document.getElementById("passwordMessage").textContent = response.data;
                         document.getElementById("passwordMessage").style.color = "green";
                     }
                 }).catch(function (error) {
                     currentObj.output = error.response.data;
-                    currentObj.passwordForm.oldPassword = null
-                    currentObj.passwordForm.password = null
-                    currentObj.passwordForm.passwordRepeat = null
-                    currentObj.$v.passwordForm.$reset()
+                    currentObj.passwordForm.oldPassword = null;
+                    currentObj.passwordForm.password = null;
+                    currentObj.passwordForm.passwordRepeat = null;
+                    currentObj.$v.passwordForm.$reset();
                     document.getElementById("passwordMessage").textContent = error.response.data;
                     document.getElementById("passwordMessage").style.color = "red";
                 })
