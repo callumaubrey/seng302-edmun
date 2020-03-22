@@ -73,6 +73,7 @@ public class EditProfileRequest {
     /**
      * New activity type for profile
      */
+    @JsonProperty("activities")
     public Set<ActivityType> activityTypes;
 
     /**
@@ -90,6 +91,7 @@ public class EditProfileRequest {
      * List of additional emails
      */
     @EmailCollection @Size(max=5)
+    @JsonProperty("additional_email")
     public List<String> additionalemail;
 
     public OSMElementID location;
