@@ -173,9 +173,27 @@ public class UserProfileController {
         Profile profile = request.generateProfile(emailRepository, countryRepository, locationRepository);
         profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
-        if (repository.existsByEmail(profile.getEmail())) {
-            return new ResponseEntity("Email must be unique", HttpStatus.BAD_REQUEST);
+        // Check if primary email is being used by another user
+        String emailAddress = profile.getEmail().getAddress();
+
+        if (emailRepository.findByAddress(emailAddress).isPresent()) {
+            return new ResponseEntity<>(emailAddress + " is already being used", HttpStatus.BAD_REQUEST);
         }
+
+        if (profile.getAdditionalemail() != null) {
+            // Check that the request additional email is not in the request primary email and vice versa
+            if (profile.getAdditionalemail().contains(profile.getEmail())) {
+                return new ResponseEntity<>("The primary email cannot be an additional email", HttpStatus.BAD_REQUEST);
+            }
+            // Check that none of the additional emails are in the repository already
+            for (Email email: profile.getAdditionalemail()) {
+                if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
+                    return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+
 
         if (request.isValidDate(profile.getDob()) == false) {
             return new ResponseEntity("Date must be less than current date", HttpStatus.BAD_REQUEST);

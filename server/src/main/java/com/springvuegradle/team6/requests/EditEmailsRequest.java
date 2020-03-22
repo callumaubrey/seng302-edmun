@@ -43,8 +43,10 @@ public class EditEmailsRequest {
      */
     public static ResponseEntity<String> editEmails(Profile profile, EmailRepository emailRepository, List<String> additionalEmail, String primaryEmail) {
         // Check that the request additional email is not in the request primary email and vice versa
-        if (additionalEmail.contains(primaryEmail)) {
-            return new ResponseEntity<>("The primary email cannot be an additional email", HttpStatus.BAD_REQUEST);
+        if (additionalEmail != null) {
+            if (additionalEmail.contains(primaryEmail)) {
+                return new ResponseEntity<>("The primary email cannot be an additional email", HttpStatus.BAD_REQUEST);
+            }
         }
 
         // Check if primary email is being used by another user
@@ -54,11 +56,13 @@ public class EditEmailsRequest {
             return new ResponseEntity<>(primaryEmail + " is already being used", HttpStatus.BAD_REQUEST);
         }
         Email newPrimary = null;
-        if (profile.getAdditionalemail().contains(new Email(primaryEmail))) {
-            for (Email email: profile.getAdditionalemail()) {
-                if (email.equals(new Email(primaryEmail))) {
-                    newPrimary = email;
-                    break;
+        if (additionalEmail != null) {
+            if (profile.getAdditionalemail().contains(new Email(primaryEmail))) {
+                for (Email email : profile.getAdditionalemail()) {
+                    if (email.equals(new Email(primaryEmail))) {
+                        newPrimary = email;
+                        break;
+                    }
                 }
             }
         }

@@ -82,7 +82,6 @@ public class CreateProfileRequest {
         profile.setLastname(lastname);
         profile.setNickname(nickname);
         Email primaryEmail = new Email(email);
-        emailRepository.save(primaryEmail);
         profile.setEmail(primaryEmail);
         profile.setPassword(password);
         profile.setBio(bio);
@@ -108,7 +107,6 @@ public class CreateProfileRequest {
             for (String address : this.additionalemail) {
                 Email newEmail = new Email(address);
 
-                emailRepository.save(newEmail);
                 emails.add(newEmail);
             }
 
