@@ -229,7 +229,7 @@ public class UserProfileController {
      * @param request the request entity
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PatchMapping("/editpassword")
+    @PatchMapping("/profiles/{id}/password")
     public ResponseEntity<String> editPassword(@Valid @RequestBody EditPasswordRequest request, HttpSession session) {
         ResponseEntity<String> authorised_response = this.checkAuthorised(request.id, session);
         if (authorised_response != null) {
