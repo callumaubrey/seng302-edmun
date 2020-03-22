@@ -1,7 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.OSMElementID;
 import com.springvuegradle.team6.models.location.OSMLocation;
@@ -12,7 +11,6 @@ import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -21,8 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@RestController
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
-@Controller @RequestMapping("/profiles")
+@RequestMapping("/profiles")
 public class UserProfileController {
 
     private final ProfileRepository repository;
@@ -69,16 +68,14 @@ public class UserProfileController {
      * @throws JsonProcessingException
      */
     @GetMapping("/{id}")
-    public ResponseEntity<String> getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
+    public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
         ResponseEntity<String> authorised_response = this.checkAuthorised(id, session);
         if (authorised_response != null) {
             return authorised_response;
         }
-        ObjectMapper mapper = new ObjectMapper();
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
-            String postJson = mapper.writeValueAsString(p.get());
-            return ResponseEntity.ok(postJson);
+            return ResponseEntity.ok(p.get());
         } else {
             return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
         }
@@ -142,9 +139,7 @@ public class UserProfileController {
         }
         else {
             int intId = (int) session.getAttribute("id");
-            ObjectMapper mapper = new ObjectMapper();
-            String postJson = mapper.writeValueAsString(repository.findById(intId));
-            return ResponseEntity.ok(postJson);
+            return ResponseEntity.ok(repository.findById(intId));
         }
     }
 
@@ -164,15 +159,13 @@ public class UserProfileController {
     }
 
     @GetMapping("/role")
-    public ResponseEntity<String> getRole(HttpSession session) throws JsonProcessingException {
+    public ResponseEntity getRole(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
         } else {
             int intId = (int) session.getAttribute("id");
-            ObjectMapper mapper = new ObjectMapper();
-            String postJson = mapper.writeValueAsString(repository.findById(intId).getRoles());
-            return ResponseEntity.ok(postJson);
+            return ResponseEntity.ok(repository.findById(intId).getRoles());
         }
     }
 
@@ -184,7 +177,7 @@ public class UserProfileController {
      * @param request the request entity
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PostMapping("/")
+    @PostMapping("")
     @ResponseBody
     public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request, HttpSession session) {
         Profile profile = request.generateProfile(emailRepository, countryRepository, locationRepository);
@@ -229,14 +222,14 @@ public class UserProfileController {
      * @param request the request entity
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PatchMapping("/editpassword")
-    public ResponseEntity<String> editPassword(@Valid @RequestBody EditPasswordRequest request, HttpSession session) {
-        ResponseEntity<String> authorised_response = this.checkAuthorised(request.id, session);
+    @PutMapping("/{profileId}/password")
+    public ResponseEntity<String> editPassword(@PathVariable Integer profileId, @Valid @RequestBody EditPasswordRequest request, HttpSession session) {
+        ResponseEntity<String> authorised_response = this.checkAuthorised(profileId, session);
         if (authorised_response != null) {
             return authorised_response;
         }
 
-        Profile profile = repository.findById(request.id).get();
+        Profile profile = repository.findById(profileId).get();
         if (!profile.comparePassword(request.oldpassword)) {
             return new ResponseEntity<>("Old password incorrect", HttpStatus.UNAUTHORIZED);
         }

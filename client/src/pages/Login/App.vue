@@ -50,7 +50,7 @@
       </b-form>
     </div>
     <b-container class="b-container">
-      <a href="/registration" id="signup-link">Sign up for Hakinakima</a>
+      <a href="/#/register" id="signup-link">Sign up for Edmun</a>
     </b-container>
 
   </div>

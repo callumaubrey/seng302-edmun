@@ -75,6 +75,7 @@
                                     description="How fit are you?"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="profileForm.fitness"></b-form-select>
+                                {{profileForm.fitness}} Fitness here
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -277,18 +278,18 @@
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
-                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="oldPassword" required></b-form-input>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword" required></b-form-input>
                         </b-col>
                     </b-row>
                     <b-row class="my-1">
                         <b-col sm="6">
                             <label>New Password</label>
-                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model="$v.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model" required></b-form-input>
                             <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="6">
                             <label>Repeat New Password</label>
-                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model" required></b-form-input>
                             <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -340,7 +341,12 @@
                     bio: "",
                     date_of_birth: "",
                     gender: null,
-                    fitness: ""
+                    fitness: null
+                },
+                passwordForm: {
+                    oldPassword: null,
+                    password: null,
+                    passwordRepeat: null,
                 },
                 emailForm: {
                     emailInput : ""
@@ -377,9 +383,7 @@
                 profileErrorMessage: "",
                 emailUpdateMessage: "",
                 emailErrorMessage: "",
-                oldPassword: null,
-                password: null,
-                passwordRepeat: null,
+
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
@@ -434,13 +438,15 @@
                     }
                 }
             },
-            password: {
-                required,
-                passwordValidate
-            },
-            passwordRepeat: {
-                required,
-                sameAsPassword: sameAs('password')
+            passwordForm: {
+                password: {
+                    required,
+                    passwordValidate
+                },
+                passwordRepeat: {
+                    required,
+                    sameAsPassword: sameAs('password')
+                }
             }
         },
 
@@ -463,6 +469,10 @@
                 this.profileUpdateMessage = "";
                 this.profileErrorMessage = "";
             },
+            validatePassword: function(name){
+                const { $dirty, $error } = this.$v['passwordForm'][name];
+                return $dirty ? !$error : null;
+            },
             saveProfileInfo() {
                 this.$v.profileForm.$touch();
                 if (this.$v.profileForm.$anyError) {
@@ -470,6 +480,7 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
+                console.log(this.profileForm.fitness);
                 this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
@@ -537,9 +548,10 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
-                        activityTypes: this.yourActivites
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
+                        activities: this.yourActivites
                     }).then(function (response) {
+                        console.log(vueObj.yourActivites);
                         if (response.status == 200) {
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
                         }
@@ -585,8 +597,9 @@
             deleteActivity(index) {
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
-                this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
-                    activityTypes: this.yourActivites
+                // Need to change to the new activities api
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
+                    activities: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
                         vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
@@ -696,13 +709,15 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
+                        console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
                         }
-                        for (let j = 0; j < response.data.additionalemail.length; j++) {
-                            vueObj.emails.push(response.data.additionalemail[j].address);
+                        for (let j = 0; j < response.data.additional_email.length; j++) {
+                            vueObj.emails.push(response.data.additional_email[j].address);
                         }
+                        console.log(response.data);
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
@@ -711,12 +726,13 @@
                         if (vueObj.profileForm.gender) {
                             vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
                         }
-                        vueObj.profileForm.date_of_birth = response.data.dob;
-                        vueObj.primaryEmail = [response.data.email.address];
+                        vueObj.profileForm.date_of_birth = response.data.date_of_birth;
+                        vueObj.primaryEmail = [response.data.primary_email.address];
                         vueObj.profileForm.fitness = response.data.fitness;
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
+                        vueObj.yourActivites = response.data.activities;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
@@ -733,28 +749,36 @@
                     });
             },
             savePassword: function () {
-                console.log(this.oldPassword);
-                console.log(this.password);
-                console.log(this.passwordRepeat);
+                console.log(this.passwordForm.oldPassword);
+                console.log(this.passwordForm.password);
+                console.log(this.passwordForm.passwordRepeat);
                 let currentObj = this;
-                this.$v.$touch();
-                if (this.$v.$anyError) {
+                this.$v.passwordForm.$touch();
+                if (this.$v.passwordForm.$anyError) {
                     return;
                 }
                 this.axios.defaults.withCredentials = true;
-                this.axios.patch("http://localhost:9499/profiles/editpassword",{
-                    id: this.profile_id,
-                    oldpassword: this.oldPassword,
-                    newpassword: this.password,
-                    repeatedpassword: this.passwordRepeat
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/password",{
+                    old_password: this.passwordForm.oldPassword,
+                    new_password: this.passwordForm.password,
+                    repeat_password: this.passwordForm.passwordRepeat
                 }).then(function (response) {
                     if (response.status == 200) {
+                        console.log("anything");
                         currentObj.output = response.data;
+                        currentObj.passwordForm.oldPassword = null;
+                        currentObj.passwordForm.password = null;
+                        currentObj.passwordForm.passwordRepeat = null;
+                        currentObj.$v.passwordForm.$reset();
                         document.getElementById("passwordMessage").textContent = response.data;
                         document.getElementById("passwordMessage").style.color = "green";
                     }
                 }).catch(function (error) {
                     currentObj.output = error.response.data;
+                    currentObj.passwordForm.oldPassword = null;
+                    currentObj.passwordForm.password = null;
+                    currentObj.passwordForm.passwordRepeat = null;
+                    currentObj.$v.passwordForm.$reset();
                     document.getElementById("passwordMessage").textContent = error.response.data;
                     document.getElementById("passwordMessage").style.color = "red";
                 })

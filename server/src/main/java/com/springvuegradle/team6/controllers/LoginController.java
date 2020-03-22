@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -18,7 +17,7 @@ import java.util.Optional;
 
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
-@Controller
+@RestController
 @RequestMapping("")
 public class LoginController {
     private ProfileRepository profileRepository;
@@ -87,7 +86,7 @@ public class LoginController {
      * Logs user out of session
      * @return ResponseEntity which can be success(2xx) if user exists or error(4xx) if not logged in
      */
-    @GetMapping("/login/logout")
+    @GetMapping("/logout/")
     public ResponseEntity<String> logout(HttpSession session){
         Object id = session.getAttribute("id");
         if (id == null) {

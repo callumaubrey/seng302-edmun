@@ -1,11 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.models.ProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -41,7 +39,7 @@ public class EditEmailsTest {
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
         mvc.perform(MockMvcRequestBuilders
-                .post("/profiles/")
+                .post("/profiles")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)

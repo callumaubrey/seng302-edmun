@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
-import com.springvuegradle.team6.requests.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -16,11 +14,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -51,7 +46,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmptyFailCases() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest validRequest = getDummyProfile();
 
         // Empty test
@@ -134,7 +129,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmailExists() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
 
         // Success Case
@@ -154,7 +149,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidPassword() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.password = "jacky";
         mvc.perform(
@@ -166,7 +161,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateFormat() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "1985/12/20";
         mvc.perform(
@@ -178,7 +173,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateRange() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "2021-12-20";
         mvc.perform(
@@ -198,7 +193,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidEmail() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.email = "test.com";
         mvc.perform(
@@ -210,7 +205,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidNames() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         // Invalid nickname
         request.nickname = "#mynickname";
@@ -241,37 +236,34 @@ class UserProfileControllerTest {
 
     @Test
     void editPasswordFailCases() throws Exception {
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-
-        String editPassUrl = "/profiles/editpassword";
-        EditPasswordRequest request = new EditPasswordRequest();
         MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
 
-        // Try a case when not logged in...
-        request.id = 1;
+        // Try a case for user that does not exist and not logged in...
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put("/profiles/999/password")
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
 
-        // Login
-        request.id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
-        // Passwords don't match
+        String editPassUrl = "/profiles/" + id + "/password";
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1235";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Old password isn't correct
@@ -280,9 +272,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Password dosent have uppercase
@@ -291,9 +284,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "supersecurepassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Password dosent have number
@@ -302,9 +296,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "supersecurepassworD";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Everything is correct
@@ -313,7 +308,7 @@ class UserProfileControllerTest {
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
@@ -323,8 +318,7 @@ class UserProfileControllerTest {
     @Test
     void editPassports() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
@@ -344,8 +338,7 @@ class UserProfileControllerTest {
     @Test
     void editEmails() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
