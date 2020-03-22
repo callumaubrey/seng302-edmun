@@ -3,6 +3,9 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.location.OSMElementID;
+import com.springvuegradle.team6.models.location.OSMLocation;
+import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
@@ -26,17 +29,19 @@ public class UserProfileController {
     private final CountryRepository countryRepository;
     private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
+    private final OSMLocationRepository locationRepository;
 
     UserProfileController(
             ProfileRepository rep,
             CountryRepository countryRepository,
             EmailRepository emailRepository,
-            RoleRepository roleRep
-    ) {
+            RoleRepository roleRep,
+            OSMLocationRepository locationRepository) {
         this.repository = rep;
         this.countryRepository = countryRepository;
         this.roleRepository = roleRep;
         this.emailRepository = emailRepository;
+        this.locationRepository = locationRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
@@ -83,7 +88,7 @@ public class UserProfileController {
             }
 
             // Edit profile
-            request.editProfileFromRequest(edit, countryRepository, emailRepository);
+            request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
             ResponseEntity<String> editEmailsResponse = EditEmailsRequest.editEmails(edit, emailRepository, request.additionalemail, request.primaryemail);
             if (editEmailsResponse != null) {
                 return editEmailsResponse;
@@ -165,7 +170,7 @@ public class UserProfileController {
     @PostMapping("/")
     @ResponseBody
     public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request, HttpSession session) {
-        Profile profile = request.generateProfile(emailRepository, countryRepository);
+        Profile profile = request.generateProfile(emailRepository, countryRepository, locationRepository);
         profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
         if (repository.existsByEmail(profile.getEmail())) {
@@ -208,5 +213,54 @@ public class UserProfileController {
         profile.setPassword(request.newpassword);
         repository.save(profile);
         return ResponseEntity.ok("Password Edited Successfully");
+    }
+
+
+    @PutMapping("/{id}/location")
+    public ResponseEntity<String> updateLocation(@PathVariable Integer id, @Valid @RequestBody OSMElementID location, HttpSession session) {
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            Profile profile = p.get();
+
+            // Check if authorised
+            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            if (authorisedResponse != null) {
+                return authorisedResponse;
+            }
+
+            // Update location
+            OSMLocation osmLocation = new OSMLocation(location);
+            locationRepository.save(osmLocation);
+            profile.setLocation(osmLocation);
+            profile.getLocation().updateLocationData();
+
+            repository.save(profile);
+
+            return ResponseEntity.ok("OK");
+        } else {
+            return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}/location")
+    public ResponseEntity<String> deleteLocation(@PathVariable Integer id, HttpSession session) {
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            Profile profile = p.get();
+
+            // Check if authorised
+            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            if (authorisedResponse != null) {
+                return authorisedResponse;
+            }
+
+            // Update location
+            profile.setLocation(null);
+            repository.save(profile);
+
+            return ResponseEntity.ok("OK");
+        } else {
+            return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+        }
     }
 }
