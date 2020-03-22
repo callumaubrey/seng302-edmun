@@ -113,7 +113,12 @@
                   .then(function (response) {
                     currentObj.output = response.data;
                     console.log(response.data);
-                    window.location.href = '/profile';
+                    let adminPattern = new RegExp("Admin");
+                    if (adminPattern.test(currentObj.output)) {
+                      window.location.href = "/adminProfile";
+                    } else {
+                      window.location.href = '/profile';
+                    }
                   })
                   .catch(function (error) {
                     currentObj.output = error;

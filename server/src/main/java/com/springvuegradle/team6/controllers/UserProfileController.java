@@ -5,18 +5,27 @@ import com.springvuegradle.team6.models.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.exceptions.NotLoggedInException;
+import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
 import com.springvuegradle.team6.models.RoleRepository;
-import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
+import net.minidev.json.JSONObject;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @Controller @RequestMapping("/profile")
@@ -26,19 +35,17 @@ public class UserProfileController {
     private final CountryRepository countryRepository;
     private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
-    private final OSMLocationRepository locationRepository;
 
     UserProfileController(
             ProfileRepository rep,
             CountryRepository countryRepository,
             EmailRepository emailRepository,
-            RoleRepository roleRep,
-            OSMLocationRepository locationRepository) {
+            RoleRepository roleRep
+    ) {
         this.repository = rep;
         this.countryRepository = countryRepository;
         this.roleRepository = roleRep;
         this.emailRepository = emailRepository;
-        this.locationRepository = locationRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
@@ -72,7 +79,7 @@ public class UserProfileController {
      * @param request EditProfileRequest form with Id of profile to edit and new info to update
      * @return returns response entity with details of update
      */
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<String> updateProfile(@PathVariable Integer id, @Valid @RequestBody EditProfileRequest request, HttpSession session) {
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
@@ -85,13 +92,17 @@ public class UserProfileController {
             }
 
             // Edit profile
-            request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
+            request.editProfileFromRequest(edit, countryRepository, emailRepository);
+            ResponseEntity<String> editEmailsResponse = EditEmailsRequest.editEmails(edit, emailRepository, request.additionalemail, request.primaryemail);
+            if (editEmailsResponse != null) {
+                return editEmailsResponse;
+            }
             repository.save(edit);
+
             return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
             return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
         }
-
     }
 
     @GetMapping("/")

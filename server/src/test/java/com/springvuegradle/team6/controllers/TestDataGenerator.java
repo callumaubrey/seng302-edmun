@@ -24,9 +24,9 @@ public class TestDataGenerator {
         valid_request.lastname = "Doe";
         valid_request.nickname = "Big J";
         valid_request.bio = "Just another plain jane";
-        valid_request.primary_email = "johndoe@uclive.ac.nz";
+        valid_request.email = "johndoe@uclive.ac.nz";
         valid_request.password = "SuperSecurePassword123";
-        valid_request.date_of_birth = "12-03-2000";
+        valid_request.dob = "12-03-2000";
         valid_request.gender = "male";
         valid_request.fitness = 0;
 
