@@ -87,7 +87,7 @@ public class LoginController {
      * Logs user out of session
      * @return ResponseEntity which can be success(2xx) if user exists or error(4xx) if not logged in
      */
-    @GetMapping("/logout")
+    @GetMapping("/login/logout")
     public ResponseEntity<String> logout(HttpSession session){
         Object id = session.getAttribute("id");
         if (id == null) {
