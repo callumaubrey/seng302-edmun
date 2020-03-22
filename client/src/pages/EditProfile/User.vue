@@ -277,18 +277,18 @@
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
-                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="oldPassword" required></b-form-input>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword" required></b-form-input>
                         </b-col>
                     </b-row>
                     <b-row class="my-1">
                         <b-col sm="6">
                             <label>New Password</label>
-                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validateState('password')" v-model="$v.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model" required></b-form-input>
                             <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="6">
                             <label>Repeat New Password</label>
-                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validateState('passwordRepeat')" v-model ="$v.passwordRepeat.$model" required></b-form-input>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model" required></b-form-input>
                             <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -342,6 +342,11 @@
                     gender: null,
                     fitness: ""
                 },
+                passwordForm: {
+                    oldPassword: null,
+                    password: null,
+                    passwordRepeat: null,
+                },
                 emailForm: {
                     emailInput : ""
                 },
@@ -377,9 +382,7 @@
                 profileErrorMessage: "",
                 emailUpdateMessage: "",
                 emailErrorMessage: "",
-                oldPassword: null,
-                password: null,
-                passwordRepeat: null,
+
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
@@ -434,13 +437,15 @@
                     }
                 }
             },
-            password: {
-                required,
-                passwordValidate
-            },
-            passwordRepeat: {
-                required,
-                sameAsPassword: sameAs('password')
+            passwordForm: {
+                password: {
+                    required,
+                    passwordValidate
+                },
+                passwordRepeat: {
+                    required,
+                    sameAsPassword: sameAs('password')
+                }
             }
         },
 
@@ -462,6 +467,10 @@
             resetProfileMessage() {
                 this.profileUpdateMessage = "";
                 this.profileErrorMessage = "";
+            },
+            validatePassword: function(name){
+                const { $dirty, $error } = this.$v['passwordForm'][name];
+                return $dirty ? !$error : null;
             },
             saveProfileInfo() {
                 this.$v.profileForm.$touch();
@@ -733,28 +742,36 @@
                     });
             },
             savePassword: function () {
-                console.log(this.oldPassword);
-                console.log(this.password);
-                console.log(this.passwordRepeat);
+                console.log(this.passwordForm.oldPassword);
+                console.log(this.passwordForm.password);
+                console.log(this.passwordForm.passwordRepeat);
                 let currentObj = this;
-                this.$v.$touch();
-                if (this.$v.$anyError) {
+                this.$v.passwordForm.$touch();
+                if (this.$v.passwordForm.$anyError) {
                     return;
                 }
                 this.axios.defaults.withCredentials = true;
-                this.axios.patch("http://localhost:9499/profiles/editpassword",{
-                    id: this.profile_id,
-                    oldpassword: this.oldPassword,
-                    newpassword: this.password,
-                    repeatedpassword: this.passwordRepeat
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/password",{
+                    old_password: this.passwordForm.oldPassword,
+                    new_password: this.passwordForm.password,
+                    repeat_password: this.passwordForm.passwordRepeat
                 }).then(function (response) {
                     if (response.status == 200) {
+                        console.log("anything")
                         currentObj.output = response.data;
+                        currentObj.passwordForm.oldPassword = null
+                        currentObj.passwordForm.password = null
+                        currentObj.passwordForm.passwordRepeat = null
+                        currentObj.$v.passwordForm.$reset()
                         document.getElementById("passwordMessage").textContent = response.data;
                         document.getElementById("passwordMessage").style.color = "green";
                     }
                 }).catch(function (error) {
                     currentObj.output = error.response.data;
+                    currentObj.passwordForm.oldPassword = null
+                    currentObj.passwordForm.password = null
+                    currentObj.passwordForm.passwordRepeat = null
+                    currentObj.$v.passwordForm.$reset()
                     document.getElementById("passwordMessage").textContent = error.response.data;
                     document.getElementById("passwordMessage").style.color = "red";
                 })

@@ -16,25 +16,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Generates and automatically fills mockMVC with test data to aid in writing tests
  */
 public class TestDataGenerator {
-    public static void createJohnDoeUser(MockMvc mvc, ObjectMapper mapper) throws Exception {
+    public static int createJohnDoeUser(MockMvc mvc, ObjectMapper mapper, MockHttpSession session) throws Exception {
         String create_profile_url = "/profiles/";
         CreateProfileRequest valid_request = new CreateProfileRequest();
         valid_request.firstname = "John";
         valid_request.middlename = "S";
         valid_request.lastname = "Doe";
-        valid_request.nickname = "Big J";
+        valid_request.nickname = "BigJ";
         valid_request.bio = "Just another plain jane";
         valid_request.email = "johndoe@uclive.ac.nz";
         valid_request.password = "SuperSecurePassword123";
-        valid_request.dob = "12-03-2000";
+        valid_request.dob = "2000-11-11";
         valid_request.gender = "male";
         valid_request.fitness = 0;
 
-        mvc.perform(
+        String body = mvc.perform(
                 post(create_profile_url)
                         .content(mapper.writeValueAsString(valid_request))
                         .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+                        .session(session)
+        ).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        return Integer.parseInt(body);
     }
 
     public static int loginJohnDoeUser(MockMvc mvc, ObjectMapper mapper, MockHttpSession session) throws Exception {

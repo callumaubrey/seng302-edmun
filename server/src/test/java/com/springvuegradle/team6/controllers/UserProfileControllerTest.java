@@ -241,37 +241,34 @@ class UserProfileControllerTest {
 
     @Test
     void editPasswordFailCases() throws Exception {
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-
-        String editPassUrl = "/profiles/editpassword";
-        EditPasswordRequest request = new EditPasswordRequest();
         MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
 
-        // Try a case when not logged in...
-        request.id = 1;
+        // Try a case for user that does not exist and not logged in...
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put("/profiles/999/password")
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
 
-        // Login
-        request.id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
-        // Passwords don't match
+        String editPassUrl = "/profiles/" + id + "/password";
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1235";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Old password isn't correct
@@ -280,9 +277,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Password dosent have uppercase
@@ -291,9 +289,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "supersecurepassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Password dosent have number
@@ -302,9 +301,10 @@ class UserProfileControllerTest {
         request.repeatedpassword = "supersecurepassworD";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
         ).andExpect(status().is4xxClientError());
 
         // Everything is correct
@@ -313,7 +313,7 @@ class UserProfileControllerTest {
         request.repeatedpassword = "SuperSecurePassword1234";
 
         mvc.perform(
-                patch(editPassUrl)
+                put(editPassUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
@@ -323,8 +323,7 @@ class UserProfileControllerTest {
     @Test
     void editPassports() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
@@ -344,8 +343,7 @@ class UserProfileControllerTest {
     @Test
     void editEmails() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
-        int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);

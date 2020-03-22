@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -37,7 +38,8 @@ public class LoginControllerTest {
 
     @Test
     void loginTest() throws Exception {
-        TestDataGenerator.createJohnDoeUser(mvc, mapper);
+        MockHttpSession session = new MockHttpSession();
+        TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
         String login_url = "/login/";
         LoginRequest loginRequestIncorrectPass = new LoginRequest();
