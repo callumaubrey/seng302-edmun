@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.models;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.location.OSMLocation;
@@ -42,7 +43,7 @@ public class Profile {
     private String dob;
 
     private String gender;
-    
+
     private Integer fitness;
 
     @OneToOne
@@ -95,6 +96,7 @@ public class Profile {
         return this.nickname;
     }
 
+    @JsonProperty("primary_email")
     public Email getEmail() {
         return this.email;
     }
@@ -107,6 +109,7 @@ public class Profile {
         return this.bio;
     }
 
+    @JsonProperty("date_of_birth")
     public String getDob() {
         return this.dob;
     }
@@ -123,10 +126,12 @@ public class Profile {
         return roles;
     }
 
+    @JsonProperty("additional_email")
     public Set<Email> getAdditionalemail() {
         return this.additionalemail;
     }
 
+    @JsonProperty("activities")
     public Set<ActivityType> getActivityTypes() {
         return this.activityTypes;
     }
@@ -135,24 +140,27 @@ public class Profile {
         this.bio = bio;
     }
 
+    @JsonProperty("date_of_birth")
     public void setDob(String dob) {
         this.dob = dob;
     }
 
-    public void setEmail(Email email) {
-        this.email = email;
-
-        // Remove if primary email is in additional emails
-        if (this.additionalemail != null) {
-            this.additionalemail.removeIf(additionalEmail -> this.email.equals(additionalEmail));
-        }
+    public void setId(Integer id) {
+        this.id = id;
     }
 
+    public Integer getFitness() {
+        return fitness;
+    }
+
+    @JsonProperty("primary_email")
+    public void setEmail(Email email) {
+        this.email = email;
+    }
+
+    @JsonProperty("additional_email")
     public void setAdditionalemail(Set<Email> emails) {
         this.additionalemail = emails;
-
-        // Remove if primary email is in additional emails
-        this.additionalemail.removeIf(additionalEmail -> this.email.equals(additionalEmail));
     }
 
     public void setFirstname(String firstname) {
@@ -167,6 +175,7 @@ public class Profile {
         this.passports = passports;
     }
 
+    @JsonProperty("activities")
     public void setActivityTypes(Set<ActivityType> activityTypes) {
         this.activityTypes = activityTypes;
     }

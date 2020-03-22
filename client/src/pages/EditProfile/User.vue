@@ -75,6 +75,7 @@
                                     description="How fit are you?"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="profileForm.fitness"></b-form-select>
+                                {{profileForm.fitness}} Fitness here
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -340,7 +341,7 @@
                     bio: "",
                     date_of_birth: "",
                     gender: null,
-                    fitness: ""
+                    fitness: null
                 },
                 emailForm: {
                     emailInput : ""
@@ -470,6 +471,7 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
+                console.log(this.profileForm.fitness);
                 this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
@@ -585,8 +587,9 @@
             deleteActivity(index) {
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
+                // Need to change to the new activities api
                 this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
-                    activityTypes: this.yourActivites
+                    activities: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
                         vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
@@ -696,13 +699,15 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
+                        console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
                         }
-                        for (let j = 0; j < response.data.additionalemail.length; j++) {
-                            vueObj.emails.push(response.data.additionalemail[j].address);
+                        for (let j = 0; j < response.data.additional_email.length; j++) {
+                            vueObj.emails.push(response.data.additional_email[j].address);
                         }
+                        console.log(response.data);
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
@@ -711,8 +716,8 @@
                         if (vueObj.profileForm.gender) {
                             vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
                         }
-                        vueObj.profileForm.date_of_birth = response.data.dob;
-                        vueObj.primaryEmail = [response.data.email.address];
+                        vueObj.profileForm.date_of_birth = response.data.date_of_birth;
+                        vueObj.primaryEmail = [response.data.primary_email.address];
                         vueObj.profileForm.fitness = response.data.fitness;
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
