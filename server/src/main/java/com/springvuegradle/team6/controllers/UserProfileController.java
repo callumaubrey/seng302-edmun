@@ -222,7 +222,7 @@ public class UserProfileController {
      * @param request the request entity
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PatchMapping("/editpassword")
+    @PatchMapping("/profiles/{id}/password")
     public ResponseEntity<String> editPassword(@Valid @RequestBody EditPasswordRequest request, HttpSession session) {
         ResponseEntity<String> authorised_response = this.checkAuthorised(request.id, session);
         if (authorised_response != null) {
@@ -230,15 +230,15 @@ public class UserProfileController {
         }
 
         Profile profile = repository.findById(request.id).get();
-        if (!profile.comparePassword(request.oldpassword)) {
+        if (!profile.comparePassword(request.old_password)) {
             return new ResponseEntity<>("Old password incorrect", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!request.newpassword.equals(request.repeatedpassword)) {
+        if (!request.new_password.equals(request.repeat_password)) {
             return new ResponseEntity<>("Passwords don't match", HttpStatus.BAD_REQUEST);
         }
 
-        profile.setPassword(request.newpassword);
+        profile.setPassword(request.new_password);
         repository.save(profile);
         return ResponseEntity.ok("Password Edited Successfully");
     }

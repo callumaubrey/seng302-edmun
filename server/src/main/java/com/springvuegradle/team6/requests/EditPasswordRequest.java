@@ -14,19 +14,19 @@ public class EditPasswordRequest {
      * Old user password, cannot be null
      */
     @NotNull
-    public String oldpassword;
+    public String old_password;
 
     /**
      * New user password, matched against pattern and cannot be null
      */
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
     @NotNull
-    public String newpassword;
+    public String new_password;
 
     /**
      * Repeated new user password, matched against pattern and cannot be null
      */
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
     @NotNull
-    public String repeatedpassword;
+    public String repeat_password;
 }
