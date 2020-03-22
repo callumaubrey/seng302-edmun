@@ -39,7 +39,7 @@ public class LoginControllerTest {
     void loginTest() throws Exception {
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
 
-        String login_url = "/account/login/";
+        String login_url = "/login/";
         LoginRequest loginRequestIncorrectPass = new LoginRequest();
         LoginRequest loginRequestCorrectPass = new LoginRequest();
         LoginRequest loginRequestIncorrectUser = new LoginRequest();

@@ -38,7 +38,7 @@ public class TestDataGenerator {
     }
 
     public static int loginJohnDoeUser(MockMvc mvc, ObjectMapper mapper, MockHttpSession session) throws Exception {
-        String login_url = "/account/login";
+        String login_url = "/login";
         LoginRequest login_request = new LoginRequest();
         login_request.email = "johndoe@uclive.ac.nz";
         login_request.password = "SuperSecurePassword123";

@@ -51,7 +51,7 @@ public class EditEmailsTest {
                 "\t\"password\": \"Password1\"\n" +
                 "}";
         mvc.perform(MockMvcRequestBuilders
-                .post("/account/login")
+                .post("/login")
                 .content(loginInfo)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
