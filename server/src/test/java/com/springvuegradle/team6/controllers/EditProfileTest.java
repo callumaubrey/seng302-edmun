@@ -1,12 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,7 +10,6 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -38,7 +33,7 @@ public class EditProfileTest {
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
         mvc.perform(MockMvcRequestBuilders
-                .post("/profiles/")
+                .post("/profiles")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
@@ -454,5 +449,38 @@ public class EditProfileTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void updateActivityTypesReturnStatusOK() throws Exception {
+        String updateActivityTypesUrl = "/profiles/{profileId}/activity-types";
+
+        String jsonString = "{\n" +
+                "\t\"activities\": [\"Hike\", \"Run\"]\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put(updateActivityTypesUrl, id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void updateActivityTypesReturnBadRequest() throws Exception {
+        String updateActivityTypesUrl = "/profiles/{profileId}/activity-types";
+
+        String jsonString = "{\n" +
+                "\t\"activities\": [\"Hike\", \"Yoga\"]\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put(updateActivityTypesUrl, id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isBadRequest());
+
     }
 }

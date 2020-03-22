@@ -177,7 +177,7 @@ public class UserProfileController {
      * @param request the request entity
      * @return ResponseEntity which can be success(2xx) or error(4xx)
      */
-    @PostMapping("/")
+    @PostMapping("")
     @ResponseBody
     public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request, HttpSession session) {
         Profile profile = request.generateProfile(emailRepository, countryRepository, locationRepository);

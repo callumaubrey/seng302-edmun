@@ -3,13 +3,12 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.LoginRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -17,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class TestDataGenerator {
     public static void createJohnDoeUser(MockMvc mvc, ObjectMapper mapper) throws Exception {
-        String create_profile_url = "/profiles/";
+        String create_profile_url = "/profiles";
         CreateProfileRequest valid_request = new CreateProfileRequest();
         valid_request.firstname = "John";
         valid_request.middlename = "S";

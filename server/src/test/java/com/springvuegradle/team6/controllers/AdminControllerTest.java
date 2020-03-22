@@ -47,7 +47,7 @@ class AdminControllerTest {
         validRequest.gender = "male";
         validRequest.fitness = 0;
 
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
 
         mvc.perform(
                 post(createProfileUrl)

@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
-import com.springvuegradle.team6.requests.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -16,11 +14,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -51,7 +47,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmptyFailCases() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest validRequest = getDummyProfile();
 
         // Empty test
@@ -134,7 +130,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmailExists() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
 
         // Success Case
@@ -154,7 +150,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidPassword() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.password = "jacky";
         mvc.perform(
@@ -166,7 +162,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateFormat() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "1985/12/20";
         mvc.perform(
@@ -178,7 +174,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateRange() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "2021-12-20";
         mvc.perform(
@@ -198,7 +194,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidEmail() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         request.email = "test.com";
         mvc.perform(
@@ -210,7 +206,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidNames() throws Exception {
-        String createProfileUrl = "/profiles/";
+        String createProfileUrl = "/profiles";
         CreateProfileRequest request = getDummyProfile();
         // Invalid nickname
         request.nickname = "#mynickname";
