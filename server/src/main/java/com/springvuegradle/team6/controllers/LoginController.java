@@ -46,6 +46,9 @@ public class LoginController {
                                         HttpSession session) {
         try {
             Optional<Email> email = emailRepository.findByAddress(loginDetail.getEmail());
+            if (!(email.isPresent())) {
+                return new ResponseEntity("No associated user with email and password", HttpStatus.UNAUTHORIZED);
+            }
             Profile user = profileRepository.findByEmail(email.get());
             session.removeAttribute("id");
             if (user != null) {
@@ -72,9 +75,9 @@ public class LoginController {
                     return ResponseEntity.ok("Password Correct");
                 }
 
-                return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity("No associated user with email and password", HttpStatus.UNAUTHORIZED);
             }
-            return new ResponseEntity("No associated user with username and password", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity("No associated user with email and password", HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
