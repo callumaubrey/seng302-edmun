@@ -1,10 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.requests.AddRoleRequest;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.DeleteProfileRequest;
-import com.springvuegradle.team6.requests.DeleteRoleRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -36,23 +31,12 @@ class AdminControllerTest {
     @BeforeEach
     void createJohnDoeUser() throws Exception {
         CreateProfileRequest validRequest = new CreateProfileRequest();
-        validRequest.firstname = "John";
-        validRequest.middlename = "S";
-        validRequest.lastname = "Doe";
-        validRequest.nickname = "Big J";
-        validRequest.bio = "Just another plain jane";
-        validRequest.email = "john@uclive.ac.nz";
-        validRequest.password = "SuperSecurePassword123";
-        validRequest.dob = "1999-12-20";
-        validRequest.gender = "male";
-        validRequest.fitness = 0;
+        String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
-        String createProfileUrl = "/profiles";
-
-        mvc.perform(
-                post(createProfileUrl)
-                        .content(mapper.writeValueAsString(validRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .post("/profiles")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated());
 
     }
@@ -64,24 +48,27 @@ class AdminControllerTest {
         String deleteProfileUrl = "/admin/profiles";
 
         //Delete existing primary email
-        DeleteProfileRequest request = new DeleteProfileRequest();
-        request.primary_email = "john@uclive.ac.nz";
+        String jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\"\n" +
+                "}";
 
-        mvc.perform(
-                delete(deleteProfileUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andDo(print()).andExpect(status().isOk());
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteProfileUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
 
         // Incorrect email associated to user
-        request = new DeleteProfileRequest();
-        request.primary_email = "incorrect@email.com";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"incorrect@gmail.com\"\n" +
+                "}";
 
-        mvc.perform(
-                delete(deleteProfileUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteProfileUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+
     }
 
     @Test
@@ -89,48 +76,51 @@ class AdminControllerTest {
     void addRole() throws Exception {
         String addRoleUrl = "/admin/profiles/role";
 
-        // Add new role to existing user
-        AddRoleRequest request = new AddRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_ADMIN";
+        String jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_ADMIN\"\n" +
+                "}";
 
-        mvc.perform(
-                post(addRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .post(addRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
 
         // Add new role to non-existing user
-        request = new AddRoleRequest();
-        request.primary_email = "user@doesnotexist.com";
-        request.role_name = "ROLE_ADMIN";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"user@doesnotexist.com\",\n" +
+                "\t\"role_name\": \"ROLE_ADMIN\"\n" +
+                "}";
 
-        mvc.perform(
-                post(addRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .post(addRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
         // Add duplicate role to existing user
-        request = new AddRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_USER";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_USER\"\n" +
+                "}";
 
-        mvc.perform(
-                post(addRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .post(addRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isConflict());
 
         // Add invalid role to existing user
-        request = new AddRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_INVALID";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_INVALID\"\n" +
+                "}";
 
-        mvc.perform(
-                post(addRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .post(addRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
 
@@ -140,47 +130,53 @@ class AdminControllerTest {
         String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete existing role from existing user
-        DeleteRoleRequest request = new DeleteRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_USER";
+        String jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_USER\"\n" +
+                "}";
 
-        mvc.perform(
-                delete(deleteRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
 
         // Delete non-existing role from existing user
-        request = new DeleteRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_ADMIN";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_ADMIN\"\n" +
+                "}";
 
-        mvc.perform(
-                delete(deleteRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isConflict());
 
         // Delete invalid role
-        request = new DeleteRoleRequest();
-        request.primary_email = "john@uclive.ac.nz";
-        request.role_name = "ROLE_INVALID";
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"role_name\": \"ROLE_INVALID\"\n" +
+                "}";
 
-        mvc.perform(
-                delete(deleteRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
-        // Delete role from non=existing user
-        request = new DeleteRoleRequest();
-        request.primary_email = "incorrect@email.com";
-        request.role_name = "ROLE_USER";
 
-        mvc.perform(
-                delete(deleteRoleUrl)
-                        .content(mapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
+        // Delete role from non=existing user
+        jsonString = "{\n" +
+                "\t\"primary_email\": \"incorrect@gmail.com\",\n" +
+                "\t\"role_name\": \"ROLE_USER\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete(deleteRoleUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
 }
