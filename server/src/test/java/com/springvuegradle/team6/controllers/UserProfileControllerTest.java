@@ -34,7 +34,7 @@ class UserProfileControllerTest {
         validRequest.firstname = "John";
         validRequest.middlename = "S";
         validRequest.lastname = "Doe";
-        validRequest.nickname = "Big J";
+        validRequest.nickname = "BigJ";
         validRequest.bio = "Just another plain jane";
         validRequest.email = "johndoe@uclive.ac.nz";
         validRequest.password = "SuperSecurePassword123";
@@ -323,12 +323,22 @@ class UserProfileControllerTest {
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
 
+        // Edit only passports while keeping other fields same
         EditProfileRequest request = new EditProfileRequest();
+        request.firstname = "John";
+        request.middlename = "S";
+        request.lastname = "Doe";
+        request.nickname = "BigJ";
+        request.bio = "Just another plain jane";
+        request.primaryemail = "johndoe@uclive.ac.nz";
+        request.dob = "2000-11-11";
+        request.gender = "male";
+        request.fitness = 0;
         request.passports = new ArrayList<>();
-        request.passports.add("NZD");
+        request.passports.add("NZL");
 
         mvc.perform(
-                patch(updateUrl)
+                put(updateUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
@@ -343,15 +353,24 @@ class UserProfileControllerTest {
         String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
 
-        // Sets Primary email and
+        // Sets Primary email and additional email while keeping other fields same
         EditProfileRequest request = new EditProfileRequest();
+        request.firstname = "John";
+        request.middlename = "S";
+        request.lastname = "Doe";
+        request.nickname = "BigJ";
+        request.bio = "Just another plain jane";
+        request.dob = "2000-11-11";
+        request.gender = "male";
+        request.fitness = 0;
         request.primaryemail = "valid@email.com";
         request.additionalemail = new ArrayList<String>();
         request.additionalemail.add("test@gmail.com");
         request.additionalemail.add("helloworld@gmail.com");
 
+
         mvc.perform(
-                patch(updateUrl)
+                put(updateUrl)
                         .content(mapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
