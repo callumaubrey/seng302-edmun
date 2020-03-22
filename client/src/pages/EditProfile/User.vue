@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true></NavBar>
+        <NavBar isLoggedIn=true v-bind:userName="userName"></NavBar>
         <b-container>
             <b-row>
                 <b-col>
@@ -314,7 +314,7 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
-    import {required, helpers, maxLength, email, sameAs} from 'vuelidate/lib/validators'
+    import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
     const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
@@ -356,6 +356,7 @@
                 availCountries: [],
                 availActivitys: ["Hike", "Run", "Bike", "Swim", "Walk"],
                 isLoggedIn: false,
+                userName: "",
                 selectedCountry: null,
                 selectedActivity: null,
                 fitnessOptions: [
@@ -519,7 +520,7 @@
                         passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
-                            vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports"
+                            vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports";
                             vueObj.yourCountries = tempPassports;
                             vueObj.passportsCode = tempCodes;
                         } else {
@@ -643,7 +644,7 @@
                 }).then(function (response) {
                     if (response.status == "200") {
                         vueObj.emailErrorMessage = "";
-                        vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails"
+                        vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails";
                         vueObj.emails = tempEmails;
                     } else {
                         vueObj.emailUpdateMessage = "";
@@ -720,6 +721,7 @@
                         vueObj.profileForm.fitness = response.data.fitness;
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
+                        vueObj.userName = response.data.firstname;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
