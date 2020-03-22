@@ -18,7 +18,7 @@ import java.util.Optional;
 
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
-@Controller
+@RestController
 @RequestMapping("")
 public class LoginController {
     private ProfileRepository profileRepository;
