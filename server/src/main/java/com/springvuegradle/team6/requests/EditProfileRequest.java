@@ -27,7 +27,7 @@ public class EditProfileRequest {
     /**
      * New middle name for profile unchanged if empty
      */
-    @Pattern(regexp = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$", message = "middlename is invalid")
+    @Pattern(regexp = "^$|^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$", message = "middlename is invalid")
     public String middlename;
 
     /**
@@ -41,6 +41,7 @@ public class EditProfileRequest {
     /**
      * New nickname for profile unchanged if empty
      */
+    @Pattern(regexp = "^$|^[A-Za-z0-9]+$")
     public String nickname;
 
     /**

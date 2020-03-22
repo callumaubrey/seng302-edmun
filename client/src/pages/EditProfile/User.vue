@@ -700,12 +700,10 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profile/user')
                     .then(function (response) {
-                        console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
                         }
-
                         for (let j = 0; j < response.data.additionalemail.length; j++) {
                             vueObj.emails.push(response.data.additionalemail[j].address);
                         }
@@ -714,7 +712,9 @@
                         vueObj.profileForm.lastname = response.data.lastname;
                         vueObj.profileForm.nickname = response.data.nickname;
                         vueObj.profileForm.gender = response.data.gender;
-                        vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+                        if (vueObj.profileForm.gender) {
+                            vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+                        }
                         vueObj.profileForm.date_of_birth = response.data.dob;
                         vueObj.primaryEmail = [response.data.email.address];
                         vueObj.profileForm.fitness = response.data.fitness;

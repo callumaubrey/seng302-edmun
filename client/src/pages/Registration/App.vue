@@ -109,7 +109,8 @@
 
 <script>
   import NavBar from '@/components/NavBar.vue';
-  import { required, email, helpers, sameAs, alphaNum} from 'vuelidate/lib/validators'
+  import {alphaNum, email, helpers, required, sameAs} from 'vuelidate/lib/validators'
+
   const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
   const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
   export default {
@@ -186,6 +187,7 @@
           return;
         }
         let currentObj = this;
+        this.axios.defaults.withCredentials = true;
         this.axios.post('http://localhost:9499/profile/', {
           date_of_birth: this.date_of_birth,
           firstname: this.firstname,
@@ -201,7 +203,7 @@
                   window.location.href = '/profile';
                 })
                 .catch(function (error) {
-                  currentObj.emailErrMsg = error.response.data
+                  currentObj.emailErrMsg = error.response.data;
                   currentObj.serverError = false;
                   currentObj.$v.$reset();
                   currentObj.$v.$touch();
@@ -209,7 +211,7 @@
       },
       serverCheckReset() {
         if (!this.serverError) {
-          this.emailErrMsg = "Invalid Email"
+          this.emailErrMsg = "Invalid Email";
           this.serverError = true;
         }
       }

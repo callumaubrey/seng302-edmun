@@ -159,7 +159,7 @@
                     });
             },
             getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value
+                var locationText = document.getElementById("locationInput").value;
                 if (locationText == ''){
                     return
                 }
@@ -168,12 +168,12 @@
                     timeout: 1000,
                     withCredentials: false,
                 });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5')
-                var data = await (locationData.get())
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
                 this.locations = data.data
             },
             setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name
+                document.getElementById("locationInput").value = location.display_name;
                 this.locations = []
             }
         },
