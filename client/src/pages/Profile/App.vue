@@ -1,7 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
-
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -136,6 +135,7 @@
                 activites: [],
                 additionalEmails: [],
                 isLoggedIn: false,
+                userName: "",
                 locations: []
             }
         },
@@ -143,7 +143,7 @@
             getUserSession: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/user')
+                this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.userData = response.data;
@@ -151,6 +151,7 @@
                         currentObj.activites = response.data.activityTypes;
                         currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
+                        currentObj.userName = response.data.firstname;
                         console.log(currentObj.activites)
                     })
                     .catch(function (error) {
@@ -159,7 +160,7 @@
                     });
             },
             getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value
+                var locationText = document.getElementById("locationInput").value;
                 if (locationText == ''){
                     return
                 }
@@ -168,12 +169,12 @@
                     timeout: 1000,
                     withCredentials: false,
                 });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5')
-                var data = await (locationData.get())
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
                 this.locations = data.data
             },
             setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name
+                document.getElementById("locationInput").value = location.display_name;
                 this.locations = []
             }
         },

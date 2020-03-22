@@ -1,46 +1,47 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.exceptions.NotLoggedInException;
-import com.springvuegradle.team6.exceptions.ProfileNotFoundException;
-import com.springvuegradle.team6.models.RoleRepository;
+import com.springvuegradle.team6.models.location.OSMElementID;
+import com.springvuegradle.team6.models.location.OSMLocation;
+import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
-@Controller @RequestMapping("/profile")
+@Controller @RequestMapping("/profiles")
 public class UserProfileController {
 
     private final ProfileRepository repository;
     private final CountryRepository countryRepository;
     private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
+    private final OSMLocationRepository locationRepository;
 
     UserProfileController(
             ProfileRepository rep,
             CountryRepository countryRepository,
             EmailRepository emailRepository,
-            RoleRepository roleRep
-    ) {
+            RoleRepository roleRep,
+            OSMLocationRepository locationRepository) {
         this.repository = rep;
         this.countryRepository = countryRepository;
         this.roleRepository = roleRep;
         this.emailRepository = emailRepository;
+        this.locationRepository = locationRepository;
     }
 
     private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
@@ -60,10 +61,27 @@ public class UserProfileController {
         return null;
     }
 
+    /**
+     * Gets the user where the provided id matches the session id. Otherwise return unauthorized.
+     * @param id The requested id
+     * @param session The current Http Session
+     * @return The response code and message/Json
+     * @throws JsonProcessingException
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Profile> getProfile(@PathVariable Integer id) {
-        Profile p = repository.findById(id).get();
-        return ResponseEntity.ok(p);
+    public ResponseEntity<String> getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
+        ResponseEntity<String> authorised_response = this.checkAuthorised(id, session);
+        if (authorised_response != null) {
+            return authorised_response;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            String postJson = mapper.writeValueAsString(p.get());
+            return ResponseEntity.ok(postJson);
+        } else {
+            return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
@@ -74,7 +92,7 @@ public class UserProfileController {
      * @param request EditProfileRequest form with Id of profile to edit and new info to update
      * @return returns response entity with details of update
      */
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<String> updateProfile(@PathVariable Integer id, @Valid @RequestBody EditProfileRequest request, HttpSession session) {
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
@@ -87,13 +105,17 @@ public class UserProfileController {
             }
 
             // Edit profile
-            request.editProfileFromRequest(edit, countryRepository, emailRepository);
+            request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
+            ResponseEntity<String> editEmailsResponse = EditEmailsRequest.editEmails(edit, emailRepository, request.additionalemail, request.primaryemail);
+            if (editEmailsResponse != null) {
+                return editEmailsResponse;
+            }
             repository.save(edit);
-            return ResponseEntity.ok("User no." + edit.getId() + ": " + edit.getEmail() + " was updated.");
+
+            return ResponseEntity.ok("User " + edit.getFirstname() + "'s profile was updated.");
         } else {
             return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
         }
-
     }
 
     @GetMapping("/")
@@ -113,7 +135,7 @@ public class UserProfileController {
      * or error(4xx) user is not logged in
      */
     @GetMapping("/user")
-    public ResponseEntity<String> getProfile2(HttpSession session) throws JsonProcessingException {
+    public ResponseEntity getProfile2(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
@@ -164,16 +186,40 @@ public class UserProfileController {
      */
     @PostMapping("/")
     @ResponseBody
-    public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request) {
-        Profile profile = request.generateProfile(emailRepository);
+    public ResponseEntity createProfile(@Valid @RequestBody CreateProfileRequest request, HttpSession session) {
+        Profile profile = request.generateProfile(emailRepository, countryRepository, locationRepository);
         profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
-        if (repository.existsByEmail(profile.getEmail())) {
-            return new ResponseEntity("Email must be unique", HttpStatus.BAD_REQUEST);
+        // Check if primary email is being used by another user
+        String emailAddress = profile.getEmail().getAddress();
+
+        if (emailRepository.findByAddress(emailAddress).isPresent()) {
+            return new ResponseEntity<>(emailAddress + " is already being used", HttpStatus.BAD_REQUEST);
+        }
+
+        if (profile.getAdditionalemail() != null) {
+            // Check that the request additional email is not in the request primary email and vice versa
+            if (profile.getAdditionalemail().contains(profile.getEmail())) {
+                return new ResponseEntity<>("The primary email cannot be an additional email", HttpStatus.BAD_REQUEST);
+            }
+            // Check that none of the additional emails are in the repository already
+            for (Email email: profile.getAdditionalemail()) {
+                if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
+                    return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+
+
+        if (request.isValidDate(profile.getDob()) == false) {
+            return new ResponseEntity("Date must be less than current date", HttpStatus.BAD_REQUEST);
         }
 
         repository.save(profile);
-        return ResponseEntity.ok("User Created Successfully");
+
+        session.setAttribute("id", profile.getId());
+        return new ResponseEntity(profile.getId(), HttpStatus.CREATED);
     }
 
     /**
@@ -202,5 +248,54 @@ public class UserProfileController {
         profile.setPassword(request.newpassword);
         repository.save(profile);
         return ResponseEntity.ok("Password Edited Successfully");
+    }
+
+
+    @PutMapping("/{id}/location")
+    public ResponseEntity<String> updateLocation(@PathVariable Integer id, @Valid @RequestBody OSMElementID location, HttpSession session) {
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            Profile profile = p.get();
+
+            // Check if authorised
+            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            if (authorisedResponse != null) {
+                return authorisedResponse;
+            }
+
+            // Update location
+            OSMLocation osmLocation = new OSMLocation(location);
+            locationRepository.save(osmLocation);
+            profile.setLocation(osmLocation);
+            profile.getLocation().updateLocationData();
+
+            repository.save(profile);
+
+            return ResponseEntity.ok("OK");
+        } else {
+            return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}/location")
+    public ResponseEntity<String> deleteLocation(@PathVariable Integer id, HttpSession session) {
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            Profile profile = p.get();
+
+            // Check if authorised
+            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            if (authorisedResponse != null) {
+                return authorisedResponse;
+            }
+
+            // Update location
+            profile.setLocation(null);
+            repository.save(profile);
+
+            return ResponseEntity.ok("OK");
+        } else {
+            return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+        }
     }
 }

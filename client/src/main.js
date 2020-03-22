@@ -4,26 +4,33 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
 import Vuelidate from 'vuelidate'
+import VueRouter from 'vue-router'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
+import routes from './routes';
+
+Vue.use(VueRouter)
 Vue.use(Vuelidate)
 // Install BootstrapVue
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
+
 
 Vue.config.productionTip = false;
 
 const options = {
-  isEnabled: true,
-  logLevel: 'debug',
-  stringifyArguments: false,
-  showLogLevel: true,
-  showMethodName: false,
-  separator: '|',
-  showConsoleColors: true
+    isEnabled: true,
+    logLevel: 'debug',
+    stringifyArguments: false,
+    showLogLevel: true,
+    showMethodName: false,
+    separator: '|',
+    showConsoleColors: true
 };
+
+const router = new VueRouter({routes});
 
 Vue.use(VueLogger, options);
 Vue.use(VueAxios, axios);
@@ -36,8 +43,9 @@ Vue.config.productionTip = false;
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
-  template: '<App/>',
-  components: {App},
-  render: h => h(App),
+    el: '#app',
+    template: '<App/>',
+    components: {App},
+    router,
+    render: h => h(App),
 }).$mount('#app');

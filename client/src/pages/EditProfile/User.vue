@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true></NavBar>
+        <NavBar isLoggedIn=true v-bind:userName="userName"></NavBar>
         <b-container>
             <b-row>
                 <b-col>
@@ -137,8 +137,8 @@
                         </div>
                         <b-row>
                             <b-col >
-                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" name="email"
+                                <b-form-group style="font-weight: bold" for="emailInput" description="Maximum of 5 emails allowed">
+                                    <b-input v-if="this.emails.length + this.primaryEmail.length < 5" type="email" name="email"
                                              placeholder="john@example.com" :state="validateEmail('emailInput')" v-model="$v.emailForm.emailInput.$model"></b-input>
                                 </b-form-group>
                                 <b-form-valid-feedback :state='emailUpdateMessage != ""'>
@@ -150,47 +150,13 @@
                             </b-col>
 
                             <b-col id="emailAdd" class="col-25">
-                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
                             </b-col>
                         </b-row>
                         <b-row>
 
                         </b-row>
                     </div>
-                </b-container>
-                <b-container>
-                    <hr>
-                    <div id="emailBody">
-                        <div v-for="(email, index) in primaryEmail" :key="index">
-                            <b-row>
-                                <b-col><label style="font-weight: bold">{{email}}</label></b-col>
-                                <b-col><h6 align="right">Primary</h6></b-col>
-                            </b-row>
-                            <hr>
-                        </div>
-                        <div v-for="(email, index) in emails" :key="index" >
-                            <b-row>
-                                <b-col><label>{{email}}</label></b-col>
-                                <b-col>
-                                    <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">Remove</b-button>
-                                    <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">Make Primary</b-button>
-                                </b-col>
-                            </b-row>
-                            <hr>
-                        </div>
-                        <b-row>
-                            <b-col >
-                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" id="emailInput" name="email"
-                                             placeholder="john@example.com" required></b-input>
-                                </b-form-group>
-                            </b-col>
-                            <b-col id="emailAdd" class="col-25">
-                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
-                            </b-col>
-                        </b-row>
-                    </div>
-
                 </b-container>
             </b-collapse>
             <hr>
@@ -281,7 +247,7 @@
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
                                 {{activityUpdateMessage}}
                             </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='activityErrorMessage != ""'>
+                            <b-form-invalid-feedback :state='activityErrorMessage == ""'>
                                 {{activityErrorMessage}}
                             </b-form-invalid-feedback>
 
@@ -338,6 +304,7 @@
                     </b-row>
                 </b-container>
             </b-collapse>
+            <hr>
         </b-container>
     </div>
 </template>
@@ -347,7 +314,7 @@
     // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
-    import {required, helpers, maxLength, email, sameAs} from 'vuelidate/lib/validators'
+    import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
     const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
@@ -369,7 +336,7 @@
                     lastname: "",
                     middlename: null,
                     firstname: "",
-                    nickName: "",
+                    nickname: "",
                     bio: "",
                     date_of_birth: "",
                     gender: null,
@@ -382,13 +349,13 @@
                 disabled: true,
                 primaryEmail: [],
                 emails: [],
-
                 yourCountries: [],
                 yourActivites: [],
                 passportsCode: [],
                 availCountries: [],
                 availActivitys: ["Hike", "Run", "Bike", "Swim", "Walk"],
                 isLoggedIn: false,
+                userName: "",
                 selectedCountry: null,
                 selectedActivity: null,
                 fitnessOptions: [
@@ -436,7 +403,7 @@
                     maxLength: maxLength(40)
                 },
                 nickname: {
-                    maxLength: maxLength(3),
+                    maxLength: maxLength(40)
                 },
                 date_of_birth: {
                     required,
@@ -474,7 +441,7 @@
             passwordRepeat: {
                 required,
                 sameAsPassword: sameAs('password')
-            },
+            }
         },
 
 
@@ -503,26 +470,23 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id,{
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
-                    nickname: this.profileForm.nickName,
-                    dob: this.profileForm.date_of_birth,
+                    nickname: this.profileForm.nickname,
+                    primary_email: this.primaryEmail[0],
+                    date_of_birth: this.profileForm.date_of_birth,
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
-                    bio: this.profileForm.bio
+                    bio: this.profileForm.bio,
+                    passports: this.passportsCode
                 }).then(function (response) {
-                    if (response.status == 200) {
-                        vueObj.profileErrorMessage = "";
-                        vueObj.profileUpdateMessage = "Profile successfully updated";
-                    } else {
-                        vueObj.profileUpdateMessage = "";
-                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
-                    }
-                }).catch(function () {
-                        vueObj.profileUpdateMessage = "";
-                        vueObj.profileErrorMessage = "Failed to update profile, please try again later";
+                    vueObj.emailErrorMessage = "";
+                    vueObj.profileUpdateMessage = response.data;
+                }).catch(function (error) {
+                    vueObj.profileUpdateMessage = "";
+                    vueObj.profileErrorMessage = error.response.data;
                 });
             },
             totalPassports() {
@@ -542,11 +506,20 @@
                     tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
                     tempCodes.push(this.selectedCountry[1]);
-                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
+                        firstname: this.profileForm.firstname,
+                        middlename: this.profileForm.middlename,
+                        lastname: this.profileForm.lastname,
+                        nickname: this.profileForm.nickname,
+                        primary_email: this.primaryEmail[0],
+                        date_of_birth: this.profileForm.date_of_birth,
+                        gender: this.profileForm.gender.toLowerCase(),
+                        fitness: this.profileForm.fitness,
+                        bio: this.profileForm.bio,
                         passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
-                            vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports"
+                            vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports";
                             vueObj.yourCountries = tempPassports;
                             vueObj.passportsCode = tempCodes;
                         } else {
@@ -564,7 +537,7 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                    this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
                         activityTypes: this.yourActivites
                     }).then(function (response) {
                         if (response.status == 200) {
@@ -584,7 +557,16 @@
                 const tempCodes = this.passportsCode.slice();
                 const removedPassport = (tempPassports.splice(index, 1))[0];
                 tempCodes.splice(index, 1);
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
+                    firstname: this.profileForm.firstname,
+                    middlename: this.profileForm.middlename,
+                    lastname: this.profileForm.lastname,
+                    nickname: this.profileForm.nickname,
+                    primary_email: this.primaryEmail[0],
+                    date_of_birth: this.profileForm.date_of_birth,
+                    gender: this.profileForm.gender.toLowerCase(),
+                    fitness: this.profileForm.fitness,
+                    bio: this.profileForm.bio,
                     passports: tempCodes
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -603,7 +585,7 @@
             deleteActivity(index) {
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
+                this.axios.patch("http://localhost:9499/profiles/" + this.profile_id, {
                     activityTypes: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -633,21 +615,21 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    primaryemail: tempPrimary,
-                    additionalemail: tempEmails
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                    primary_email: tempPrimary[0],
+                    additional_email: tempEmails
                 }).then(function (response) {
                     if (response.status == 200) {
-                        vueObj.emailErrorMessage = null;
+                        vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary";
                         vueObj.emails = tempEmails;
                         vueObj.primaryEmail = tempPrimary;
                     } else {
-                        vueObj.emailUpdateMessage = null;
+                        vueObj.emailUpdateMessage = "";
                         vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                     }
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailUpdateMessage = "";
                     vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
                 });
             },
@@ -655,20 +637,21 @@
                 const tempEmails= this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: tempEmails
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                    primary_email: this.primaryEmail[0],
+                    additional_email: tempEmails
                 }).then(function (response) {
                     if (response.status == "200") {
-                        vueObj.emailErrorMessage = null;
-                        vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails"
+                        vueObj.emailErrorMessage = "";
+                        vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails";
                         vueObj.emails = tempEmails;
                     } else {
-                        vueObj.emailUpdateMessage = null;
+                        vueObj.emailUpdateMessage = "";
                         vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                     }
 
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
+                    vueObj.emailUpdateMessage = "";
                     vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
                 });
 
@@ -678,30 +661,28 @@
                 if (this.$v.emailForm.$anyError) {
                     return;
                 }
-                var numEmails = this.emails.length;
-                if (numEmails >= 4){
-                    console.log("Max Emails (limit is 5)");
-                    return
-                }
+
                 var newEmail = this.emailForm.emailInput;
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                this.axios.patch("http://localhost:9499/profile/" + this.profile_id, {
-                    additionalemail: newEmails
+                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                    primary_email: this.primaryEmail[0],
+                    additional_email: newEmails
                 }).then(function (response) {
                     if (response.status == "200") {
-                        vueObj.emailErrorMessage = null;
-                        vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails"
+                        console.log("hello");
+                        vueObj.emailErrorMessage = "";
+                        vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails";
                         vueObj.emails = newEmails;
-                        this.$v.emailForm.$reset();
+                        vueObj.$v.emailForm.$reset();
                     } else {
-                        vueObj.emailUpdateMessage = null;
-                        vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
+                        vueObj.emailUpdateMessage = "";
+                        vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
                     }
                 }).catch(function () {
-                    vueObj.emailUpdateMessage = null;
-                    vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later"
+                    vueObj.emailUpdateMessage = "";
+                    vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
                 });
             },
             // (R)ead
@@ -713,27 +694,29 @@
             getProfileData: async function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/user')
+                this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
                         }
-
                         for (let j = 0; j < response.data.additionalemail.length; j++) {
                             vueObj.emails.push(response.data.additionalemail[j].address);
                         }
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
-                        vueObj.profileForm.nickName = response.data.nickname;
+                        vueObj.profileForm.nickname = response.data.nickname;
                         vueObj.profileForm.gender = response.data.gender;
-                        vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+                        if (vueObj.profileForm.gender) {
+                            vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+                        }
                         vueObj.profileForm.date_of_birth = response.data.dob;
                         vueObj.primaryEmail = [response.data.email.address];
                         vueObj.profileForm.fitness = response.data.fitness;
                         vueObj.profileForm.bio = response.data.bio;
                         vueObj.isLoggedIn = true;
+                        vueObj.userName = response.data.firstname;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
@@ -742,7 +725,7 @@
             getUserId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/id')
+                this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profile_id = response.data;
                     })
@@ -759,7 +742,7 @@
                     return;
                 }
                 this.axios.defaults.withCredentials = true;
-                this.axios.patch("http://localhost:9499/profile/editpassword",{
+                this.axios.patch("http://localhost:9499/profiles/editpassword",{
                     id: this.profile_id,
                     oldpassword: this.oldPassword,
                     newpassword: this.password,

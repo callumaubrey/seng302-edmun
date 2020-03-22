@@ -3,16 +3,21 @@ package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.springvuegradle.team6.models.location.OSMLocation;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Profile {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
     private Integer id;
 
     private String firstname;
@@ -23,10 +28,11 @@ public class Profile {
 
     private String nickname;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "email_id", referencedColumnName = "id")
     private Email email;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<Email> additionalemail;
 
     private String password;
@@ -39,11 +45,20 @@ public class Profile {
     
     private Integer fitness;
 
+    @OneToOne
+    private OSMLocation location;
+
     @ElementCollection(targetClass=ActivityType.class)
     @Enumerated(EnumType.ORDINAL)
     private Set<ActivityType> activityTypes;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH})
+    @JoinTable(
+            name = "users_countries",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "country_code", referencedColumnName = "isoCode"))
     private Set<Country> passports;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -192,16 +207,23 @@ public class Profile {
     }
 
     public void removeRole(String roleName) throws RoleNotFoundException {
-        List<Role> initialRoles = new ArrayList(roles);
+        List<Role> roleList = new ArrayList(roles);
         for (int i = 0; i < roles.size(); i++) {
-            if (initialRoles.get(i).getRoleName().equals(roleName)) {
-                roles.remove(initialRoles.get(i));
+            if (roleList.get(i).getRoleName().equals(roleName)) {
+                roles.remove(roleList.get(i));
                 return;
             }
         }
         throw new RoleNotFoundException();
     }
 
+    public OSMLocation getLocation() {
+        return location;
+    }
+
+    public void setLocation(OSMLocation location) {
+        this.location = location;
+    }
 
     /**
      * Hashes a plain text password and compares to stored password hash. If the hashes match returns True.
