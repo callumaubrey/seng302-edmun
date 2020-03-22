@@ -137,8 +137,8 @@
                         </div>
                         <b-row>
                             <b-col >
-                                <b-form-group style="font-weight: bold" for="emailInput" description="Add a new email (Max 5)">
-                                    <b-input type="email" name="email"
+                                <b-form-group style="font-weight: bold" for="emailInput" description="Maximum of 5 emails allowed">
+                                    <b-input v-if="this.emails.length + this.primaryEmail.length < 5" type="email" name="email"
                                              placeholder="john@example.com" :state="validateEmail('emailInput')" v-model="$v.emailForm.emailInput.$model"></b-input>
                                 </b-form-group>
                                 <b-form-valid-feedback :state='emailUpdateMessage != ""'>
@@ -150,7 +150,7 @@
                             </b-col>
 
                             <b-col id="emailAdd" class="col-25">
-                                <b-button class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -349,7 +349,6 @@
                 disabled: true,
                 primaryEmail: [],
                 emails: [],
-
                 yourCountries: [],
                 yourActivites: [],
                 passportsCode: [],
@@ -442,7 +441,7 @@
             passwordRepeat: {
                 required,
                 sameAsPassword: sameAs('password')
-            },
+            }
         },
 
 
@@ -662,11 +661,7 @@
                 if (this.$v.emailForm.$anyError) {
                     return;
                 }
-                var numEmails = this.emails.length;
-                if (numEmails >= 4){
-                    console.log("Max Emails (limit is 5)");
-                    return
-                }
+
                 var newEmail = this.emailForm.emailInput;
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
