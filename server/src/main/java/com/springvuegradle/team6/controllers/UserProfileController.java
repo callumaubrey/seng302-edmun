@@ -237,15 +237,15 @@ public class UserProfileController {
         }
 
         Profile profile = repository.findById(request.id).get();
-        if (!profile.comparePassword(request.oldpassword)) {
+        if (!profile.comparePassword(request.old_password)) {
             return new ResponseEntity<>("Old password incorrect", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!request.newpassword.equals(request.repeatedpassword)) {
+        if (!request.new_password.equals(request.repeat_password)) {
             return new ResponseEntity<>("Passwords don't match", HttpStatus.BAD_REQUEST);
         }
 
-        profile.setPassword(request.newpassword);
+        profile.setPassword(request.new_password);
         repository.save(profile);
         return ResponseEntity.ok("Password Edited Successfully");
     }
