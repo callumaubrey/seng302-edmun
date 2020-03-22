@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -87,7 +86,7 @@ public class LoginController {
      * Logs user out of session
      * @return ResponseEntity which can be success(2xx) if user exists or error(4xx) if not logged in
      */
-    @GetMapping("/logout")
+    @GetMapping("/logout/")
     public ResponseEntity<String> logout(HttpSession session){
         Object id = session.getAttribute("id");
         if (id == null) {
