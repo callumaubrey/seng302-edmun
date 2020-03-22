@@ -20,7 +20,7 @@ public class CreateProfileRequest {
     @Pattern(regexp = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$")
     public String firstname;
 
-    @Pattern(regexp = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$")
+    @Pattern(regexp = "^$|^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$")
     public String middlename;
 
     @NotNull
@@ -28,7 +28,7 @@ public class CreateProfileRequest {
     @Pattern(regexp = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$")
     public String lastname;
 
-    @Pattern(regexp = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$")
+    @Pattern(regexp = "^$|^[A-Za-z0-9]+$")
     public String nickname;
 
     @NotNull
