@@ -51,7 +51,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmptyFailCases() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest validRequest = getDummyProfile();
 
         // Empty test
@@ -134,7 +134,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileEmailExists() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
 
         // Success Case
@@ -154,7 +154,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidPassword() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
         request.password = "jacky";
         mvc.perform(
@@ -166,7 +166,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateFormat() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "1985/12/20";
         mvc.perform(
@@ -178,7 +178,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidDateRange() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
         request.dob = "2021-12-20";
         mvc.perform(
@@ -198,7 +198,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidEmail() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
         request.email = "test.com";
         mvc.perform(
@@ -210,7 +210,7 @@ class UserProfileControllerTest {
 
     @Test
     void createProfileInvalidNames() throws Exception {
-        String createProfileUrl = "/profile/";
+        String createProfileUrl = "/profiles/";
         CreateProfileRequest request = getDummyProfile();
         // Invalid nickname
         request.nickname = "#mynickname";
@@ -243,7 +243,7 @@ class UserProfileControllerTest {
     void editPasswordFailCases() throws Exception {
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
 
-        String editPassUrl = "/profile/editpassword";
+        String editPassUrl = "/profiles/editpassword";
         EditPasswordRequest request = new EditPasswordRequest();
         MockHttpSession session = new MockHttpSession();
 
@@ -326,7 +326,7 @@ class UserProfileControllerTest {
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
         int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
 
-        String updateUrl = "/profile/%d";
+        String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
 
         EditProfileRequest request = new EditProfileRequest();
@@ -347,7 +347,7 @@ class UserProfileControllerTest {
         TestDataGenerator.createJohnDoeUser(mvc, mapper);
         int id = TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
 
-        String updateUrl = "/profile/%d";
+        String updateUrl = "/profiles/%d";
         updateUrl = String.format(updateUrl, id);
 
         // Sets Primary email and

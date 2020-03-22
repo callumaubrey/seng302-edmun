@@ -57,7 +57,7 @@
         methods: {
             logout() {
                 const vueObj = this;
-                this.axios.get('http://localhost:9499/account/logout')
+                this.axios.get('http://localhost:9499/logout')
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');

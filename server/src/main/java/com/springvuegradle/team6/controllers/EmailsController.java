@@ -49,7 +49,7 @@ public class EmailsController {
      * @param session The session that the user currently runs on
      * @return the response with status code
      */
-    @PutMapping("/profile/{profileId}/emails")
+    @PutMapping("/profiles/{profileId}/emails")
     public ResponseEntity<String> updateEmails(@PathVariable Integer profileId, @Valid  @RequestBody EditEmailsRequest request, HttpSession session) {
         Optional<Profile> p = repository.findById(profileId);
         if (p.isPresent()) {

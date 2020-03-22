@@ -106,7 +106,7 @@
         if (this.emailState != false && this.passwordState != false) {
           let currentObj = this;
           this.axios.defaults.withCredentials = true;
-          this.axios.post('http://localhost:9499/account/login', {
+          this.axios.post('http://localhost:9499/login', {
             email: this.email,
             password: this.password
           })
