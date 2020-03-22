@@ -52,7 +52,13 @@ public class Profile {
     @Enumerated(EnumType.ORDINAL)
     private Set<ActivityType> activityTypes;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH})
+    @JoinTable(
+            name = "users_countries",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "country_code", referencedColumnName = "isoCode"))
     private Set<Country> passports;
 
     @ManyToMany(fetch = FetchType.EAGER)

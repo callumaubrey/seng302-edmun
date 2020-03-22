@@ -1,9 +1,8 @@
 package com.springvuegradle.team6.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
+import java.util.Collection;
 
 @Entity
 public class Country {
@@ -21,6 +20,9 @@ public class Country {
         this.isoCode = isoCode;
         this.countryName = name;
     }
+
+    @ManyToMany(mappedBy = "passports", fetch = FetchType.EAGER)
+    private Collection<Profile> users;
 
     public String getIsoCode() {
         return isoCode;
