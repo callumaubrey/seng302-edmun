@@ -111,13 +111,12 @@
             password: this.password
           })
                   .then(function (response) {
-                    currentObj.output = response.data;
-                    console.log(response.data);
                     let adminPattern = new RegExp("Admin");
                     if (adminPattern.test(currentObj.output)) {
-                      window.location.href = "/adminProfile";
+                      currentObj.$router.push('/admin');
                     } else {
-                      window.location.href = '/profile';
+                      const profileId = response.data.toString();
+                      currentObj.$router.push('/profile/' + profileId)
                     }
                   })
                   .catch(function (error) {

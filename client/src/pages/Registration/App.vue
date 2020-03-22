@@ -204,7 +204,8 @@
         })
                 .then(function (response) {
                   console.log(response);
-                  window.location.href = '/profile';
+                  const profileId = response.data.toString();
+                  currentObj.$router.push('/profile/' + profileId)
                 })
                 .catch(function (error) {
                   currentObj.emailErrMsg = error.response.data;

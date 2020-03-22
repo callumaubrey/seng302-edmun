@@ -143,7 +143,7 @@
             getUserSession: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profile/user')
+                this.axios.get('http://localhost:9499/profile/' + this.$route.params.id)
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.userData = response.data;

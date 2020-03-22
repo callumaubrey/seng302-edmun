@@ -83,13 +83,14 @@
                             }
                         }
                         if (isAdmin === false) {
-                            window.location.href = '/profile';
+                            const profileId = this.$route.params.id;
+                            currentObj.$router.push('/profile/' + profileId)
                         }
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
                         currentObj.isLoggedIn = false;
-                        window.location.href = '/login';
+                        currentObj.$router.push('/');
                     });
             },
             getLocationData: async function () {

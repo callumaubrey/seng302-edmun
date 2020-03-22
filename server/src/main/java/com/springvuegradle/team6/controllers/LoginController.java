@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.springframework.http.HttpStatus;
@@ -69,10 +70,9 @@ public class LoginController {
                                     SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
                                     SecurityContextHolder.getContext().getAuthentication().getCredentials(),
                                     updatedAuthorities));
-                    if (isAdmin) {
-                        return ResponseEntity.ok("Password Correct, User is Admin");
-                    }
-                    return ResponseEntity.ok("Password Correct");
+                    ObjectMapper mapper = new ObjectMapper();
+                    String postJson = mapper.writeValueAsString(user.getId());
+                    return ResponseEntity.ok(postJson);
                 }
 
                 return new ResponseEntity("No associated user with email and password", HttpStatus.UNAUTHORIZED);

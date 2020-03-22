@@ -61,10 +61,27 @@ public class UserProfileController {
         return null;
     }
 
+    /**
+     * Gets the user where the provided id matches the session id. Otherwise return unauthorized.
+     * @param id The requested id
+     * @param session The current Http Session
+     * @return The response code and message/Json
+     * @throws JsonProcessingException
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Profile> getProfile(@PathVariable Integer id) {
-        Profile p = repository.findById(id).get();
-        return ResponseEntity.ok(p);
+    public ResponseEntity<String> getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
+        ResponseEntity<String> authorised_response = this.checkAuthorised(id, session);
+        if (authorised_response != null) {
+            return authorised_response;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        Optional<Profile> p = repository.findById(id);
+        if (p.isPresent()) {
+            String postJson = mapper.writeValueAsString(p.get());
+            return ResponseEntity.ok(postJson);
+        } else {
+            return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
@@ -118,7 +135,7 @@ public class UserProfileController {
      * or error(4xx) user is not logged in
      */
     @GetMapping("/user")
-    public ResponseEntity<String> getProfile2(HttpSession session) throws JsonProcessingException {
+    public ResponseEntity getProfile2(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
@@ -202,7 +219,7 @@ public class UserProfileController {
         repository.save(profile);
 
         session.setAttribute("id", profile.getId());
-        return new ResponseEntity("User Created Successfully", HttpStatus.CREATED);
+        return new ResponseEntity(profile.getId(), HttpStatus.CREATED);
     }
 
     /**

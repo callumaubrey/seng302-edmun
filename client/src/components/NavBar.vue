@@ -1,13 +1,13 @@
 <template>
     <b-navbar class="nav-bar" fixed toggleable="lg" type="light" variant="--white">
-        <b-navbar-brand href="/login">Hakinakima</b-navbar-brand>
-
+        <b-navbar-brand v-if="!isLoggedIn" to='/'>Edmun</b-navbar-brand>
+        <b-navbar-brand v-if="isLoggedIn" @click="goToProfile">Edmun</b-navbar-brand>
         <b-navbar-toggle fixed target="nav-collapse" toggleable="true"></b-navbar-toggle>
 
         <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>
-                <b-nav-item href="/registration">Register</b-nav-item>
-                <b-nav-item href="/profile">Profile</b-nav-item>
+                <b-nav-item v-if="!isLoggedIn" to='/register'>Register</b-nav-item>
+                <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
             </b-navbar-nav>
 
             <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
@@ -19,7 +19,7 @@
             <!--            </b-navbar-nav>-->
 
             <b-navbar-nav class="ml-auto">
-                <b-button class="loginbtn" href="/login" size="sm" type="button" v-if="!isLoggedIn" variant="primary">
+                <b-button class="loginbtn" to="/login" size="sm" type="button" v-if="!isLoggedIn" variant="primary">
                     Log in
                 </b-button>
                 <b-nav-item-dropdown right v-else>
@@ -56,17 +56,23 @@
         },
         methods: {
             logout() {
+                const vueObj = this;
                 this.axios.get('http://localhost:9499/account/logout')
                     .then(function (response) {
                         console.log(response.data);
-                        window.location.href = '/login';
+                        vueObj.$router.push('/');
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
                     });
             },
             goToEdit() {
-                window.location.href = '/editProfile';
+                const profileId = this.$route.params.id;
+                this.$router.push('/profile/edit/' + profileId);
+            },
+            goToProfile() {
+                const profileId = this.$route.params.id;
+                this.$router.push('/profile/' + profileId);
             }
         }
     };
