@@ -36,7 +36,7 @@
         <b-col sm="12">
           <label>Nickname</label>
           <b-form-input id="input-default" placeholder="Enter nickname" :state="validateState('nickname')" v-model ="$v.nickname.$model" required trim></b-form-input>
-          <b-form-invalid-feedback>Invalid nickname</b-form-invalid-feedback>
+          <b-form-invalid-feedback>Nickname may only contain letters and numbers</b-form-invalid-feedback>
         </b-col>
       </b-row>
       <b-row class="my-1">
@@ -51,7 +51,7 @@
         <b-col sm="6">
           <label>Password</label>
           <b-form-input type="password" id="input-default" placeholder="Enter password" :state="validateState('password')" v-model ="$v.password.$model" required></b-form-input>
-          <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case, one upper case</b-form-invalid-feedback>
+          <b-form-invalid-feedback> Password must contain at least 8 characters with at least one digit, one lower case, one upper case</b-form-invalid-feedback>
           <b-form-text>Required</b-form-text>
         </b-col>
 
