@@ -736,6 +736,7 @@
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
+                        vueObj.$router.push('/login');
                     });
             },
             getUserId: function () {

@@ -158,6 +158,7 @@
                     .catch(function (error) {
                         console.log(error.response.data);
                         currentObj.isLoggedIn = false;
+                        currentObj.$router.push('/login');
                     });
             },
             getLocationData: async function () {
