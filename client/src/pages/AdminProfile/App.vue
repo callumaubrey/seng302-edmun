@@ -79,7 +79,7 @@
                             currentObj.$router.push('/profile/' + profileId)
                         }
                     })
-                    .catch(function (error) {
+                    .catch(function () {
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/');
                     });
