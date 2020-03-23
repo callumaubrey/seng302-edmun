@@ -83,16 +83,6 @@
                             </b-row>
                         </b-card>
                     </b-tab>
-
-                    <b-tab title="Location Info" >
-                        <b-card style="margin: 1em;" title="Location Info:">
-                            <b-input id="locationInput" class="form-control" type="text" @keyup.native="getLocationData"></b-input>
-                            <div v-for="i in locations" :key="i.place_id">
-                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
-                            </div>
-                        </b-card>
-
-                    </b-tab>
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Passport Info:">
                             <b-row>
@@ -136,7 +126,6 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: []
             }
         },
         methods: {
@@ -145,44 +134,21 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
                         currentObj.additionalEmails = response.data.additional_email;
-                        console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
-                        console.log(currentObj.activities)
                     })
-                    .catch(function (error) {
-                        console.log(error.response.data);
+                    .catch(function () {
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/login');
                     });
-            },
-            getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
-            },
-            setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name;
-                this.locations = []
             }
         },
         mounted: function () {
             this.getUserSession();
-            this.getLocationData();
         }
     };
 

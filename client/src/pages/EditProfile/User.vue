@@ -278,18 +278,18 @@
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
-                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword" required></b-form-input>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword"></b-form-input>
                         </b-col>
                     </b-row>
                     <b-row class="my-1">
                         <b-col sm="6">
                             <label>New Password</label>
-                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model"></b-form-input>
                             <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="6">
                             <label>Repeat New Password</label>
-                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model" required></b-form-input>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model"></b-form-input>
                             <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -480,7 +480,6 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                console.log(this.profileForm.fitness);
                 this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
@@ -491,6 +490,7 @@
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
                     bio: this.profileForm.bio,
+                    activities: this.yourActivites,
                     passports: this.passportsCode
                 }).then(function (response) {
                     vueObj.emailErrorMessage = "";
@@ -527,6 +527,7 @@
                         gender: this.profileForm.gender.toLowerCase(),
                         fitness: this.profileForm.fitness,
                         bio: this.profileForm.bio,
+                        activities: this.yourActivites,
                         passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
@@ -551,7 +552,6 @@
                     this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
                         activities: this.yourActivites
                     }).then(function (response) {
-                        console.log(vueObj.yourActivites);
                         if (response.status == 200) {
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
                         }
@@ -579,6 +579,7 @@
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
                     bio: this.profileForm.bio,
+                    activities: this.yourActivites,
                     passports: tempCodes
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -684,7 +685,6 @@
                     additional_email: newEmails
                 }).then(function (response) {
                     if (response.status == "200") {
-                        console.log("hello");
                         vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails";
                         vueObj.emails = newEmails;
@@ -709,7 +709,6 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
-                        console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
@@ -717,7 +716,6 @@
                         for (let j = 0; j < response.data.additional_email.length; j++) {
                             vueObj.emails.push(response.data.additional_email[j].address);
                         }
-                        console.log(response.data);
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
@@ -750,9 +748,6 @@
                     });
             },
             savePassword: function () {
-                console.log(this.passwordForm.oldPassword);
-                console.log(this.passwordForm.password);
-                console.log(this.passwordForm.passwordRepeat);
                 let currentObj = this;
                 this.$v.passwordForm.$touch();
                 if (this.$v.passwordForm.$anyError) {
@@ -765,7 +760,6 @@
                     repeat_password: this.passwordForm.passwordRepeat
                 }).then(function (response) {
                     if (response.status == 200) {
-                        console.log("anything");
                         currentObj.output = response.data;
                         currentObj.passwordForm.oldPassword = null;
                         currentObj.passwordForm.password = null;
