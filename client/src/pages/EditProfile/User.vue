@@ -306,6 +306,33 @@
                 </b-container>
             </b-collapse>
             <hr>
+            <div v-b-toggle="'collapse-6'">
+                <b-container>
+                    <b-row>
+                        <b-col><h3 class=edit-title>Location</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Change your current location</b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <b-collapse id = "collapse-6">
+                <b-container>
+                    <hr>
+                    <b-row>
+                        <b-col>
+                            <p>Select a location from the search drop down:</p>
+                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="location.display_name" @keyup.native="getLocationData"></b-input>
+                            <div v-for="i in locations" :key="i.place_id">
+                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
+                            </div>
+                        </b-col>
+                    </b-row>
+                </b-container>
+            </b-collapse>
+
+            <hr>
         </b-container>
     </div>
 </template>
@@ -354,6 +381,8 @@
                 profile_id: null,
                 disabled: true,
                 primaryEmail: [],
+                locations: [],
+                location: '',
                 emails: [],
                 yourCountries: [],
                 yourActivites: [],
@@ -611,6 +640,48 @@
                     }
                 });
             },
+            setLocationInput: function (location) {
+                document.getElementById("locationInput").value = location.display_name;
+                const vueObj = this;
+                vueObj.locations = []
+                vueObj.location = location
+                console.log(this.location.place_id, this.location.type.toUpperCase())
+
+                if (this.location != null){
+                    let data = {
+                        id: this.location.place_id,
+                        type: "RELATION"
+                    }
+                    console.log(data)
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
+                        console.log(response)
+                    }).catch(function (error) {
+                        console.log(error)
+                    });
+                }
+                else {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", {
+                    }).then(function (response) {
+                        console.log(response)
+                    }).catch(function (error) {
+                        console.log(error)
+                    });
+                }
+            },
+            getLocationData: async function () {
+                var locationText = document.getElementById("locationInput").value;
+                if (locationText == ''){
+                    return
+                }
+                var locationData = this.axios.create({
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
+                    timeout: 1000,
+                    withCredentials: false,
+                });
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
+                this.locations = data.data
+            },
             getCountryData: async function() {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
@@ -718,6 +789,7 @@
                             vueObj.emails.push(response.data.additional_email[j].address);
                         }
                         console.log(response.data);
+                        vueObj.location = response.data.location.osmID.id;
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;

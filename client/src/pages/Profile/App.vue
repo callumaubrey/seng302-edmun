@@ -86,10 +86,6 @@
 
                     <b-tab title="Location Info" >
                         <b-card style="margin: 1em;" title="Location Info:">
-                            <b-input id="locationInput" class="form-control" type="text" @keyup.native="getLocationData"></b-input>
-                            <div v-for="i in locations" :key="i.place_id">
-                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
-                            </div>
                         </b-card>
 
                     </b-tab>
@@ -136,7 +132,8 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: []
+                locations: [],
+                location: null
             }
         },
         methods: {
@@ -167,7 +164,7 @@
                     return
                 }
                 var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
                     timeout: 1000,
                     withCredentials: false,
                 });
@@ -175,14 +172,21 @@
                 var data = await (locationData.get());
                 this.locations = data.data
             },
-            setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name;
-                this.locations = []
+            getUserId: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profile_id = response.data;
+                    })
+                    .catch(function () {
+                    });
             }
         },
         mounted: function () {
             this.getUserSession();
             this.getLocationData();
+            this.getUserId();
         }
     };
 
