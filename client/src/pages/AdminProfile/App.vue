@@ -51,12 +51,8 @@
         data: function() {
             return {
                 userData: '',
-                passports: [],
-                activites: [],
-                additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: [],
                 primaryEmail: "",
                 userRoles: []
             }
@@ -64,26 +60,27 @@
         methods: {
             getUserSession: function () {
                 let currentObj = this;
+                console.log("I am executed");
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.userData = response.data;
-                        currentObj.passports = response.data.passports;
-                        currentObj.activites = response.data.activityTypes;
-                        currentObj.additionalEmails = response.data.additionalemail;
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
-                        currentObj.primaryEmail = response.data.email.address;
+                        currentObj.primaryEmail = response.data.primary_email.address;
                         currentObj.userRoles = response.data.roles;
                         let isAdmin = false;
+                        console.log(currentObj.userRoles[0].roleName);
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
                             if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
                                 isAdmin = true;
                             }
                         }
                         if (isAdmin === false) {
-                            const profileId = this.$route.params.id;
+                            console.log(isAdmin);
+                            const profileId = response.data.id.toString();
+                            console.log(profileId);
                             currentObj.$router.push('/profile/' + profileId)
                         }
                     })
@@ -92,29 +89,10 @@
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/');
                     });
-            },
-            getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
-            },
-            setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name;
-                this.locations = []
             }
         },
         mounted: function () {
             this.getUserSession();
-            this.getLocationData();
         }
     };
 
