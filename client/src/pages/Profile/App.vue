@@ -83,6 +83,12 @@
                             </b-row>
                         </b-card>
                     </b-tab>
+
+                    <b-tab title="Location Info" >
+                        <b-card style="margin: 1em;" title="Location Info:">
+                        </b-card>
+
+                    </b-tab>
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Passport Info:">
                             <b-row>
@@ -126,6 +132,8 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
+                locations: [],
+                location: null
             }
         },
         methods: {
@@ -134,21 +142,51 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
+                        console.log(response.data);
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
                         currentObj.additionalEmails = response.data.additional_email;
+                        console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
+                        console.log(currentObj.activities)
                     })
-                    .catch(function () {
+                    .catch(function (error) {
+                        console.log(error.response.data);
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/login');
+                    });
+            },
+            getLocationData: async function () {
+                var locationText = document.getElementById("locationInput").value;
+                if (locationText == ''){
+                    return
+                }
+                var locationData = this.axios.create({
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
+                    timeout: 1000,
+                    withCredentials: false,
+                });
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
+                this.locations = data.data
+            },
+            getUserId: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profile_id = response.data;
+                    })
+                    .catch(function () {
                     });
             }
         },
         mounted: function () {
             this.getUserSession();
+            this.getLocationData();
+            this.getUserId();
         }
     };
 

@@ -11,7 +11,7 @@
             <div  class="clickable" v-b-toggle="'collapse-2'">
                 <b-container>
                     <b-row>
-                        <b-col><h3 class=edit-title >Profile Info</h3></b-col>
+                        <b-col><h3 class=edit-title>Profile Info</h3></b-col>
                         <b-col><h5 align="right">Change</h5></b-col>
                     </b-row>
                     <b-row>
@@ -305,6 +305,33 @@
                 </b-container>
             </b-collapse>
             <hr>
+            <div v-b-toggle="'collapse-6'">
+                <b-container>
+                    <b-row>
+                        <b-col><h3 class=edit-title>Location</h3></b-col>
+                        <b-col><h5 align="right">Change</h5></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>Change your current location</b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <b-collapse id = "collapse-6">
+                <b-container>
+                    <hr>
+                    <b-row>
+                        <b-col>
+                            <p>Select a location from the search drop down:</p>
+                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="location.display_name" @keyup.native="getLocationData"></b-input>
+                            <div v-for="i in locations" :key="i.place_id">
+                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
+                            </div>
+                        </b-col>
+                    </b-row>
+                </b-container>
+            </b-collapse>
+
+            <hr>
         </b-container>
     </div>
 </template>
@@ -353,6 +380,8 @@
                 profile_id: null,
                 disabled: true,
                 primaryEmail: [],
+                locations: [],
+                location: '',
                 emails: [],
                 yourCountries: [],
                 yourActivites: [],
@@ -479,6 +508,7 @@
                 }
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
+                console.log(this.profileForm.fitness);
                 this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
@@ -551,6 +581,7 @@
                     this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
                         activities: this.yourActivites
                     }).then(function (response) {
+                        console.log(vueObj.yourActivites);
                         if (response.status == 200) {
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
                         }
@@ -610,6 +641,48 @@
                         vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activities";
                     }
                 });
+            },
+            setLocationInput: function (location) {
+                document.getElementById("locationInput").value = location.display_name;
+                const vueObj = this;
+                vueObj.locations = []
+                vueObj.location = location
+                console.log(this.location.place_id, this.location.type.toUpperCase())
+
+                if (this.location != null){
+                    let data = {
+                        id: this.location.place_id,
+                        type: "RELATION"
+                    }
+                    console.log(data)
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
+                        console.log(response)
+                    }).catch(function (error) {
+                        console.log(error)
+                    });
+                }
+                else {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", {
+                    }).then(function (response) {
+                        console.log(response)
+                    }).catch(function (error) {
+                        console.log(error)
+                    });
+                }
+            },
+            getLocationData: async function () {
+                var locationText = document.getElementById("locationInput").value;
+                if (locationText == ''){
+                    return
+                }
+                var locationData = this.axios.create({
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
+                    timeout: 1000,
+                    withCredentials: false,
+                });
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
+                this.locations = data.data
             },
             getCountryData: async function() {
                 var data = await (countryData.get());
@@ -684,6 +757,7 @@
                     additional_email: newEmails
                 }).then(function (response) {
                     if (response.status == "200") {
+                        console.log("hello");
                         vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails";
                         vueObj.emails = newEmails;
@@ -708,6 +782,7 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
+                        console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
                             vueObj.passportsCode.push(response.data.passports[i].isoCode);
                             vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
@@ -715,6 +790,7 @@
                         for (let j = 0; j < response.data.additional_email.length; j++) {
                             vueObj.emails.push(response.data.additional_email[j].address);
                         }
+                        console.log(response.data);
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
@@ -730,6 +806,7 @@
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
+                        // vueObj.location = response.data.location.osmID.id;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
@@ -747,6 +824,9 @@
                     });
             },
             savePassword: function () {
+                console.log(this.passwordForm.oldPassword);
+                console.log(this.passwordForm.password);
+                console.log(this.passwordForm.passwordRepeat);
                 let currentObj = this;
                 this.$v.passwordForm.$touch();
                 if (this.$v.passwordForm.$anyError) {
@@ -759,6 +839,7 @@
                     repeat_password: this.passwordForm.passwordRepeat
                 }).then(function (response) {
                     if (response.status == 200) {
+                        console.log("anything");
                         currentObj.output = response.data;
                         currentObj.passwordForm.oldPassword = null;
                         currentObj.passwordForm.password = null;
