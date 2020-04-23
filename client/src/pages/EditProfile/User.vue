@@ -8,10 +8,10 @@
                 </b-col>
             </b-row>
             <hr>
-            <div v-b-toggle="'collapse-2'">
+            <div v-b-toggle="'collapse-2'" id="editProfile">
                 <b-container>
                     <b-row>
-                        <b-col><h3 class=edit-title>Profile Info</h3></b-col>
+                        <b-col><h3 class=edit-title >Profile Info</h3></b-col>
                         <b-col><h5 align="right">Change</h5></b-col>
                     </b-row>
                     <b-row>
@@ -20,6 +20,9 @@
                     </b-row>
                 </b-container>
             </div>
+            <b-tooltip target="editProfile" triggers="hover">
+                Click to open/close edit profile
+            </b-tooltip>
             <b-collapse id="collapse-2">
                 <hr>
                 <b-container>
@@ -103,7 +106,7 @@
             </b-collapse>
             <hr>
 
-            <div v-b-toggle="'collapse-1'">
+            <div v-b-toggle="'collapse-1'" id="editEmail">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Email Address</h3></b-col>
@@ -115,6 +118,9 @@
                     </b-row>
                 </b-container>
             </div>
+            <b-tooltip target="editEmail" triggers="hover">
+                Click to open/close edit email
+            </b-tooltip>
             <b-collapse id="collapse-1">
                 <b-container>
                     <hr>
@@ -162,7 +168,7 @@
             </b-collapse>
             <hr>
 
-            <div v-b-toggle="'collapse-3'">
+            <div v-b-toggle="'collapse-3'" id = "editPassports">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Passports</h3></b-col>
@@ -174,6 +180,9 @@
                     </b-row>
                 </b-container>
             </div>
+            <b-tooltip target="editPassports" triggers="hover">
+                Click to open/close edit passports
+            </b-tooltip>
             <b-collapse id="collapse-3">
                 <b-container>
                     <hr>
@@ -210,7 +219,7 @@
                 </b-container>
             </b-collapse>
             <hr>
-            <div v-b-toggle="'collapse-4'">
+            <div v-b-toggle="'collapse-4'" id = "editActivities">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Activities</h3></b-col>
@@ -222,6 +231,9 @@
                     </b-row>
                 </b-container>
             </div>
+            <b-tooltip target="editActivities" triggers="hover">
+                Click to open/close edit activities
+            </b-tooltip>
 
 
             <b-collapse id="collapse-4">
@@ -261,7 +273,7 @@
                 </b-container>
             </b-collapse>
             <hr>
-            <div v-b-toggle="'collapse-5'">
+            <div v-b-toggle="'collapse-5'" id="editPassword">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Password</h3></b-col>
@@ -272,6 +284,9 @@
                     </b-row>
                 </b-container>
             </div>
+            <b-tooltip target="editPassword" triggers="hover">
+                Click to open/close edit password
+            </b-tooltip>
             <b-collapse id = "collapse-5">
                 <b-container>
                     <hr>
