@@ -8,7 +8,7 @@
                 </b-col>
             </b-row>
             <hr>
-            <div v-b-toggle="'collapse-2'">
+            <div  class="clickable" v-b-toggle="'collapse-2'">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Profile Info</h3></b-col>
@@ -103,7 +103,7 @@
             </b-collapse>
             <hr>
 
-            <div v-b-toggle="'collapse-1'">
+            <div v-b-toggle="'collapse-1'" class="clickable">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Email Address</h3></b-col>
@@ -111,7 +111,7 @@
                     </b-row>
                     <b-row>
                         <b-col>Add or remove email addresses from your account</b-col>
-                        <b-col><h6 align="right">{{totalEmails()}} email address</h6></b-col>
+                        <b-col><h6 align="right" >{{totalEmails()}} email address</h6></b-col>
                     </b-row>
                 </b-container>
             </div>
@@ -162,7 +162,7 @@
             </b-collapse>
             <hr>
 
-            <div v-b-toggle="'collapse-3'">
+            <div v-b-toggle="'collapse-3'" class = "clickable">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Passports</h3></b-col>
@@ -210,7 +210,7 @@
                 </b-container>
             </b-collapse>
             <hr>
-            <div v-b-toggle="'collapse-4'">
+            <div v-b-toggle="'collapse-4'" class = "clickable">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Activities</h3></b-col>
@@ -222,7 +222,6 @@
                     </b-row>
                 </b-container>
             </div>
-
 
             <b-collapse id="collapse-4">
                 <b-container>
@@ -261,7 +260,7 @@
                 </b-container>
             </b-collapse>
             <hr>
-            <div v-b-toggle="'collapse-5'">
+            <div v-b-toggle="'collapse-5'" class="clickable">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Password</h3></b-col>
@@ -901,5 +900,11 @@
     }
     .update-message {
         font-size: 13px;
+    }
+    .clickable {
+        cursor: pointer;
+    }
+    h5 {
+        color: #1278FD;
     }
 </style>
