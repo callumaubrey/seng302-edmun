@@ -60,32 +60,26 @@
         methods: {
             getUserSession: function () {
                 let currentObj = this;
-                console.log("I am executed");
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.userData = response.data;
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
                         currentObj.primaryEmail = response.data.primary_email.address;
                         currentObj.userRoles = response.data.roles;
                         let isAdmin = false;
-                        console.log(currentObj.userRoles[0].roleName);
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
                             if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
                                 isAdmin = true;
                             }
                         }
                         if (isAdmin === false) {
-                            console.log(isAdmin);
                             const profileId = response.data.id.toString();
-                            console.log(profileId);
                             currentObj.$router.push('/profile/' + profileId)
                         }
                     })
-                    .catch(function (error) {
-                        console.log(error.response.data);
+                    .catch(function () {
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/');
                     });

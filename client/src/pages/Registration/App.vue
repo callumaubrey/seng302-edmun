@@ -203,7 +203,6 @@
           gender: this.gender
         })
                 .then(function (response) {
-                  console.log(response);
                   const profileId = response.data.toString();
                   currentObj.$router.push('/profile/' + profileId)
                 })

@@ -278,18 +278,18 @@
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
-                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword" required></b-form-input>
+                            <b-form-input type="password" id="input-default" placeholder="Enter current password" v-model ="passwordForm.oldPassword"></b-form-input>
                         </b-col>
                     </b-row>
                     <b-row class="my-1">
                         <b-col sm="6">
                             <label>New Password</label>
-                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model" required></b-form-input>
+                            <b-form-input type="password" id="password" placeholder="Enter new password" :state="validatePassword('password')" v-model="$v.passwordForm.password.$model"></b-form-input>
                             <b-form-invalid-feedback> Password should contain at least 8 characters with at least one digit, one lower case and one upper case</b-form-invalid-feedback>
                         </b-col>
                         <b-col sm="6">
                             <label>Repeat New Password</label>
-                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model" required></b-form-input>
+                            <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again" :state="validatePassword('passwordRepeat')" v-model ="$v.passwordForm.passwordRepeat.$model"></b-form-input>
                             <b-form-invalid-feedback id="email-error"> Passwords must be the same</b-form-invalid-feedback>
                         </b-col>
                     </b-row>
@@ -520,6 +520,7 @@
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
                     bio: this.profileForm.bio,
+                    activities: this.yourActivites,
                     passports: this.passportsCode
                 }).then(function (response) {
                     vueObj.emailErrorMessage = "";
@@ -556,6 +557,7 @@
                         gender: this.profileForm.gender.toLowerCase(),
                         fitness: this.profileForm.fitness,
                         bio: this.profileForm.bio,
+                        activities: this.yourActivites,
                         passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
@@ -608,6 +610,7 @@
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
                     bio: this.profileForm.bio,
+                    activities: this.yourActivites,
                     passports: tempCodes
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -789,7 +792,6 @@
                             vueObj.emails.push(response.data.additional_email[j].address);
                         }
                         console.log(response.data);
-                        vueObj.location = response.data.location.osmID.id;
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
@@ -805,6 +807,7 @@
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
+                        // vueObj.location = response.data.location.osmID.id;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;

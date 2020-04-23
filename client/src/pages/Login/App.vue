@@ -121,7 +121,6 @@
                   })
                   .catch(function (error) {
                     currentObj.output = error;
-                    console.log(error.response.data);
                     document.getElementById("user-error-feedback").textContent = error.response.data + '\n';
                   });
         }
