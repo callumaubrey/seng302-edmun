@@ -9,6 +9,7 @@ import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
+import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,23 +44,6 @@ public class UserProfileController {
         this.locationRepository = locationRepository;
     }
 
-    private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
-        Object id = session.getAttribute("id");
-        if (id == null) {
-            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!(id.toString().equals(requestId.toString()))) {
-            return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!repository.existsById(requestId)) {
-            return new ResponseEntity<>("No such user", HttpStatus.NOT_FOUND);
-        }
-
-        return null;
-    }
-
     /**
      * Gets the user where the provided id matches the session id. Otherwise return unauthorized.
      * @param id The requested id
@@ -69,7 +53,7 @@ public class UserProfileController {
      */
     @GetMapping("/{id}")
     public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
-        ResponseEntity<String> authorised_response = this.checkAuthorised(id, session);
+        ResponseEntity<String> authorised_response = UserSecurityService.checkAuthorised(id, session, repository);
         if (authorised_response != null) {
             return authorised_response;
         }
@@ -96,7 +80,7 @@ public class UserProfileController {
             Profile edit = p.get();
 
             // Check if authorised
-            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(id, session, repository);
             if (authorisedResponse != null) {
                 return authorisedResponse;
             }
@@ -224,7 +208,7 @@ public class UserProfileController {
      */
     @PutMapping("/{profileId}/password")
     public ResponseEntity<String> editPassword(@PathVariable Integer profileId, @Valid @RequestBody EditPasswordRequest request, HttpSession session) {
-        ResponseEntity<String> authorised_response = this.checkAuthorised(profileId, session);
+        ResponseEntity<String> authorised_response = UserSecurityService.checkAuthorised(profileId, session, repository);
         if (authorised_response != null) {
             return authorised_response;
         }
@@ -251,7 +235,7 @@ public class UserProfileController {
             Profile profile = p.get();
 
             // Check if authorised
-            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(id, session, repository);
             if (authorisedResponse != null) {
                 return authorisedResponse;
             }
@@ -277,7 +261,7 @@ public class UserProfileController {
             Profile profile = p.get();
 
             // Check if authorised
-            ResponseEntity<String> authorisedResponse = this.checkAuthorised(id, session);
+            ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(id, session, repository);
             if (authorisedResponse != null) {
                 return authorisedResponse;
             }

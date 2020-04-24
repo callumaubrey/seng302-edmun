@@ -43,7 +43,7 @@ class AdminControllerTest {
 
     @AfterEach
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
-    void deleteProfile() throws Exception {
+    void deleteProfileWithValidEmail() throws Exception {
 
         String deleteProfileUrl = "/admin/profiles";
 
@@ -57,9 +57,16 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
+    }
+
+    @AfterEach
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void deleteProfileWithInvalidEmail() throws Exception {
+
+        String deleteProfileUrl = "/admin/profiles";
 
         // Incorrect email associated to user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"incorrect@gmail.com\"\n" +
                 "}";
 
@@ -68,12 +75,11 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
-
     }
 
     @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
-    void addRole() throws Exception {
+    void addNewRoleToExistingUser() throws Exception {
         String addRoleUrl = "/admin/profiles/role";
 
         String jsonString = "{\n" +
@@ -86,9 +92,17 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
+    }
+
+
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void addNewRoleToNonExistingUser() throws Exception {
+        String addRoleUrl = "/admin/profiles/role";
 
         // Add new role to non-existing user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"user@doesnotexist.com\",\n" +
                 "\t\"role_name\": \"ROLE_ADMIN\"\n" +
                 "}";
@@ -99,8 +113,16 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
+
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void addDuplicateRoleToExistingUser() throws Exception {
+        String addRoleUrl = "/admin/profiles/role";
+
         // Add duplicate role to existing user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"poly@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_USER\"\n" +
                 "}";
@@ -110,9 +132,15 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void addInvalidRoleToExistingUser() throws Exception {
+        String addRoleUrl = "/admin/profiles/role";
 
         // Add invalid role to existing user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"poly@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_INVALID\"\n" +
                 "}";
@@ -126,7 +154,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
-    void deleteRole() throws Exception {
+    void deleteExistingRoleFromExistingUser() throws Exception {
         String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete existing role from existing user
@@ -140,9 +168,15 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void deleteNonExistingRoleFromExistingUser() throws Exception {
+        String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete non-existing role from existing user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"poly@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_ADMIN\"\n" +
                 "}";
@@ -153,9 +187,15 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void deleteInvalidRoleFromExistingUser() throws Exception {
+        String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete invalid role
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"poly@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_INVALID\"\n" +
                 "}";
@@ -165,10 +205,15 @@ class AdminControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+    }
 
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void deleteValidRoleFromNonExistingUser() throws Exception {
+        String deleteRoleUrl = "/admin/profiles/role";
 
         // Delete role from non=existing user
-        jsonString = "{\n" +
+        String jsonString = "{\n" +
                 "\t\"primary_email\": \"incorrect@gmail.com\",\n" +
                 "\t\"role_name\": \"ROLE_USER\"\n" +
                 "}";
