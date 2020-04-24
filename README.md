@@ -1,15 +1,17 @@
-# Seng302 Example Project
+# Edmun SENG302
 -----
-Basic project template using Gradle, NPM, Spring Boot, Vue and Gitlab CI. Remember to set up y
-our Gitlab Ci server (refer to the student guide for instructions).
+Outdoor activites tracker, where users can register, sign-in, view profile and edit profile.
+Custom activity types can also be created and assainged to users.
+
 
 ### Basic Project Structure
 - client/src Frontend source code (JS - Vue)
 - client/public publicly accesable web assets
-- client/dist Frontend production build
+- client/node_modules Assets for node plugins
+- client/src/pages Location for all Vue webpages
 
 - server/src Backend source code (Java - Spring)
-- server/out Backend production build
+- server/gradle Backend gradle source code
 
 ### How to run
 ##### Client (Frotnend/GUI)
@@ -27,11 +29,7 @@ Running on: http://localhost:9499/
 
 
 ### Todo
-- Add team name into `build.gradle` and `package.json`
-- Set up Gitlab CI server (refer to the student guide on learn)
+- Set up Gitlab CI server (refer to the student guide on learn) 
 
-### Reference
-- [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
-- [Spring JPA docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface)
-- [Vue docs](https://vuejs.org/v2/guide/)
+
 
