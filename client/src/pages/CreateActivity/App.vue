@@ -73,7 +73,15 @@
 
                     <b-row>
                         <b-col>
-                            <b-form-group id="activity-type-group" label="Type" label-for="activity-type">
+                            <span v-if="this.form.selectedActivityTypes.length > 0">
+                                Activity types:
+                            </span>
+                            <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
+                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes" :key="activityType">
+                                    {{ activityType }}
+                                </b-list-group-item>
+                            </b-list-group>
+                            <b-form-group id="activity-type-group" label="Add Activity Type" label-for="activity-type">
                                 <b-form-select
                                         id="activity-type"
                                         name="activity-type"
@@ -81,11 +89,15 @@
                                         :state="validateState('selectedActivityType')"
                                         :options="form.activityTypes"
                                         aria-describedby="activity-type-feedback"
+                                        v-on:change="addActivityType()"
                                 ></b-form-select>
                                 <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.</b-form-invalid-feedback>
                             </b-form-group>
+                            <hr>
                         </b-col>
+                    </b-row>
 
+                    <b-row>
                         <b-col>
                             <b-form-group id="date-input-group" label="Date" label-for="date-input">
                                 <b-form-input
@@ -167,11 +179,14 @@
                     name: null,
                     description: null,
                     selectedActivityType: 0,
+                    selectedActivityTypes: [],
                     activityTypes: [
                         // Poor bugger who has to do the axios stuff will need to get these from server side
-                        { value: 0, text: 'Run' },
-                        { value: 0, text: 'Bike' },
-                        { value: 0, text: 'Hike' }
+                        // These values will need to be converted to uppercase before axios request is sent
+                        { value: 0, text: 'Select an activity' },
+                        { value: 'Run', text: 'Run' },
+                        { value: 'Bike', text: 'Bike' },
+                        { value: 'Hike', text: 'Hike' }
                     ],
                     date: null,
                     location: null
@@ -217,6 +232,15 @@
                 const { $dirty, $error } = this.$v.durationForm[name];
                 return $dirty ? !$error : null;
             },
+            addActivityType() {
+                if (this.form.selectedActivityType == 0) {
+                    return;
+                }
+
+                if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
+                    this.form.selectedActivityTypes.push(this.form.selectedActivityType);
+                }
+            },
             onSubmit() {
                 this.$v.form.$touch();
                 this.$v.durationForm.$touch();
@@ -227,6 +251,10 @@
                 }
                 if (this.$v.form.$anyError) {
                     return;
+                }
+
+                for (var i = 0; i < this.form.selectedActivityTypes.length; i++) {
+                    alert(this.form.selectedActivityTypes[i]);
                 }
 
                 alert('Good to go!');
