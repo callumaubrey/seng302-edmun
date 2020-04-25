@@ -75,7 +75,6 @@
                                     description="How fit are you?"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="profileForm.fitness"></b-form-select>
-                                {{profileForm.fitness}} Fitness here
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -515,6 +514,7 @@
                     lastname: this.profileForm.lastname,
                     nickname: this.profileForm.nickname,
                     primary_email: this.primaryEmail[0],
+                    additional_email: this.emails,
                     date_of_birth: this.profileForm.date_of_birth,
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
@@ -552,6 +552,7 @@
                         lastname: this.profileForm.lastname,
                         nickname: this.profileForm.nickname,
                         primary_email: this.primaryEmail[0],
+                        additional_email: this.emails,
                         date_of_birth: this.profileForm.date_of_birth,
                         gender: this.profileForm.gender.toLowerCase(),
                         fitness: this.profileForm.fitness,
@@ -605,6 +606,7 @@
                     lastname: this.profileForm.lastname,
                     nickname: this.profileForm.nickname,
                     primary_email: this.primaryEmail[0],
+                    additional_email: this.emails,
                     date_of_birth: this.profileForm.date_of_birth,
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
