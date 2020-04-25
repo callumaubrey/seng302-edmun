@@ -53,9 +53,9 @@ public class UserProfileController {
      */
     @GetMapping("/{id}")
     public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
-        ResponseEntity<String> authorised_response = UserSecurityService.checkAuthorised(id, session, repository);
-        if (authorised_response != null) {
-            return authorised_response;
+        ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(id, session, repository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
         }
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
@@ -99,6 +99,11 @@ public class UserProfileController {
         }
     }
 
+    /**
+     * Get all profile's information in a string
+     *
+     * @return response entity with user profile information
+     */
     @GetMapping("/")
     public ResponseEntity<String> getAll() {
         List<Profile> all = repository.findAll();
@@ -129,8 +134,8 @@ public class UserProfileController {
 
     /**
      * Get request to return the id of the current user logged into the session
-     * @param
-     * @return
+     * @param session the current Http session
+     * @return response entity with the current logged in user id
      */
     @GetMapping("/id")
     public ResponseEntity<String> getUserId(HttpSession session) throws JsonProcessingException {
@@ -142,6 +147,13 @@ public class UserProfileController {
         }
     }
 
+    /**
+     * Get request to return logged in user's role
+     *
+     * @param session the current Http session
+     * @return response entity with the logged in user's role
+     * @throws JsonProcessingException
+     */
     @GetMapping("/role")
     public ResponseEntity getRole(HttpSession session) throws JsonProcessingException {
         Object id = session.getAttribute("id");
@@ -208,9 +220,9 @@ public class UserProfileController {
      */
     @PutMapping("/{profileId}/password")
     public ResponseEntity<String> editPassword(@PathVariable Integer profileId, @Valid @RequestBody EditPasswordRequest request, HttpSession session) {
-        ResponseEntity<String> authorised_response = UserSecurityService.checkAuthorised(profileId, session, repository);
-        if (authorised_response != null) {
-            return authorised_response;
+        ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, repository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
         }
 
         Profile profile = repository.findById(profileId).get();
@@ -227,7 +239,14 @@ public class UserProfileController {
         return ResponseEntity.ok("Password Edited Successfully");
     }
 
-
+    /**
+     * Put request to update user's location
+     *
+     * @param id       user id under query
+     * @param location location of type OSMElementID
+     * @param session  Http session
+     * @return ResponseEntity will return 200 success if user is authorised to update location, else return 404 response if user is not found
+     */
     @PutMapping("/{id}/location")
     public ResponseEntity<String> updateLocation(@PathVariable Integer id, @Valid @RequestBody OSMElementID location, HttpSession session) {
         Optional<Profile> p = repository.findById(id);
@@ -254,6 +273,12 @@ public class UserProfileController {
         }
     }
 
+    /**
+     * Delete request to delete user's location
+     * @param id user id under query
+     * @param session http session
+     * @return Response entity will return 200 success if user is authorised to delete location, else return 404 if user profile is not found
+     */
     @DeleteMapping("/{id}/location")
     public ResponseEntity<String> deleteLocation(@PathVariable Integer id, HttpSession session) {
         Optional<Profile> p = repository.findById(id);
