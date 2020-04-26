@@ -20,7 +20,7 @@
                             </b-row>
                             <b-row>
                                 <b-col><b>Date of Birth:</b></b-col>
-                                <b-col><p>{{userData.date_of_birth}}</p></b-col>
+                                <b-col><p>{{dob}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Gender:</b></b-col>
@@ -126,7 +126,8 @@
                 isLoggedIn: false,
                 userName: "",
                 locations: [],
-                location: null
+                location: null,
+                dob: ''
             }
         },
         methods: {
@@ -144,6 +145,7 @@
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
                         console.log(currentObj.activities)
+                        currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -151,6 +153,12 @@
                         currentObj.$router.push('/login');
                     });
             },
+
+            getCorrectDateFormat: function (date, currentObj) {
+                const dobCorrectFormat = new Date(date + "T00:00");
+                currentObj.dob = dobCorrectFormat.toLocaleDateString();
+            },
+
             getLocationData: async function () {
                 var locationText = document.getElementById("locationInput").value;
                 if (locationText == ''){
