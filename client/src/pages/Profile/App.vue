@@ -4,7 +4,7 @@
         <div class="container">
             <div>
                 <b-row>
-                <b-img center v-bind="mainProps" rounded= "circle" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.f4t8FtSbfNUs94KKgMhhBAHaHr%26pid%3DApi%26h%3D160&f=1" alt="Center image"></b-img>
+                <b-img center v-bind="mainProps" rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -12,7 +12,7 @@
                 </b-row>
                 <b-tabs content-class="mt-3" align="center">
                     <b-tab title="About" active>
-                        <b-card style="margin: 1em" title="About:">
+                        <b-card style="margin: 1em" title="About:" >
                             <b-row>
                                 <b-col><b>Nickname:</b></b-col>
                                 <b-col v-if="userData.nickname != null"><p >{{userData.nickname}}</p></b-col>
@@ -27,9 +27,6 @@
                                 <b-col><p>{{userData.gender}}</p></b-col>
                             </b-row>
                         </b-card>
-                    </b-tab>
-
-                    <b-tab title="Email">
                         <b-card style="margin: 1em" title="Email(s):">
                             <b-row>
                                 <b-col><b>Primary Email:</b></b-col>
@@ -52,8 +49,6 @@
                             </b-row>
                             <p>(Max 5 emails)</p>
                         </b-card>
-                    </b-tab>
-                    <b-tab title="Passport Info" >
                         <b-card style="margin: 1em" title="Passport Info:">
                             <b-row>
                                 <b-col><b>Your Passport Countries:</b></b-col>
@@ -69,8 +64,6 @@
                             </b-row>
                         </b-card>
 
-                    </b-tab>
-                    <b-tab title="Fitness Info" >
                         <b-card style="margin: 1em" title="Fitness Info:">
                             <b-row>
                                 <b-col><b>Fitness Level:</b></b-col>
@@ -90,7 +83,7 @@
 
                     </b-tab>
                     <b-tab title="Activity Info" >
-                        <b-card style="margin: 1em" title="Passport Info:">
+                        <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
                                 <b-col><b>Your Activities</b></b-col>
                                 <b-col>

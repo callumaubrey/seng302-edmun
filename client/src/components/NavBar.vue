@@ -1,5 +1,5 @@
 <template>
-    <b-navbar class="nav-bar" fixed toggleable="lg" type="light" variant="--white">
+    <b-navbar class="nav-bar" fixed toggleable="lg" type="dark" variant="dark">
         <b-navbar-brand v-if="!isLoggedIn" to='/'>Edmun</b-navbar-brand>
         <b-navbar-brand v-if="isLoggedIn" @click="goToProfile">Edmun</b-navbar-brand>
         <b-navbar-toggle fixed target="nav-collapse" toggleable="true"></b-navbar-toggle>
@@ -86,6 +86,10 @@
 
     .searchbtn {
         margin-right: 10px;
+    }
+    .nav-bar{
+        margin-bottom: 50px;
+        margin-right: 0px;
     }
 
 </style>
