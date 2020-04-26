@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -124,7 +124,6 @@
                 activities: [],
                 additionalEmails: [],
                 isLoggedIn: false,
-                userName: "",
                 locations: [],
                 location: null
             }
@@ -142,7 +141,6 @@
                         currentObj.additionalEmails = response.data.additional_email;
                         console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
-                        currentObj.userName = response.data.firstname;
                         console.log(currentObj.activities)
                     })
                     .catch(function (error) {

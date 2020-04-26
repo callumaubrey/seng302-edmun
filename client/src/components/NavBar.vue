@@ -43,10 +43,11 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'userName'],
+        props: ['isLoggedIn'],
         data: function () {
             return {
-                name: ""
+                name: "",
+                userName: this.getUserName()
             }
         },
         watch: {
@@ -66,14 +67,36 @@
                         console.log(error.response.data);
                     });
             },
+            getUserId: async function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profile_id = response.data;
+                    })
+                    .catch(function () {
+                    });
+            },
             goToEdit() {
-                const profileId = this.$route.params.id;
+                const profileId = this.profile_id;
                 this.$router.push('/profile/edit/' + profileId);
             },
             goToProfile() {
-                const profileId = this.$route.params.id;
+                const profileId = this.profile_id;
                 this.$router.push('/profile/' + profileId);
+            },
+            getUserName() {
+                let currentObj = this;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        currentObj.userName = response.data.firstname;
+                    })
+                    .catch(function () {
+                    });
             }
+        },
+        mounted: function () {
+            this.getUserId();
         }
     };
     export default NavBar
