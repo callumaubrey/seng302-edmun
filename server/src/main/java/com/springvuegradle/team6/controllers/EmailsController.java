@@ -1,14 +1,17 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.EmailRepository;
+import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
+import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:9500", allowCredentials = "true", allowedHeaders = "://", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
 @RestController
@@ -25,23 +28,6 @@ public class EmailsController {
         this.emailRepository = emailRepository;
     }
 
-    private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
-        Object id = session.getAttribute("id");
-        if (id == null) {
-            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!(id.toString().equals(requestId.toString()))) {
-            return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!repository.existsById(requestId)) {
-            return new ResponseEntity<>("No such user", HttpStatus.NOT_FOUND);
-        }
-
-        return null;
-    }
-
     /**
      * End point to update the primary email and the additional emails
      * @param profileId Determines the user that is being updated
@@ -56,7 +42,7 @@ public class EmailsController {
             Profile profile = p.get();
 
             // Check if authorised
-            ResponseEntity<String> authorisedResponse = this.checkAuthorised(profileId, session);
+            ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, repository);
             if (authorisedResponse != null) {
                 return authorisedResponse;
             }

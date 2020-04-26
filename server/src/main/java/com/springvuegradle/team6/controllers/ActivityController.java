@@ -3,7 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import org.springframework.http.HttpStatus;
+import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,29 +22,6 @@ public class ActivityController {
     }
 
     /**
-     * Check if user is authorised to edit activity type
-     *
-     * @param requestId userid in endpoint
-     * @param session   http session
-     * @return ResponseEntity or null
-     */
-    private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
-        Object id = session.getAttribute("id");
-        if (id == null) {
-            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!(id.toString().equals(requestId.toString()))) {
-            return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!profileRepository.existsById(requestId)) {
-            return new ResponseEntity<>("No such user", HttpStatus.NOT_FOUND);
-        }
-        return null;
-    }
-
-    /**
      * Update/replace list of user activity types
      *
      * @param profileId user id to be updated
@@ -58,7 +35,7 @@ public class ActivityController {
         if (profile.isPresent()) {
             Profile user = profile.get();
 
-            ResponseEntity<String> authorisedResponse = this.checkAuthorised(profileId, session);
+            ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
             if (authorisedResponse != null) {
                 return authorisedResponse;
             }
