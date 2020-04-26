@@ -647,16 +647,29 @@
             setLocationInput: function (location) {
                 document.getElementById("locationInput").value = location.display_name;
                 const vueObj = this;
-                vueObj.locations = []
-                vueObj.location = location
-                console.log(this.location.place_id, this.location.type.toUpperCase())
+                vueObj.locations = [];
+                vueObj.location = location;
+                console.log(this.location.place_id, this.location.type.toUpperCase());
 
                 if (this.location != null){
                     let data = {
-                        id: this.location.place_id,
-                        type: "RELATION"
+                            location: {
+                            city: null,
+                            state: null,
+                            country: null
+                        },
+                    };
+                    if (location.address.city) {
+                        data.location.city = location.address.city;
                     }
-                    console.log(data)
+                    if (location.address.state) {
+                        data.location.state = location.address.state;
+                    }
+                    if (location.address.country) {
+                        data.location.country = location.address.country;
+                    }
+                    //type: "RELATION"
+                    console.log(data);
                     this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
@@ -678,14 +691,25 @@
                     return
                 }
                 var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5&addressdetails=1',
                     timeout: 1000,
                     withCredentials: false,
                 });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5&addressdetails=1');
                 var data = await (locationData.get());
-                this.locations = data.data
+                console.log(data.data);
+                this.locations = data.data;
+                // var i;
+                // for (i = 0; i < data.data.length; i++ ) {
+                //     let tempText = '{"city": null, "Country": null}';
+                //     let objJson = JSON.parse(tempText);
+                //     objJson.city = data.data[i].address.city;
+                //     objJson.country = data.data[i].address.country;
+                //     console.log(objJson);
+                //     this.locations.push(objJson)
+                // }
             },
+
             getCountryData: async function() {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
