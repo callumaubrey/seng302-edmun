@@ -7,6 +7,7 @@ build/
 dist/
 node_modules/
 server/src/main/resources/application.properties
+coverage/
 
 ### STS ###
 .apt_generated
