@@ -72,17 +72,17 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
                     })
                     .catch(function () {
                     });
             },
             goToEdit() {
-                const profileId = this.profile_id;
+                const profileId = this.profileId;
                 this.$router.push('/profile/edit/' + profileId);
             },
             goToProfile() {
-                const profileId = this.profile_id;
+                const profileId = this.profileId;
                 this.$router.push('/profile/' + profileId);
             },
             getUserName() {
