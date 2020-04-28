@@ -22,6 +22,7 @@ public class CreateActivityRequest {
 
   @JsonProperty("activity_type")
   @Size(min = 1)
+  @NotNull
   public Set<ActivityType> activityTypes;
 
   @JsonProperty("continuous")
@@ -29,10 +30,10 @@ public class CreateActivityRequest {
   public boolean continuous;
 
   @JsonProperty("start_time")
-  public String start_time;
+  public String startTime;
 
   @JsonProperty("end_time")
-  public String end_time;
+  public String endTime;
 
   //    @JsonProperty("location")
   //    public OSMElementID location;

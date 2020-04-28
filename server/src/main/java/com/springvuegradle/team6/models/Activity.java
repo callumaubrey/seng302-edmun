@@ -17,8 +17,8 @@ public class Activity {
     this.activityTypes = request.activityTypes;
     this.continuous = request.continuous;
     if (!this.continuous) {
-      this.startTime = request.start_time;
-      this.endTime = request.end_time;
+      this.startTime = request.startTime;
+      this.endTime = request.endTime;
     }
 //    this.location = request.location;
   }

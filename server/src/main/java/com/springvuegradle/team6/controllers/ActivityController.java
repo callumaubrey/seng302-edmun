@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -138,35 +139,28 @@ public class ActivityController {
       LocalDateTime startDateTime;
       LocalDateTime endDateTime;
       try {
-        if (activity.getStartTime().length() == 10) {
-          startDateTime = LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ISO_DATE);
-        } else {
           startDateTime =
-              LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ISO_DATE_TIME);
-        }
+              LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (startDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
+        System.out.println(e);
         return new ResponseEntity(
-            "Start date/time must be in correct format of YYYY-MM-DD or YYYY-MM-DDThh:mm:ss.sTZD",
+            "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
             HttpStatus.BAD_REQUEST);
       }
 
       try {
-        if (activity.getEndTime().length() == 10) {
-          endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ISO_DATE);
-        } else {
-          endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
-        }
+          endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (endDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
         return new ResponseEntity(
-            "End date/time must be in correct format of YYYY-MM-DD or YYYY-MM-DDThh:mm:ss.sTZD",
+            "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
             HttpStatus.BAD_REQUEST);
       }
 
