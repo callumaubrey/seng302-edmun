@@ -388,7 +388,7 @@
                 yourActivites: [],
                 passportsCode: [],
                 availCountries: [],
-                availActivitys: ["Hike", "Run", "Bike", "Swim", "Walk"],
+                availActivitys: [],
                 isLoggedIn: false,
                 userName: "",
                 selectedCountry: null,
@@ -593,6 +593,17 @@
                         }
                     });
                 }
+            },
+            getActivityTypes(){
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/activity-types' )
+                    .then(function (response) {
+                        currentObj.availActivitys = response.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                    });
             },
             deletePassport(index) {
                 const vueObj = this;
@@ -864,6 +875,7 @@
         mounted: function () {
             this.getUserId();
             this.getProfileData();
+            this.getActivityTypes();
         },
         beforeMount() {
             this.getCountryData();
