@@ -180,14 +180,8 @@
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
-                    activityTypes: [
-                        // Poor bugger who has to do the axios stuff will need to get these from server side
-                        // These values will need to be converted to uppercase before axios request is sent
-                        { value: 0, text: 'Select an activity' },
-                        { value: 'Run', text: 'Run' },
-                        { value: 'Bike', text: 'Bike' },
-                        { value: 'Hike', text: 'Hike' }
-                    ],
+                    // These values will need to be converted to uppercase before axios request is sent
+                    activityTypes: [],
                     date: null,
                     location: null
                 },
@@ -224,6 +218,17 @@
             }
         },
         methods: {
+            getActivities: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/activity-types' )
+                    .then(function (response) {
+                        currentObj.form.activityTypes = response.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                    });
+            },
             validateState(name) {
                 const { $dirty, $error } = this.$v.form[name];
                 return $dirty ? !$error : null;
@@ -259,7 +264,11 @@
 
                 alert('Good to go!');
             }
-        }
+        },
+    mounted: function () {
+        this.getActivities();
+    },
+
     }
 </script>
 
