@@ -10,45 +10,40 @@
                 <b-row align-h="center">
                     <h3>Activity Name</h3>
                 </b-row>
-                <b-tabs content-class="mt-3" align="center">
-                    <b-tab title="About" active>
-                        <b-card style="margin: 1em" title="About:" >
-                            <b-row>
-                                <b-col><b>Activity Type(s):</b></b-col>
-                                <b-col><p>List of activity types</p></b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col><b>End Date:</b></b-col>
-                                <b-col><p>End date or continuous</p></b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col><b>Location:</b></b-col>
-                                <b-col><p>Activity location</p></b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col><b>Description:</b></b-col>
-                                <b-col><p>Activity description</p></b-col>
-                            </b-row>
-                        </b-card>
-                        <b-card style="margin: 1em" title="Participants:">
-                            <b-row>
-                                <b-col><b>Creator:</b></b-col>
-                                <b-col><p>Users name possibly link to profile</p></b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col><b>Other Participants:</b></b-col>
-                                <b-col><p>List of other participants possibly with links to profiles</p></b-col>
-                            </b-row>
-                        </b-card>
-                    </b-tab>
-
-                    <b-tab title="Edit" >
-                        <b-card style="margin: 1em;" title="Edit:">
-                        </b-card>
-                        <b-card style="margin: 1em;" title="Delete:">
-                        </b-card>
-                    </b-tab>
-                </b-tabs>
+                <b-row align-h="center" v-if="isActivityOwner">
+                    <b-dropdown text="Actions" class="m-md-2">
+                        <b-dropdown-item>Edit</b-dropdown-item>
+                        <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
+                    </b-dropdown>
+                </b-row>
+                <b-card style="margin: 1em" title="About:" >
+                    <b-row>
+                        <b-col><b>Activity Type(s):</b></b-col>
+                        <b-col><p>List of activity types</p></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col><b>End Date:</b></b-col>
+                        <b-col><p>End date or continuous</p></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col><b>Location:</b></b-col>
+                        <b-col><p>Activity location</p></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col><b>Description:</b></b-col>
+                        <b-col><p>Activity description</p></b-col>
+                    </b-row>
+                </b-card>
+                <b-card style="margin: 1em" title="Participants:">
+                    <b-row>
+                        <b-col><b>Creator:</b></b-col>
+                        <b-col><p>Users name possibly link to profile</p></b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col><b>Other Participants:</b></b-col>
+                        <b-col><p>List of other participants possibly with links to profiles</p></b-col>
+                    </b-row>
+                </b-card>
             </div>
         </div>
     </div>
@@ -63,9 +58,19 @@
         },
         data: function() {
             return {
+                isActivityOwner: true,
                 userData: '',
                 isLoggedIn: false,
                 userName: ""
+            }
+        },
+        methods: {
+            deleteActivity() {
+                if (!confirm("Are you sure you want to delete this activity?")) {
+                    return;
+                }
+
+                alert("Procced");
             }
         }
     };
