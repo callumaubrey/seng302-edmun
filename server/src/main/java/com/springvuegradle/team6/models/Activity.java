@@ -1,12 +1,27 @@
 package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.models.location.OSMLocation;
+import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 public class Activity {
+
+  public Activity(CreateActivityRequest request, int authorId) {
+    this.authorId = authorId;
+    this.activityName = request.activityName;
+    this.description = request.description;
+    this.activityTypes = request.activityTypes;
+    this.activityTypes = request.activityTypes;
+    this.continuous = request.continuous;
+    if (!this.continuous) {
+      this.startTime = request.start_time;
+      this.endTime = request.end_time;
+    }
+//    this.location = request.location;
+  }
   @Id
   @GeneratedValue
   @Column(name = "id")
