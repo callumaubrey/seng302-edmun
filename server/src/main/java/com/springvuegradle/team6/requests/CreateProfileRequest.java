@@ -127,6 +127,11 @@ public class CreateProfileRequest {
         return profile;
     }
 
+    /**
+     *
+     * @param dob
+     * @return bool for whether or not date is valid
+     */
     public boolean isValidDate(String dob) {
         // Check valid date
         try {
