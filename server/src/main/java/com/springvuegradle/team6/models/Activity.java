@@ -12,6 +12,8 @@ public class Activity {
   @Column(name = "id")
   private Integer id;
 
+  private Integer authorId;
+
   private String activityName;
 
   private String description;
@@ -29,13 +31,6 @@ public class Activity {
   @OneToOne
   private OSMLocation location;
 
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
 
   public String getActivityName() {
     return activityName;
@@ -91,5 +86,22 @@ public class Activity {
 
   public void setLocation(OSMLocation location) {
     this.location = location;
+  }
+
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Integer getAuthorId() {
+    return authorId;
+  }
+
+  public void setAuthorId(Integer authorId) {
+    this.authorId = authorId;
   }
 }
