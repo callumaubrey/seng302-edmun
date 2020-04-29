@@ -2,9 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import ch.qos.logback.core.encoder.EchoEncoder;
 import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.location.OSMLocationRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
+import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import org.apache.coyote.Response;
+import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,10 +39,12 @@ import java.util.Optional;
 public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
+  private final OSMLocationRepository locationRepository;
 
-  ActivityController(ProfileRepository profileRep, ActivityRepository activityRepository) {
+  ActivityController(ProfileRepository profileRep, ActivityRepository activityRepository, OSMLocationRepository locationRepository) {
     this.profileRepository = profileRep;
     this.activityRepository = activityRepository;
+    this.locationRepository = locationRepository;
   }
 
   /**
@@ -172,4 +176,92 @@ public class ActivityController {
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
+
+  /**
+   * Put Request to update an activity for the given profile based on the request
+   * @param profileId The id of the author of the activity
+   * @param request The request with values to update the activity
+   * @param session The session of the currently logged in user
+   * @return The response code and message
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}")
+  public ResponseEntity<String> editActivity(
+          @PathVariable Integer profileId,
+          @PathVariable Integer activityId,
+          @Valid @RequestBody EditActivityRequest request,
+          HttpSession session) {
+
+    Optional<Activity> a = activityRepository.findById(activityId);
+
+    if(a.isPresent()) {
+      Activity edit = a.get();
+
+      // Check if authorised
+      ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+      if (authorisedResponse != null) {
+        return authorisedResponse;
+      }
+
+      request.editActivityFromRequest(edit, locationRepository);
+
+      if (!edit.isContinuous()) {
+        if (edit.getStartTime() == null) {
+          return new ResponseEntity<>(
+                  "Start date/time cannot be empty for a non continuous activity",
+                  HttpStatus.BAD_REQUEST);
+        }
+        if (edit.getEndTime() == null) {
+          return new ResponseEntity<>(
+                  "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
+        }
+
+        // Start and End date/time validations
+        LocalDateTime startDateTime;
+        LocalDateTime endDateTime;
+
+        // Checks if new start time is before now.
+        try {
+          startDateTime =
+                  LocalDateTime.parse(edit.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          if (startDateTime.isBefore(LocalDateTime.now())) {
+            return new ResponseEntity(
+                    "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+          }
+        } catch (DateTimeParseException e) {
+          System.out.println(e);
+          return new ResponseEntity("Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+                  HttpStatus.BAD_REQUEST);
+        }
+
+        // Checks if end time is before now.
+        try {
+          endDateTime = LocalDateTime.parse(edit.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          if (endDateTime.isBefore(LocalDateTime.now())) {
+            return new ResponseEntity(
+                    "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+          }
+        } catch (DateTimeParseException e) {
+          return new ResponseEntity(
+                  "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+                  HttpStatus.BAD_REQUEST);
+        }
+
+        // Checks if start time is after end time.
+        if (startDateTime.isAfter(endDateTime)) {
+          return new ResponseEntity(
+                  "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+        }
+
+      }
+      activityRepository.save(edit);
+
+      return ResponseEntity.ok("Activity: " + edit.getActivityName() + " was updated.");
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
 }
+
+
+
