@@ -97,18 +97,18 @@
                         </b-col>
                     </b-row>
 
-                    <b-row>
-                        <b-col>
-                            <b-form-group id="date-input-group" label="Date" label-for="date-input">
-                                <b-form-input
-                                        id="date-input"
-                                        type="date"
-                                        :state="validateState('date')"
-                                        v-model="$v.form.date.$model"
-                                ></b-form-input>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+<!--                    <b-row>-->
+<!--                        <b-col>-->
+<!--                            <b-form-group id="date-input-group" label="Date" label-for="date-input">-->
+<!--                                <b-form-input-->
+<!--                                        id="date-input"-->
+<!--                                        type="date"-->
+<!--                                        :state="validateState('date')"-->
+<!--                                        v-model="$v.form.date.$model"-->
+<!--                                ></b-form-input>-->
+<!--                            </b-form-group>-->
+<!--                        </b-col>-->
+<!--                    </b-row>-->
 
                     <b-row>
                         <b-col>
@@ -175,6 +175,7 @@
                 isLoggedIn: true,
                 userName: 'Callum Aubrey',
                 isContinuous: 1,
+                profile_id: null,
                 form: {
                     name: null,
                     description: null,
@@ -248,14 +249,30 @@
             },
             onSubmit() {
                 this.$v.form.$touch();
-                this.$v.durationForm.$touch();
-                if (this.isContinuous == '0') {
+                //this.$v.durationForm.$touch();
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                if (this.isContinuous == '1') {
+                    if (this.$v.form.$anyError) {
+                        return;
+                    }
+                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {
+                        activity_name: this.form.name,
+                        description: this.form.description,
+                        activity_type: this.form.selectedActivityTypes,
+                        continuous: true,
+                    })
+                        .then(function (response) {
+                            currentObj.form.activityTypes = response.data;
+                        })
+                        .catch(function (error) {
+                            console.log(error.response.data); });
+
+                }else {
+                    alert("duration")
                     if (this.$v.durationForm.$anyError) {
                         return;
                     }
-                }
-                if (this.$v.form.$anyError) {
-                    return;
                 }
 
                 for (var i = 0; i < this.form.selectedActivityTypes.length; i++) {
@@ -263,10 +280,22 @@
                 }
 
                 alert('Good to go!');
-            }
+            },
+            getUserId: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profile_id = response.data;
+                    })
+                    .catch(function () {
+                    });
+            },
+
         },
     mounted: function () {
         this.getActivities();
+        this.getUserId();
     },
 
     }
