@@ -53,8 +53,9 @@ public class AdminController {
     public ResponseEntity<String> removeProfile(@RequestBody DeleteProfileRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
-            profileRepository.removeByEmail(email.get());
-            emailRepository.delete(email.get());
+            Profile profile = profileRepository.findByEmail(email.get());
+            profileRepository.delete(profile);
+
             return ResponseEntity.ok("User account with email: " + request.getEmail() + " is terminated");
         } else {
             return new ResponseEntity("No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);

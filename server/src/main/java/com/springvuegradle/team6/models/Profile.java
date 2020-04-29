@@ -8,10 +8,7 @@ import com.springvuegradle.team6.models.location.OSMLocation;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class Profile {
@@ -29,12 +26,8 @@ public class Profile {
 
     private String nickname;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "email_id", referencedColumnName = "id")
-    private Email email;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private Set<Email> additionalemail;
+    private Set<Email> emails;
 
     private String password;
 
@@ -103,8 +96,22 @@ public class Profile {
     }
 
     @JsonProperty("primary_email")
-    public Email getEmail() {
-        return this.email;
+    public Email getPrimaryEmail() {
+        for(Email email: emails) {
+            if(email.isPrimary()) return email;
+        }
+
+        // If no primary email exists set first email to be primary
+        if(!emails.isEmpty()) {
+            Email newPrimary = emails.iterator().next();
+            newPrimary.setPrimary(true);
+            System.getLogger("SystemEvents").log(System.Logger.Level.INFO, String.format("User %d has no primary email so %s was set as primary", getId(), newPrimary.getAddress()));
+
+            return newPrimary;
+        } else {
+            System.getLogger("SystemEvents").log(System.Logger.Level.WARNING, String.format("User %d contains no emails", getId()));
+            return new Email("null");
+        }
     }
 
     public String getPassword() {
@@ -133,8 +140,8 @@ public class Profile {
     }
 
     @JsonProperty("additional_email")
-    public Set<Email> getAdditionalemail() {
-        return this.additionalemail;
+    public Set<Email> getEmails() {
+        return this.emails;
     }
 
     @JsonProperty("activities")
@@ -160,13 +167,16 @@ public class Profile {
     }
 
     @JsonProperty("primary_email")
-    public void setEmail(Email email) {
-        this.email = email;
+    public void setPrimaryEmail(Email email) {
+        if(emails == null) emails = new HashSet<>();
+        this.emails.add(email);
     }
 
     @JsonProperty("additional_email")
-    public void setAdditionalemail(Set<Email> emails) {
-        this.additionalemail = emails;
+    public void setEmails(Set<Email> emails) {
+        if(emails == null) emails = new HashSet<>();
+        clearNonPrimaryEmails();
+        this.emails.addAll(emails);
     }
 
     public void setFirstname(String firstname) {
@@ -252,14 +262,21 @@ public class Profile {
                 ", middlename='" + middlename + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", nickname='" + nickname + '\'' +
-                ", email='" + email + '\'' +
+                ", email='" +  getPrimaryEmail() + '\'' +
                 ", password='" + password + '\'' +
                 ", bio='" + bio + '\'' +
                 ", dob='" + dob + '\'' +
                 ", gender='" + gender + '\'' +
                 ", fitness=" + fitness + '\'' +
-                ", additionalemail='" + additionalemail + '\'' +
+                ", additionalemail='" + getEmails() + '\'' +
                 ", passports='" + passports + '\'' +
                 '}';
+    }
+
+    /**
+     * Clears all emails except for the primary email in emails
+     */
+    private void clearNonPrimaryEmails() {
+        emails.removeIf(email -> !email.isPrimary());
     }
 }
