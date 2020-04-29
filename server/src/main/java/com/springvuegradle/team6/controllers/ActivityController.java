@@ -43,11 +43,12 @@ public class ActivityController {
     this.activityRepository = activityRepository;
   }
 
+
   /**
    * Check if user is authorised to edit activity type
    *
    * @param requestId userid in endpoint
-   * @param session http session
+   * @param session   http session
    * @return ResponseEntity or null
    */
   private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
@@ -70,15 +71,15 @@ public class ActivityController {
    * Update/replace list of user activity types
    *
    * @param profileId user id to be updated
-   * @param request EditActivityTypeRequest
-   * @param session HTTPSession
+   * @param request   EditActivityTypeRequest
+   * @param session   HTTPSession
    * @return unauthorised response or 201/400 HttpStatus Response
    */
   @PutMapping("/profiles/{profileId}/activity-types")
   public ResponseEntity<String> updateActivityTypes(
-      @PathVariable Integer profileId,
-      @Valid @RequestBody EditActivityTypeRequest request,
-      HttpSession session) {
+          @PathVariable Integer profileId,
+          @Valid @RequestBody EditActivityTypeRequest request,
+          HttpSession session) {
     Optional<Profile> profile = profileRepository.findById(profileId);
     if (profile.isPresent()) {
       Profile user = profile.get();
@@ -93,6 +94,7 @@ public class ActivityController {
     }
     return ResponseEntity.ok("User activity types updated");
   }
+
   /**
    * Get all activity types
    *
@@ -109,16 +111,17 @@ public class ActivityController {
 
   /**
    * Post Request to create an activity for the given profile based on the request
+   *
    * @param profileId The id of the profile where the activity is created for
-   * @param request The request with values to create the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to create the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PostMapping("/profiles/{profileId}/activities")
   public ResponseEntity<String> createActivity(
-      @PathVariable Integer profileId,
-      @Valid @RequestBody CreateActivityRequest request,
-      HttpSession session) {
+          @PathVariable Integer profileId,
+          @Valid @RequestBody CreateActivityRequest request,
+          HttpSession session) {
     ResponseEntity<String> checkAuthorisedResponse = checkAuthorised(profileId, session);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
@@ -127,49 +130,79 @@ public class ActivityController {
     if (!activity.isContinuous()) {
       if (activity.getStartTime() == null) {
         return new ResponseEntity<>(
-            "Start date/time cannot be empty for a non continuous activity",
-            HttpStatus.BAD_REQUEST);
+                "Start date/time cannot be empty for a non continuous activity",
+                HttpStatus.BAD_REQUEST);
       }
       if (activity.getEndTime() == null) {
         return new ResponseEntity<>(
-            "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
+                "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
       }
 
       // Stand and End date/time validations
       LocalDateTime startDateTime;
       LocalDateTime endDateTime;
       try {
-          startDateTime =
-              LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        startDateTime =
+                LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (startDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
-              "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+                  "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
         System.out.println(e);
         return new ResponseEntity(
-            "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-            HttpStatus.BAD_REQUEST);
+                "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+                HttpStatus.BAD_REQUEST);
       }
 
       try {
-          endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (endDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
-              "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+                  "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
         return new ResponseEntity(
-            "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-            HttpStatus.BAD_REQUEST);
+                "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+                HttpStatus.BAD_REQUEST);
       }
 
       if (startDateTime.isAfter(endDateTime)) {
         return new ResponseEntity(
-            "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+                "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
       }
     }
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
+  }
+
+  /**
+   * Delete Request to delete an activity from a given profile id and activity id
+   *
+   * @param profileId The id of the profile where the activity is deleted from
+   * @param activityId The id of the activity
+   * @param session   The session of the currently logged in user
+   * @return The response code and message
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}")
+  public ResponseEntity<String> createActivity(
+          @PathVariable Integer profileId,
+          @PathVariable Integer activityId,
+          HttpSession session) {
+    ResponseEntity<String> checkAuthorisedResponse = checkAuthorised(profileId, session);
+    if (checkAuthorisedResponse != null) {
+      return checkAuthorisedResponse;
+    }
+    Optional<Activity> p = activityRepository.findById(activityId);
+    if (p.isPresent()) {
+      Activity activity = p.get();
+      if (!activity.getAuthorId().equals(profileId)){
+        return new ResponseEntity<>("You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+      }
+      activityRepository.delete(activity);
+      return ResponseEntity.ok("OK");
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
   }
 }

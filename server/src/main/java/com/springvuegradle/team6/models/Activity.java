@@ -22,6 +22,9 @@ public class Activity {
     }
 //    this.location = request.location;
   }
+  public Activity() {
+
+  }
   @Id
   @GeneratedValue
   @Column(name = "id")
