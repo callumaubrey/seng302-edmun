@@ -3,9 +3,8 @@ package com.springvuegradle.team6.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.location.OSMElementID;
-import com.springvuegradle.team6.models.location.OSMLocation;
-import com.springvuegradle.team6.models.location.OSMLocationRepository;
+import com.springvuegradle.team6.models.location.NamedLocation;
+import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 
@@ -69,12 +68,12 @@ public class CreateProfileRequest {
     @Min(value = 0) @Max(value = 4)
     public Integer fitness = 0;
 
-    public OSMElementID location;
+    public NamedLocation location;
 
     public Profile generateProfile(
             EmailRepository emailRepository,
             CountryRepository countryRepository,
-            OSMLocationRepository locationRepository
+            NamedLocationRepository locationRepository
     ) {
         Profile profile = new Profile();
         profile.setFirstname(firstname);
@@ -118,10 +117,8 @@ public class CreateProfileRequest {
         }
 
         if(this.location != null) {
-            OSMLocation osmLocation = new OSMLocation(this.location);
-            locationRepository.save(osmLocation);
-            profile.setLocation(osmLocation);
-            profile.getLocation().updateLocationData();
+            locationRepository.save(this.location);
+            profile.setLocation(this.location);
         }
 
         return profile;

@@ -2,9 +2,8 @@ package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.OSMElementID;
-import com.springvuegradle.team6.models.location.OSMLocation;
-import com.springvuegradle.team6.models.location.OSMLocationRepository;
+import com.springvuegradle.team6.models.location.NamedLocation;
+import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 
@@ -94,17 +93,16 @@ public class EditProfileRequest {
     @JsonProperty("additional_email")
     public List<String> additionalemail;
 
-    public OSMElementID location;
+    public NamedLocation location;
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
      * to edit the profile
      * Note: The emails is edited in a separate function called editEmails
-     *
-     * @param profile the profile to be edited
+     *  @param profile the profile to be edited
      * @param locationRepository
      */
-    public void editProfileFromRequest(Profile profile, CountryRepository countries, EmailRepository emailRepository, OSMLocationRepository locationRepository) {
+    public void editProfileFromRequest(Profile profile, CountryRepository countries, EmailRepository emailRepository, NamedLocationRepository locationRepository) {
             profile.setFirstname(this.firstname);
             profile.setLastname(this.lastname);
             profile.setBio(this.bio);
@@ -126,10 +124,8 @@ public class EditProfileRequest {
             profile.setActivityTypes(this.activityTypes);
 
         if(this.location != null) {
-            OSMLocation osmLocation = new OSMLocation(this.location);
-            locationRepository.save(osmLocation);
-            profile.setLocation(osmLocation);
-            profile.getLocation().updateLocationData();
+            locationRepository.save(this.location);
+            profile.setLocation(this.location);
         }
     }
 }
