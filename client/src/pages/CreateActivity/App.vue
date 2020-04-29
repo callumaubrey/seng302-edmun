@@ -9,7 +9,7 @@
                         <hr>
                     </b-col>
                 </b-row>
-                <b-form @submit.stop.prevent="onSubmit">
+                <b-form novalidate @submit.stop.prevent="onSubmit">
                     <b-row>
                         <b-col>
                             <b-form-group>
@@ -87,7 +87,7 @@
                                         name="activity-type"
                                         v-model="$v.form.selectedActivityType.$model"
                                         :state="validateState('selectedActivityType')"
-                                        :options="form.activityTypes"
+                                        :options="activityTypes"
                                         aria-describedby="activity-type-feedback"
                                         v-on:change="addActivityType()"
                                 ></b-form-select>
@@ -176,13 +176,13 @@
                 userName: 'Callum Aubrey',
                 isContinuous: 1,
                 profile_id: null,
+                activityTypes: [],
                 form: {
                     name: null,
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
                     // These values will need to be converted to uppercase before axios request is sent
-                    activityTypes: [],
                     date: null,
                     location: null
                 },
@@ -224,7 +224,7 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/activity-types' )
                     .then(function (response) {
-                        currentObj.form.activityTypes = response.data;
+                        currentObj.activityTypes = response.data;
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -249,7 +249,6 @@
             },
             onSubmit() {
                 this.$v.form.$touch();
-                //this.$v.durationForm.$touch();
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 if (this.isContinuous == '1') {
@@ -263,23 +262,62 @@
                         continuous: true,
                     })
                         .then(function (response) {
-                            currentObj.form.activityTypes = response.data;
+                            console.log(response);
+                            currentObj.form.name = currentObj.form.description = null;
+                            currentObj.form.selectedActivityType = 0;
+                            currentObj.form.selectedActivityTypes = [];
+                            currentObj.$v.$reset();
                         })
                         .catch(function (error) {
                             console.log(error.response.data); });
 
                 }else {
-                    alert("duration")
+                    this.$v.durationForm.$touch();
                     if (this.$v.durationForm.$anyError) {
                         return;
                     }
+                    const isoDates = this.getDates();
+                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {
+                        activity_name: this.form.name,
+                        description: this.form.description,
+                        activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
+                        end_time: isoDates[1]
+                    })
+                        .then(function (response) {
+                            console.log(response);
+                            currentObj.form.name = currentObj.form.description = null
+                            currentObj.form.selectedActivityType = 0;
+                            currentObj.form.selectedActivityTypes = []
+                            currentObj.durationForm.startDate = currentObj.durationForm.startTime = null;
+                            currentObj.durationForm.endDate = currentObj.durationForm.endTime = null;
+                            currentObj.$v.$reset();
+                        })
+                        .catch(function (error) {
+                            console.log(error)
+                        });
+
                 }
 
-                for (var i = 0; i < this.form.selectedActivityTypes.length; i++) {
-                    alert(this.form.selectedActivityTypes[i]);
-                }
+            },
+            getDates: function() {
+                const startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
+                const endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime);
+                let startDateISO = startDate.toISOString().slice(0,-5);
+                let endDateISO = endDate.toISOString().slice(0,-5);
 
-                alert('Good to go!');
+                var currentTime = new Date();
+                const offset = (currentTime.getTimezoneOffset());
+
+                const currentTimezone = (offset/60) * -1;
+                if (currentTimezone !== 0) {
+                    startDateISO += currentTimezone > 0 ? '+' : '';
+                    endDateISO += currentTimezone > 0 ? '+' : '';
+                }
+                startDateISO += currentTimezone.toString() + "00";
+                endDateISO += currentTimezone.toString() + "00";
+                // alert(startDate + "\n" + startDateISO)
+                return [startDateISO, endDateISO];
+
             },
             getUserId: function () {
                 let currentObj = this;
