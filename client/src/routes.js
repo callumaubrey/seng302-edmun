@@ -16,7 +16,7 @@ const routes = [
     { path: '/profile/:id', component: Profile},
     { path: '/profile/edit/:id', component: EditProfile},
     { path: '/admin', component: Admin},
-    { path: '/activity/new', component: CreateActivity }
+    { path: '/activity/new', component: CreateActivity },
     { path: '/profiles/:profileId/activities/:activityId', component: Activity}
 ];
 
