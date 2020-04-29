@@ -70,7 +70,13 @@
                     return;
                 }
 
-                alert("Procced");
+                let profileId = this.$route.params.profileId;
+                let activityId = this.$route.params.activityId;
+                this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
+                .then(() => {
+                    this.$router.push('/profile/' + profileId);
+                })
+                .catch(err => alert(err));
             }
         }
     };
