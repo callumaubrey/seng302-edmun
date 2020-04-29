@@ -179,7 +179,7 @@
         },
         data() {
             return {
-                isLoggedIn: true,
+                isLoggedIn: false,
                 userName: '',
                 isContinuous: '',
                 profileId: null,
@@ -194,7 +194,7 @@
                     selectedActivityTypes: [],
                     // These values will need to be converted to uppercase before axios request is sent
                     date: null,
-                    location: null
+                    location: 'Kaikoura, NZ'
                 },
                 durationForm: {
                     startDate: null,
@@ -283,6 +283,7 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
+                        location: this.form.location
                     })
                         .then(function (response) {
                             console.log(response);
@@ -305,7 +306,8 @@
                         activity_type: this.form.selectedActivityTypes,
                         continuous: false,
                         start_time: isoDates[0],
-                        end_time: isoDates[1]
+                        end_time: isoDates[1],
+                        location: this.form.location
                     })
                         .then(function (response) {
                             console.log(response);
@@ -348,6 +350,7 @@
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
+                        currentObj.isLoggedIn = true;
                     })
                     .catch(function () {
                     });
