@@ -3,9 +3,11 @@
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div class="container">
             <b-container fluid>
-                <b-row>
+                <b-row align-h="between">
                     <b-col>
-                        <h3>Edit Activity</h3>
+                        <b-button @click="goToActivity()" style="float: right;" variant="primary">View activity
+                        </b-button>
+                        <h3>Edit Your Activity: {{ form.name }}</h3>
                         <hr>
                     </b-col>
                 </b-row>
@@ -13,7 +15,7 @@
                     <b-row>
                         <b-col>
                             <b-form-group>
-                                <b-form-radio-group autofocus=true id="duration-type-group" v-model="isContinuous">
+                                <b-form-radio-group id="duration-type-group" v-model="isContinuous">
                                     <b-form-radio name="duration-type" value='0'>Continuous</b-form-radio>
                                     <b-form-radio name="duration-type" value='1'>Duration</b-form-radio>
                                 </b-form-radio-group>
@@ -78,12 +80,20 @@
                             <span v-if="this.form.selectedActivityTypes.length > 0">
                                 Activity types:
                             </span>
-                            <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
-                                <b-list-group-item :key="activityType"
-                                                   v-for="activityType in this.form.selectedActivityTypes">
-                                    {{ activityType }}
-                                </b-list-group-item>
-                            </b-list-group>
+                            <hr>
+                            <div :key="index" v-for="(activityType, index) in this.form.selectedActivityTypes">
+                                <b-row>
+                                    <b-col>
+                                        <label>{{activityType}}</label>
+                                    </b-col>
+                                    <b-col>
+                                        <b-button @click="deleteActivityType(index)" class="invisible-btn"
+                                                  style="float: right;">Remove
+                                        </b-button>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                            <hr>
                             <b-form-group id="activity-type-group" label="Add Activity Type" label-for="activity-type">
                                 <b-form-select
                                         :options="activityTypes"
@@ -100,20 +110,6 @@
                             <hr>
                         </b-col>
                     </b-row>
-
-                    <!--                    <b-row>-->
-                    <!--                        <b-col>-->
-                    <!--                            <b-form-group id="date-input-group" label="Date" label-for="date-input">-->
-                    <!--                                <b-form-input-->
-                    <!--                                        id="date-input"-->
-                    <!--                                        type="date"-->
-                    <!--                                        :state="validateState('date')"-->
-                    <!--                                        v-model="$v.form.date.$model"-->
-                    <!--                                ></b-form-input>-->
-                    <!--                            </b-form-group>-->
-                    <!--                        </b-col>-->
-                    <!--                    </b-row>-->
-
                     <b-row>
                         <b-col>
                             <b-form-group id="name-input-group" label="Name" label-for="name-input">
@@ -156,10 +152,15 @@
                                         v-model="$v.form.location.$model"
                                 ></b-form-input>
                             </b-form-group>
+                            <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
+                                {{activityUpdateMessage}}
+                            </b-form-valid-feedback>
+                            <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
+                                {{activityErrorMessage}}
+                            </b-form-invalid-feedback>
                         </b-col>
                     </b-row>
-
-                    <b-button type="submit" variant="primary">Save changes</b-button>
+                    <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
                 </b-form>
             </b-container>
         </div>
@@ -179,11 +180,13 @@
         data() {
             return {
                 isLoggedIn: true,
-                userName: 'Callum Aubrey',
-                isContinuous: 1,
+                userName: '',
+                isContinuous: '',
                 profileId: null,
                 activityId: null,
-                activityTypes: ["Hike", "Bike", "Run"],
+                activityTypes: ["Hike", "Bike", "Run", "Walk", "Swim"],
+                activityUpdateMessage: "",
+                activityErrorMessage: "",
                 form: {
                     name: null,
                     description: null,
@@ -235,12 +238,13 @@
                         currentObj.form.name = response.data.activity_name;
                         currentObj.form.description = response.data.description;
                         currentObj.activityTypes = response.data.activity_type;
-                        currentObj.isContinuous = response.data.continuous;
-                        if (currentObj.isContinuous == false) {
+                        if (response.data.continuous == false) {
+                            currentObj.isContinuous = '1';
                             [currentObj.durationForm.startDate, currentObj.durationForm.startTime] = currentObj.convertISOtoDateTime(response.data.start_time);
                             [currentObj.durationForm.endDate, currentObj.durationForm.endTime] = currentObj.convertISOtoDateTime(response.data.end_time);
+                        } else {
+                            currentObj.isContinuous = '0';
                         }
-
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -263,9 +267,12 @@
                     this.form.selectedActivityTypes.push(this.form.selectedActivityType);
                 }
             },
+            deleteActivityType(index) {
+                this.form.selectedActivityTypes.splice(index, 1);
+            },
             onSubmit() {
                 this.$v.form.$touch();
-                // let currentObj = this;
+                let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 if (this.isContinuous == '1') {
                     if (this.$v.form.$anyError) {
@@ -279,13 +286,11 @@
                     })
                         .then(function (response) {
                             console.log(response);
-                            // currentObj.form.name = currentObj.form.description = null;
-                            // currentObj.form.selectedActivityType = 0;
-                            // currentObj.form.selectedActivityTypes = [];
-                            // currentObj.$v.$reset();
+                            currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
                         })
                         .catch(function (error) {
                             console.log(error.response.data);
+                            currentObj.activityErrorMessage = "Failed to update activity: " + currentObj.form.name + ". Please try again"
                         });
 
                 } else {
@@ -304,19 +309,14 @@
                     })
                         .then(function (response) {
                             console.log(response);
-                            // currentObj.form.name = currentObj.form.description = null;
-                            // currentObj.form.selectedActivityType = 0;
-                            // currentObj.form.selectedActivityTypes = [];
-                            // currentObj.durationForm.startDate = currentObj.durationForm.startTime = null;
-                            // currentObj.durationForm.endDate = currentObj.durationForm.endTime = null;
-                            // currentObj.$v.$reset();
+                            currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
                         })
                         .catch(function (error) {
-                            console.log(error)
+                            console.log(error);
+                            currentObj.activityErrorMessage = "Failed to update activity: " + currentObj.form.name + ". Please try again"
                         });
 
                 }
-
             },
             getISODates: function () {
                 const startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
@@ -339,7 +339,7 @@
             },
             convertISOtoDateTime: function (ISODate) {
                 const date = ISODate.substring(0, 10);
-                const time = ISODate.substring(12, 16);
+                const time = ISODate.substring(11, 16);
                 return [date, time]
             },
             getUserId: function () {
@@ -360,8 +360,10 @@
                 [this.durationForm.startDate, this.durationForm.startTime] = this.convertISOtoDateTime("2020-02-20T08:00:00+1300");
                 [this.durationForm.endDate, this.durationForm.endTime] = this.convertISOtoDateTime("2020-02-21T08:00:00+1300");
                 this.form.location = "Kaikoura, NZ"
+            },
+            goToActivity: function () {
+                this.$router.push('/profiles/' + this.profileId + '/activities/' + this.activityId);
             }
-
         },
         mounted: function () {
             // this.getActivity();
@@ -384,4 +386,20 @@
         border: 1px solid lightgrey;
         border-radius: 3px;
     }
+
+    .invisible-btn {
+        background-color: Transparent;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        outline: none;
+        color: blue;
+        font-size: 14px;
+    }
+
+    .feedback {
+        padding-bottom: 10px;
+    }
+
 </style>
