@@ -148,19 +148,16 @@
                                     {{emailErrorMessage}}
                                 </b-form-invalid-feedback>
                             </b-col>
-
                             <b-col id="emailAdd" class="col-25">
                                 <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
                             </b-col>
                         </b-row>
                         <b-row>
-
                         </b-row>
                     </div>
                 </b-container>
             </b-collapse>
             <hr>
-
             <div v-b-toggle="'collapse-3'" class = "clickable">
                 <b-container>
                     <b-row>
@@ -205,7 +202,6 @@
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Add</b-button>
                         </b-col>
                     </b-row>
-
                 </b-container>
             </b-collapse>
             <hr>
@@ -238,9 +234,7 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <b-form-group
-                                    description="Add a new activity"
-                            >
+                            <b-form-group description="Add a new activity">
                                 <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
                             </b-form-group>
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
@@ -249,13 +243,11 @@
                             <b-form-invalid-feedback :state='activityErrorMessage == ""'>
                                 {{activityErrorMessage}}
                             </b-form-invalid-feedback>
-
                         </b-col>
                         <b-col>
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Add</b-button>
                         </b-col>
                     </b-row>
-
                 </b-container>
             </b-collapse>
             <hr>
@@ -321,7 +313,7 @@
                     <b-row>
                         <b-col>
                             <p>Select a location from the search drop down:</p>
-                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="location.display_name" @keyup.native="getLocationData"></b-input>
+                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="locationText" @keyup.native="getLocationData"></b-input>
                             <div v-for="i in locations" :key="i.place_id">
                                 <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
                             </div>
@@ -329,15 +321,12 @@
                     </b-row>
                 </b-container>
             </b-collapse>
-
             <hr>
         </b-container>
     </div>
 </template>
 
-
 <script>
-    // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
     import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
@@ -352,7 +341,6 @@
 
     const User = {
         name: 'User',
-
         components: {
             NavBar
         },
@@ -410,12 +398,12 @@
                 profileErrorMessage: "",
                 emailUpdateMessage: "",
                 emailErrorMessage: "",
-
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
                 activityErrorMessage: "",
-                timeout: null
+                timeout: null,
+                locationText: ""
             }
         },
         validations: {
@@ -477,9 +465,6 @@
                 }
             }
         },
-
-
-
         methods: {
             validateState: function(name) {
                 const { $dirty, $error } = this.$v[name];
@@ -689,16 +674,15 @@
             getLocationData: async function () {
                 clearTimeout(this.timeout);
                 this.timeout = setTimeout(async function () {
-                    let locationText = document.getElementById("locationInput").value;
-                    if (locationText == ''){
+                    if (this.locationText == ''){
                         return
                     }
                     var locationData = this.axios.create({
-                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=5&addressdetails=1',
+                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + this.locationText + '&format=json&limit=5&addressdetails=1',
                         timeout: 1000,
                         withCredentials: false,
                     });
-                    console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5&addressdetails=1');
+                    console.log('https://nominatim.openstreetmap.org/search?q="' + this.locationText + '"&format=json&limit=5&addressdetails=1');
                     let data = await (locationData.get());
                     console.log(data.data);
                     this.locations = data.data;
