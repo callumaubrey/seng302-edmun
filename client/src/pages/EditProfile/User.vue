@@ -313,7 +313,7 @@
                     <b-row>
                         <b-col>
                             <p>Select a location from the search drop down:</p>
-                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="locationText" @keyup.native="getLocationData"></b-input>
+                            <b-input autocomplete="off" class="form-control" type="text" v-model="locationText" @keyup.native="getLocationData"></b-input>
                             <div v-for="i in locations" :key="i.place_id">
                                 <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
                             </div>
@@ -631,7 +631,8 @@
                 });
             },
             setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name;
+                //document.getElementById("locationInput").value = location.display_name;
+                this.locationText = location.display_name;
                 const vueObj = this;
                 vueObj.locations = [];
                 vueObj.location = location;
@@ -673,29 +674,21 @@
             },
             getLocationData: async function () {
                 clearTimeout(this.timeout);
-                this.timeout = setTimeout(async function () {
-                    if (this.locationText == ''){
+                let _this = this;
+                this.timeout = setTimeout( async function () {
+                    let locationText = _this.locationText;
+                    if (locationText == ''){
                         return
                     }
-                    var locationData = this.axios.create({
-                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + this.locationText + '&format=json&limit=5&addressdetails=1',
+
+                    let locationData = _this.axios.create({
+                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=5&addressdetails=1',
                         timeout: 1000,
                         withCredentials: false,
                     });
-                    console.log('https://nominatim.openstreetmap.org/search?q="' + this.locationText + '"&format=json&limit=5&addressdetails=1');
                     let data = await (locationData.get());
-                    console.log(data.data);
-                    this.locations = data.data;
+                    _this.locations = data.data;
                 }, 1000);
-                // var i;
-                // for (i = 0; i < data.data.length; i++ ) {
-                //     let tempText = '{"city": null, "Country": null}';
-                //     let objJson = JSON.parse(tempText);
-                //     objJson.city = data.data[i].address.city;
-                //     objJson.country = data.data[i].address.country;
-                //     console.log(objJson);
-                //     this.locations.push(objJson)
-                // }
             },
 
             getCountryData: async function() {
