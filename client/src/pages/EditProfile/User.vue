@@ -414,7 +414,8 @@
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
-                activityErrorMessage: ""
+                activityErrorMessage: "",
+                timeout: null
             }
         },
         validations: {
@@ -686,19 +687,22 @@
                 }
             },
             getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5&addressdetails=1',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5&addressdetails=1');
-                var data = await (locationData.get());
-                console.log(data.data);
-                this.locations = data.data;
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout(async function () {
+                    let locationText = document.getElementById("locationInput").value;
+                    if (locationText == ''){
+                        return
+                    }
+                    var locationData = this.axios.create({
+                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=5&addressdetails=1',
+                        timeout: 1000,
+                        withCredentials: false,
+                    });
+                    console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5&addressdetails=1');
+                    let data = await (locationData.get());
+                    console.log(data.data);
+                    this.locations = data.data;
+                }, 1000);
                 // var i;
                 // for (i = 0; i < data.data.length; i++ ) {
                 //     let tempText = '{"city": null, "Country": null}';
