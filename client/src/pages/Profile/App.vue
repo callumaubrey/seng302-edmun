@@ -125,6 +125,8 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 locations: [],
+                userRoles: [],
+                profileId: null,
                 location: null
             }
         },
@@ -139,14 +141,27 @@
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
                         currentObj.additionalEmails = response.data.additional_email;
-                        console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
-                        console.log(currentObj.activities)
+                        currentObj.userRoles = response.data.roles;
+                        let isAdmin = false;
+                        for (let i = 0; i < currentObj.userRoles.length; i++) {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                                isAdmin = true;
+                            }
+                        }
+                        if (isAdmin === false) {
+                            currentObj.profileId = response.data.id.toString();
+                            currentObj.$router.push('/profile/' + currentObj.profileId)
+                        }
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
-                        currentObj.isLoggedIn = false;
-                        currentObj.$router.push('/login');
+                        if (currentObj.isLoggedIn) {
+                            currentObj.$router.push('/profile/' + currentObj.profileId);
+                            currentObj.$router.go(0);
+                        } else {
+                            currentObj.$router.push('/');
+                        }
                     });
             },
             getLocationData: async function () {
@@ -168,16 +183,18 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
+                        currentObj.isLoggedIn = true;
                     })
                     .catch(function () {
                     });
             }
         },
         mounted: function () {
+            this.getUserId();
             this.getUserSession();
             this.getLocationData();
-            this.getUserId();
+
         }
     };
 
