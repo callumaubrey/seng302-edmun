@@ -20,7 +20,7 @@
                             </b-row>
                             <b-row>
                                 <b-col><b>Date of Birth:</b></b-col>
-                                <b-col><p>{{userData.date_of_birth}}</p></b-col>
+                                <b-col><p>{{dob}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Gender:</b></b-col>
@@ -127,7 +127,8 @@
                 locations: [],
                 userRoles: [],
                 profileId: null,
-                location: null
+                location: null,
+                dob: ''
             }
         },
         methods: {
@@ -143,6 +144,7 @@
                         currentObj.additionalEmails = response.data.additional_email;
                         currentObj.isLoggedIn = true;
                         currentObj.userRoles = response.data.roles;
+                        currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
                         let isAdmin = false;
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
                             if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
@@ -153,6 +155,7 @@
                             currentObj.profileId = response.data.id.toString();
                             currentObj.$router.push('/profile/' + currentObj.profileId)
                         }
+
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -164,6 +167,12 @@
                         }
                     });
             },
+
+            getCorrectDateFormat: function (date, currentObj) {
+                const dobCorrectFormat = new Date(date + "T00:00");
+                currentObj.dob = dobCorrectFormat.toLocaleDateString();
+            },
+
             getLocationData: async function () {
                 var locationText = document.getElementById("locationInput").value;
                 if (locationText == ''){

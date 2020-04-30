@@ -150,7 +150,7 @@
                             </b-col>
 
                             <b-col id="emailAdd" class="col-25">
-                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
+                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Submit</b-button>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -202,7 +202,7 @@
                             </b-form-invalid-feedback>
                         </b-col>
                         <b-col>
-                            <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Add</b-button>
+                            <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Submit</b-button>
                         </b-col>
                     </b-row>
 
@@ -252,7 +252,7 @@
 
                         </b-col>
                         <b-col>
-                            <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Add</b-button>
+                            <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Submit</b-button>
                         </b-col>
                     </b-row>
 
@@ -571,9 +571,11 @@
                         passports: tempCodes
                     }).then(function (response) {
                         if (response.status == 200) {
+                            vueObj.passportsErrorMessage = "";
                             vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports";
                             vueObj.yourCountries = tempPassports;
                             vueObj.passportsCode = tempCodes;
+                            vueObj.selectedCountry = null;
                         } else {
                             vueObj.passportsUpdateMessage = "";
                             vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
@@ -582,6 +584,9 @@
                             vueObj.passportsUpdateMessage = "";
                             vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
                     });
+                }else {
+                    this.passportsUpdateMessage = "";
+                    this.passportsErrorMessage = "Passport is either null or already exists in your profile";
                 }
             },
             addActivity() {
@@ -599,7 +604,9 @@
                     }).then(function (response) {
                         console.log(vueObj.yourActivites);
                         if (response.status == 200) {
+                            vueObj.activityErrorMessage = null;
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
+                            vueObj.selectedActivity = null;
                         }
                     }).catch(function (error) {
                         if (error.response.status == 400) {
@@ -607,6 +614,9 @@
                             vueObj.activityUpdateMessage = "Failed to add " + addedActivity + " to activitys, please try again later";
                         }
                     });
+                }else {
+                    this.activityUpdateMessage = "";
+                    this.activityErrorMessage = "Added activity is either null or is already included in you activity's";
                 }
             },
             deletePassport(index) {
@@ -808,6 +818,7 @@
                         vueObj.emailUpdateMessage = newEmail + " was successfully added to your emails";
                         vueObj.emails = newEmails;
                         vueObj.$v.emailForm.$reset();
+                        vueObj.emailForm.emailInput = null;
                     } else {
                         vueObj.emailUpdateMessage = "";
                         vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";

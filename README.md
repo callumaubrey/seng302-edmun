@@ -21,6 +21,11 @@ Custom activity types can also be created and assainged to users.
 
 Running on: http://localhost:9500/
 
+##### Jest Test 
+`cd client`
+`npm install`
+`npm run test`
+
 ##### Server (Backend/API)
 `cd server`
 `./gradlew bootRun`
