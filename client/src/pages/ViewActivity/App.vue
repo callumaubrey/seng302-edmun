@@ -64,7 +64,23 @@
                 userName: ""
             }
         },
+        mounted() {
+            this.getProfileData();
+        },
         methods: {
+            getProfileData: async function () {
+                let vueObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                .then((res) => {
+                    vueObj.isLoggedIn = true;
+                    vueObj.userName = res.data.firstname;
+                })
+                .catch(() => {
+                    vueObj.isLoggedIn = false;
+                    vueObj.$router.push('/login');
+                });
+            },
             deleteActivity() {
                 if (!confirm("Are you sure you want to delete this activity?")) {
                     return;
@@ -72,6 +88,7 @@
 
                 let profileId = this.$route.params.profileId;
                 let activityId = this.$route.params.activityId;
+                alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
                 this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
                 .then(() => {
                     this.$router.push('/profile/' + profileId);
