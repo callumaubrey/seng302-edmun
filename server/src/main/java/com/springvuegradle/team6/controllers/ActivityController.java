@@ -191,10 +191,10 @@ public class ActivityController {
           @Valid @RequestBody EditActivityRequest request,
           HttpSession session) {
 
-    Optional<Activity> a = activityRepository.findById(activityId);
+    Optional<Activity> activity = activityRepository.findById(activityId);
 
-    if(a.isPresent()) {
-      Activity edit = a.get();
+    if(activity.isPresent()) {
+      Activity edit = activity.get();
 
       // Check if authorised
       ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
@@ -254,7 +254,7 @@ public class ActivityController {
 
       }
       activityRepository.save(edit);
-
+      
       return ResponseEntity.ok("Activity: " + edit.getActivityName() + " was updated.");
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);

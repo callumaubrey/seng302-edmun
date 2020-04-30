@@ -25,6 +25,8 @@ public class EditActivityTest {
 
     private int id;
 
+    private int activityId;
+
     private MockHttpSession session;
 
     @BeforeEach
@@ -55,13 +57,118 @@ public class EditActivityTest {
                 "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n" +
                 "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n" +
                 "}";
-
-        mvc.perform(MockMvcRequestBuilders
+        // Creates an activity
+        String activityBody = mvc.perform(MockMvcRequestBuilders
                 .post("/profiles/{profileId}/activities", id)
                 .content(activityJson)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
-        ).andExpect(status().isCreated());
+        ).andReturn().getResponse().getContentAsString();
+        activityId = Integer.parseInt(activityBody);
+    }
+
+    @Test
+    void editAllActivitywithTimeReturnStatusIsOk() throws Exception {
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Changed activity name\",\n" +
+                "  \"description\": \"A new description\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Run\"\n" +
+                "  ],\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2040-04-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void editAllActivitywithoutTimeReturnStatusIsOk() throws Exception {
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Changed activity name\",\n" +
+                "  \"description\": \"A new description\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Run\"\n" +
+                "  ],\n" +
+                "  \"continuous\": true\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void editActivitywithStartDateBeforeNowReturnStatusBadRequest() throws Exception {
+        String jsonString="{\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2000-04-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void editActivitywithBothDatesBeforeNowReturnStatusBadRequest() throws Exception {
+        String jsonString="{\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2000-04-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2000-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void editActivitywithStartDateAfterEndDateReturnStatusBadRequest() throws Exception {
+        String jsonString="{\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2040-10-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void editActivitywithStartDateEqualEndDateReturnStatusIsOk() throws Exception {
+        String jsonString="{\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2000-08-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2000-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isOk());
     }
 
     

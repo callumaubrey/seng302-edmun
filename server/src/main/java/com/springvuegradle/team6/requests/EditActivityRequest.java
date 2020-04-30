@@ -47,8 +47,13 @@ public class EditActivityRequest {
         activity.setDescription(this.description);
         activity.setActivityTypes(this.activityTypes);
         activity.setContinuous(this.continuous);
-        activity.setStartTime(this.startTime);
-        activity.setEndTime(this.endTime);
+        if (activity.isContinuous()) {
+            activity.setStartTime(null);
+            activity.setEndTime(null);
+        } else {
+            activity.setStartTime(this.startTime);
+            activity.setEndTime(this.endTime);
+        }
         //activity.setLocation(this.location);
     }
 
