@@ -71,6 +71,30 @@ public class ActivityController {
   }
 
   /**
+   * Check if user is authorised to edit activity.
+   *
+   * @param activity activity to be edited
+   * @param session http session
+   * @return ResponseEntity or null
+   */
+  private ResponseEntity<String> checkAuthorisedToEditActivity(Activity activity, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (!(id.toString().equals(activity.getAuthorId().toString()))) {
+      return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (!activityRepository.existsById(activity.getId())) {
+      return new ResponseEntity<>("No such activity", HttpStatus.NOT_FOUND);
+    }
+    return null;
+  }
+
+  /**
    * Update/replace list of user activity types
    *
    * @param profileId user id to be updated
@@ -200,6 +224,11 @@ public class ActivityController {
       ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
+      }
+
+      ResponseEntity<String> activityAuthorizedResponse = this.checkAuthorisedToEditActivity(edit, session);
+      if (activityAuthorizedResponse != null) {
+        return activityAuthorizedResponse;
       }
 
       request.editActivityFromRequest(edit, locationRepository);

@@ -108,6 +108,25 @@ public class EditActivityTest {
     }
 
     @Test
+    void editAllActivityWithoutAuthorizationReturnIsUnauthorized() throws Exception {
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Changed activity name\",\n" +
+                "  \"description\": \"A new description\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Run\"\n" +
+                "  ],\n" +
+                "  \"continuous\": true\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, (activityId + 1))
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void editActivitywithStartDateBeforeNowReturnStatusBadRequest() throws Exception {
         String jsonString="{\n" +
                 "  \"continuous\": false,\n" +
@@ -171,5 +190,5 @@ public class EditActivityTest {
         ).andExpect(status().isOk());
     }
 
-    
+
 }
