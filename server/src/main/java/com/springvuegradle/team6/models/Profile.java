@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.location.OSMLocation;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
@@ -13,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+@Indexed
 @Entity
 public class Profile {
 
@@ -21,10 +24,13 @@ public class Profile {
     @Column(name = "id")
     private Integer id;
 
+    @Field
     private String firstname;
 
+    @Field
     private String middlename;
 
+    @Field
     private String lastname;
 
     private String nickname;
