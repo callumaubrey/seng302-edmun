@@ -2,6 +2,7 @@ package com.springvuegradle.team6.startup;
 
 import com.springvuegradle.team6.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,12 @@ public class SetupDataLoader implements
     @Autowired
     private EmailRepository emailRepository;
 
+    @Value("#{environment.ADMIN_EMAIL}")
+    private String adminEmail;
+
+    @Value("#{environment.ADMIN_PASSWORD}")
+    private String adminPassword;
+
     /**
      * Create a default admin account if it is not found in the database
      *
@@ -46,8 +53,8 @@ public class SetupDataLoader implements
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         Profile user = new Profile();
         profileRepository.save(user);
-        user.setPassword("test");
-        Email email = new Email(("test@test.com"));
+        user.setPassword(adminPassword);
+        Email email = new Email((adminEmail));
         emailRepository.save(email);
         user.setEmail(email);
         Collection<Role> roles = new ArrayList<>(Arrays.asList(adminRole));
@@ -60,7 +67,7 @@ public class SetupDataLoader implements
      * @return True if found or else False
      */
     private boolean isAlreadySetup() {
-        Optional<Email> email = emailRepository.findByAddress("test@test.com");
+        Optional<Email> email = emailRepository.findByAddress(adminEmail);
         return email.isPresent();
     }
 
