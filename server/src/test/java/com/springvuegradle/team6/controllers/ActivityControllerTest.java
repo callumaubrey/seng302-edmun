@@ -1,7 +1,12 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.ProfileRepository;
+import org.hamcrest.Matchers;
+import org.json.JSONString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +18,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.lang.model.type.ArrayType;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,6 +49,7 @@ public class ActivityControllerTest {
     @BeforeEach
     void setup() throws Exception {
         session = new MockHttpSession();
+        activityRepository.deleteAll();
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
         mvc.perform(MockMvcRequestBuilders
@@ -221,7 +233,7 @@ public class ActivityControllerTest {
             + "  \"continuous\": true\n"
             + "}";
         mvc.perform(MockMvcRequestBuilders
-                .post("/profiles/{profileId}/activities", id)
+                .get("/profiles/{profileId}/activities", id)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
@@ -245,5 +257,86 @@ public class ActivityControllerTest {
         ).andExpect(status().isBadRequest());
     }
 
+    @Test
+    void getActivityById() throws Exception {
+        Activity testActivity1 = new Activity();
+        testActivity1.setActivityName("Test");
+        activityRepository.save(testActivity1);
 
+        Activity testActivity2 = new Activity();
+        activityRepository.save(testActivity2);
+
+        //ID to check for
+        String activity1Id = testActivity1.getId().toString();
+        ObjectMapper mapper = new ObjectMapper();
+        String expected = mapper.writeValueAsString(testActivity1);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/activities/" + activity1Id)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(content().string(expected));
+    }
+
+    @Test
+    void getActivityByIdWhenIdDoesntExists() throws Exception {
+        Activity testActivity1 = new Activity();
+        testActivity1.setId(1);
+        activityRepository.save(testActivity1);
+        Activity testActivity2 = new Activity();
+        testActivity2.setId(2);
+        activityRepository.save(testActivity2);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/activities/3")
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void getActivitiesByUserId() throws Exception {
+        Activity testActivity1 = new Activity();
+        testActivity1.setAuthorId(1);
+        activityRepository.save(testActivity1);
+
+        Activity testActivity2 = new Activity();
+        testActivity2.setAuthorId(1);
+        activityRepository.save(testActivity2);
+
+        Activity testActivity3 = new Activity();
+        testActivity3.setAuthorId(2);
+        activityRepository.save(testActivity3);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String expected = mapper.writeValueAsString(testActivity1);
+        expected += "," + mapper.writeValueAsString(testActivity2);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/1/activities")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().string("[" + expected + "]"));
+    }
+
+    @Test
+    void getActivitiesWhenUserHasNoActivities() throws Exception {
+        Activity testActivity1 = new Activity();
+        testActivity1.setAuthorId(1);
+        activityRepository.save(testActivity1);
+
+        Activity testActivity2 = new Activity();
+        testActivity2.setAuthorId(1);
+        activityRepository.save(testActivity2);
+
+        Activity testActivity3 = new Activity();
+        testActivity3.setAuthorId(2);
+        activityRepository.save(testActivity3);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/5/activities")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().string("[]"));
+    }
 }

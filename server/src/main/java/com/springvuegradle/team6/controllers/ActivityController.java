@@ -1,14 +1,17 @@
 package com.springvuegradle.team6.controllers;
 
 import ch.qos.logback.core.encoder.EchoEncoder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
 import org.apache.coyote.Response;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Table;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -171,5 +174,36 @@ public class ActivityController {
     }
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
+  }
+
+  /**
+   * Get activity data by ID
+   * @param activityId The id of the requested activity
+   * @return 200 response with headers
+   */
+  @GetMapping("/activities/{activityId}")
+  public ResponseEntity<String> getActivity(@PathVariable int activityId) {
+    Activity activity = activityRepository.findById(activityId);
+    if (activity == null){
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activity);
+      return ResponseEntity.ok(postJson);
+    }
+    catch (Exception e) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * Get all activity that a user has created by their userID
+   * @param profileId The id of the user profile
+   * @return 200 response with headers
+   */
+  @GetMapping("/profiles/{profileId}/activities")
+  public ResponseEntity getUserActivities(@PathVariable int profileId) {
+    return ResponseEntity.ok(activityRepository.findByAuthorId(profileId));
   }
 }

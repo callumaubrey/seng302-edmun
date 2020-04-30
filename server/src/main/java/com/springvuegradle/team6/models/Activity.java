@@ -4,16 +4,31 @@ import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Set;
 
 @Entity
 public class Activity {
 
+  public Activity() {
+    Set<ActivityType> myEmptySet = Collections.<ActivityType>emptySet();
+    this.authorId = null;
+    this.activityName = null;
+    this.description = null;
+    this.activityTypes = null;
+    this.activityTypes = myEmptySet;
+    this.continuous = true;
+//    if (!this.continuous) {
+//      this.startTime = request.startTime;
+//      this.endTime = request.endTime;
+//    }
+//    this.location = request.location;
+  }
+
   public Activity(CreateActivityRequest request, int authorId) {
     this.authorId = authorId;
     this.activityName = request.activityName;
     this.description = request.description;
-    this.activityTypes = request.activityTypes;
     this.activityTypes = request.activityTypes;
     this.continuous = request.continuous;
     if (!this.continuous) {
