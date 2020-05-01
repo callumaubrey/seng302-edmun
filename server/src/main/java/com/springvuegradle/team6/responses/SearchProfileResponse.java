@@ -4,26 +4,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SearchProfileResponse {
 
-    @JsonProperty("lastname")
-    public String lastname;
+  @JsonProperty("lastname")
+  public String lastname;
 
-    @JsonProperty("firstname")
-    public String firstname;
+  @JsonProperty("firstname")
+  public String firstname;
 
-    @JsonProperty("middlename")
-    public String middlename;
+  @JsonProperty("middlename")
+  public String middlename;
 
-    @JsonProperty("nickname")
-    public String nickname;
+  @JsonProperty("nickname")
+  public String nickname;
 
-    @JsonProperty("primary_email")
-    public String primaryEmail;
+  @JsonProperty("primary_email")
+  public String primaryEmail;
 
-    public SearchProfileResponse(String lastname, String firstname, String middlename, String nickname, String primaryEmail) {
-        this.lastname = lastname;
-        this.firstname = firstname;
-        this.middlename = middlename;
-        this.nickname = nickname;
-        this.primaryEmail = primaryEmail;
-    }
+  public SearchProfileResponse(
+      String lastname, String firstname, String middlename, String nickname, String primaryEmail) {
+    this.lastname = lastname;
+    this.firstname = firstname;
+    this.middlename = middlename;
+    this.nickname = nickname;
+    this.primaryEmail = primaryEmail;
+  }
 }
