@@ -53,7 +53,7 @@ public class AdminController {
     public ResponseEntity<String> removeProfile(@RequestBody DeleteProfileRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
-            Profile profile = profileRepository.findByEmail(email.get());
+            Profile profile = profileRepository.findByEmailsContains(email.get());
             profileRepository.delete(profile);
 
             return ResponseEntity.ok("User account with email: " + request.getEmail() + " is terminated");
@@ -72,7 +72,7 @@ public class AdminController {
     public ResponseEntity<String> addRole(@RequestBody AddRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
-            Profile profile = profileRepository.findByEmail(email.get());
+            Profile profile = profileRepository.findByEmailsContains(email.get());
             if (request.getRole().equals("ROLE_ADMIN") || request.getRole().equals("ROLE_USER")) {
                 Role role = roleRepository.findByName(request.getRole());
                 try {
@@ -100,7 +100,7 @@ public class AdminController {
     public ResponseEntity<String> deleteRole(@RequestBody DeleteRoleRequest request) {
         Optional<Email> email = emailRepository.findByAddress(request.getEmail());
         if (email.isPresent()) {
-            Profile profile = profileRepository.findByEmail(email.get());
+            Profile profile = profileRepository.findByEmailsContains(email.get());
             if (request.getRole().equals("ROLE_ADMIN") || request.getRole().equals("ROLE_USER")) {
                 try {
                     profile.removeRole(request.getRole());

@@ -49,7 +49,7 @@ public class LoginController {
             if (!(email.isPresent())) {
                 return new ResponseEntity("No associated user with email and password", HttpStatus.UNAUTHORIZED);
             }
-            Profile user = profileRepository.findByEmail(email.get());
+            Profile user = profileRepository.findByEmailsContains(email.get());
             session.removeAttribute("id");
             if (user != null) {
                 if (user.comparePassword(loginDetail.getPassword())) {

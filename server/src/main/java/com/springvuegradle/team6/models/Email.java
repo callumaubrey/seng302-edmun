@@ -20,10 +20,6 @@ public class Email {
     @Column(name="is_primary")
     private boolean primary;
 
-    @OneToOne
-    private Profile profile;
-
-
     public Email() { }
 
     public Email(String email) {
