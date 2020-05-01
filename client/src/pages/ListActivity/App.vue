@@ -10,7 +10,7 @@
                     <b-button align="right" to="/activity/new"> Create</b-button>
                 </b-col>
             </b-row>
-            <b-table striped hover :items="items"></b-table>
+            <b-table striped hover :items="items" :fields="fields"></b-table>
         </b-container>
     </div>
 
@@ -29,21 +29,21 @@
             return {
                 profileId: null,
                 isLoggedIn: true,
-                userName: 'Richard Lobb',
-                items: [
-                    { Name: "Triathalon", Description: 'Had a run round', ActivityTypes: 'Hike, Bike', StartTime: "12/12/20 5:00am", EndTime:"12/12/20 10:00am" },
-                    { Name: "Surfing", Description: 'Had a surf round', ActivityTypes: 'Swim, Surf', StartTime: "16/11/20 8:00am", EndTime:"16/11/20 10:00am" },
-                ]
+                userName: '',
+                items: [],
+                fields: ['activityName', 'description', 'activityTypes']
             }
-        }, methods: {
-            getUserId: function () {
+        },
+        methods: {
+            getUserIdAndActivities: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
                     })
-                    .catch(function () {
+                    .catch(function (err) {
+                        alert(err);
                     });
             },
             getName: function () {
@@ -56,10 +56,28 @@
                     .catch(function () {
                     });
             },
-        }, mounted: function() {
-            this.getUserId();
+            getActivities: function (id) {
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
+                    .then((res) => {
+                        this.items = res.data;
+                        for (let i = 0; i < res.data.length; i++) {
+                            this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
+                        }
+                    })
+                    .catch(err => console.log(err))
+            }
+        },
+        mounted() {
+            this.getUserIdAndActivities();
             this.getName();
-
+        },
+        watch: {
+            profileId: function (val) {
+                if (val) {
+                    this.getActivities(val);
+                }
+            }
         }
     }
     export default List
