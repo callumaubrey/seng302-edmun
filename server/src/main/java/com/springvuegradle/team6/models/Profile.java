@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.location.OSMLocation;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.standard.StandardFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.search.annotations.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -16,6 +19,13 @@ import java.util.Set;
 
 @Indexed
 @Entity
+@AnalyzerDef(
+    name = "profileAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(factory = StandardFilterFactory.class)
+    })
 public class Profile {
 
   @Id
@@ -26,19 +36,22 @@ public class Profile {
   @Field(
       index = org.hibernate.search.annotations.Index.YES,
       analyze = Analyze.YES,
-      store = Store.NO)
+      store = Store.NO,
+      analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String firstname;
 
   @Field(
       index = org.hibernate.search.annotations.Index.YES,
       analyze = Analyze.YES,
-      store = Store.NO)
+      store = Store.NO,
+      analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String middlename;
 
   @Field(
       index = org.hibernate.search.annotations.Index.YES,
       analyze = Analyze.YES,
-      store = Store.NO)
+      store = Store.NO,
+      analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String lastname;
 
   private String nickname;
@@ -246,11 +259,17 @@ public class Profile {
     this.location = location;
   }
 
+  /**
+   * This is used by the searching profile by full name functionality
+   *
+   * @return The combined string of first, middle and last name
+   */
   @javax.persistence.Transient
   @Field(
       index = org.hibernate.search.annotations.Index.YES,
       analyze = Analyze.YES,
-      store = Store.YES)
+      store = Store.YES,
+      analyzer = @Analyzer(definition = "profileAnalyzer"))
   public String getFullname() {
     if (middlename == null) {
       return firstname + " " + lastname;
