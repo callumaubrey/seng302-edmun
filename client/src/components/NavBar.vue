@@ -8,11 +8,6 @@
             <b-navbar-nav>
                 <b-nav-item v-if="!isLoggedIn" to='/register'>Register</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
-                <b-nav-item v-if="isLoggedIn">
-                    <span v-b-toggle.my-collapse>
-                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
-                    </span>
-                </b-nav-item>
                 <b-collapse id="my-collapse" v-if="isLoggedIn">
                     <b-form inline>
                         <b-input-group>
@@ -23,11 +18,16 @@
                             <b-form-input placeholder="Search"></b-form-input>
 
                             <b-input-group-append>
-                                <b-button @click="search()">Go</b-button>
+                                <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
                             </b-input-group-append>
                         </b-input-group>
                     </b-form>
                 </b-collapse>
+                <b-nav-item v-if="isLoggedIn">
+                    <span v-b-toggle.my-collapse>
+                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
+                    </span>
+                </b-nav-item>
             </b-navbar-nav>
 
             <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
