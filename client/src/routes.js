@@ -7,6 +7,7 @@ import Profile from './pages/Profile/App';
 import EditProfile from './pages/EditProfile/User';
 import Admin from './pages/AdminProfile/App';
 import CreateActivity from './pages/CreateActivity/App';
+import ListActivity from './pages/ListActivity/App';
 
 const routes = [
     { path: '/', component: Home },
@@ -15,7 +16,8 @@ const routes = [
     { path: '/profile/:id', component: Profile},
     { path: '/profile/edit/:id', component: EditProfile},
     { path: '/admin', component: Admin},
-    { path: '/activity/new', component: CreateActivity }
+    { path: '/activity/new', component: CreateActivity },
+    { path: '/activity/list', component: ListActivity }
 ];
 
 export default routes;
