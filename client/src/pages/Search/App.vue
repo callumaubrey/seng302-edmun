@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
 
         <b-container>
             <b-row>
@@ -13,11 +13,11 @@
                 <b-col>
                     <b-form inline>
                         <b-input v-model="searchQuery" style="width:260px;margin-right:10px;" placeholder="Search"></b-input>
-                        <b-form-radio v-model="searchBy" class="searchByRadio">Email</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio">Full Name</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio">First Name</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio">Nickname</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio">Last Name</b-form-radio>
+                        <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name</b-form-radio>
+                        <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email</b-form-radio>
+                        <b-form-radio v-model="searchBy" class="searchByRadio" value="firstName">First Name</b-form-radio>
+                        <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname</b-form-radio>
+                        <b-form-radio v-model="searchBy" class="searchByRadio" value="lastName">Last Name</b-form-radio>
                         <b-button variant="light" v-on:click="getUsers()">Search</b-button>
                     </b-form>
                 </b-col>
@@ -28,7 +28,6 @@
                     <b-table
                             :fields="fields"
                             :items="data"
-                            id="petitions"
                     >
                     </b-table>
                 </b-col>
@@ -37,7 +36,7 @@
                 <b-col>
                     <b-pagination
                             v-model="currentPage"
-                            :total-rows="dummyCount"
+                            :total-rows="count"
                             :per-page="limit"
                             @input="getUsers()"
                     ></b-pagination>
@@ -63,7 +62,7 @@
                 isLoggedIn: false,
                 userName: '',
                 searchQuery: '',
-                searchBy: null,
+                searchBy: 'fullName',
                 fields: [
                     { key: 'lastname', sortable: true },
                     { key: 'firstname', sortable: true },
@@ -72,8 +71,6 @@
                     { key: 'primary_email', sortable: true },
                 ],
                 currentPage: 1,
-                //will need to get proper count from backend however it is not implemmented yet
-                dummyCount: 30,
                 count:null,
                 limit:2,
                 data: null,
@@ -98,10 +95,20 @@
                 .catch(err => console.log(err));
             },
             getUsers: function () {
+                if (this.searchQuery === '') return
                 //This funtion seem to take at leaat 10 seconds to execute, when using database
                 const currentObj = this;
                 const offset = (this.currentPage-1) * this.limit
-                this.axios.get('http://localhost:9499/profiles?fullname='+this.searchQuery + '&offset=' + offset + "&limit=" +this.limit)
+
+                // Full name by default
+                let query = 'http://localhost:9499/profiles?fullname='+this.searchQuery;
+                if (this.searchBy == 'email') {
+                    query = 'http://localhost:9499/profiles?email='+this.searchQuery;
+                }
+                if (this.searchBy == 'nickname') {
+                    query = 'http://localhost:9499/profiles?nickname='+this.searchQuery;
+                }
+                this.axios.get(query + '&offset=' + offset + "&limit=" +this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results
                         currentObj.count = res.data.results.length
@@ -113,14 +120,13 @@
         mounted() {
             this.getUserId();
             this.getUserName();
-
         }
     };
 
     export default App;
 </script>
 
-<style>
+<style scoped>
     #searchRow {
         padding-left:20px;
         padding-top:15px;
