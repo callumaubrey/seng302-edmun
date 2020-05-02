@@ -211,7 +211,7 @@ public class SearchProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
-    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
 
   @Test
@@ -230,6 +230,22 @@ public class SearchProfileControllerTest {
     JSONArray arr = obj.getJSONArray("results");
     String middlename = arr.getJSONObject(0).getString("middlename");
     org.junit.jupiter.api.Assertions.assertEquals("Michelle Christopher", middlename);
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+  }
+
+  @Test
+  void searchProfileByFullnameWithOnlyFirstNameReturnResults() throws Exception {
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/profiles?fullname=Maurice", id)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    System.out.println(response);
+    JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
   }
 

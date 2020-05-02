@@ -53,9 +53,9 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
       luceneQuery =
           queryBuilder
               .bool()
-              .must(firstnameQuery)
-              .must(lastnameQuery)
-              .must(fullnameQuery)
+              .should(firstnameQuery)
+              .should(lastnameQuery)
+              .should(fullnameQuery)
               .createQuery();
     } else {
       luceneQuery = queryBuilder.bool().must(firstnameQuery).must(fullnameQuery).createQuery();
