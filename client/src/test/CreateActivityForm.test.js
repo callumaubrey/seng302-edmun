@@ -80,5 +80,17 @@ describe('Profile Info Validation', () => {
         wrapper.vm.$v.durationForm.endDate.$model = "";
         expect(wrapper.vm.$v.durationForm.endDate.$error).toBe(true);
     });
+
+    test('End Date after Start Date', () => {
+        wrapper.vm.$v.durationForm.startDate.$model = "2020-10-10";
+        wrapper.vm.$v.durationForm.endDate.$model = "2020-10-11";
+        expect(wrapper.vm.$v.durationForm.endDate.$error).toBe(false);
+    });
+
+    test('End Date before Start Date (Invalid)', () => {
+        wrapper.vm.$v.durationForm.startDate.$model = "2020-10-10";
+        wrapper.vm.$v.durationForm.endDate.$model = "2020-10-09";
+        expect(wrapper.vm.$v.durationForm.endDate.$error).toBe(true);
+    })
 })
 

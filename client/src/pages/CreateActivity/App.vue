@@ -43,7 +43,7 @@
                                         v-model="$v.durationForm.endDate.$model"
                                         aria-describedby="end-date-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="end-date-feedback">This is a required field.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="end-date-feedback">This is a required field and cannot be before start date.</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -212,7 +212,14 @@
                 },
                 endDate: {
                     required,
-
+                    dateValidate (val) {
+                        let startDate = new Date(this.durationForm.startDate);
+                        let endDate = new Date(val);
+                        if (endDate < startDate) {
+                            return false;
+                        }
+                        return true;
+                    }
                 },
                 startTime: {},
                 endTime: {}
