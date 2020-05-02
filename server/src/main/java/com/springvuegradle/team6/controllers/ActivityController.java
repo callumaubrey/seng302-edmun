@@ -9,6 +9,7 @@ import org.apache.coyote.Response;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Table;
@@ -41,8 +42,8 @@ public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
 
-  ActivityController(ProfileRepository profileRep, ActivityRepository activityRepository) {
-    this.profileRepository = profileRep;
+  ActivityController(ProfileRepository profileRepository, ActivityRepository activityRepository) {
+    this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
   }
 
@@ -126,7 +127,11 @@ public class ActivityController {
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
-    Activity activity = new Activity(request, profileId);
+    Optional<Profile> profile = profileRepository.findById(profileId);
+    if (profile.isEmpty()) {
+      return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
+    }
+    Activity activity = new Activity(request, profile.get());
     if (!activity.isContinuous()) {
       if (activity.getStartTime() == null) {
         return new ResponseEntity<>(
@@ -204,6 +209,6 @@ public class ActivityController {
    */
   @GetMapping("/profiles/{profileId}/activities")
   public ResponseEntity getUserActivities(@PathVariable int profileId) {
-    return ResponseEntity.ok(activityRepository.findByAuthorId(profileId));
+    return ResponseEntity.ok(activityRepository.findByProfile_Id(profileId));
   }
 }

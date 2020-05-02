@@ -10,23 +10,24 @@ import java.util.Set;
 @Entity
 public class Activity {
 
+  // For testing purposes only
   public Activity() {
     Set<ActivityType> myEmptySet = Collections.<ActivityType>emptySet();
-    this.authorId = null;
+    this.profile = null;
     this.activityName = null;
     this.description = null;
     this.activityTypes = null;
     this.activityTypes = myEmptySet;
     this.continuous = true;
-//    if (!this.continuous) {
-//      this.startTime = request.startTime;
-//      this.endTime = request.endTime;
-//    }
-//    this.location = request.location;
+    //    if (!this.continuous) {
+    //      this.startTime = request.startTime;
+    //      this.endTime = request.endTime;
+    //    }
+    //    this.location = request.location;
   }
 
-  public Activity(CreateActivityRequest request, int authorId) {
-    this.authorId = authorId;
+  public Activity(CreateActivityRequest request, Profile profile) {
+    this.profile = profile;
     this.activityName = request.activityName;
     this.description = request.description;
     this.activityTypes = request.activityTypes;
@@ -35,20 +36,23 @@ public class Activity {
       this.startTime = request.startTime;
       this.endTime = request.endTime;
     }
-//    this.location = request.location;
+    //    this.location = request.location;
   }
+
   @Id
   @GeneratedValue
   @Column(name = "id")
   private Integer id;
 
-  private Integer authorId;
+  @ManyToOne
+  @JoinColumn(name = "author_id", nullable = false)
+  private Profile profile;
 
   private String activityName;
 
   private String description;
 
-  @ElementCollection(targetClass=ActivityType.class)
+  @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
@@ -58,9 +62,7 @@ public class Activity {
 
   private String endTime;
 
-  @OneToOne
-  private OSMLocation location;
-
+  @OneToOne private OSMLocation location;
 
   public String getActivityName() {
     return activityName;
@@ -118,7 +120,6 @@ public class Activity {
     this.location = location;
   }
 
-
   public Integer getId() {
     return id;
   }
@@ -127,11 +128,11 @@ public class Activity {
     this.id = id;
   }
 
-  public Integer getAuthorId() {
-    return authorId;
+  public Profile getProfile() {
+    return profile;
   }
 
-  public void setAuthorId(Integer authorId) {
-    this.authorId = authorId;
+  public void setProfile(Profile profile) {
+    this.profile = profile;
   }
 }
