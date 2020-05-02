@@ -245,14 +245,16 @@ public class ActivityController {
         }
 
         // Start and End date/time validations
-        LocalDateTime startDateTime;
+        LocalDateTime newStartDateTime;
+        LocalDateTime oldStartDateTime;
         LocalDateTime endDateTime;
 
         // Checks if new start time is before now.
         try {
-          startDateTime =
+          newStartDateTime =
                   LocalDateTime.parse(edit.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          if (startDateTime.isBefore(LocalDateTime.now())) {
+          oldStartDateTime = LocalDateTime.parse(activity.get().getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          if (newStartDateTime.isBefore(LocalDateTime.now()) && !newStartDateTime.isEqual(oldStartDateTime)) {
             return new ResponseEntity(
                     "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
           }
@@ -275,14 +277,11 @@ public class ActivityController {
                   HttpStatus.BAD_REQUEST);
         }
 
-        if (!(startDateTime.isEqual(endDateTime))) {
+        if (!(newStartDateTime.isEqual(endDateTime)) && newStartDateTime.isAfter(endDateTime)) {
           // Checks if start time is after end time.
-          if (startDateTime.isAfter(endDateTime)) {
-            return new ResponseEntity(
-                    "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
-          }
+          return new ResponseEntity(
+       "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
         }
-
       }
       activityRepository.save(edit);
 

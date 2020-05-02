@@ -19,7 +19,6 @@ public class EditActivityRequest {
     @JsonProperty("activity_name")
     public String activityName;
 
-    @NotEmpty
     @NotNull
     @JsonProperty("description")
     public String description;
