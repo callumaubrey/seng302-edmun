@@ -46,6 +46,8 @@ public class Activity {
   @OneToOne
   private OSMLocation location;
 
+  public Activity() {}
+
 
   public String getActivityName() {
     return activityName;

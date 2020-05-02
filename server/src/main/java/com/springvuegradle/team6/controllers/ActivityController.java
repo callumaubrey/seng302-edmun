@@ -275,14 +275,17 @@ public class ActivityController {
                   HttpStatus.BAD_REQUEST);
         }
 
-        // Checks if start time is after end time.
-        if (startDateTime.isAfter(endDateTime)) {
-          return new ResponseEntity(
-                  "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+        if (!(startDateTime.isEqual(endDateTime))) {
+          // Checks if start time is after end time.
+          if (startDateTime.isAfter(endDateTime)) {
+            return new ResponseEntity(
+                    "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+          }
         }
 
       }
       activityRepository.save(edit);
+
       
       return ResponseEntity.ok("Activity: " + edit.getActivityName() + " was updated.");
     } else {

@@ -29,6 +29,8 @@ public class EditActivityTest {
 
     private MockHttpSession session;
 
+    private MockHttpSession otherSession;
+
     @BeforeEach
     void setup() throws Exception {
         session = new MockHttpSession();
@@ -68,7 +70,48 @@ public class EditActivityTest {
     }
 
     @Test
-    void editAllActivitywithTimeReturnStatusIsOk() throws Exception {
+    void editAllActivityWithoutAuthorizationReturnIsUnauthorized() throws Exception {
+        otherSession = new MockHttpSession();
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Changed activity name\",\n" +
+                "  \"description\": \"A new description\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Run\"\n" +
+                "  ],\n" +
+                "  \"continuous\": false,\n" +
+                "  \"start_time\": \"2040-04-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(otherSession)
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void editAllActivityWithoutTimeReturnStatusIsOk() throws Exception {
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Changed activity name\",\n" +
+                "  \"description\": \"A new description\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Run\"\n" +
+                "  ],\n" +
+                "  \"continuous\": true\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void editAllActivityWithTimeReturnStatusIsOK() throws Exception {
         String jsonString="{\n" +
                 "  \"activity_name\": \"Changed activity name\",\n" +
                 "  \"description\": \"A new description\",\n" +
@@ -89,49 +132,16 @@ public class EditActivityTest {
     }
 
     @Test
-    void editAllActivitywithoutTimeReturnStatusIsOk() throws Exception {
+    void editActivityWithStartDateBeforeNowReturnStatusBadRequest() throws Exception {
         String jsonString="{\n" +
-                "  \"activity_name\": \"Changed activity name\",\n" +
-                "  \"description\": \"A new description\",\n" +
+                "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
                 "  \"activity_type\":[ \n" +
-                "    \"Run\"\n" +
+                "    \"Walk\"\n" +
                 "  ],\n" +
-                "  \"continuous\": true\n" +
-                "}";
-
-        mvc.perform(MockMvcRequestBuilders
-                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
-        ).andExpect(status().isOk());
-    }
-
-    @Test
-    void editAllActivityWithoutAuthorizationReturnIsUnauthorized() throws Exception {
-        String jsonString="{\n" +
-                "  \"activity_name\": \"Changed activity name\",\n" +
-                "  \"description\": \"A new description\",\n" +
-                "  \"activity_type\":[ \n" +
-                "    \"Run\"\n" +
-                "  ],\n" +
-                "  \"continuous\": true\n" +
-                "}";
-
-        mvc.perform(MockMvcRequestBuilders
-                .put("/profiles/{profileId}/activities/{activityId}", id, (activityId + 1))
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
-        ).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void editActivitywithStartDateBeforeNowReturnStatusBadRequest() throws Exception {
-        String jsonString="{\n" +
                 "  \"continuous\": false,\n" +
                 "  \"start_time\": \"2000-04-28T15:50:41+1300\", \n" +
-                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n" +
                 "}";
 
         mvc.perform(MockMvcRequestBuilders
@@ -143,8 +153,13 @@ public class EditActivityTest {
     }
 
     @Test
-    void editActivitywithBothDatesBeforeNowReturnStatusBadRequest() throws Exception {
+    void editActivityWithBothDatesBeforeNowReturnStatusBadRequest() throws Exception {
         String jsonString="{\n" +
+                "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Walk\"\n" +
+                "  ],\n" +
                 "  \"continuous\": false,\n" +
                 "  \"start_time\": \"2000-04-28T15:50:41+1300\", \n" +
                 "  \"end_time\": \"2000-08-28T15:50:41+1300\"\n" +
@@ -159,11 +174,16 @@ public class EditActivityTest {
     }
 
     @Test
-    void editActivitywithStartDateAfterEndDateReturnStatusBadRequest() throws Exception {
+    void editActivityWithStartDateAfterEndDateReturnStatusBadRequest() throws Exception {
         String jsonString="{\n" +
+                "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Walk\"\n" +
+                "  ],\n" +
                 "  \"continuous\": false,\n" +
-                "  \"start_time\": \"2040-10-28T15:50:41+1300\", \n" +
-                "  \"end_time\": \"2040-08-28T15:50:41+1300\"\n" +
+                "  \"start_time\": \"2040-04-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n" +
                 "}";
 
         mvc.perform(MockMvcRequestBuilders
@@ -175,11 +195,16 @@ public class EditActivityTest {
     }
 
     @Test
-    void editActivitywithStartDateEqualEndDateReturnStatusIsOk() throws Exception {
+    void editActivityWithStartDateEqualEndDateReturnStatusIsOk() throws Exception {
         String jsonString="{\n" +
+                "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                "  \"activity_type\":[ \n" +
+                "    \"Walk\"\n" +
+                "  ],\n" +
                 "  \"continuous\": false,\n" +
-                "  \"start_time\": \"2000-08-28T15:50:41+1300\", \n" +
-                "  \"end_time\": \"2000-08-28T15:50:41+1300\"\n" +
+                "  \"start_time\": \"2030-08-28T15:50:41+1300\", \n" +
+                "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n" +
                 "}";
 
         mvc.perform(MockMvcRequestBuilders
@@ -187,7 +212,21 @@ public class EditActivityTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isOk()).andDo(print());
+    }
+
+    @Test
+    void EditActivityNameReturnStatusBadRequest() throws Exception {
+        String jsonString="{\n" +
+                "  \"activity_name\": \"Kaikoura Coast Track race\"\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        ).andExpect(status().isBadRequest());
     }
 
 
