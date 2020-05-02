@@ -4,16 +4,18 @@ import Home from './pages/Login/App';
 import Register from './pages/Registration/App';
 import Login from './pages/Login/App';
 import Profile from './pages/Profile/App';
-import EditProfile from './pages/EditProfile/User'
-import Admin from './pages/AdminProfile/App'
+import EditProfile from './pages/EditProfile/User';
+import Admin from './pages/AdminProfile/App';
+import Search from './pages/Search/App';
 
 const routes = [
     { path: '/', component: Home },
     { path: '/register', component: Register },
     { path: '/login', component: Login },
-    { path: '/profile/:id', component: Profile},
-    { path: '/profile/edit/:id', component: EditProfile},
-    { path: '/admin', component: Admin}
+    { path: '/profile/:id', component: Profile },
+    { path: '/profile/edit/:id', component: EditProfile },
+    { path: '/admin', component: Admin },
+    { path: '/profiles', component: Search, name: 'Users' }
 ];
 
 export default routes;
