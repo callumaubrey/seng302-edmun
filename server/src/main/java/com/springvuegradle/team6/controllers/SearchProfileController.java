@@ -39,13 +39,13 @@ public class SearchProfileController {
 
   @GetMapping()
   public ResponseEntity getProfileByFullName(
-      @RequestParam(name = "fullname") String fullName, HttpSession session) {
+      @RequestParam(name = "fullname") String fullName, @RequestParam(name = "offset") int offset, @RequestParam(name = "limit") int limit, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
     String fullNameWithSpaces = fullName.replaceAll("%20", " ");
-    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, -1, -1);
+    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, limit, offset);
     System.out.println(fullNameWithSpaces);
     System.out.println(profiles.size());
     List<SearchProfileResponse> results = new ArrayList<>();
