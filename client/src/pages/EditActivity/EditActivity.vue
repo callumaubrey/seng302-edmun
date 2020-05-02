@@ -33,7 +33,8 @@
                                         type="date"
                                         v-model="$v.durationForm.startDate.$model"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="start-date-feedback">This is a required field.
+                                <b-form-invalid-feedback id="start-date-feedback">This is a required field. Start date
+                                    must be earlier than end date
                                 </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
@@ -46,7 +47,8 @@
                                         type="date"
                                         v-model="$v.durationForm.endDate.$model"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="end-date-feedback">This is a required field.
+                                <b-form-invalid-feedback id="end-date-feedback">This is a required field. Start date
+                                    must be earlier than end date
                                 </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
@@ -137,6 +139,8 @@
                                         placeholder="How did it go?"
                                         v-model="$v.form.description.$model"
                                 ></b-form-textarea>
+                                <b-form-invalid-feedback id="name-feedback">This is a required field.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -218,11 +222,26 @@
             },
             durationForm: {
                 startDate: {
+                    validateDate() {
+                        let startDate = new Date(this.durationForm.startDate);
+                        let endDate = new Date(this.durationForm.endDate);
+                        if (startDate > endDate) {
+                            return false;
+                        }
+                        return true;
+                    },
                     required
                 },
                 endDate: {
-                    required,
-
+                    validateDate() {
+                        let startDate = new Date(this.durationForm.startDate);
+                        let endDate = new Date(this.durationForm.endDate);
+                        if (startDate > endDate) {
+                            return false;
+                        }
+                        return true;
+                    },
+                    required
                 },
                 startTime: {},
                 endTime: {}
@@ -262,7 +281,6 @@
                 if (this.form.selectedActivityType == 0) {
                     return;
                 }
-
                 if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
                     this.form.selectedActivityTypes.push(this.form.selectedActivityType);
                 }
@@ -271,14 +289,16 @@
                 this.form.selectedActivityTypes.splice(index, 1);
             },
             onSubmit() {
+                this.activityErrorMessage = "";
+                this.activityUpdateMessage = "";
                 this.$v.form.$touch();
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                if (this.isContinuous == '1') {
+                if (this.isContinuous == '0') {
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities" + this.activityId, {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -288,15 +308,17 @@
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
+                            currentObj.activityErrorMessage = "";
                         })
                         .catch(function (error) {
                             console.log(error.response.data);
-                            currentObj.activityErrorMessage = "Failed to update activity: " + currentObj.form.name + ". Please try again"
+                            currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
+                            currentObj.activityUpdateMessage = "";
                         });
 
                 } else {
                     this.$v.durationForm.$touch();
-                    if (this.$v.durationForm.$anyError) {
+                    if (this.$v.durationForm.$anyError || this.$v.form.$anyError) {
                         return;
                     }
                     const isoDates = this.getISODates();
@@ -312,10 +334,12 @@
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
+                            currentObj.activityErrorMessage = "";
                         })
                         .catch(function (error) {
                             console.log(error);
-                            currentObj.activityErrorMessage = "Failed to update activity: " + currentObj.form.name + ". Please try again"
+                            currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
+                            currentObj.activityUpdateMessage = ""
                         });
 
                 }
@@ -362,7 +386,8 @@
                 this.isContinuous = '1';
                 [this.durationForm.startDate, this.durationForm.startTime] = this.convertISOtoDateTime("2020-02-20T08:00:00+1300");
                 [this.durationForm.endDate, this.durationForm.endTime] = this.convertISOtoDateTime("2020-02-21T08:00:00+1300");
-                this.form.location = "Kaikoura, NZ"
+                this.form.location = "Kaikoura, NZ";
+                this.profileId = 55;
             },
             goToActivity: function () {
                 this.$router.push('/profiles/' + this.profileId + '/activities/' + this.activityId);
@@ -372,7 +397,7 @@
             // this.getActivity();
             this.getPlaceHolderActivity();
             this.activityId = this.$route.params.activityId;
-            this.getUserId();
+            // this.getUserId();
         },
 
     }
