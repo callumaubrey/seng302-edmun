@@ -11,7 +11,6 @@ import org.hibernate.search.annotations.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import javax.persistence.Index;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +53,11 @@ public class Profile {
       analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String lastname;
 
+  @Field(
+          index = org.hibernate.search.annotations.Index.YES,
+          analyze = Analyze.YES,
+          store = Store.NO,
+          analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String nickname;
 
   @OneToOne(cascade = CascadeType.ALL)

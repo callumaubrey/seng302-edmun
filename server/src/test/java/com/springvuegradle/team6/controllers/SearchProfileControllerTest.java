@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.Email;
+import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,6 +15,9 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -243,6 +248,35 @@ public class SearchProfileControllerTest {
   }
 
   @Test
+  void searchProfileByFullnameCount() throws Exception {
+
+    for (int i = 0; i<100; i++) {
+      Profile profile = new Profile();
+      profile.setFirstname("Foo");
+      profile.setLastname("Bar");
+      Set<Email> addtionalEmails = new HashSet<Email>();
+      profile.setAdditionalemail(addtionalEmails );
+      profileRepository.save(profile);
+    }
+    long startTime = System.nanoTime();
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/profiles/count?fullname=Foo%20Bar", id)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    org.junit.jupiter.api.Assertions.assertEquals("100", response);
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime)/1000000;
+    //See how long it takes
+    System.out.println(duration);
+  }
+
+
+
+  @Test
   void searchProfileByPrimaryEmailReturnResults() throws Exception {
     String response =
         mvc.perform(
@@ -334,5 +368,31 @@ public class SearchProfileControllerTest {
     System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
+  }
+
+  @Test
+  void searchProfileByNicknameCount() throws Exception {
+
+    for (int i = 0; i<100; i++) {
+      Profile profile = new Profile();
+      profile.setNickname("FooBar");
+      Set<Email> addtionalEmails = new HashSet<Email>();
+      profile.setAdditionalemail(addtionalEmails );
+      profileRepository.save(profile);
+    }
+    long startTime = System.nanoTime();
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/profiles/count?nickname=FooBar", id)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    org.junit.jupiter.api.Assertions.assertEquals("100", response);
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime)/1000000;
+    //See how long it takes
+    System.out.println(duration);
   }
 }

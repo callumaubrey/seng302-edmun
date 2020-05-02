@@ -12,15 +12,15 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
   @PersistenceContext private EntityManager em;
 
   /**
-   * Searches the database using hibernate search to find a profile for a full name that matches
+   * Uses Hibernate search and lucene queries to search for profiles that match the fullname
    *
-   * @param terms The given query parameters
+   * @param terms The given fullname to search
    * @param limit The number of results to return
    * @param offset The number of results to skip
-   * @return A list of profiles that matches the full name to some degree
+   * @return the query results
    */
-  @Override
-  public List<Profile> searchFullname(String terms, int limit, int offset) {
+  public org.hibernate.search.jpa.FullTextQuery searchFullnameQuery(
+      String terms, int limit, int offset) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -61,7 +61,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
       luceneQuery = queryBuilder.bool().must(firstnameQuery).must(fullnameQuery).createQuery();
     }
 
-    javax.persistence.Query jpaQuery =
+    org.hibernate.search.jpa.FullTextQuery jpaQuery =
         fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
 
     // In the case where we want to implement server side pagination
@@ -71,8 +71,99 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     if (offset != -1) {
       jpaQuery.setFirstResult(offset);
     }
+    return jpaQuery;
+  }
 
-    // execute search
+  /**
+   * Searches the database using hibernate search to find a profile for a full name that matches
+   *
+   * @param terms The given query parameters
+   * @param limit The number of results to return
+   * @param offset The number of results to skip
+   * @return A list of profiles that matches the full name to some degree
+   */
+  @Override
+  public List<Profile> searchFullname(String terms, int limit, int offset) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, limit, offset);
+
     return jpaQuery.getResultList();
+  }
+
+  /**
+   * Find the total number of profiles that matches the fullname
+   *
+   * @param terms The given nickname to search
+   * @return A number of profiles that matches the nickname
+   */
+  @Override
+  public Integer searchFullnameCount(String terms) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, -1, -1);
+
+    return jpaQuery.getResultSize();
+  }
+
+  /**
+   * Uses Hibernate search and lucene queries to search for profiles that match the nickname
+   *
+   * @param terms The given nickname to search
+   * @param limit The number of results to return
+   * @param offset The number of results to skip
+   * @return the query results
+   */
+  public org.hibernate.search.jpa.FullTextQuery searchNicknameQuery(
+      String terms, int limit, int offset) {
+    FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
+
+    try {
+      fullTextEntityManager.createIndexer().startAndWait();
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+
+    QueryBuilder queryBuilder =
+        fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Profile.class).get();
+
+    org.apache.lucene.search.Query luceneQuery =
+        queryBuilder.keyword().onField("nickname").matching(terms).createQuery();
+
+    org.hibernate.search.jpa.FullTextQuery jpaQuery =
+        fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
+
+    // In the case where we want to implement server side pagination
+    if (limit != -1) {
+      jpaQuery.setMaxResults(limit);
+    }
+    if (offset != -1) {
+      jpaQuery.setFirstResult(offset);
+    }
+    return jpaQuery;
+  }
+
+  /**
+   * Searches the database using hibernate search to find a profile for a nickname that matches
+   *
+   * @param terms The given nickname to search
+   * @param limit The number of results to return
+   * @param offset The number of results to skip
+   * @return A list of profiles that matches the nickname
+   */
+  @Override
+  public List<Profile> searchNickname(String terms, int limit, int offset) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, limit, offset);
+
+    return jpaQuery.getResultList();
+  }
+
+  /**
+   * Find the total number of profiles that matches the nickname
+   *
+   * @param terms The given nickname to search
+   * @return A number of profiles that matches the nickname
+   */
+  @Override
+  public Integer searchNicknameCount(String terms) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, -1, -1);
+
+    return jpaQuery.getResultSize();
   }
 }

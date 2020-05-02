@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,16 +48,27 @@ public class SearchProfileController {
    * of hibernate search
    *
    * @param fullName the full name to search for
+   * @param offset the number of results to skip           
+   * @param limit  the number of results to return 
    * @param session the current logged in user session
    * @return the results of the search containing profiles that match the full name roughly
    */
   @GetMapping()
   @RequestMapping(params = "fullname")
   public ResponseEntity getProfileByFullName(
-      @RequestParam(name = "fullname") String fullName, @RequestParam(name = "offset") int offset, @RequestParam(name = "limit") int limit, HttpSession session) {
+      @RequestParam(name = "fullname") String fullName,
+      @RequestParam(name = "offset", required = false) Integer offset,
+      @RequestParam(name = "limit", required = false) Integer limit,
+      HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+    if (offset == null) {
+      offset = -1;
+    }
+    if (limit == null) {
+      limit = -1;
     }
     String fullNameWithSpaces = fullName.replaceAll("%20", " ");
     List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, limit, offset);
@@ -76,6 +88,28 @@ public class SearchProfileController {
     JSONObject resultsObject = new JSONObject();
     resultsObject.put("results", results);
     return new ResponseEntity(resultsObject, HttpStatus.OK);
+  }
+
+  /** 
+   * Searches for the user based on the full name given as best as possible
+   * and return the number of results
+   * @param fullName the full name to search for
+   * @param session the current logged in user session
+   * @return the total number of results that matches fullname
+   */
+  @GetMapping
+  @RequestMapping(value = "/count", params = "fullname")
+  public ResponseEntity getProfileByFullNameCount(
+      @RequestParam(name = "fullname") String fullName,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+    String fullNameWithSpaces = fullName.replaceAll("%20", " ");
+    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces);
+
+    return new ResponseEntity(count, HttpStatus.OK);
   }
 
   /**
@@ -118,21 +152,31 @@ public class SearchProfileController {
   /**
    * Given the nickname search for profiles that have this nickname
    *
-   * @param searchedNickname the nickname to search for
+   * @param nickname the nickname to search for
+   * @param offset the number of results to skip 
+   * @param limit the number of results to return
    * @param session the current logged in user session
    * @return the results of the search that matches the nickname exactly
    */
   @GetMapping
   @RequestMapping(params = "nickname")
   public ResponseEntity getProfileByNickname(
-      @RequestParam(name = "nickname") String searchedNickname, HttpSession session) {
+      @RequestParam(name = "nickname") String nickname,
+      @RequestParam(name = "offset", required = false) Integer offset,
+      @RequestParam(name = "limit", required = false) Integer limit,
+      HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
+    if (offset == null) {
+      offset = -1;
+    }
+    if (limit == null) {
+      limit = -1;
+    }
     JSONObject resultsObject = new JSONObject();
-
-    List<Profile> profiles = profileRepository.findByNickname(searchedNickname);
+    List<Profile> profiles = profileRepository.searchNickname(nickname,limit, offset);
     List<SearchProfileResponse> results = new ArrayList<>();
     for (Profile profile : profiles) {
       SearchProfileResponse result =
@@ -147,5 +191,27 @@ public class SearchProfileController {
 
     resultsObject.put("results", results);
     return new ResponseEntity(resultsObject, HttpStatus.OK);
+  }
+
+  /**
+   * Given the nickname search for profiles that have this nickname
+   * and return the number of results that matches the nickname
+   *
+   * @param nickname the nickname to search for
+   * @param session the current logged in user session
+   * @return the total number of results that matches nickname
+   */
+  @GetMapping
+  @RequestMapping(value = "/count", params = "nickname")
+  public ResponseEntity getProfileByNickNameCount(
+      @RequestParam(name = "nickname") String nickname,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+    Integer count = profileRepository.searchNicknameCount(nickname);
+
+    return new ResponseEntity(count, HttpStatus.OK);
   }
 }
