@@ -16,7 +16,7 @@
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname</b-form-radio>
-                        <b-button @click.prevent="updateUrl()" v-on:click="getUsers()" variant="light">Search</b-button>
+                        <b-button @click.prevent="updateUrl()" v-on:click="searchUser()" variant="light">Search</b-button>
                     </b-form>
                 </b-col>
             </b-row>
@@ -69,7 +69,7 @@
                     { key: 'primary_email', sortable: true },
                 ],
                 currentPage: 1,
-                count:null,
+                count:1,
                 limit:2,
                 data: null,
                 routeQuery: {},
@@ -116,7 +116,6 @@
                 this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
-                        currentObj.count = res.data.results.length
                     })
                     .catch(err => console.log(err));
             },
@@ -155,10 +154,25 @@
                 if (this.$route.query.offset) {
                     this.offset = this.$route.query.offset;
                     this.limit = this.$route.query.limit;
-                    this.getUsers();
+                    this.searchUser();
                 } else if (fromNavBar) {
-                    this.getUsers();
+                    this.searchUser();
                 }
+            },
+            searchUser: function() {
+                let query = 'http://localhost:9499/profiles/count?fullname='+this.searchQuery;
+                if (this.searchBy == 'nickname') {
+                    this.routeQuery = {nickname: this.searchQuery};
+                    query = 'http://localhost:9499/profiles/count?nickname='+this.searchQuery;
+                }
+                const currentObj = this
+                this.axios.get(query)
+                    .then((res) => {
+                        currentObj.count = res.data
+                    })
+                    .catch(err => console.log(err));
+                currentObj.getUsers()
+
             },
         },
         mounted() {
