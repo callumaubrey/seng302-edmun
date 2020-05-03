@@ -31,7 +31,7 @@ class AdminControllerTest {
     @BeforeEach
     void createJohnDoeUser() throws Exception {
         CreateProfileRequest validRequest = new CreateProfileRequest();
-        String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+        String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly1@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
         mvc.perform(MockMvcRequestBuilders
                 .post("/profiles")
@@ -49,7 +49,7 @@ class AdminControllerTest {
 
         //Delete existing primary email
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\"\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\"\n" +
                 "}";
 
         mvc.perform(MockMvcRequestBuilders
@@ -83,7 +83,7 @@ class AdminControllerTest {
         String addRoleUrl = "/admin/profiles/role";
 
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_ADMIN\"\n" +
                 "}";
 
@@ -123,7 +123,7 @@ class AdminControllerTest {
 
         // Add duplicate role to existing user
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_USER\"\n" +
                 "}";
 
@@ -141,7 +141,7 @@ class AdminControllerTest {
 
         // Add invalid role to existing user
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_INVALID\"\n" +
                 "}";
 
@@ -159,7 +159,7 @@ class AdminControllerTest {
 
         // Delete existing role from existing user
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_USER\"\n" +
                 "}";
 
@@ -177,7 +177,7 @@ class AdminControllerTest {
 
         // Delete non-existing role from existing user
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_ADMIN\"\n" +
                 "}";
 
@@ -196,7 +196,7 @@ class AdminControllerTest {
 
         // Delete invalid role
         String jsonString = "{\n" +
-                "\t\"primary_email\": \"poly@pocket.com\",\n" +
+                "\t\"primary_email\": \"poly1@pocket.com\",\n" +
                 "\t\"role_name\": \"ROLE_INVALID\"\n" +
                 "}";
 

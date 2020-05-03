@@ -198,7 +198,7 @@
                     selectedActivityTypes: [],
                     // These values will need to be converted to uppercase before axios request is sent
                     date: null,
-                    location: 'Kaikoura, NZ'
+                    location: ""
                 },
                 durationForm: {
                     startDate: null,
@@ -215,6 +215,12 @@
                 },
                 description: {},
                 selectedActivityType: {
+                    validateActivityType() {
+                        if (this.form.selectedActivityTypes.length < 1) {
+                            return false
+                        }
+                        return true
+                    },
                     required
                 },
                 date: {},
@@ -251,16 +257,16 @@
             getActivity: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                //TODO: change the get endpoint after it is being implemented in backend
-                this.axios.get('http://localhost:9499/profiles/activity-types')
+                this.axios.get('http://localhost:9499/activities/' + this.activityId)
                     .then(function (response) {
-                        currentObj.form.name = response.data.activity_name;
+                        console.log(response.data);
+                        currentObj.form.name = response.data.activityName;
                         currentObj.form.description = response.data.description;
-                        currentObj.activityTypes = response.data.activity_type;
+                        currentObj.form.selectedActivityTypes = response.data.activityTypes;
                         if (response.data.continuous == false) {
                             currentObj.isContinuous = '1';
-                            [currentObj.durationForm.startDate, currentObj.durationForm.startTime] = currentObj.convertISOtoDateTime(response.data.start_time);
-                            [currentObj.durationForm.endDate, currentObj.durationForm.endTime] = currentObj.convertISOtoDateTime(response.data.end_time);
+                            [currentObj.durationForm.startDate, currentObj.durationForm.startTime] = currentObj.convertISOtoDateTime(response.data.startTime);
+                            [currentObj.durationForm.endDate, currentObj.durationForm.endTime] = currentObj.convertISOtoDateTime(response.data.endTime);
                         } else {
                             currentObj.isContinuous = '0';
                         }
@@ -292,12 +298,12 @@
                 this.activityErrorMessage = "";
                 this.activityUpdateMessage = "";
                 this.$v.form.$touch();
+                if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1) {
+                    return;
+                }
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 if (this.isContinuous == '0') {
-                    if (this.$v.form.$anyError) {
-                        return;
-                    }
                     this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
@@ -307,7 +313,7 @@
                     })
                         .then(function (response) {
                             console.log(response);
-                            currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
+                            currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
                             currentObj.activityErrorMessage = "";
                         })
                         .catch(function (error) {
@@ -318,10 +324,11 @@
 
                 } else {
                     this.$v.durationForm.$touch();
-                    if (this.$v.durationForm.$anyError || this.$v.form.$anyError) {
+                    if (this.$v.durationForm.$anyError) {
                         return;
                     }
                     const isoDates = this.getISODates();
+                    console.log(isoDates);
                     this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
@@ -333,7 +340,7 @@
                     })
                         .then(function (response) {
                             console.log(response);
-                            currentObj.activityUpdateMessage = "Successfully update activity: " + currentObj.form.name;
+                            currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
                             currentObj.activityErrorMessage = "";
                         })
                         .catch(function (error) {
@@ -379,25 +386,15 @@
                     .catch(function () {
                     });
             },
-            getPlaceHolderActivity: function () {
-                this.form.name = "Tramping";
-                this.form.description = "tramping iz fun";
-                this.form.selectedActivityTypes = ["Hike", "Bike"];
-                this.isContinuous = '1';
-                [this.durationForm.startDate, this.durationForm.startTime] = this.convertISOtoDateTime("2020-02-20T08:00:00+1300");
-                [this.durationForm.endDate, this.durationForm.endTime] = this.convertISOtoDateTime("2020-02-21T08:00:00+1300");
-                this.form.location = "Kaikoura, NZ";
-                this.profileId = 55;
-            },
             goToActivity: function () {
                 this.$router.push('/profiles/' + this.profileId + '/activities/' + this.activityId);
             }
         },
         mounted: function () {
-            // this.getActivity();
-            this.getPlaceHolderActivity();
             this.activityId = this.$route.params.activityId;
-            // this.getUserId();
+            this.getActivity();
+            // this.getPlaceHolderActivity();
+            this.getUserId();
         },
 
     }
