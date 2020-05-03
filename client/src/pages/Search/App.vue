@@ -15,9 +15,7 @@
                         <b-input v-model="searchQuery" style="width:260px;margin-right:10px;" placeholder="Search"></b-input>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio" value="firstName">First Name</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio" value="lastName">Last Name</b-form-radio>
                         <b-button variant="light" v-on:click="getUsers()">Search</b-button>
                     </b-form>
                 </b-col>
