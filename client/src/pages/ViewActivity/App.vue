@@ -58,13 +58,41 @@
         },
         data: function() {
             return {
-                isActivityOwner: true,
+                isActivityOwner: false,
                 userData: '',
                 isLoggedIn: false,
-                userName: ""
+                userName: "",
+                loggedInId: 0
             }
         },
+        mounted() {
+            this.getProfileData();
+        },
         methods: {
+            getProfileData: function () {
+                let vueObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                .then((res) => {
+                    vueObj.loggedInId = res.data.id;
+                    vueObj.isLoggedIn = true;
+                    vueObj.userName = res.data.firstname;
+                    this.checkIsOwner();
+                })
+                .catch(() => {
+                    vueObj.isLoggedIn = false;
+                    vueObj.$router.push('/login');
+                });
+            },
+            checkIsOwner: function () {
+                let vueObj = this;
+                console.log(vueObj.loggedInId);
+                if (vueObj.loggedInId == vueObj.$route.params.profileId) {
+                    vueObj.isActivityOwner = true;
+                } else {
+                    vueObj.isActivityOwner = false;
+                }
+            },
             deleteActivity() {
                 if (!confirm("Are you sure you want to delete this activity?")) {
                     return;
@@ -72,6 +100,7 @@
 
                 let profileId = this.$route.params.profileId;
                 let activityId = this.$route.params.activityId;
+                alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
                 this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
                 .then(() => {
                     this.$router.push('/profile/' + profileId);

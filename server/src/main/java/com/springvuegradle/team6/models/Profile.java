@@ -71,6 +71,9 @@ public class Profile {
                     name = "role_id", referencedColumnName = "id"))
     private Collection<Role> roles;
 
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
+    private List<Activity> activities;
+
     public Profile() {}
 
     public Integer getId() {
@@ -261,5 +264,13 @@ public class Profile {
                 ", additionalemail='" + additionalemail + '\'' +
                 ", passports='" + passports + '\'' +
                 '}';
+    }
+
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<Activity> activities) {
+        this.activities = activities;
     }
 }

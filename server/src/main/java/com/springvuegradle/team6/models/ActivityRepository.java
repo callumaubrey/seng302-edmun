@@ -3,6 +3,11 @@ package com.springvuegradle.team6.models;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import java.util.Optional;
+
 @RepositoryRestResource
 public interface ActivityRepository extends JpaRepository<Activity, Integer> {
     /**
@@ -12,5 +17,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
      * @return object of activity class
      */
 
-    Activity findById(int id);
+    Optional<Activity> findById(int id);
+
+  List<Activity> findByProfile_Id(int id);
 }
