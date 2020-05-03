@@ -146,7 +146,7 @@ public class ActivityController {
   }
 
   /**
-   * Helper function used by createActivity and editActivity to check if the date/time provided for
+   * Helper function used by createActivity to check if the date/time provided for
    * start and end date are valid
    *
    * @param activity The activity that the user wants to create or update
@@ -277,12 +277,13 @@ public class ActivityController {
       if (!edit.isContinuous()) {
         if (edit.getStartTime() == null) {
           return new ResponseEntity<>(
-                  "Start date/time cannot be empty for a non continuous activity",
-                  HttpStatus.BAD_REQUEST);
+              "Start date/time cannot be empty for a non continuous activity",
+              HttpStatus.BAD_REQUEST);
         }
         if (edit.getEndTime() == null) {
           return new ResponseEntity<>(
-                  "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
+              "End date/time cannot be empty for a non continuous activity",
+              HttpStatus.BAD_REQUEST);
         }
 
         // Start and End date/time validations
@@ -293,35 +294,45 @@ public class ActivityController {
         // Checks if new start time is before now.
         try {
           newStartDateTime =
-                  LocalDateTime.parse(edit.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          oldStartDateTime = LocalDateTime.parse(activity.get().getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          if (newStartDateTime.isBefore(LocalDateTime.now()) && !newStartDateTime.isEqual(oldStartDateTime)) {
+              LocalDateTime.parse(
+                  edit.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          oldStartDateTime =
+              LocalDateTime.parse(
+                  activity.get().getStartTime(),
+                  DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          // If the activity has already begun but the author changes the activity name, then it
+          // needs to make sure the to accept the old start time which is before now
+          if (newStartDateTime.isBefore(LocalDateTime.now())
+              && !newStartDateTime.isEqual(oldStartDateTime)) {
             return new ResponseEntity(
-                    "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+                "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
           }
         } catch (DateTimeParseException e) {
           System.out.println(e);
-          return new ResponseEntity("Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-                  HttpStatus.BAD_REQUEST);
+          return new ResponseEntity(
+              "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+              HttpStatus.BAD_REQUEST);
         }
 
         // Checks if end time is before now.
         try {
-          endDateTime = LocalDateTime.parse(edit.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          endDateTime =
+              LocalDateTime.parse(
+                  edit.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
           if (endDateTime.isBefore(LocalDateTime.now())) {
             return new ResponseEntity(
-                    "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+                "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
           }
         } catch (DateTimeParseException e) {
           return new ResponseEntity(
-                  "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-                  HttpStatus.BAD_REQUEST);
+              "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+              HttpStatus.BAD_REQUEST);
         }
 
         if (!(newStartDateTime.isEqual(endDateTime)) && newStartDateTime.isAfter(endDateTime)) {
           // Checks if start time is after end time.
           return new ResponseEntity(
-       "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+              "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
         }
       }
       activityRepository.save(edit);

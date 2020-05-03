@@ -128,7 +128,7 @@ public class UserProfileController {
         }
         else {
             int intId = (int) session.getAttribute("id");
-            return ResponseEntity.ok(repository.findById(intId));
+            return ResponseEntity.ok(repository.findById(intId).getFirstname());
         }
     }
 
