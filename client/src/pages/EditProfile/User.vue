@@ -376,7 +376,7 @@
                 emailForm: {
                     emailInput : ""
                 },
-                profile_id: null,
+                profileId: null,
                 disabled: true,
                 primaryEmail: [],
                 locations: [],
@@ -501,6 +501,11 @@
                 return $dirty ? !$error : null;
             },
             saveProfileInfo() {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 this.$v.profileForm.$touch();
                 if (this.$v.profileForm.$anyError) {
                     return;
@@ -508,7 +513,7 @@
                 const vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 console.log(this.profileForm.fitness);
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id,{
+                this.axios.put("http://localhost:9499/profiles/" + userId, {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -539,6 +544,11 @@
                 return this.yourActivites.length;
             },
             addPassport() {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
                     const tempPassports = this.yourCountries.slice();
                     const tempCodes = this.passportsCode.slice();
@@ -546,7 +556,7 @@
                     tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
                     tempCodes.push(this.selectedCountry[1]);
-                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
+                    this.axios.put("http://localhost:9499/profiles/" + userId, {
                         firstname: this.profileForm.firstname,
                         middlename: this.profileForm.middlename,
                         lastname: this.profileForm.lastname,
@@ -580,11 +590,16 @@
                 }
             },
             addActivity() {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
                         activities: this.yourActivites
                     }).then(function (response) {
                         console.log(vueObj.yourActivites);
@@ -616,12 +631,17 @@
                     });
             },
             deletePassport(index) {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 const vueObj = this;
                 const tempPassports = this.yourCountries.slice();
                 const tempCodes = this.passportsCode.slice();
                 const removedPassport = (tempPassports.splice(index, 1))[0];
                 tempCodes.splice(index, 1);
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id, {
+                this.axios.put("http://localhost:9499/profiles/" + userId, {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -649,10 +669,15 @@
                 });
             },
             deleteActivity(index) {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
                 // Need to change to the new activities api
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/activity-types", {
+                this.axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
                     activities: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -666,26 +691,31 @@
                 });
             },
             setLocationInput: function (location) {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 document.getElementById("locationInput").value = location.display_name;
                 const vueObj = this;
-                vueObj.locations = []
-                vueObj.location = location
-                console.log(this.location.place_id, this.location.type.toUpperCase())
+                vueObj.locations = [];
+                vueObj.location = location;
+                console.log(this.location.place_id, this.location.type.toUpperCase());
 
                 if (this.location != null){
                     let data = {
                         id: this.location.place_id,
                         type: "RELATION"
-                    }
-                    console.log(data)
-                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
+                    };
+                    console.log(data);
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", data).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
                         console.log(error)
                     });
                 }
                 else {
-                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", {
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", {
                     }).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
@@ -715,6 +745,11 @@
                 }
             },
             makePrimary(index) {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 const tempEmails = this.emails.slice();
                 const tempPrimary = this.primaryEmail.slice();
                 let oldPrimary = tempPrimary[0];
@@ -724,7 +759,7 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: tempPrimary[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -743,10 +778,15 @@
                 });
             },
             deleteEmail(index) {
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 const tempEmails= this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -770,12 +810,16 @@
                 if (this.$v.emailForm.$anyError) {
                     return;
                 }
-
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
                 var newEmail = this.emailForm.emailInput;
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/emails", {
+                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: newEmails
                 }).then(function (response) {
@@ -804,7 +848,12 @@
             getProfileData: async function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
+                this.axios.get('http://localhost:9499/profiles/' + userId)
                     .then(function (response) {
                         console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
@@ -837,12 +886,12 @@
                         vueObj.$router.push('/login');
                     });
             },
-            getUserId: function () {
+            getUserId: async function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
                     })
                     .catch(function () {
                     });
@@ -856,8 +905,14 @@
                 if (this.$v.passwordForm.$anyError) {
                     return;
                 }
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    console.log("I was here");
+                    userId = this.$route.params.id;
+                }
                 this.axios.defaults.withCredentials = true;
-                this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/password",{
+                this.axios.put("http://localhost:9499/profiles/" + userId + "/password", {
                     old_password: this.passwordForm.oldPassword,
                     new_password: this.passwordForm.password,
                     repeat_password: this.passwordForm.passwordRepeat
@@ -881,9 +936,27 @@
                     document.getElementById("passwordMessage").textContent = error.response.data;
                     document.getElementById("passwordMessage").style.color = "red";
                 })
+            },
+            getUserRoles: async function () {
+                this.axios.get("http://localhost:9499/profiles/role")
+                    .then(function (response) {
+                        if (response.status == 200) {
+                            return response.data;
+                        }
+                    })
+            },
+            checkUserIsAdmin: async function () {
+                let userRoles = this.getUserRoles();
+                console.log(userRoles);
+                if (userRoles) {
+                    for (let i = 0; i++; i < userRoles.length) {
+                        if (userRoles[i].roleName.equals("ROLE_ADMIN"))
+                            return true
+                    }
+                }
+                return false
             }
         },
-
         mounted: function () {
             this.getUserId();
             this.getProfileData();
