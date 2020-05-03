@@ -141,7 +141,9 @@ public class Profile {
 
     @JsonProperty("additional_email")
     public Set<Email> getEmails() {
-        return this.emails;
+        Set<Email> additionalEmails = new HashSet<>(this.emails);
+        additionalEmails.removeIf(Email::isPrimary);
+        return additionalEmails;
     }
 
     @JsonProperty("activities")
