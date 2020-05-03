@@ -273,6 +273,7 @@ public class ActivityController {
       ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(edit);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
+      }
       if (!edit.isContinuous()) {
         if (edit.getStartTime() == null) {
           return new ResponseEntity<>(
