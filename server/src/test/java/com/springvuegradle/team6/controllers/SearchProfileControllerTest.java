@@ -246,7 +246,7 @@ public class SearchProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
-    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
 
   @Test

@@ -58,7 +58,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
               .should(fullnameQuery)
               .createQuery();
     } else {
-      luceneQuery = queryBuilder.bool().must(firstnameQuery).must(fullnameQuery).createQuery();
+      luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).createQuery();
     }
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
