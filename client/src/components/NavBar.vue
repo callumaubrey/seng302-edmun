@@ -26,7 +26,7 @@
                     <template v-slot:button-content>
                         <em>{{ userName }}</em>
                     </template>
-                    <b-dropdown-item @click="goToEdit">Edit Profile</b-dropdown-item>
+                    <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
                     <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
                 </b-nav-item-dropdown>
             </b-navbar-nav>
@@ -43,7 +43,7 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'userName'],
+        props: ['isLoggedIn', 'userName', 'hideElements'],
         data: function () {
             return {
                 name: ""

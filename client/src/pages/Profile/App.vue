@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hideElements"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -27,7 +27,7 @@
                                 <b-col><p>{{userData.gender}}</p></b-col>
                             </b-row>
                         </b-card>
-                        <b-card style="margin: 1em" title="Email(s):">
+                        <b-card style="margin: 1em" title="Email(s):" v-if="!hideElements">
                             <b-row>
                                 <b-col><b>Primary Email:</b></b-col>
                                 <b-col><p>{{userData.primary_email.address}}</p></b-col>
@@ -49,7 +49,7 @@
                             </b-row>
                             <p>(Max 5 emails)</p>
                         </b-card>
-                        <b-card style="margin: 1em" title="Passport Info:">
+                        <b-card style="margin: 1em" title="Passport Info:" v-if="!hideElements">
                             <b-row>
                                 <b-col><b>Your Passport Countries:</b></b-col>
                                 <b-col>
@@ -85,7 +85,10 @@
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
-                                <b-col><b>Your Activities</b></b-col>
+                                <b-col>
+                                    <b v-if="!hideElements">Your Activities</b>
+                                    <b v-else>Their Activities</b>
+                                </b-col>
                                 <b-col>
                                     <p>
                                     <ul>
@@ -127,7 +130,8 @@
                 userName: "",
                 locations: [],
                 location: null,
-                dob: ''
+                dob: '',
+                hideElements: false
             }
         },
         methods: {
