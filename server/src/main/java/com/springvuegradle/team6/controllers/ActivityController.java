@@ -1,14 +1,18 @@
 package com.springvuegradle.team6.controllers;
 
 import ch.qos.logback.core.encoder.EchoEncoder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
 import org.apache.coyote.Response;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Table;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -38,8 +42,8 @@ public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
 
-  ActivityController(ProfileRepository profileRep, ActivityRepository activityRepository) {
-    this.profileRepository = profileRep;
+  ActivityController(ProfileRepository profileRepository, ActivityRepository activityRepository) {
+    this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
   }
 
@@ -77,9 +81,9 @@ public class ActivityController {
    */
   @PutMapping("/profiles/{profileId}/activity-types")
   public ResponseEntity<String> updateActivityTypes(
-          @PathVariable Integer profileId,
-          @Valid @RequestBody EditActivityTypeRequest request,
-          HttpSession session) {
+      @PathVariable Integer profileId,
+      @Valid @RequestBody EditActivityTypeRequest request,
+      HttpSession session) {
     Optional<Profile> profile = profileRepository.findById(profileId);
     if (profile.isPresent()) {
       Profile user = profile.get();
@@ -94,7 +98,6 @@ public class ActivityController {
     }
     return ResponseEntity.ok("User activity types updated");
   }
-
   /**
    * Get all activity types
    *
@@ -113,63 +116,67 @@ public class ActivityController {
    * Post Request to create an activity for the given profile based on the request
    *
    * @param profileId The id of the profile where the activity is created for
-   * @param request   The request with values to create the activity
-   * @param session   The session of the currently logged in user
+   * @param request The request with values to create the activity
+   * @param session The session of the currently logged in user
    * @return The response code and message
    */
   @PostMapping("/profiles/{profileId}/activities")
   public ResponseEntity<String> createActivity(
-          @PathVariable Integer profileId,
-          @Valid @RequestBody CreateActivityRequest request,
-          HttpSession session) {
+      @PathVariable Integer profileId,
+      @Valid @RequestBody CreateActivityRequest request,
+      HttpSession session) {
     ResponseEntity<String> checkAuthorisedResponse = checkAuthorised(profileId, session);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
-    Activity activity = new Activity(request, profileId);
+    Optional<Profile> profile = profileRepository.findById(profileId);
+    if (profile.isEmpty()) {
+      return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
+    }
+    Activity activity = new Activity(request, profile.get());
     if (!activity.isContinuous()) {
       if (activity.getStartTime() == null) {
         return new ResponseEntity<>(
-                "Start date/time cannot be empty for a non continuous activity",
-                HttpStatus.BAD_REQUEST);
+            "Start date/time cannot be empty for a non continuous activity",
+            HttpStatus.BAD_REQUEST);
       }
       if (activity.getEndTime() == null) {
         return new ResponseEntity<>(
-                "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
+            "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
       }
 
       // Stand and End date/time validations
       LocalDateTime startDateTime;
       LocalDateTime endDateTime;
       try {
-        startDateTime =
-                LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          startDateTime =
+              LocalDateTime.parse(activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (startDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
-                  "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+              "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
         System.out.println(e);
         return new ResponseEntity(
-                "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-                HttpStatus.BAD_REQUEST);
+            "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+            HttpStatus.BAD_REQUEST);
       }
 
       try {
-        endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+          endDateTime = LocalDateTime.parse(activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         if (endDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
-                  "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+              "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
         }
       } catch (DateTimeParseException e) {
         return new ResponseEntity(
-                "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-                HttpStatus.BAD_REQUEST);
+            "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+            HttpStatus.BAD_REQUEST);
       }
 
       if (startDateTime.isAfter(endDateTime)) {
         return new ResponseEntity(
-                "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+            "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
       }
     }
     activityRepository.save(activity);
@@ -204,5 +211,36 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Get activity data by ID
+   * @param activityId The id of the requested activity
+   * @return 200 response with headers
+   */
+  @GetMapping("/activities/{activityId}")
+  public ResponseEntity<String> getActivity(@PathVariable int activityId) {
+    Activity activity = activityRepository.findById(activityId);
+    if (activity == null){
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activity);
+      return ResponseEntity.ok(postJson);
+    }
+    catch (Exception e) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * Get all activity that a user has created by their userID
+   * @param profileId The id of the user profile
+   * @return 200 response with headers
+   */
+  @GetMapping("/profiles/{profileId}/activities")
+  public ResponseEntity getUserActivities(@PathVariable int profileId) {
+    return ResponseEntity.ok(activityRepository.findByProfile_Id(profileId));
   }
 }
