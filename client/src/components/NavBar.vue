@@ -43,7 +43,7 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'userName', 'hideElements'],
+        props: ['isLoggedIn', 'userName', 'hideElements', 'loggedInId'],
         data: function () {
             return {
                 name: ""
@@ -67,12 +67,12 @@
                     });
             },
             goToEdit() {
-                const profileId = this.$route.params.id;
-                this.$router.push('/profile/edit/' + profileId);
+                const profileId = this.loggedInId;
+                this.$router.go('/profile/edit/' + profileId);
             },
             goToProfile() {
-                const profileId = this.$route.params.id;
-                this.$router.push('/profile/' + profileId);
+                const profileId = this.loggedInId;
+                this.$router.go('/profile/' + profileId);
             }
         }
     };

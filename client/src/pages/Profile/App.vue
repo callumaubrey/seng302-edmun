@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hideElements"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hideElements" v-bind:loggedInId="loggedInID"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -122,6 +122,8 @@
         },
         data: function() {
             return {
+                loggedInUser: null,
+                loggedInID: null,
                 userData: '',
                 passports: [],
                 activities: [],
@@ -135,7 +137,23 @@
             }
         },
         methods: {
-            getUserSession: function () {
+            getLoggedInUserData: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.loggedInUser = response.data;
+                        currentObj.loggedInID = response.data.id;
+                        currentObj.userName = response.data.firstname;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                        currentObj.$router.push('/login');
+                    });
+            },
+            getProfileData: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
@@ -147,7 +165,6 @@
                         currentObj.additionalEmails = response.data.additional_email;
                         console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
-                        currentObj.userName = response.data.firstname;
                         console.log(currentObj.activities)
                         currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
                     })
@@ -189,7 +206,8 @@
             }
         },
         mounted: function () {
-            this.getUserSession();
+            this.getLoggedInUserData();
+            this.getProfileData();
             this.getLocationData();
             this.getUserId();
         }

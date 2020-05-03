@@ -41,11 +41,15 @@ Vue.use(IconsPlugin);
 
 Vue.config.productionTip = false;
 
+
 /* eslint-disable no-new */
 new Vue({
     el: '#app',
     template: '<App/>',
     components: {App},
+    data:{
+        test: 'Hello'
+    },
     router,
     render: h => h(App),
 }).$mount('#app');
