@@ -15,7 +15,7 @@
                                 <b-form-select v-model="searchBy" :options="searchOptions"></b-form-select>
                             </template>
 
-                            <b-form-input placeholder="Search"></b-form-input>
+                            <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
                                 <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
@@ -69,6 +69,7 @@
                 name: "",
                 userName: this.getUserName(),
                 searchBy: 1,
+                searchQuery: "",
                 searchOptions: [
                     { value: 1, text: 'Users' }
                 ]
@@ -119,7 +120,9 @@
                     });
             },
             search() {
-                alert("Searching");
+                if (this.searchQuery === '') return;
+
+                this.$router.push('/profiles?fullname=' + this.searchQuery);
             }
         },
         mounted: function () {

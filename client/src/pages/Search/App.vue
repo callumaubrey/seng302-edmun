@@ -114,12 +114,21 @@
                         currentObj.count = res.data.results.length
                     })
                     .catch(err => console.log(err));
-            }
+            },
+            getUsersFromNavBar: function () {
+                let navBarQuery = this.$route.query.fullname;
+                if (this.searchQuery === '' && navBarQuery) {
+                    this.searchQuery = navBarQuery;
+                }
 
+                this.getUsers();
+
+            }
         },
         mounted() {
             this.getUserId();
             this.getUserName();
+            this.getUsersFromNavBar();
         }
     };
 
