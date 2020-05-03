@@ -8,7 +8,7 @@
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
-                    <h3>Activity Name</h3>
+                    <h3>{{activityName}}</h3>
                 </b-row>
                 <b-row align-h="center" v-if="isActivityOwner">
                     <b-dropdown text="Actions" class="m-md-2">
@@ -19,25 +19,35 @@
                 <b-card style="margin: 1em" title="About:" >
                     <b-row>
                         <b-col><b>Activity Type(s):</b></b-col>
-                        <b-col><p>List of activity types</p></b-col>
+                        <b-col><p>{{activityTypes}}</p></b-col>
                     </b-row>
-                    <b-row>
-                        <b-col><b>End Date:</b></b-col>
-                        <b-col><p>End date or continuous</p></b-col>
+                    <b-row v-if="!continuous">
+                        <b-col><b>Start:</b></b-col>
+                        <b-col><p>{{startTime}}</p></b-col>
                     </b-row>
-                    <b-row>
+                    <b-row v-if="!continuous">
+                        <b-col><b>End:</b></b-col>
+                        <b-col><p>{{endTime}}</p></b-col>
+                    </b-row>
+                    <b-row v-if="location==null">
                         <b-col><b>Location:</b></b-col>
-                        <b-col><p>Activity location</p></b-col>
+                        <b-col><p>No location available</p></b-col>
+                    </b-row>
+                    <b-row v-if="location!=null">
+                        <b-col><b>Location:</b></b-col>
+                        <b-col><p>{{location}}</p></b-col>
                     </b-row>
                     <b-row>
                         <b-col><b>Description:</b></b-col>
-                        <b-col><p>Activity description</p></b-col>
+                        <b-col><p>{{description}}</p></b-col>
                     </b-row>
                 </b-card>
                 <b-card style="margin: 1em" title="Participants:">
                     <b-row>
                         <b-col><b>Creator:</b></b-col>
-                        <b-col><p>Users name possibly link to profile</p></b-col>
+                        <b-col>
+                            <p>{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
+                        </b-col>
                     </b-row>
                     <b-row>
                         <b-col><b>Other Participants:</b></b-col>
@@ -62,11 +72,20 @@
                 userData: '',
                 isLoggedIn: false,
                 userName: "",
-                loggedInId: 0
+                loggedInId: 0,
+                activityName: "",
+                description: "",
+                activityTypes: [],
+                continuous: false,
+                startTime: "",
+                endTime: "",
+                location: null,
+                activityOwner: null
             }
         },
         mounted() {
             this.getProfileData();
+            this.getActivityData();
         },
         methods: {
             getProfileData: function () {
@@ -106,8 +125,52 @@
                     this.$router.push('/profile/' + profileId);
                 })
                 .catch(err => alert(err));
+            },
+            getActivityData() {
+                let vueObj = this;
+                let activityId = this.$route.params.activityId;
+                let profileId = this.$route.params.profileId;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/activities/' + activityId)
+                    .then((res) => {
+                        vueObj.activityOwner = res.data.profile;
+                        vueObj.activityName = res.data.activityName;
+                        vueObj.description = res.data.description;
+                        vueObj.activityTypes = res.data.activityTypes;
+                        vueObj.continuous = res.data.continuous;
+                        vueObj.startTime = res.data.startTime;
+                        vueObj.endTime = res.data.startTime;
+                        vueObj.location = res.data.location;
+                        if (vueObj.activityOwner.id != profileId) {
+                            vueObj.$router.push('/profile/' + profileId);
+                        }
+                        if (!vueObj.continuous) {
+                            this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
+                        }
+                        this.getActivityTypeDisplay(vueObj);
+                    }).catch(() => {
+                    let profileId = this.$route.params.profileId;
+                    vueObj.$router.push('/profile/' + profileId);
+                });
+            },
+            getCorrectDateFormat: function (start, end, currentObj) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                currentObj.startTime = startDate.toString();
+                currentObj.endTime = endDate.toString();
+            },
+            getActivityTypeDisplay: function(currentObj) {
+                let result = "";
+                for (let i = 0; i < currentObj.activityTypes.length; i++) {
+                    result += currentObj.activityTypes[i];
+                    if (i + 1 < currentObj.activityTypes.length) {
+                        result += ", ";
+                    }
+                }
+                currentObj.activityTypes = result;
             }
         }
     };
     export default App;
 </script>
+
