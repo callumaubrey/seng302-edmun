@@ -203,7 +203,7 @@ public class ActivityController {
     Optional<Activity> p = activityRepository.findById(activityId);
     if (p.isPresent()) {
       Activity activity = p.get();
-      if (!activity.getAuthorId().equals(profileId)){
+      if (!activity.getProfile().getId().equals(profileId)){
         return new ResponseEntity<>("You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
       activityRepository.delete(activity);
@@ -220,10 +220,11 @@ public class ActivityController {
    */
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId) {
-    Activity activity = activityRepository.findById(activityId);
-    if (activity == null){
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()){
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+    Activity activity = optionalActivity.get();
     try {
       ObjectMapper mapper = new ObjectMapper();
       String postJson = mapper.writeValueAsString(activity);
