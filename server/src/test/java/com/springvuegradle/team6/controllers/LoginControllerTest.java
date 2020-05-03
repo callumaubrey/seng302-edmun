@@ -1,34 +1,25 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.requests.LoginRequest;
-import com.springvuegradle.team6.controllers.TestDataGenerator;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
+        "ADMIN_PASSWORD=test"})
 public class LoginControllerTest {
     @Autowired
     private MockMvc mvc;
