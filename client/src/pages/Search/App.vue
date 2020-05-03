@@ -16,7 +16,7 @@
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email</b-form-radio>
                         <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname</b-form-radio>
-                        <b-button variant="light" v-on:click="getUsers()">Search</b-button>
+                        <b-button @click.prevent="updateUrl()" v-on:click="getUsers()" variant="light">Search</b-button>
                     </b-form>
                 </b-col>
             </b-row>
@@ -72,6 +72,8 @@
                 count:null,
                 limit:2,
                 data: null,
+                routeQuery: {},
+                offset: null
             }
         },
         methods: {
@@ -93,40 +95,76 @@
                 .catch(err => console.log(err));
             },
             getUsers: function () {
-                if (this.searchQuery === '') return
+                if (this.searchQuery === '') return;
                 //This funtion seem to take at leaat 10 seconds to execute, when using database
                 const currentObj = this;
-                const offset = (this.currentPage-1) * this.limit
+                this.offset = (this.currentPage - 1) * this.limit;
 
+                this.routeQuery = {fullname: this.searchQuery};
                 // Full name by default
                 let query = 'http://localhost:9499/profiles?fullname='+this.searchQuery;
                 if (this.searchBy == 'email') {
+                    this.routeQuery = {email: this.searchQuery};
                     query = 'http://localhost:9499/profiles?email='+this.searchQuery;
                 }
                 if (this.searchBy == 'nickname') {
+                    this.routeQuery = {nickname: this.searchQuery};
                     query = 'http://localhost:9499/profiles?nickname='+this.searchQuery;
                 }
-                this.axios.get(query + '&offset=' + offset + "&limit=" +this.limit)
+                this.routeQuery.offset = this.offset;
+                this.routeQuery.limit = this.limit;
+                this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
-                        currentObj.data = res.data.results
+                        currentObj.data = res.data.results;
                         currentObj.count = res.data.results.length
                     })
                     .catch(err => console.log(err));
+            },
+            updateUrl: function () {
+                this.$router.push({name: "Users", query: this.routeQuery});
             },
             getUsersFromNavBar: function () {
                 let navBarQuery = this.$route.query.fullname;
                 if (this.searchQuery === '' && navBarQuery) {
                     this.searchQuery = navBarQuery;
+                    return true;
+                }
+                return false;
+            },
+            populatePage: function () {
+                let fromNavBar = this.getUsersFromNavBar();
+                if (this.$route.query.fullname) {
+                    this.searchQuery = this.$route.query.fullname;
+                    this.searchBy = "fullName";
+                } else if (this.$route.query.firstname) {
+                    this.searchQuery = this.$route.query.firstname;
+                    this.searchBy = "firstName";
+                } else if (this.$route.query.lastname) {
+                    this.searchQuery = this.$route.query.lastname;
+                    this.searchBy = "lastName";
+                } else if (this.$route.query.email) {
+                    this.searchQuery = this.$route.query.email;
+                    this.searchBy = "email";
+                } else if (this.$route.query.nickname) {
+                    this.searchQuery = this.$route.query.nickname;
+                    this.searchBy = "nickname";
                 }
 
-                this.getUsers();
-
-            }
+                // if offset is null, the user is entering the search page for the first time, which means
+                // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
+                if (this.$route.query.offset) {
+                    this.offset = this.$route.query.offset;
+                    this.limit = this.$route.query.limit;
+                    this.getUsers();
+                } else if (fromNavBar) {
+                    this.getUsers();
+                }
+            },
         },
         mounted() {
             this.getUserId();
             this.getUserName();
-            this.getUsersFromNavBar();
+            this.populatePage();
         }
     };
 
