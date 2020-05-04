@@ -17,4 +17,6 @@ public interface ProfileRepository
   Integer removeByEmail(Email email);
 
   Optional<Profile> findByAdditionalemail_AddressOrEmail_Address(String address1, String address2);
+
+  Optional<Profile> findByActivityTypes(ActivityType type);
 }

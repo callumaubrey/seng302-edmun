@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.responses.SearchProfileResponse;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -215,5 +216,39 @@ public class SearchProfileController {
     Integer count = profileRepository.searchNicknameCount(nickname);
 
     return new ResponseEntity(count, HttpStatus.OK);
+  }
+
+  @GetMapping
+  @RequestMapping(params = "activity")
+  public ResponseEntity getProfileByActivityType(
+          @RequestParam(name = "activity") String activityType, HttpSession session) {
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+    JSONObject resultsObject = new JSONObject();
+    List<SearchProfileResponse> results = new ArrayList<>();
+
+    try {
+      ActivityType activityTypeEnum = ActivityType.valueOf(activityType);
+      Optional<Profile> optionalProfile = profileRepository.findByActivityTypes(activityTypeEnum);
+      if (optionalProfile.isPresent()) {
+        Profile profile = optionalProfile.get();
+        SearchProfileResponse result =
+                new SearchProfileResponse(
+                        profile.getId(),
+                        profile.getLastname(),
+                        profile.getFirstname(),
+                        profile.getMiddlename(),
+                        profile.getNickname(),
+                        profile.getEmail().getAddress());
+        results.add(result);
+      }
+
+      resultsObject.put("results", results);
+      return new ResponseEntity(resultsObject, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity("Invalid Activity Type", HttpStatus.BAD_REQUEST);
+    }
   }
 }
