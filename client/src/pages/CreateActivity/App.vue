@@ -173,7 +173,7 @@
         data() {
             return {
                 isLoggedIn: true,
-                userName: 'Callum Aubrey',
+                userName: '',
                 isContinuous: 1,
                 profile_id: null,
                 activityTypes: [],
@@ -336,13 +336,22 @@
                     .catch(function () {
                     });
             },
-
+            getUserName: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        currentObj.userName = response.data;
+                    })
+                    .catch(function () {
+                    });
+            }
         },
-    mounted: function () {
-        this.getActivities();
-        this.getUserId();
-    },
-
+        mounted: function () {
+            this.getActivities();
+            this.getUserId();
+            this.getUserName();
+        }
     }
 </script>
 
