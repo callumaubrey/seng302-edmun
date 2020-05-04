@@ -2,10 +2,8 @@ package com.springvuegradle.team6.models;
 
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import com.springvuegradle.team6.models.ActivityType;
-import org.springframework.security.core.parameters.P;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -52,34 +50,25 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
               .matching(splited[splited.length - 1])
               .createQuery();
 
-      if (activityTypes == null) {
-        luceneQuery =
+        BooleanJunction query =
                 queryBuilder
                         .bool()
                         .should(firstnameQuery)
                         .should(lastnameQuery)
-                        .should(fullnameQuery)
-                        .createQuery();
-      } else {
-        org.apache.lucene.search.Query activityQuery =
-                queryBuilder.simpleQueryString().onField("activityTypes").matching(activityTypes).createQuery();
-
-        luceneQuery =
-                queryBuilder
-                        .bool()
-                        .should(firstnameQuery)
-                        .should(lastnameQuery)
-                        .should(fullnameQuery)
-                        .must(activityQuery)
-                        .createQuery();
-      }
+                        .should(fullnameQuery);
+        if (activityTypes == null) {
+          luceneQuery = query.createQuery();
+        } else {
+          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes);
+          luceneQuery = activityQuery.createQuery();
+        }
     } else {
+      BooleanJunction query = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery);
       if (activityTypes == null) {
-        luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).createQuery();
+        luceneQuery = query.createQuery();
       } else {
-        org.apache.lucene.search.Query activityQuery =
-                queryBuilder.simpleQueryString().onField("activityTypes").matching(activityTypes).createQuery();
-        luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).must(activityQuery).createQuery();
+        BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes);
+        luceneQuery = activityQuery.createQuery();
       }
     }
 
@@ -94,6 +83,16 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
       jpaQuery.setFirstResult(offset);
     }
     return jpaQuery;
+  }
+
+  private BooleanJunction addActivityTypeQuery(BooleanJunction query, QueryBuilder queryBuilder, String activityTypes) {
+    String[] splitActivityTypes = activityTypes.split(" ");
+    for (String activity : splitActivityTypes) {
+      org.apache.lucene.search.Query activityQuery =
+              queryBuilder.simpleQueryString().onField("activityTypes").matching(activity).createQuery();
+      query.must(activityQuery);
+    }
+    return query;
   }
 
   /**
