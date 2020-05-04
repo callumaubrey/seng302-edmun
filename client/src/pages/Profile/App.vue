@@ -1,10 +1,10 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hideElements" v-bind:loggedInId="loggedInID"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
         <div class="container">
             <div>
                 <b-row>
-                <b-img center v-bind="mainProps" rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
+                <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -27,10 +27,10 @@
                                 <b-col><p>{{userData.gender}}</p></b-col>
                             </b-row>
                         </b-card>
-                        <b-card style="margin: 1em" title="Email(s):" v-if="!hideElements">
+                        <b-card style="margin: 1em" title="Email(s):" v-if="!hidden">
                             <b-row>
                                 <b-col><b>Primary Email:</b></b-col>
-                                <b-col><p>{{userData.primary_email.address}}</p></b-col>
+                                <b-col v-if="userData.primary_email"><p>{{userData.primary_email.address}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Additional Emails:</b></b-col>
@@ -49,7 +49,7 @@
                             </b-row>
                             <p>(Max 5 emails)</p>
                         </b-card>
-                        <b-card style="margin: 1em" title="Passport Info:" v-if="!hideElements">
+                        <b-card style="margin: 1em" title="Passport Info:" v-if="!hidden">
                             <b-row>
                                 <b-col><b>Your Passport Countries:</b></b-col>
                                 <b-col>
@@ -86,7 +86,7 @@
                         <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
                                 <b-col>
-                                    <b v-if="!hideElements">Your Activities</b>
+                                    <b v-if="!hidden">Your Activities</b>
                                     <b v-else>Their Activities</b>
                                 </b-col>
                                 <b-col>
@@ -122,20 +122,20 @@
         },
         data: function() {
             return {
-                loggedInUser: null,
-                loggedInID: null,
+                loggedInUser: '',
+                loggedInID: '',
                 userData: '',
                 passports: [],
                 activities: [],
                 additionalEmails: [],
-                isLoggedIn: false,
+                isLoggedIn: '',
                 userName: "",
                 locations: [],
                 userRoles: [],
-                profileId: null,
-                location: null,
+                profileId: '',
+                location: '',
                 dob: '',
-                hideElements: false
+                hidden: null
             }
         },
         methods: {
@@ -144,7 +144,7 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
-                        console.log(response.data);
+                        console.log("Logged in as:", response.data);
                         currentObj.loggedInUser = response.data;
                         currentObj.loggedInID = response.data.id;
                         currentObj.userName = response.data.firstname;
@@ -160,7 +160,8 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
-                        console.log(response.data);
+                        console.log("Viewing Profile:", response.data);
+                        currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
@@ -168,22 +169,22 @@
                         currentObj.isLoggedIn = true;
                         currentObj.userRoles = response.data.roles;
                         currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
-                        let isAdmin = false;
-                        for (let i = 0; i < currentObj.userRoles.length; i++) {
-                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
-                                isAdmin = true;
-                            }
-                        }
-                        if (isAdmin === false) {
-                            currentObj.profileId = response.data.id.toString();
-                            currentObj.$router.push('/profile/' + currentObj.profileId)
-                        }
-
+                        // let isAdmin = false;
+                        // for (let i = 0; i < currentObj.userRoles.length; i++) {
+                        //     if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                        //         isAdmin = true;
+                        //     }
+                        // }
+                        // if (isAdmin === false) {
+                        //     currentObj.profileId = response.data.id.toString();
+                        //     //currentObj.$router.push('/profile/' + currentObj.profileId)
+                        // }
+                        currentObj.checkHideElements();
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
                         if (currentObj.isLoggedIn) {
-                            currentObj.$router.push('/profile/' + currentObj.profileId);
+                            //currentObj.$router.push('/profile/' + currentObj.profileId);
                             currentObj.$router.go(0);
                         } else {
                             currentObj.$router.push('/');
@@ -195,38 +196,24 @@
                 const dobCorrectFormat = new Date(date + "T00:00");
                 currentObj.dob = dobCorrectFormat.toLocaleDateString();
             },
-
-            getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
-            },
-            getUserId: function () {
+            checkHideElements: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
-                    .then(function (response) {
-                        currentObj.profileId = response.data;
-                        currentObj.isLoggedIn = true;
-                    })
-                    .catch(function () {
-                    });
+                console.log("loggedInID", currentObj.loggedInID)
+                console.log("profileId", currentObj.profileId)
+                if (currentObj.loggedInID == currentObj.profileId){
+                    currentObj.hidden = false;
+                }
+                else{
+                    currentObj.hidden = true;
+                }
             }
         },
         mounted: function () {
-            this.getLoggedInUserData();
             this.getProfileData();
-            this.getLocationData();
-            this.getUserId();
+        },
+        beforeMount () {
+            this.getLoggedInUserData();
+
         }
     };
 

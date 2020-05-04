@@ -78,11 +78,13 @@
             },
             goToEdit() {
                 const profileId = this.loggedInId;
+                this.$router.push('/profile/edit/' + profileId);
                 this.$router.go('/profile/edit/' + profileId);
             },
             goToProfile() {
                 const profileId = this.loggedInId;
-                this.$router.go('/profile/' + profileId);
+                this.$router.push('/profile/' + profileId);
+                this.$router.go(0);
             }
         },
         mounted: function () {
