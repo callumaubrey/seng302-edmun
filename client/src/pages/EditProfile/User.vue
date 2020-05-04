@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar isLoggedIn=true v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
         <b-container>
             <b-row>
                 <b-col>
@@ -389,6 +389,8 @@
                 availActivitys: [],
                 isLoggedIn: false,
                 userName: "",
+                loggedInID: null,
+                hidden: null,
                 selectedCountry: null,
                 selectedActivity: null,
                 fitnessOptions: [
@@ -886,16 +888,16 @@
                         vueObj.$router.push('/login');
                     });
             },
-            getUserId: async function () {
-                let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
-                    .then(function (response) {
-                        currentObj.profileId = response.data;
-                    })
-                    .catch(function () {
-                    });
-            },
+            // getUserId: async function () {
+            //     let currentObj = this;
+            //     this.axios.defaults.withCredentials = true;
+            //     this.axios.get('http://localhost:9499/profiles/id')
+            //         .then(function (response) {
+            //             currentObj.profileId = response.data;
+            //         })
+            //         .catch(function () {
+            //         });
+            // },
             savePassword: function () {
                 console.log(this.passwordForm.oldPassword);
                 console.log(this.passwordForm.password);
@@ -955,15 +957,49 @@
                     }
                 }
                 return false
-            }
+            },
+            checkAuthorized: async function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profileId = response.data;
+                        console.log("profileId yeet" + currentObj.profileId);
+                        console.log("paramId " + currentObj.$route.params.id);
+                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)) {
+                            console.log("not equal");
+                            currentObj.$route.push("/login/");
+                            currentObj.$route.go(0);
+                        }
+                    })
+                    .catch(function () {
+                    });
+            },
+            getLoggedInUserData: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        console.log("Logged in as:", response.data);
+                        currentObj.loggedInUser = response.data;
+                        currentObj.loggedInID = response.data.id;
+                        currentObj.userName = response.data.firstname;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                        currentObj.$router.push('/login');
+                    });
+            },
         },
         mounted: function () {
-            this.getUserId();
             this.getProfileData();
             this.getActivityTypes();
         },
         beforeMount() {
             this.getCountryData();
+            this.checkAuthorized();
+            this.getLoggedInUserData();
         }
 
         // need to create a API
