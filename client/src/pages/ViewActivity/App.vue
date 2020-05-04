@@ -12,7 +12,7 @@
                 </b-row>
                 <b-row align-h="center" v-if="isActivityOwner">
                     <b-dropdown text="Actions" class="m-md-2">
-                        <b-dropdown-item>Edit</b-dropdown-item>
+                        <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
@@ -61,6 +61,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+
     const App = {
         name: 'App',
         components: {
@@ -84,17 +85,16 @@
             }
         },
         mounted() {
-            this.getProfileData();
+            this.getUserName();
             this.getActivityData();
+            this.getUserId();
         },
         methods: {
-            getProfileData: function () {
+            getUserName: function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
                 .then((res) => {
-                    vueObj.loggedInId = res.data.id;
-                    vueObj.isLoggedIn = true;
                     vueObj.userName = res.data.firstname;
                     this.checkIsOwner();
                 })
@@ -103,9 +103,21 @@
                     vueObj.$router.push('/login');
                 });
             },
+            getUserId: function () {
+                let vueObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then((res) => {
+                        vueObj.loggedInId = res.data;
+                        vueObj.isLoggedIn = true;
+                    }).catch(() => {
+                    vueObj.isLoggedIn = false;
+                    vueObj.$router.push('/login');
+                })
+            },
             checkIsOwner: function () {
                 let vueObj = this;
-                console.log(vueObj.loggedInId);
+                console.log("loggedinId is " + vueObj.loggedInId);
                 if (vueObj.loggedInId == vueObj.$route.params.profileId) {
                     vueObj.isActivityOwner = true;
                 } else {
@@ -125,6 +137,11 @@
                     this.$router.push('/profile/' + profileId);
                 })
                 .catch(err => alert(err));
+            },
+            editActivity() {
+                let profileId = this.$route.params.profileId;
+                let activityId = this.$route.params.activityId;
+                this.$router.push('/profiles/' + profileId + '/activities/' + activityId + '/edit');
             },
             getActivityData() {
                 let vueObj = this;
