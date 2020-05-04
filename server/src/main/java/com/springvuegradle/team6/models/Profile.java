@@ -8,6 +8,7 @@ import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.standard.StandardFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.search.annotations.*;
+import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
@@ -79,6 +80,10 @@ public class Profile {
 
   @OneToOne private OSMLocation location;
 
+  @IndexedEmbedded
+  @Field(
+          analyze = Analyze.YES,
+          store = Store.NO)
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;

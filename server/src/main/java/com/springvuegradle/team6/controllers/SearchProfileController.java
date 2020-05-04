@@ -58,6 +58,7 @@ public class SearchProfileController {
   @RequestMapping(params = "fullname")
   public ResponseEntity getProfileByFullName(
       @RequestParam(name = "fullname") String fullName,
+      @RequestParam(name = "activity", required = false) String activityType,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
       HttpSession session) {
@@ -72,7 +73,9 @@ public class SearchProfileController {
       limit = -1;
     }
     String fullNameWithSpaces = fullName.replaceAll("%20", " ");
-    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, limit, offset);
+
+    //ActivityType activityTypeEnum = ActivityType.valueOf(activityType);
+    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, activityType, limit, offset);
     System.out.println(fullNameWithSpaces);
     System.out.println(profiles.size());
     List<SearchProfileResponse> results = new ArrayList<>();
@@ -103,13 +106,15 @@ public class SearchProfileController {
   @GetMapping
   @RequestMapping(value = "/count", params = "fullname")
   public ResponseEntity getProfileByFullNameCount(
-      @RequestParam(name = "fullname") String fullName, HttpSession session) {
+      @RequestParam(name = "fullname") String fullName,
+      @RequestParam(name = "activity") String activity, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
     String fullNameWithSpaces = fullName.replaceAll("%20", " ");
-    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces);
+
+    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces, activity);
 
     return new ResponseEntity(count, HttpStatus.OK);
   }
@@ -216,39 +221,5 @@ public class SearchProfileController {
     Integer count = profileRepository.searchNicknameCount(nickname);
 
     return new ResponseEntity(count, HttpStatus.OK);
-  }
-
-  @GetMapping
-  @RequestMapping(params = "activity")
-  public ResponseEntity getProfileByActivityType(
-          @RequestParam(name = "activity") String activityType, HttpSession session) {
-    Object id = session.getAttribute("id");
-    if (id == null) {
-      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-    }
-    JSONObject resultsObject = new JSONObject();
-    List<SearchProfileResponse> results = new ArrayList<>();
-
-    try {
-      ActivityType activityTypeEnum = ActivityType.valueOf(activityType);
-      Optional<Profile> optionalProfile = profileRepository.findByActivityTypes(activityTypeEnum);
-      if (optionalProfile.isPresent()) {
-        Profile profile = optionalProfile.get();
-        SearchProfileResponse result =
-                new SearchProfileResponse(
-                        profile.getId(),
-                        profile.getLastname(),
-                        profile.getFirstname(),
-                        profile.getMiddlename(),
-                        profile.getNickname(),
-                        profile.getEmail().getAddress());
-        results.add(result);
-      }
-
-      resultsObject.put("results", results);
-      return new ResponseEntity(resultsObject, HttpStatus.OK);
-    } catch (IllegalArgumentException e) {
-      return new ResponseEntity("Invalid Activity Type", HttpStatus.BAD_REQUEST);
-    }
   }
 }

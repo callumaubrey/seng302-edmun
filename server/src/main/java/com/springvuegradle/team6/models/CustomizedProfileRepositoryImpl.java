@@ -3,6 +3,8 @@ package com.springvuegradle.team6.models;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import com.springvuegradle.team6.models.ActivityType;
+import org.springframework.security.core.parameters.P;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -20,7 +22,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return the query results
    */
   public org.hibernate.search.jpa.FullTextQuery searchFullnameQuery(
-      String terms, int limit, int offset) {
+      String terms, String activityTypes, int limit, int offset) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -50,15 +52,35 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
               .matching(splited[splited.length - 1])
               .createQuery();
 
-      luceneQuery =
-          queryBuilder
-              .bool()
-              .should(firstnameQuery)
-              .should(lastnameQuery)
-              .should(fullnameQuery)
-              .createQuery();
+      if (activityTypes == null) {
+        luceneQuery =
+                queryBuilder
+                        .bool()
+                        .should(firstnameQuery)
+                        .should(lastnameQuery)
+                        .should(fullnameQuery)
+                        .createQuery();
+      } else {
+        org.apache.lucene.search.Query activityQuery =
+                queryBuilder.simpleQueryString().onField("activityTypes").matching(activityTypes).createQuery();
+
+        luceneQuery =
+                queryBuilder
+                        .bool()
+                        .should(firstnameQuery)
+                        .should(lastnameQuery)
+                        .should(fullnameQuery)
+                        .must(activityQuery)
+                        .createQuery();
+      }
     } else {
-      luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).createQuery();
+      if (activityTypes == null) {
+        luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).createQuery();
+      } else {
+        org.apache.lucene.search.Query activityQuery =
+                queryBuilder.simpleQueryString().onField("activityTypes").matching(activityTypes).createQuery();
+        luceneQuery = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery).must(activityQuery).createQuery();
+      }
     }
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
@@ -83,8 +105,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A list of profiles that matches the full name to some degree
    */
   @Override
-  public List<Profile> searchFullname(String terms, int limit, int offset) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, limit, offset);
+  public List<Profile> searchFullname(String terms, String activityType, int limit, int offset) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, limit, offset);
 
     return jpaQuery.getResultList();
   }
@@ -96,8 +118,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A number of profiles that matches the nickname
    */
   @Override
-  public Integer searchFullnameCount(String terms) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, -1, -1);
+  public Integer searchFullnameCount(String terms, String activityType) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, -1, -1);
 
     return jpaQuery.getResultSize();
   }
