@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SearchProfileResponse {
 
+  @JsonProperty("profile_id")
+  public Integer profileId;
+
   @JsonProperty("lastname")
   public String lastname;
 
@@ -20,7 +23,13 @@ public class SearchProfileResponse {
   public String primaryEmail;
 
   public SearchProfileResponse(
-      String lastname, String firstname, String middlename, String nickname, String primaryEmail) {
+      Integer profileId,
+      String lastname,
+      String firstname,
+      String middlename,
+      String nickname,
+      String primaryEmail) {
+    this.profileId = profileId;
     this.lastname = lastname;
     this.firstname = firstname;
     this.middlename = middlename;

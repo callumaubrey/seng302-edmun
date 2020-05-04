@@ -48,8 +48,8 @@ public class SearchProfileController {
    * of hibernate search
    *
    * @param fullName the full name to search for
-   * @param offset the number of results to skip           
-   * @param limit  the number of results to return 
+   * @param offset the number of results to skip
+   * @param limit the number of results to return
    * @param session the current logged in user session
    * @return the results of the search containing profiles that match the full name roughly
    */
@@ -78,6 +78,7 @@ public class SearchProfileController {
     for (Profile profile : profiles) {
       SearchProfileResponse result =
           new SearchProfileResponse(
+              profile.getId(),
               profile.getLastname(),
               profile.getFirstname(),
               profile.getMiddlename(),
@@ -90,9 +91,10 @@ public class SearchProfileController {
     return new ResponseEntity(resultsObject, HttpStatus.OK);
   }
 
-  /** 
-   * Searches for the user based on the full name given as best as possible
-   * and return the number of results
+  /**
+   * Searches for the user based on the full name given as best as possible and return the number of
+   * results
+   *
    * @param fullName the full name to search for
    * @param session the current logged in user session
    * @return the total number of results that matches fullname
@@ -100,8 +102,7 @@ public class SearchProfileController {
   @GetMapping
   @RequestMapping(value = "/count", params = "fullname")
   public ResponseEntity getProfileByFullNameCount(
-      @RequestParam(name = "fullname") String fullName,
-      HttpSession session) {
+      @RequestParam(name = "fullname") String fullName, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
@@ -137,6 +138,7 @@ public class SearchProfileController {
       Profile profile = optionalProfile.get();
       SearchProfileResponse result =
           new SearchProfileResponse(
+              profile.getId(),
               profile.getLastname(),
               profile.getFirstname(),
               profile.getMiddlename(),
@@ -153,7 +155,7 @@ public class SearchProfileController {
    * Given the nickname search for profiles that have this nickname
    *
    * @param nickname the nickname to search for
-   * @param offset the number of results to skip 
+   * @param offset the number of results to skip
    * @param limit the number of results to return
    * @param session the current logged in user session
    * @return the results of the search that matches the nickname exactly
@@ -176,11 +178,12 @@ public class SearchProfileController {
       limit = -1;
     }
     JSONObject resultsObject = new JSONObject();
-    List<Profile> profiles = profileRepository.searchNickname(nickname,limit, offset);
+    List<Profile> profiles = profileRepository.searchNickname(nickname, limit, offset);
     List<SearchProfileResponse> results = new ArrayList<>();
     for (Profile profile : profiles) {
       SearchProfileResponse result =
           new SearchProfileResponse(
+              profile.getId(),
               profile.getLastname(),
               profile.getFirstname(),
               profile.getMiddlename(),
@@ -194,8 +197,8 @@ public class SearchProfileController {
   }
 
   /**
-   * Given the nickname search for profiles that have this nickname
-   * and return the number of results that matches the nickname
+   * Given the nickname search for profiles that have this nickname and return the number of results
+   * that matches the nickname
    *
    * @param nickname the nickname to search for
    * @param session the current logged in user session
@@ -204,8 +207,7 @@ public class SearchProfileController {
   @GetMapping
   @RequestMapping(value = "/count", params = "nickname")
   public ResponseEntity getProfileByNickNameCount(
-      @RequestParam(name = "nickname") String nickname,
-      HttpSession session) {
+      @RequestParam(name = "nickname") String nickname, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
