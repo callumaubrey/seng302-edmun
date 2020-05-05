@@ -72,7 +72,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
           luceneQuery = query.createQuery();
         } else {
           BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
-          luceneQuery = activityQuery.createQuery();
+          luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
         }
       } else {
         BooleanJunction query = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery);
@@ -80,7 +80,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
           luceneQuery = query.createQuery();
         } else {
           BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
-          luceneQuery = activityQuery.createQuery();
+          luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
         }
       }
     }
@@ -99,6 +99,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
   }
 
   private BooleanJunction addActivityTypeQuery(BooleanJunction query, QueryBuilder queryBuilder, String activityTypes, String method) {
+    BooleanJunction query2 = queryBuilder.bool();
     String[] splitActivityTypes = activityTypes.split(" ");
     for (String activity : splitActivityTypes) {
       org.apache.lucene.search.Query activityQuery =
@@ -108,16 +109,16 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
               .matching(activity)
               .createQuery();
       if (method == null) {
-        query.must(activityQuery);
+        query2.must(activityQuery);
       } else {
         if (method.equals("OR")) {
-          query.should(activityQuery);
+          query2.should(activityQuery);
         } else {
-          query.must(activityQuery);
+          query2.must(activityQuery);
         }
       }
     }
-    return query;
+    return query2;
   }
 
   /**
