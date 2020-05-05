@@ -11,5 +11,5 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @SpringBootTest
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
         "ADMIN_PASSWORD=test"})
-public class SpringIntegrationTest {
+public class SpringIntegration {
 }

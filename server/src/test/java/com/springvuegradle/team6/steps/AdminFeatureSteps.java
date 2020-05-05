@@ -1,6 +1,6 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.SpringIntegrationTest;
+import com.springvuegradle.team6.SpringIntegration;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-public class AdminFeatureTestSteps extends SpringIntegrationTest {
+public class AdminFeatureSteps extends SpringIntegration {
     public static String profileId;
     private String jsonString;
     private MockHttpSession session;
