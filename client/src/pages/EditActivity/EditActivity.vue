@@ -215,30 +215,23 @@
                 },
                 description: {},
                 selectedActivityType: {
+                    required,
                     validateActivityType() {
                         if (this.form.selectedActivityTypes.length < 1) {
                             return false
                         }
                         return true
-                    },
-                    required
+                    }
                 },
                 date: {},
                 location: {}
             },
             durationForm: {
                 startDate: {
-                    validateDate() {
-                        let startDate = new Date(this.durationForm.startDate);
-                        let endDate = new Date(this.durationForm.endDate);
-                        if (startDate > endDate) {
-                            return false;
-                        }
-                        return true;
-                    },
                     required
                 },
                 endDate: {
+                    required,
                     validateDate() {
                         let startDate = new Date(this.durationForm.startDate);
                         let endDate = new Date(this.durationForm.endDate);
@@ -246,8 +239,7 @@
                             return false;
                         }
                         return true;
-                    },
-                    required
+                    }
                 },
                 startTime: {},
                 endTime: {}
@@ -393,7 +385,6 @@
         mounted: function () {
             this.activityId = this.$route.params.activityId;
             this.getActivity();
-            // this.getPlaceHolderActivity();
             this.getUserId();
         },
 
