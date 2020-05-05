@@ -77,7 +77,7 @@
                                 Activity types:
                             </span>
                             <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
-                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes" :key="activityType">
+                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes" :key="activityType" v-on:click="deleteActivityType(activityType)" class="clickable">
                                     {{ activityType }}
                                 </b-list-group-item>
                             </b-list-group>
@@ -153,7 +153,22 @@
                         </b-col>
                     </b-row>
 
-                    <b-button type="submit" variant="primary">Submit</b-button>
+                    <b-row>
+                        <b-col sm="10">
+                            <b-button type="submit" variant="primary">Submit</b-button>
+                        </b-col>
+                        <b-col sm="2">
+                            <b-button to="/activity/list">Your Activities</b-button>
+                        </b-col>
+                    </b-row>
+
+                    <b-form-valid-feedback :state='activityUpdateMessage != ""'>
+                        {{activityUpdateMessage}}
+                    </b-form-valid-feedback>
+                    <b-form-invalid-feedback :state='activityErrorMessage == ""'>
+                        {{activityErrorMessage}}
+                    </b-form-invalid-feedback>
+
                 </b-form>
             </b-container>
         </div>
@@ -191,7 +206,10 @@
                     endDate: null,
                     startTime: null,
                     endTime: null
-                }
+                },
+                activityUpdateMessage: "",
+                activityErrorMessage: ""
+
             }
         },
         validations: {
@@ -237,6 +255,16 @@
                         console.log(error.response.data);
                     });
             },
+            deleteActivityType: function (activityType) {
+                this.$delete(this.form.selectedActivityTypes, this.form.selectedActivityTypes.indexOf(activityType))
+                const selectedActivitysLength = this.form.selectedActivityTypes.length
+                if(selectedActivitysLength == 0){
+                    this.$v.form.selectedActivityType.$model = null
+                }else {
+                    this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivitysLength -1]
+                }
+
+            },
             validateState(name) {
                 const { $dirty, $error } = this.$v.form[name];
                 return $dirty ? !$error : null;
@@ -252,6 +280,7 @@
 
                 if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
                     this.form.selectedActivityTypes.push(this.form.selectedActivityType);
+
                 }
             },
             onSubmit() {
@@ -268,14 +297,19 @@
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
                     })
-                        .then(function (response) {
-                            console.log(response);
-                            currentObj.form.name = currentObj.form.description = null;
-                            currentObj.form.selectedActivityType = 0;
+                        .then(function () {
+                            currentObj.activityErrorMessage = "";
+                            currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
+
+                            currentObj.form.name = currentObj.form.description = currentObj.form.location = null;
+                            currentObj.form.selectedActivityType = null;
                             currentObj.form.selectedActivityTypes = [];
-                            currentObj.$v.$reset();
+                            currentObj.$v.form.$reset();
+
                         })
                         .catch(function (error) {
+                            currentObj.activityUpdateMessage= "";
+                            currentObj.activityErrorMessage= "Failed to add " + currentObj.form.name + " to your activities, please try again later";
                             console.log(error.response.data); });
 
                 }else {
@@ -292,6 +326,9 @@
                     })
                         .then(function (response) {
                             console.log(response);
+                            currentObj.activityErrorMessage = "";
+                            currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
+
                             currentObj.form.name = currentObj.form.description = null
                             currentObj.form.selectedActivityType = 0;
                             currentObj.form.selectedActivityTypes = []
@@ -300,6 +337,8 @@
                             currentObj.$v.$reset();
                         })
                         .catch(function (error) {
+                            currentObj.activityUpdateMessage= "";
+                            currentObj.activityErrorMessage= "Failed to add " + currentObj.form.name + " to your activities, please try again later";
                             console.log(error)
                         });
 
@@ -364,5 +403,8 @@
         padding: 20px 20px 20px 20px;
         border: 1px solid lightgrey;
         border-radius: 3px;
+    }
+    .clickable {
+        cursor: pointer;
     }
 </style>
