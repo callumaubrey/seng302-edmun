@@ -31,7 +31,7 @@
                                         v-model="$v.durationForm.startDate.$model"
                                         aria-describedby="start-date-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="start-date-feedback">This is a required field.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="start-date-feedback">This is a required field and cannot be in the past.</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -56,7 +56,9 @@
                                         type="time"
                                         :state="validateDurationState('startTime')"
                                         v-model="$v.durationForm.startTime.$model"
+                                        aria-describedby="start-time-feedback"
                                 ></b-form-input>
+                                <b-form-invalid-feedback id="start-time-feedback">Start time cannot be in the past.</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -96,19 +98,6 @@
                             <hr>
                         </b-col>
                     </b-row>
-
-<!--                    <b-row>-->
-<!--                        <b-col>-->
-<!--                            <b-form-group id="date-input-group" label="Date" label-for="date-input">-->
-<!--                                <b-form-input-->
-<!--                                        id="date-input"-->
-<!--                                        type="date"-->
-<!--                                        :state="validateState('date')"-->
-<!--                                        v-model="$v.form.date.$model"-->
-<!--                                ></b-form-input>-->
-<!--                            </b-form-group>-->
-<!--                        </b-col>-->
-<!--                    </b-row>-->
 
                     <b-row>
                         <b-col>
@@ -226,7 +215,10 @@
             },
             durationForm: {
                 startDate: {
-                    required
+                    required,
+                    dateValidate(val) {
+                        return val >= new Date().toISOString().split('T')[0];
+                    }
                 },
                 endDate: {
                     required,
@@ -239,8 +231,41 @@
                         return true;
                     }
                 },
-                startTime: {},
-                endTime: {}
+                startTime: {
+                    timeValidate(val) {
+                        let startDate = this.durationForm.startDate;
+                        if (val && startDate) {
+                            let nowDate = new Date().toISOString().split('T')[0];
+                            if (nowDate == startDate) {
+                                let splitStartTime = val.split(':');
+                                let now = new Date();
+                                let startTimeObj = new Date();
+                                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                                if (startTimeObj < now) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                },
+                endTime: {
+                    timeValidate(val) {
+                        let startTime = this.durationForm.startTime;
+                        if (val && startTime) {
+                            let splitStartTime = startTime.split(":");
+                            let splitEndTime = val.split(":");
+                            let startTimeObj = new Date();
+                            startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                            let endTimeObj = new Date();
+                            endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+                            if (endTimeObj <= startTimeObj) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
             }
         },
         methods: {
@@ -284,6 +309,11 @@
                 }
             },
             onSubmit() {
+                let splitStartTime = this.durationForm.startTime.split(':');
+                let startTimeObj = new Date();
+                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                alert(startTimeObj.toISOString());
+
                 this.$v.form.$touch();
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
