@@ -55,10 +55,11 @@ public class SearchProfileController {
    * @return the results of the search containing profiles that match the full name roughly
    */
   @GetMapping()
-  @RequestMapping(params = "fullname")
+  //@RequestMapping(params = "fullname")
   public ResponseEntity getProfileByFullName(
-      @RequestParam(name = "fullname") String fullName,
+      @RequestParam(name = "fullname", required = false) String fullName,
       @RequestParam(name = "activity", required = false) String activityType,
+      @RequestParam(name = "method", required = false) String method,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
       HttpSession session) {
@@ -66,16 +67,29 @@ public class SearchProfileController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
+    if (fullName == null && activityType == null) {
+      return new ResponseEntity("Must specify some search parameters", HttpStatus.BAD_REQUEST);
+    }
     if (offset == null) {
       offset = -1;
     }
     if (limit == null) {
       limit = -1;
     }
-    String fullNameWithSpaces = fullName.replaceAll("%20", " ");
+    String fullNameWithSpaces;
+    if (fullName == null) {
+      fullNameWithSpaces = null;
+    } else {
+      fullNameWithSpaces = fullName.replaceAll("%20", " ");
+    }
+    String activityTypesWithSpaces;
+    if (activityType == null) {
+      activityTypesWithSpaces = null;
+    } else {
+      activityTypesWithSpaces = activityType.replaceAll("%20", " ");
+    }
 
-    //ActivityType activityTypeEnum = ActivityType.valueOf(activityType);
-    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, activityType, limit, offset);
+    List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, activityTypesWithSpaces, method, limit, offset);
     System.out.println(fullNameWithSpaces);
     System.out.println(profiles.size());
     List<SearchProfileResponse> results = new ArrayList<>();
@@ -107,14 +121,15 @@ public class SearchProfileController {
   @RequestMapping(value = "/count", params = "fullname")
   public ResponseEntity getProfileByFullNameCount(
       @RequestParam(name = "fullname") String fullName,
-      @RequestParam(name = "activity") String activity, HttpSession session) {
+      @RequestParam(name = "activity") String activity,
+      @RequestParam(name = "method") String method, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
     String fullNameWithSpaces = fullName.replaceAll("%20", " ");
 
-    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces, activity);
+    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces, activity, method);
 
     return new ResponseEntity(count, HttpStatus.OK);
   }

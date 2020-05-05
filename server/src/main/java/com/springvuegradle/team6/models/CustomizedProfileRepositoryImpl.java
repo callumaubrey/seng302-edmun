@@ -20,7 +20,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return the query results
    */
   public org.hibernate.search.jpa.FullTextQuery searchFullnameQuery(
-      String terms, String activityTypes, int limit, int offset) {
+      String terms, String activityTypes, String method, int limit, int offset) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -30,25 +30,37 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     }
 
     QueryBuilder queryBuilder =
-        fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Profile.class).get();
-
-    String[] splited = terms.split(" ");
-
-    org.apache.lucene.search.Query firstnameQuery =
-        queryBuilder.keyword().onField("firstname").boostedTo(5).matching(splited[0]).createQuery();
-
-    org.apache.lucene.search.Query fullnameQuery =
-        queryBuilder.simpleQueryString().onField("fullname").matching(terms).createQuery();
-
+            fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Profile.class).get();
     org.apache.lucene.search.Query luceneQuery;
-    if (splited.length > 1) {
-      org.apache.lucene.search.Query lastnameQuery =
-          queryBuilder
-              .keyword()
-              .onField("lastname")
-              .boostedTo(5)
-              .matching(splited[splited.length - 1])
-              .createQuery();
+
+    if (terms == null) {
+      BooleanJunction query =
+              queryBuilder
+                      .bool();
+      BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
+      luceneQuery = activityQuery.createQuery();
+    } else {
+      String[] splited = terms.split(" ");
+
+      org.apache.lucene.search.Query firstnameQuery =
+              queryBuilder
+                      .keyword()
+                      .onField("firstname")
+                      .boostedTo(5)
+                      .matching(splited[0])
+                      .createQuery();
+
+      org.apache.lucene.search.Query fullnameQuery =
+              queryBuilder.simpleQueryString().onField("fullname").matching(terms).createQuery();
+
+      if (splited.length > 1) {
+        org.apache.lucene.search.Query lastnameQuery =
+                queryBuilder
+                        .keyword()
+                        .onField("lastname")
+                        .boostedTo(5)
+                        .matching(splited[splited.length - 1])
+                        .createQuery();
 
         BooleanJunction query =
                 queryBuilder
@@ -59,16 +71,17 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
         if (activityTypes == null) {
           luceneQuery = query.createQuery();
         } else {
-          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes);
+          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
           luceneQuery = activityQuery.createQuery();
         }
-    } else {
-      BooleanJunction query = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery);
-      if (activityTypes == null) {
-        luceneQuery = query.createQuery();
       } else {
-        BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes);
-        luceneQuery = activityQuery.createQuery();
+        BooleanJunction query = queryBuilder.bool().should(firstnameQuery).should(fullnameQuery);
+        if (activityTypes == null) {
+          luceneQuery = query.createQuery();
+        } else {
+          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
+          luceneQuery = activityQuery.createQuery();
+        }
       }
     }
 
@@ -85,12 +98,24 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     return jpaQuery;
   }
 
-  private BooleanJunction addActivityTypeQuery(BooleanJunction query, QueryBuilder queryBuilder, String activityTypes) {
+  private BooleanJunction addActivityTypeQuery(BooleanJunction query, QueryBuilder queryBuilder, String activityTypes, String method) {
     String[] splitActivityTypes = activityTypes.split(" ");
     for (String activity : splitActivityTypes) {
       org.apache.lucene.search.Query activityQuery =
-              queryBuilder.simpleQueryString().onField("activityTypes").matching(activity).createQuery();
-      query.must(activityQuery);
+          queryBuilder
+              .simpleQueryString()
+              .onField("activityTypes")
+              .matching(activity)
+              .createQuery();
+      if (method == null) {
+        query.must(activityQuery);
+      } else {
+        if (method.equals("OR")) {
+          query.should(activityQuery);
+        } else {
+          query.must(activityQuery);
+        }
+      }
     }
     return query;
   }
@@ -104,8 +129,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A list of profiles that matches the full name to some degree
    */
   @Override
-  public List<Profile> searchFullname(String terms, String activityType, int limit, int offset) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, limit, offset);
+  public List<Profile> searchFullname(String terms, String activityType, String method, int limit, int offset) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, method, limit, offset);
 
     return jpaQuery.getResultList();
   }
@@ -117,8 +142,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A number of profiles that matches the nickname
    */
   @Override
-  public Integer searchFullnameCount(String terms, String activityType) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, -1, -1);
+  public Integer searchFullnameCount(String terms, String activityType, String method) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchFullnameQuery(terms, activityType, method, -1, -1);
 
     return jpaQuery.getResultSize();
   }
