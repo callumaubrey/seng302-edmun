@@ -93,7 +93,8 @@ public class EditProfileRequest {
     @JsonProperty("additional_email")
     public List<String> additionalemail;
 
-    public NamedLocation location;
+
+    public LocationUpdateRequest location;
 
     /**
      * Takes a profile and uses the info stored in its attributes from a Json
@@ -124,8 +125,9 @@ public class EditProfileRequest {
             profile.setActivityTypes(this.activityTypes);
 
         if(this.location != null) {
-            locationRepository.save(this.location);
-            profile.setLocation(this.location);
+            NamedLocation newLocation = this.location.getLocation();
+            locationRepository.save(newLocation);
+            profile.setLocation(newLocation);
         }
     }
 }
