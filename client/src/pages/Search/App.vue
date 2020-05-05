@@ -8,18 +8,107 @@
                     <h1>User Search</h1>
                 </b-col>
             </b-row>
+            <b-container id="searchRow">
+                <b-row>
+                    <b-col>
+                        <b-form inline>
+                            <b-input v-model="searchQuery" style="width:400px;margin-right:10px;"
+                                     placeholder="Search"></b-input>
+                            <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name
+                            </b-form-radio>
+                            <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email
+                            </b-form-radio>
+                            <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname
+                            </b-form-radio>
 
-            <b-row style="margin-top:30px;" id="searchRow">
-                <b-col>
-                    <b-form inline>
-                        <b-input v-model="searchQuery" style="width:260px;margin-right:10px;" placeholder="Search"></b-input>
-                        <b-form-radio v-model="searchBy" class="searchByRadio" value="fullName">Full Name</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio" value="email">Email</b-form-radio>
-                        <b-form-radio v-model="searchBy" class="searchByRadio" value="nickname">Nickname</b-form-radio>
-                        <b-button @click.prevent="updateUrl()" v-on:click="searchUser()" variant="light">Search</b-button>
-                    </b-form>
-                </b-col>
-            </b-row>
+                        </b-form>
+                    </b-col>
+                    <b-col sm="2">
+                        <b-button class="float-right" @click.prevent="updateUrl()" v-on:click="searchUser()"
+                                  variant="light">Search
+                        </b-button>
+                    </b-col>
+
+
+                </b-row>
+                <br>
+                <b-row>
+                    <b-col>
+                        <b-form-tags v-model="activityTypesForm.selectedOptions" no-outer-focus
+                                     size="lg">
+                            <template v-slot="{ tags, disabled, addTag, removeTag }">
+                                <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
+                                    <li v-for="tag in tags" :key="tag" class="list-inline-item">
+                                        <b-form-tag
+                                                @remove="removeTag(tag)"
+                                                :title="tag"
+                                                :disabled="disabled"
+                                                variant="primary"
+                                        >{{ tag }}
+                                        </b-form-tag>
+                                    </li>
+                                </ul>
+                                <b-dropdown size="sm" variant="outline-secondary" block menu-class="w-100">
+                                    <template v-slot:button-content>
+                                        <b-icon icon="tag-fill"></b-icon>
+                                        Choose activity types to search by
+                                    </template>
+                                    <b-dropdown-form @submit.stop.prevent="() => {}">
+                                        <b-form-group
+                                                label-for="tag-search-input"
+                                                label="Search activity types"
+                                                label-cols-md="auto"
+                                                class="mb-0"
+                                                label-size="sm"
+                                                :description="searchDesc"
+                                                :disabled="disabled"
+                                        >
+                                            <b-form-input
+                                                    v-model="activityTypesForm.search"
+                                                    id="tag-search-input"
+                                                    type="search"
+                                                    size="sm"
+                                                    autocomplete="off"
+                                            ></b-form-input>
+                                        </b-form-group>
+                                    </b-dropdown-form>
+                                    <b-dropdown-divider></b-dropdown-divider>
+                                    <b-dropdown-item-button
+                                            v-for="option in availableOptions"
+                                            :key="option"
+                                            @click="onOptionClick({ option, addTag })"
+                                    >
+                                        {{ option }}
+                                    </b-dropdown-item-button>
+                                    <b-dropdown-text v-if="availableOptions.length === 0">
+                                        There are no activity types available to select
+                                    </b-dropdown-text>
+                                </b-dropdown>
+                            </template>
+
+                        </b-form-tags>
+                    </b-col>
+                </b-row>
+                <br>
+                <b-row>
+                    <b-col>
+
+                        <b-form inline>
+                            <label style="margin-right:10px;">Search Method: </label>
+                            <b-form-radio-group id="activityTypesSearchMethods" v-model="activityTypesForm.method" aria-describedby="activityTypesSearchMethodsHelp">
+                                <b-form-radio class="searchByRadio" value="and">And
+                                </b-form-radio>
+                                <b-form-radio class="searchByRadio" value="or">Or
+                                </b-form-radio>
+                            </b-form-radio-group>
+
+                        </b-form>
+                        <b-form-text id="activityTypesSearchMethodsHelp">
+                            The option you select determines how activity types are searched e.g Hiking and Biking
+                        </b-form-text>
+                    </b-col>
+                </b-row>
+            </b-container>
 
             <b-row>
                 <b-col>
@@ -62,37 +151,70 @@
                 searchQuery: '',
                 searchBy: 'fullName',
                 fields: [
-                    { key: 'lastname', sortable: true },
-                    { key: 'firstname', sortable: true },
-                    { key: 'middlename', sortable: true },
-                    { key: 'nickname', sortable: true },
-                    { key: 'primary_email', sortable: true },
+                    {key: 'lastname', sortable: true},
+                    {key: 'firstname', sortable: true},
+                    {key: 'middlename', sortable: true},
+                    {key: 'nickname', sortable: true},
+                    {key: 'primary_email', sortable: true},
                 ],
                 currentPage: 1,
-                count:1,
-                limit:2,
+                count: 1,
+                limit: 2,
                 data: null,
                 routeQuery: {},
-                offset: null
+                offset: null,
+                activityTypesForm: {
+                    options: [],
+                    search: "",
+                    selectedOptions: [],
+                    method: "and"
+                }
+            }
+        },
+        computed: {
+            criteria() {
+                // Compute the search criteria
+                return this.activityTypesForm.search.trim().toLowerCase()
+            },
+            availableOptions() {
+                const criteria = this.criteria
+                // Filter out already selected options
+                const options = this.activityTypesForm.options.filter(opt => this.activityTypesForm.selectedOptions.indexOf(opt) === -1)
+                if (criteria) {
+                    // Show only options that match criteria
+                    return options.filter(opt => opt.toLowerCase().indexOf(criteria) > -1);
+                }
+                // Show all options available
+                return options
+            },
+            searchDesc() {
+                if (this.criteria && this.availableOptions.length === 0) {
+                    return 'There are no tags matching your search criteria'
+                }
+                return ''
             }
         },
         methods: {
+            onOptionClick({option, addTag}) {
+                addTag(option)
+                this.activityTypesForm.search = ''
+            },
             getUserId: function () {
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
-                .then((res) => {
-                    this.profileId = res.data;
-                    this.isLoggedIn = true;
-                })
-                .catch((err) => console.log(err));
+                    .then((res) => {
+                        this.profileId = res.data;
+                        this.isLoggedIn = true;
+                    })
+                    .catch((err) => console.log(err));
             },
             getUserName: function () {
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/user')
-                .then((res) => {
-                    this.userName = res.data;
-                })
-                .catch(err => console.log(err));
+                    .then((res) => {
+                        this.userName = res.data;
+                    })
+                    .catch(err => console.log(err));
             },
             getUsers: function () {
                 if (this.searchQuery === '') return;
@@ -102,14 +224,14 @@
 
                 this.routeQuery = {fullname: this.searchQuery};
                 // Full name by default
-                let query = 'http://localhost:9499/profiles?fullname='+this.searchQuery;
+                let query = 'http://localhost:9499/profiles?fullname=' + this.searchQuery;
                 if (this.searchBy == 'email') {
                     this.routeQuery = {email: this.searchQuery};
-                    query = 'http://localhost:9499/profiles?email='+this.searchQuery;
+                    query = 'http://localhost:9499/profiles?email=' + this.searchQuery;
                 }
                 if (this.searchBy == 'nickname') {
                     this.routeQuery = {nickname: this.searchQuery};
-                    query = 'http://localhost:9499/profiles?nickname='+this.searchQuery;
+                    query = 'http://localhost:9499/profiles?nickname=' + this.searchQuery;
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
@@ -159,11 +281,11 @@
                     this.searchUser();
                 }
             },
-            searchUser: function() {
-                let query = 'http://localhost:9499/profiles/count?fullname='+this.searchQuery;
+            searchUser: function () {
+                let query = 'http://localhost:9499/profiles/count?fullname=' + this.searchQuery;
                 if (this.searchBy == 'nickname') {
                     this.routeQuery = {nickname: this.searchQuery};
-                    query = 'http://localhost:9499/profiles/count?nickname='+this.searchQuery;
+                    query = 'http://localhost:9499/profiles/count?nickname=' + this.searchQuery;
                 }
                 const currentObj = this
                 this.axios.get(query)
@@ -174,11 +296,25 @@
                 currentObj.getUsers()
 
             },
+            getActivities: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/activity-types')
+                    .then(function (response) {
+                        console.log(response.data);
+                        currentObj.activityTypesForm.options = response.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                    });
+            },
+
         },
         mounted() {
             this.getUserId();
             this.getUserName();
             this.populatePage();
+            this.getActivities();
         }
     };
 
@@ -187,9 +323,9 @@
 
 <style scoped>
     #searchRow {
-        padding-left:20px;
-        padding-top:15px;
-        padding-bottom:15px;
+        padding-left: 20px;
+        padding-top: 15px;
+        padding-bottom: 15px;
         border-top: 1px solid #f0f0f5;
         border-bottom: 1px solid #D7D7D7;
         background-color: #F2F2F2;
@@ -198,10 +334,10 @@
     }
 
     thead {
-        display:none;
+        display: none;
     }
 
     .searchByRadio {
-        padding-right:7px;
+        padding-right: 7px;
     }
 </style>
