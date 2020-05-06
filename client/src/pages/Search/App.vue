@@ -96,9 +96,9 @@
                         <b-form inline>
                             <label style="margin-right:10px;">Search Method: </label>
                             <b-form-radio-group id="activityTypesSearchMethods" v-model="activityTypesForm.method" aria-describedby="activityTypesSearchMethodsHelp">
-                                <b-form-radio class="searchByRadio" value="and">And
+                                <b-form-radio class="searchByRadio" value="AND">And
                                 </b-form-radio>
-                                <b-form-radio class="searchByRadio" value="or">Or
+                                <b-form-radio class="searchByRadio" value="OR">Or
                                 </b-form-radio>
                             </b-form-radio-group>
 
@@ -167,7 +167,7 @@
                     options: [],
                     search: "",
                     selectedOptions: [],
-                    method: "and"
+                    method: "AND"
                 }
             }
         },
@@ -217,21 +217,24 @@
                     .catch(err => console.log(err));
             },
             getUsers: function () {
-                if (this.searchQuery === '') return;
+                if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
                 //This funtion seem to take at leaat 10 seconds to execute, when using database
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
 
-                this.routeQuery = {fullname: this.searchQuery};
                 // Full name by default
-                let query = 'http://localhost:9499/profiles?fullname=' + this.searchQuery;
-                if (this.searchBy == 'email') {
-                    this.routeQuery = {email: this.searchQuery};
-                    query = 'http://localhost:9499/profiles?email=' + this.searchQuery;
-                }
-                if (this.searchBy == 'nickname') {
-                    this.routeQuery = {nickname: this.searchQuery};
-                    query = 'http://localhost:9499/profiles?nickname=' + this.searchQuery;
+                let query = 'http://localhost:9499/profiles';
+                if (this.searchBy == 'fullName' && this.activityTypesForm.selectedOptions != '') {
+                    query = this.searchNames(query)
+                    query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
+                    query += "&method=" + this.activityTypesForm.method;
+                    // this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
+                }else if (this.searchQuery != ''){
+                    query = this.searchNames(query)
+                }else {
+                    query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
+                    query += "&method=" + this.activityTypesForm.method;
+                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
@@ -240,6 +243,21 @@
                         currentObj.data = res.data.results;
                     })
                     .catch(err => console.log(err));
+            },
+            searchNames: function (query){
+                if (this.searchBy == 'email') {
+                    this.routeQuery = {email: this.searchQuery};
+                    query += '?email=' + this.searchQuery;
+                }
+                else if (this.searchBy == 'nickname') {
+                    this.routeQuery = {nickname: this.searchQuery};
+                    query += '?nickname=' + this.searchQuery;
+                }
+                else {
+                    this.routeQuery = {fullname: this.searchQuery};
+                    query += '?fullname=' + this.searchQuery;
+                }
+                return query;
             },
             updateUrl: function () {
                 this.$router.push({name: "Users", query: this.routeQuery});
@@ -288,11 +306,13 @@
                     query = 'http://localhost:9499/profiles/count?nickname=' + this.searchQuery;
                 }
                 const currentObj = this
-                this.axios.get(query)
-                    .then((res) => {
-                        currentObj.count = res.data
-                    })
-                    .catch(err => console.log(err));
+                this.count = 10
+                console.log(query);
+                // this.axios.get(query)
+                //     .then((res) => {
+                //         currentObj.count = res.data
+                //     })
+                //     .catch(err => console.log(err));
                 currentObj.getUsers()
 
             },
