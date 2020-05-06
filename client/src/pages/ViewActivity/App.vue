@@ -156,7 +156,7 @@
                         vueObj.activityTypes = res.data.activityTypes;
                         vueObj.continuous = res.data.continuous;
                         vueObj.startTime = res.data.startTime;
-                        vueObj.endTime = res.data.startTime;
+                        vueObj.endTime = res.data.endTime;
                         vueObj.location = res.data.location;
                         if (vueObj.activityOwner.id != profileId) {
                             vueObj.$router.push('/profiles/' + profileId);

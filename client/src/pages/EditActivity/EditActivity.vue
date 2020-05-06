@@ -344,9 +344,18 @@
                 }
             },
             getISODates: function () {
-                const startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
-                const endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime);
+                let startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
+                let endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime);
+                console.log(this.durationForm.startTime);
+                if (this.durationForm.startTime == "") {
+                    console.log("I was here");
+                    startDate.setHours(12, 0, 0, 0);
+                }
+                if (this.durationForm.endTime == "") {
+                    endDate.setHours(12, 0, 0, 0);
+                }
                 let startDateISO = startDate.toISOString().slice(0, -5);
+                console.log(startDateISO);
                 let endDateISO = endDate.toISOString().slice(0, -5);
 
                 var currentTime = new Date();
@@ -359,7 +368,7 @@
                 }
                 startDateISO += currentTimezone.toString() + "00";
                 endDateISO += currentTimezone.toString() + "00";
-                // alert(startDate + "\n" + startDateISO)
+                alert(startDate + "\n" + startDateISO);
                 return [startDateISO, endDateISO];
             },
             convertISOtoDateTime: function (ISODate) {
