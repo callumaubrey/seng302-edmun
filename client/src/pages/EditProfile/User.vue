@@ -636,26 +636,23 @@
                 const vueObj = this;
                 vueObj.locations = [];
                 vueObj.location = location;
-                console.log(this.location.place_id, this.location.type.toUpperCase());
+                console.log(location.address.city);
 
-                if (this.location != null){
+                if (this.location !== null){
                     let data = {
-                            location: {
-                            city: null,
+                            country: null,
                             state: null,
-                            country: null
-                        },
+                            city: null
                     };
                     if (location.address.city) {
-                        data.location.city = location.address.city;
+                        data.city = vueObj.location.address.city;
                     }
                     if (location.address.state) {
-                        data.location.state = location.address.state;
+                        data.state = location.address.state;
                     }
                     if (location.address.country) {
-                        data.location.country = location.address.country;
+                        data.country = location.address.country;
                     }
-                    //type: "RELATION"
                     console.log(data);
                     this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
                         console.log(response)
@@ -682,12 +679,32 @@
                     }
 
                     let locationData = _this.axios.create({
-                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=5&addressdetails=1',
+                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=8&addressdetails=1',
                         timeout: 1000,
                         withCredentials: false,
                     });
                     let data = await (locationData.get());
-                    _this.locations = data.data;
+                    console.log(data);
+                    let fixedData = JSON.parse('{"data":[]}');
+                    for (var i = 0; i < data.data.length; i++) {
+                        var obj = data.data[i];
+                        if (!(obj.address.city && obj.address.country)) {
+                            console.log("deleted json index " + i);
+                        } else {
+                            var state = null;
+                            if (obj.address.state) {
+                                state = obj.address.state;
+                            }
+                            var display_name = obj.address.city.toString() + ", " + state + ", " + obj.address.country.toString();
+                            fixedData['data'].push({"address":
+                                    {"city":obj.address.city.toString(),"state":state, "country":obj.address.country.toString()},
+                                    "display_name":display_name, "place_id":obj.place_id});
+                        }
+                    }
+                    console.log("fixedData " + JSON.stringify(fixedData));
+                    console.log(fixedData.data[0].display_name.toString());
+
+                    _this.locations = fixedData.data;
                 }, 1000);
             },
 
@@ -813,7 +830,7 @@
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
-                        // vueObj.location = response.data.location.osmID.id;
+                        vueObj.location = response.data.location;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;

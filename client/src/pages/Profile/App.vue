@@ -79,8 +79,16 @@
 
                     <b-tab title="Location Info" >
                         <b-card style="margin: 1em;" title="Location Info:">
+                            <b-row>
+                                City: {{userData.location.city}}
+                            </b-row>
+                            <b-row>
+                                State: {{userData.location.state}}
+                            </b-row>
+                            <b-row>
+                                Country: {{userData.location.country}}
+                            </b-row>
                         </b-card>
-
                     </b-tab>
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Activity Info:">
@@ -125,7 +133,6 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: [],
                 location: null
             }
         },
@@ -143,6 +150,7 @@
                         console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
+                        currentObj.location = response.data.location
                         console.log(currentObj.activities)
                     })
                     .catch(function (error) {
@@ -151,20 +159,7 @@
                         currentObj.$router.push('/login');
                     });
             },
-            getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
-            },
+
             getUserId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
@@ -178,7 +173,6 @@
         },
         mounted: function () {
             this.getUserSession();
-            this.getLocationData();
             this.getUserId();
         }
     };
