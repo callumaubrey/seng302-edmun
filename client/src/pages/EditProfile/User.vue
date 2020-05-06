@@ -75,7 +75,6 @@
                                     description="How fit are you?"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"  v-model="profileForm.fitness"></b-form-select>
-                                {{profileForm.fitness}} Fitness here
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -149,19 +148,16 @@
                                     {{emailErrorMessage}}
                                 </b-form-invalid-feedback>
                             </b-col>
-
                             <b-col id="emailAdd" class="col-25">
                                 <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn" style="float: right;" v-on:click="createEmail">Add</b-button>
                             </b-col>
                         </b-row>
                         <b-row>
-
                         </b-row>
                     </div>
                 </b-container>
             </b-collapse>
             <hr>
-
             <div v-b-toggle="'collapse-3'" class = "clickable">
                 <b-container>
                     <b-row>
@@ -206,7 +202,6 @@
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Add</b-button>
                         </b-col>
                     </b-row>
-
                 </b-container>
             </b-collapse>
             <hr>
@@ -239,9 +234,7 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <b-form-group
-                                    description="Add a new activity"
-                            >
+                            <b-form-group description="Add a new activity">
                                 <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
                             </b-form-group>
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
@@ -250,13 +243,11 @@
                             <b-form-invalid-feedback :state='activityErrorMessage == ""'>
                                 {{activityErrorMessage}}
                             </b-form-invalid-feedback>
-
                         </b-col>
                         <b-col>
                             <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Add</b-button>
                         </b-col>
                     </b-row>
-
                 </b-container>
             </b-collapse>
             <hr>
@@ -322,7 +313,7 @@
                     <b-row>
                         <b-col>
                             <p>Select a location from the search drop down:</p>
-                            <b-input autocomplete="off" id="locationInput" class="form-control" type="text" v-model="location.display_name" @keyup.native="getLocationData"></b-input>
+                            <b-input autocomplete="off" class="form-control" type="text" v-model="locationText" @keyup.native="getLocationData"></b-input>
                             <div v-for="i in locations" :key="i.place_id">
                                 <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
                             </div>
@@ -330,15 +321,12 @@
                     </b-row>
                 </b-container>
             </b-collapse>
-
             <hr>
         </b-container>
     </div>
 </template>
 
-
 <script>
-    // import api from '../Api';
     import axios from 'axios'
     import NavBar from "@/components/NavBar.vue"
     import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
@@ -353,7 +341,6 @@
 
     const User = {
         name: 'User',
-
         components: {
             NavBar
         },
@@ -411,11 +398,12 @@
                 profileErrorMessage: "",
                 emailUpdateMessage: "",
                 emailErrorMessage: "",
-
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
-                activityErrorMessage: ""
+                activityErrorMessage: "",
+                timeout: null,
+                locationText: ""
             }
         },
         validations: {
@@ -477,9 +465,6 @@
                 }
             }
         },
-
-
-
         methods: {
             validateState: function(name) {
                 const { $dirty, $error } = this.$v[name];
@@ -515,6 +500,7 @@
                     lastname: this.profileForm.lastname,
                     nickname: this.profileForm.nickname,
                     primary_email: this.primaryEmail[0],
+                    additional_email: this.emails,
                     date_of_birth: this.profileForm.date_of_birth,
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
@@ -552,6 +538,7 @@
                         lastname: this.profileForm.lastname,
                         nickname: this.profileForm.nickname,
                         primary_email: this.primaryEmail[0],
+                        additional_email: this.emails,
                         date_of_birth: this.profileForm.date_of_birth,
                         gender: this.profileForm.gender.toLowerCase(),
                         fitness: this.profileForm.fitness,
@@ -605,6 +592,7 @@
                     lastname: this.profileForm.lastname,
                     nickname: this.profileForm.nickname,
                     primary_email: this.primaryEmail[0],
+                    additional_email: this.emails,
                     date_of_birth: this.profileForm.date_of_birth,
                     gender: this.profileForm.gender.toLowerCase(),
                     fitness: this.profileForm.fitness,
@@ -643,18 +631,29 @@
                 });
             },
             setLocationInput: function (location) {
-                document.getElementById("locationInput").value = location.display_name;
+                //document.getElementById("locationInput").value = location.display_name;
+                this.locationText = location.display_name;
                 const vueObj = this;
-                vueObj.locations = []
-                vueObj.location = location
-                console.log(this.location.place_id, this.location.type.toUpperCase())
+                vueObj.locations = [];
+                vueObj.location = location;
+                console.log(location.address.city);
 
-                if (this.location != null){
+                if (this.location !== null){
                     let data = {
-                        id: this.location.place_id,
-                        type: "RELATION"
+                            country: null,
+                            state: null,
+                            city: null
+                    };
+                    if (location.address.city) {
+                        data.city = vueObj.location.address.city;
                     }
-                    console.log(data)
+                    if (location.address.state) {
+                        data.state = location.address.state;
+                    }
+                    if (location.address.country) {
+                        data.country = location.address.country;
+                    }
+                    console.log(data);
                     this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
@@ -671,19 +670,44 @@
                 }
             },
             getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=5',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
+                clearTimeout(this.timeout);
+                let _this = this;
+                this.timeout = setTimeout( async function () {
+                    let locationText = _this.locationText;
+                    if (locationText == ''){
+                        return
+                    }
+
+                    let locationData = _this.axios.create({
+                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=8&addressdetails=1',
+                        timeout: 1000,
+                        withCredentials: false,
+                    });
+                    let data = await (locationData.get());
+                    console.log(data);
+                    let fixedData = JSON.parse('{"data":[]}');
+                    for (var i = 0; i < data.data.length; i++) {
+                        var obj = data.data[i];
+                        if (!(obj.address.city && obj.address.country)) {
+                            console.log("deleted json index " + i);
+                        } else {
+                            var state = null;
+                            if (obj.address.state) {
+                                state = obj.address.state;
+                            }
+                            var display_name = obj.address.city.toString() + ", " + state + ", " + obj.address.country.toString();
+                            fixedData['data'].push({"address":
+                                    {"city":obj.address.city.toString(),"state":state, "country":obj.address.country.toString()},
+                                    "display_name":display_name, "place_id":obj.place_id});
+                        }
+                    }
+                    console.log("fixedData " + JSON.stringify(fixedData));
+                    console.log(fixedData.data[0].display_name.toString());
+
+                    _this.locations = fixedData.data;
+                }, 1000);
             },
+
             getCountryData: async function() {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
@@ -806,7 +830,7 @@
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
-                        // vueObj.location = response.data.location.osmID.id;
+                        vueObj.location = response.data.location;
                     })
                     .catch(function () {
                         vueObj.isLoggedIn = false;
