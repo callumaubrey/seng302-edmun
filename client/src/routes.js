@@ -15,13 +15,13 @@ const routes = [
     {path: '/', component: Home},
     {path: '/register', component: Register},
     {path: '/login', component: Login},
-    {path: '/profile/:id', component: Profile},
-    {path: '/profile/edit/:id', component: EditProfile},
+    {path: '/profiles/:id', component: Profile},
+    {path: '/profiles/edit/:id', component: EditProfile},
     {path: '/admin', component: Admin},
-    {path: '/activity/new', component: CreateActivity},
-    {path: '/profiles/:profileId/activities/:activityId/edit', component: EditActivity},
-    {path: '/profiles/:profileId/activities/:activityId', component: Activity},
-    {path: '/activity/list', component: ListActivity}
+    {path: '/profiles/:id/activities/create', component: CreateActivity},
+    {path: '/profiles/:id/activities/:activityId/edit', component: EditActivity},
+    {path: '/profiles/:id/activities/:activityId', component: Activity},
+    {path: '/profiles/:id/activities/', component: ListActivity}
 ];
 
 export default routes;

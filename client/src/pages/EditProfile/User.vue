@@ -808,11 +808,12 @@
                     .then(function (response) {
                         console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
-                            vueObj.passportsCode.push(response.data.passports[i].isoCode);
-                            vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
+                                vueObj.passportsCode.push(response.data.passports[i].isoCode);
+                                vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
                         }
+
                         for (let j = 0; j < response.data.additional_email.length; j++) {
-                            vueObj.emails.push(response.data.additional_email[j].address);
+                                vueObj.emails.push(response.data.additional_email[j].address);
                         }
                         console.log(response.data);
                         vueObj.profileForm.firstname = response.data.firstname;
@@ -832,9 +833,10 @@
                         vueObj.yourActivites = response.data.activities;
                         // vueObj.location = response.data.location.osmID.id;
                     })
-                    .catch(function () {
-                        vueObj.isLoggedIn = false;
-                        vueObj.$router.push('/login');
+                    .catch(function (e) {
+                        console.log(e)
+                        // vueObj.isLoggedIn = false;
+                        // vueObj.$router.push('/login');
                     });
             },
             getUserId: function () {

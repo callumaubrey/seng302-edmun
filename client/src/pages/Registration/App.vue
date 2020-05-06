@@ -204,7 +204,7 @@
         })
                 .then(function (response) {
                   const profileId = response.data.toString();
-                  currentObj.$router.push('/profile/' + profileId)
+                  currentObj.$router.push('/profiles/' + profileId)
                 })
                 .catch(function (error) {
                   currentObj.emailErrMsg = error.response.data;

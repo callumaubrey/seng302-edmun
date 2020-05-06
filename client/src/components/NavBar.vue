@@ -8,6 +8,7 @@
             <b-navbar-nav>
                 <b-nav-item v-if="!isLoggedIn" to='/register'>Register</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
+                <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
             </b-navbar-nav>
 
             <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
@@ -68,11 +69,15 @@
             },
             goToEdit() {
                 const profileId = this.$route.params.id;
-                this.$router.push('/profile/edit/' + profileId);
+                this.$router.push('/profiles/edit/' + profileId);
             },
             goToProfile() {
                 const profileId = this.$route.params.id;
-                this.$router.push('/profile/' + profileId);
+                this.$router.push('/profiles/' + profileId);
+            },
+            goToActivities() {
+                const profileId = this.$route.params.id;
+                this.$router.push('/profiles/' + profileId + '/activities');
             }
         }
     };

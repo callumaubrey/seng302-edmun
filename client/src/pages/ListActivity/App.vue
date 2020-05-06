@@ -7,7 +7,7 @@
                     <h3> List of Activitys</h3>
                 </b-col>
                 <b-col sm="1">
-                    <b-button align="right" to="/activity/new"> Create</b-button>
+                    <b-button align="right" @click="goToCreateActivity"> Create</b-button>
                 </b-col>
             </b-row>
             <b-table striped hover :items="items" :fields="fields"></b-table>
@@ -49,7 +49,7 @@
             getName: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                this.axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -66,6 +66,10 @@
                         }
                     })
                     .catch(err => console.log(err))
+            },
+            goToCreateActivity: function() {
+                const profileId = this.$route.params.id;
+                this.$router.push('/profiles/' + profileId + '/activities/create');
             }
         },
         mounted() {

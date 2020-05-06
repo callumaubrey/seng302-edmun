@@ -116,7 +116,7 @@
                       currentObj.$router.push('/admin');
                     } else {
                       const profileId = response.data.toString();
-                      currentObj.$router.push('/profile/' + profileId)
+                      currentObj.$router.push('/profiles/' + profileId)
                     }
                   })
                   .catch(function (error) {

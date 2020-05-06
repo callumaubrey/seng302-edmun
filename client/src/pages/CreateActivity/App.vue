@@ -147,7 +147,7 @@
                             <b-button type="submit" variant="primary">Submit</b-button>
                         </b-col>
                         <b-col sm="2">
-                            <b-button to="/activity/list">Your Activities</b-button>
+                            <b-button @click="goToActivities">Your Activities</b-button>
                         </b-col>
                     </b-row>
 
@@ -408,12 +408,16 @@
             getUserName: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                this.axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
                     .catch(function () {
                     });
+            },
+            goToActivities() {
+                const profileId = this.$route.params.id;
+                this.$router.push('/profiles/' + profileId + '/activities');
             }
         },
         mounted: function () {

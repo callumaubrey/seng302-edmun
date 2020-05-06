@@ -76,7 +76,7 @@
                         }
                         if (isAdmin === false) {
                             const profileId = response.data.id.toString();
-                            currentObj.$router.push('/profile/' + profileId)
+                            currentObj.$router.push('/profiles/' + profileId)
                         }
                     })
                     .catch(function () {

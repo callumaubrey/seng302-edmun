@@ -114,7 +114,7 @@ public class UserProfileController {
         return ResponseEntity.ok(response.toString());
     }
     /**
-     * Get request to return which users name is logged into the session
+     * Get request to return the current user that is logged in the system
      *
      * @return ResponseEntity which contains which user is logged in
      * @return ResponseEntity which can be success(2xx) with the users name
@@ -128,9 +128,29 @@ public class UserProfileController {
         }
         else {
             int intId = (int) session.getAttribute("id");
+            return ResponseEntity.ok(repository.findById(intId));
+        }
+    }
+
+    /**
+     * Get request to return the current user's firstname that is logged in the system
+     *
+     * @return ResponseEntity which contains which user is logged in
+     * @return ResponseEntity which can be success(2xx) with the users name
+     * or error(4xx) user is not logged in
+     */
+    @GetMapping("/firstname")
+    public ResponseEntity getProfileFirstName(HttpSession session) throws JsonProcessingException {
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
+        }
+        else {
+            int intId = (int) session.getAttribute("id");
             return ResponseEntity.ok(repository.findById(intId).getFirstname());
         }
     }
+
 
     /**
      * Get request to return the id of the current user logged into the session

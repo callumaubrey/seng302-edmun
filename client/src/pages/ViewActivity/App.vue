@@ -93,7 +93,7 @@
             getUserName: function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                this.axios.get('http://localhost:9499/profiles/firstname')
                 .then((res) => {
                     vueObj.userName = res.data.firstname;
                     this.checkIsOwner();
@@ -118,7 +118,7 @@
             checkIsOwner: function () {
                 let vueObj = this;
                 console.log("loggedinId is " + vueObj.loggedInId);
-                if (vueObj.loggedInId == vueObj.$route.params.profileId) {
+                if (vueObj.loggedInId == vueObj.$route.params.id) {
                     vueObj.isActivityOwner = true;
                 } else {
                     vueObj.isActivityOwner = false;
@@ -129,24 +129,24 @@
                     return;
                 }
 
-                let profileId = this.$route.params.profileId;
+                let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
                 alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
                 this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
                 .then(() => {
-                    this.$router.push('/profile/' + profileId);
+                    this.$router.push('/profiles/' + profileId);
                 })
                 .catch(err => alert(err));
             },
             editActivity() {
-                let profileId = this.$route.params.profileId;
+                let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
                 this.$router.push('/profiles/' + profileId + '/activities/' + activityId + '/edit');
             },
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
-                let profileId = this.$route.params.profileId;
+                let profileId = this.$route.params.id;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/activities/' + activityId)
                     .then((res) => {
@@ -159,15 +159,15 @@
                         vueObj.endTime = res.data.startTime;
                         vueObj.location = res.data.location;
                         if (vueObj.activityOwner.id != profileId) {
-                            vueObj.$router.push('/profile/' + profileId);
+                            vueObj.$router.push('/profiles/' + profileId);
                         }
                         if (!vueObj.continuous) {
                             this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
                         }
                         this.getActivityTypeDisplay(vueObj);
                     }).catch(() => {
-                    let profileId = this.$route.params.profileId;
-                    vueObj.$router.push('/profile/' + profileId);
+                    let profileId = this.$route.params.id;
+                    vueObj.$router.push('/profiles/' + profileId);
                 });
             },
             getCorrectDateFormat: function (start, end, currentObj) {
