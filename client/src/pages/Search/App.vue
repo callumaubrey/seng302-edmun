@@ -24,8 +24,11 @@
             <b-row>
                 <b-col>
                     <b-table
+                            class="cursor-pointer"
+                            hover
                             :fields="fields"
                             :items="data"
+                            @row-clicked="itemRowClicked"
                     >
                     </b-table>
                 </b-col>
@@ -174,6 +177,9 @@
                 currentObj.getUsers()
 
             },
+            itemRowClicked: function (record) {
+                window.location.href = window.location.origin + ("/#/profile/" + record.profile_id);
+            }
         },
         mounted() {
             this.getUserId();
@@ -203,5 +209,9 @@
 
     .searchByRadio {
         padding-right:7px;
+    }
+
+    .cursor-pointer{
+        cursor: pointer;
     }
 </style>
