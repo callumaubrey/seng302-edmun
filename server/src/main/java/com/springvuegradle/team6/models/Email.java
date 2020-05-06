@@ -20,6 +20,9 @@ public class Email {
     @Column(name="is_primary")
     private boolean primary;
 
+    @ManyToOne
+    Profile profile;
+
     public Email() { }
 
     public Email(String email) {
@@ -32,6 +35,10 @@ public class Email {
 
     public void setAddress(String email) {
         this.address = email;
+    }
+
+    public Profile getProfile() {
+        return profile;
     }
 
     @Override
