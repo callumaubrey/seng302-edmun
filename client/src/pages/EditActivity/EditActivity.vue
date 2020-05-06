@@ -344,16 +344,19 @@
                 }
             },
             getISODates: function () {
-                let startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
-                let endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime);
-                console.log(this.durationForm.startTime);
-                if (this.durationForm.startTime == "") {
-                    console.log("I was here");
-                    startDate.setHours(12, 0, 0, 0);
+                let startDate = new Date(this.durationForm.startDate);
+                let endDate = new Date(this.durationForm.endDate);
+                console.log(startDate);
+                if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
+                    console.log(this.durationForm.startTime);
+                    startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
                 }
-                if (this.durationForm.endTime == "") {
-                    endDate.setHours(12, 0, 0, 0);
+
+                if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
+                    console.log(this.durationForm.endTime);
+                    endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
                 }
+
                 let startDateISO = startDate.toISOString().slice(0, -5);
                 console.log(startDateISO);
                 let endDateISO = endDate.toISOString().slice(0, -5);
@@ -368,12 +371,22 @@
                 }
                 startDateISO += currentTimezone.toString() + "00";
                 endDateISO += currentTimezone.toString() + "00";
+                console.log(startDateISO);
+                if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
+                    startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13, startDateISO.length);
+                }
+                if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
+                    endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13, endDateISO.length);
+                }
                 alert(startDate + "\n" + startDateISO);
                 return [startDateISO, endDateISO];
             },
             convertISOtoDateTime: function (ISODate) {
                 const date = ISODate.substring(0, 10);
-                const time = ISODate.substring(11, 16);
+                let time = ISODate.substring(11, 16);
+                if (time == "24:00") {
+                    time = null;
+                }
                 return [date, time]
             },
             getUserId: function () {
