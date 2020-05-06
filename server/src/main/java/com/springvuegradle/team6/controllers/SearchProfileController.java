@@ -118,19 +118,35 @@ public class SearchProfileController {
    * @return the total number of results that matches fullname
    */
   @GetMapping
-  @RequestMapping(value = "/count", params = "fullname")
+  @RequestMapping(value = "/count")
   public ResponseEntity getProfileByFullNameCount(
-      @RequestParam(name = "fullname") String fullName,
-      @RequestParam(name = "activity") String activity,
-      @RequestParam(name = "method") String method, HttpSession session) {
+      @RequestParam(name = "fullname", required = false) String fullName,
+      @RequestParam(name = "activity", required = false) String activityType,
+      @RequestParam(name = "method", required = false) String method, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    String fullNameWithSpaces = fullName.replaceAll("%20", " ");
 
-    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces, activity, method);
+    if (fullName == null && activityType == null) {
+      return new ResponseEntity("Must specify some search parameters", HttpStatus.BAD_REQUEST);
+    }
 
+    String fullNameWithSpaces;
+    if (fullName == null) {
+      fullNameWithSpaces = null;
+    } else {
+      fullNameWithSpaces = fullName.replaceAll("%20", " ");
+    }
+
+    String activityTypesWithSpaces;
+    if (activityType == null) {
+      activityTypesWithSpaces = null;
+    } else {
+      activityTypesWithSpaces = activityType.replaceAll("%20", " ");
+    }
+
+    Integer count = profileRepository.searchFullnameCount(fullNameWithSpaces, activityTypesWithSpaces, method);
     return new ResponseEntity(count, HttpStatus.OK);
   }
 
