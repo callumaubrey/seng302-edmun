@@ -85,7 +85,7 @@
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
-                                <b-col><b>Your Activities</b></b-col>
+                                <b-col><b>Activity Types</b></b-col>
                                 <b-col>
                                     <p>
                                     <ul>
@@ -94,6 +94,11 @@
                                         </li>
                                     </ul>
                                     </p>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>
+                                    <b-link @click="goToActivities">Click Here to view {{userName}}'s Activties</b-link>
                                 </b-col>
                             </b-row>
                         </b-card>
@@ -182,6 +187,10 @@
                     })
                     .catch(function () {
                     });
+            },
+            goToActivities: function () {
+                const profileId = this.$route.params.id;
+                this.$router.push('/profiles/' + profileId + '/activities');
             }
         },
         mounted: function () {
