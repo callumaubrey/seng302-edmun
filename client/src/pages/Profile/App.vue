@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -20,7 +20,7 @@
                             </b-row>
                             <b-row>
                                 <b-col><b>Date of Birth:</b></b-col>
-                                <b-col><p>{{userData.date_of_birth}}</p></b-col>
+                                <b-col><p>{{dob}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Gender:</b></b-col>
@@ -133,7 +133,10 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                location: null
+                userRoles: [],
+                profileId: null,
+                location: null,
+                dob: ''
             }
         },
         methods: {
@@ -147,33 +150,70 @@
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
                         currentObj.additionalEmails = response.data.additional_email;
-                        console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
+                        currentObj.userRoles = response.data.roles;
+                        currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
+                        let isAdmin = false;
+                        for (let i = 0; i < currentObj.userRoles.length; i++) {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                                isAdmin = true;
+                            }
+                        }
+                        if (isAdmin === false) {
+                            currentObj.profileId = response.data.id.toString();
+                            currentObj.$router.push('/profile/' + currentObj.profileId)
+                        }
+
                         currentObj.userName = response.data.firstname;
                         currentObj.location = response.data.location
-                        console.log(currentObj.activities)
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
-                        currentObj.isLoggedIn = false;
-                        currentObj.$router.push('/login');
+                        if (currentObj.isLoggedIn) {
+                            currentObj.$router.push('/profile/' + currentObj.profileId);
+                            currentObj.$router.go(0);
+                        } else {
+                            currentObj.$router.push('/');
+                        }
                     });
             },
 
+            getCorrectDateFormat: function (date, currentObj) {
+                const dobCorrectFormat = new Date(date + "T00:00");
+                currentObj.dob = dobCorrectFormat.toLocaleDateString();
+            },
+
+            getLocationData: async function () {
+                var locationText = document.getElementById("locationInput").value;
+                if (locationText == ''){
+                    return
+                }
+                var locationData = this.axios.create({
+                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
+                    timeout: 1000,
+                    withCredentials: false,
+                });
+                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
+                var data = await (locationData.get());
+                this.locations = data.data
+            },
             getUserId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
+                        currentObj.isLoggedIn = true;
                     })
                     .catch(function () {
                     });
             }
         },
         mounted: function () {
-            this.getUserSession();
             this.getUserId();
+            this.getUserSession();
+            this.getLocationData();
+
         }
     };
 
