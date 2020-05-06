@@ -4,13 +4,16 @@
         <b-container>
             <b-row class="my-1">
                 <b-col sm="11">
-                    <h3> List of Activitys</h3>
+                    <h3>My Activities</h3>
+                    <b-form-text>Click on an activity to view more information on the activity</b-form-text>
                 </b-col>
                 <b-col sm="1">
                     <b-button align="right" @click="goToCreateActivity"> Create</b-button>
                 </b-col>
             </b-row>
-            <b-table striped hover :items="items" :fields="fields"></b-table>
+            <b-table hover :items="items" :fields="fields" class="clickable" @row-clicked="goToActivity">
+                <template v-slot:cell(selectedActivity)></template>
+            </b-table>
         </b-container>
     </div>
 
@@ -31,7 +34,8 @@
                 isLoggedIn: true,
                 userName: '',
                 items: [],
-                fields: ['activityName', 'description', 'activityTypes']
+                fields: ['activityName', 'description', 'activityTypes'],
+                selectedActivity: []
             }
         },
         methods: {
@@ -70,6 +74,12 @@
             goToCreateActivity: function() {
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities/create');
+            },
+            goToActivity: function (items) {
+                this.selectedActivity = items;
+                const profileId = this.$route.params.id;
+                let activityId = this.selectedActivity.id;
+                this.$router.push('/profiles/' + profileId + '/activities/' + activityId);
             }
         },
         mounted() {
@@ -88,5 +98,7 @@
 </script>
 
 <style scoped>
-
+    .clickable {
+        cursor: pointer;
+    }
 </style>
