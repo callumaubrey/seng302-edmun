@@ -156,6 +156,7 @@
                     {key: 'middlename', sortable: true},
                     {key: 'nickname', sortable: true},
                     {key: 'primary_email', sortable: true},
+                    {key: 'activity_types', sortable: false},
                 ],
                 currentPage: 1,
                 count: 1,
