@@ -129,7 +129,7 @@
                     ></b-pagination>
                 </b-col>
                 <b-col>
-                    <b-form-select v-model="limit" v-on:change="getUsers()" :options="[2,4,6,8,10]"></b-form-select>
+                    <b-form-select v-model="limit" v-on:change="getUsers()" :options="[10,20]"></b-form-select>
                 </b-col>
             </b-row>
         </b-container>
@@ -159,7 +159,7 @@
                 ],
                 currentPage: 1,
                 count: 1,
-                limit: 2,
+                limit: 10,
                 data: null,
                 routeQuery: {},
                 offset: null,
@@ -224,17 +224,19 @@
 
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                if (this.searchBy == 'fullName' && this.activityTypesForm.selectedOptions != '') {
+                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
                     query = this.searchNames(query)
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    // this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
+                    this.routeQuery = this.activityTypesForm.selectedOptions.join(' ')
+                    this.routeQuery.method = this.activityTypesForm.method
                 }else if (this.searchQuery != ''){
                     query = this.searchNames(query)
                 }else {
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
+                    this.routeQuery = {activity: this.activityTypesForm.selectedOptions.join(' ')}
+                    this.routeQuery.method = this.activityTypesForm.method
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
@@ -300,19 +302,29 @@
                 }
             },
             searchUser: function () {
-                let query = 'http://localhost:9499/profiles/count?fullname=' + this.searchQuery;
-                if (this.searchBy == 'nickname') {
-                    this.routeQuery = {nickname: this.searchQuery};
-                    query = 'http://localhost:9499/profiles/count?nickname=' + this.searchQuery;
+                this.currentPage = 1
+                if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
+                let query = 'http://localhost:9499/profiles/count';
+                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
+                    query = this.searchNames(query)
+                    query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
+                    query += "&method=" + this.activityTypesForm.method;
+                    // this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
+                }else if (this.searchQuery != ''){
+                    query = this.searchNames(query)
+                }else {
+                    query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
+                    query += "&method=" + this.activityTypesForm.method;
+                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
                 }
                 const currentObj = this
                 this.count = 10
                 console.log(query);
-                // this.axios.get(query)
-                //     .then((res) => {
-                //         currentObj.count = res.data
-                //     })
-                //     .catch(err => console.log(err));
+                this.axios.get(query)
+                    .then((res) => {
+                        currentObj.count = res.data/2
+                    })
+                    .catch(err => console.log(err));
                 currentObj.getUsers()
 
             },
