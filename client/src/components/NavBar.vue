@@ -51,7 +51,7 @@
         },
         watch: {
             isLoggedIn: function (newVal, oldVal) {
-                console.log('IsLoggedIn prop changed' + newVal + ' ' + oldVal)
+                console.log('IsLoggedIn prop changed to ' + newVal + " from old value: " + oldVal);
             }
         },
         methods: {

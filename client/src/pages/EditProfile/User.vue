@@ -968,8 +968,7 @@
                         console.log("paramId " + currentObj.$route.params.id);
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)) {
                             console.log("not equal");
-                            currentObj.$route.push("/login/");
-                            currentObj.$route.go(0);
+                            currentObj.$router.push("/login");
                         }
                     })
                     .catch(function () {
