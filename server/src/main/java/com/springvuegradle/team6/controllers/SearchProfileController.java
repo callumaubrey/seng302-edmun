@@ -101,7 +101,8 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress());
+              profile.getEmail().getAddress(),
+              profile.getActivityTypes().toString());
       results.add(result);
     }
     JSONObject resultsObject = new JSONObject();
@@ -180,7 +181,8 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress());
+              profile.getEmail().getAddress(),
+              profile.getActivityTypes().toString());
       results.add(result);
     }
 
@@ -225,7 +227,8 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress());
+              profile.getEmail().getAddress(),
+              profile.getActivityTypes().toString());
       results.add(result);
     }
 
