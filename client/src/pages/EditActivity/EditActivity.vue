@@ -5,7 +5,7 @@
             <b-container fluid>
                 <b-row align-h="between">
                     <b-col>
-                        <b-button @click="goToActivity()" style="float: right;" variant="primary">View activity
+                        <b-button @click="goToActivity()" style="float: right;">View activity
                         </b-button>
                         <h3>Edit Your Activity: {{ form.name }}</h3>
                         <hr>
@@ -242,7 +242,27 @@
                     }
                 },
                 startTime: {},
-                endTime: {}
+                endTime: {
+                    timeValidate(val) {
+                        let startTime = this.durationForm.startTime;
+                        let startDate = new Date(this.durationForm.startDate);
+                        let endDate = new Date(this.durationForm.endDate);
+                        if (startDate == endDate) {
+                            if (val && startTime) {
+                                let splitStartTime = startTime.split(":");
+                                let splitEndTime = val.split(":");
+                                let startTimeObj = new Date();
+                                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                                let endTimeObj = new Date();
+                                endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+                                if (endTimeObj <= startTimeObj) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                }
             }
         },
         methods: {
@@ -346,19 +366,16 @@
             getISODates: function () {
                 let startDate = new Date(this.durationForm.startDate);
                 let endDate = new Date(this.durationForm.endDate);
-                console.log(startDate);
+
                 if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
-                    console.log(this.durationForm.startTime);
                     startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
                 }
 
                 if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
-                    console.log(this.durationForm.endTime);
                     endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
                 }
 
                 let startDateISO = startDate.toISOString().slice(0, -5);
-                console.log(startDateISO);
                 let endDateISO = endDate.toISOString().slice(0, -5);
 
                 var currentTime = new Date();
@@ -371,14 +388,13 @@
                 }
                 startDateISO += currentTimezone.toString() + "00";
                 endDateISO += currentTimezone.toString() + "00";
-                console.log(startDateISO);
+
                 if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
                     startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13, startDateISO.length);
                 }
                 if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
                     endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13, endDateISO.length);
                 }
-                alert(startDate + "\n" + startDateISO);
                 return [startDateISO, endDateISO];
             },
             convertISOtoDateTime: function (ISODate) {
