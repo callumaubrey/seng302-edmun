@@ -4,7 +4,8 @@ import ch.qos.logback.core.encoder.EchoEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.OSMLocationRepository;
+import com.springvuegradle.team6.models.location.NamedLocation;
+import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
@@ -45,12 +46,12 @@ import java.util.Optional;
 public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
-  private final OSMLocationRepository locationRepository;
+  private final NamedLocationRepository locationRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
-      OSMLocationRepository locationRepository) {
+      NamedLocationRepository locationRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.locationRepository = locationRepository;
@@ -146,8 +147,8 @@ public class ActivityController {
   }
 
   /**
-   * Helper function used by createActivity to check if the date/time provided for
-   * start and end date are valid
+   * Helper function used by createActivity to check if the date/time provided for start and end
+   * date are valid
    *
    * @param activity The activity that the user wants to create or update
    * @return null if there are no errors, otherwise return ResponseEntity with error message and
@@ -227,6 +228,18 @@ public class ActivityController {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
     }
     Activity activity = new Activity(request, profile.get());
+    if (activity.getLocation() != null) {
+      Optional<NamedLocation> optionalNamedLocation =
+          locationRepository.findByCountryAndStateAndCity(
+              activity.getLocation().getCountry(),
+              activity.getLocation().getState(),
+              activity.getLocation().getCity());
+      if (optionalNamedLocation.isPresent()) {
+        activity.setLocation(optionalNamedLocation.get());
+      } else {
+        locationRepository.save(activity.getLocation());
+      }
+    }
     ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(activity);
     if (checkActivityDateTimeResponse != null) {
       return checkActivityDateTimeResponse;

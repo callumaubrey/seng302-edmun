@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
@@ -36,7 +37,12 @@ public class Activity {
       this.startTime = request.startTime;
       this.endTime = request.endTime;
     }
-//    this.location = request.location;
+    if (request.location != null) {
+      NamedLocation location =
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
+      this.location = location;
+    }
   }
 
   @Id
@@ -62,7 +68,7 @@ public class Activity {
 
   private String endTime;
 
-  @OneToOne private OSMLocation location;
+  @ManyToOne private NamedLocation location;
 
   public String getActivityName() {
     return activityName;
@@ -112,14 +118,6 @@ public class Activity {
     this.endTime = endTime;
   }
 
-  public OSMLocation getLocation() {
-    return location;
-  }
-
-  public void setLocation(OSMLocation location) {
-    this.location = location;
-  }
-
   public Integer getId() {
     return id;
   }
@@ -134,5 +132,13 @@ public class Activity {
 
   public void setProfile(Profile profile) {
     this.profile = profile;
+  }
+
+  public NamedLocation getLocation() {
+    return location;
+  }
+
+  public void setLocation(NamedLocation location) {
+    this.location = location;
   }
 }

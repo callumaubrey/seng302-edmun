@@ -7,6 +7,7 @@ import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.util.*;
 
@@ -93,7 +94,7 @@ public class EditProfileRequest {
     @JsonProperty("additional_email")
     public List<String> additionalemail;
 
-
+    @Valid
     public LocationUpdateRequest location;
 
     /**
@@ -125,9 +126,14 @@ public class EditProfileRequest {
             profile.setActivityTypes(this.activityTypes);
 
         if(this.location != null) {
-            NamedLocation newLocation = this.location.getLocation();
-            locationRepository.save(newLocation);
-            profile.setLocation(newLocation);
+            Optional<NamedLocation> optionalNamedLocation = locationRepository.findByCountryAndStateAndCity(this.location.country, this.location.state, this.location.city);
+            if (optionalNamedLocation.isPresent()) {
+                profile.setLocation(optionalNamedLocation.get());
+            } else {
+                NamedLocation newLocation = new NamedLocation(this.location.country, this.location.state, this.location.city);
+                locationRepository.save(newLocation);
+                profile.setLocation(newLocation);
+            }
         }
     }
 }

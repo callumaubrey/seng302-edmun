@@ -30,7 +30,7 @@
                         <b-card style="margin: 1em" title="Email(s):">
                             <b-row>
                                 <b-col><b>Primary Email:</b></b-col>
-                                <b-col><p>{{userData.primary_email.address}}</p></b-col>
+                                <b-col><p>{{primaryEmail}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Additional Emails:</b></b-col>
@@ -80,13 +80,13 @@
                     <b-tab title="Location Info" >
                         <b-card style="margin: 1em;" title="Location Info:">
                             <b-row>
-                                City: {{userData.location.city}}
+<!--                                City: {{userData.location.city}}-->
                             </b-row>
                             <b-row>
-                                State: {{userData.location.state}}
+<!--                                State: {{userData.location.state}}-->
                             </b-row>
                             <b-row>
-                                Country: {{userData.location.country}}
+<!--                                Country: {{userData.location.country}}-->
                             </b-row>
                         </b-card>
                     </b-tab>
@@ -141,7 +141,8 @@
                 userRoles: [],
                 profileId: null,
                 location: null,
-                dob: ''
+                dob: '',
+                primaryEmail: ''
             }
         },
         methods: {
@@ -154,6 +155,7 @@
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
+                        currentObj.primaryEmail = response.date.primary_email.address;
                         currentObj.additionalEmails = response.data.additional_email;
                         currentObj.isLoggedIn = true;
                         currentObj.userRoles = response.data.roles;
@@ -166,7 +168,7 @@
                         }
                         if (isAdmin === false) {
                             currentObj.profileId = response.data.id.toString();
-                            currentObj.$router.push('/profile/' + currentObj.profileId)
+                            currentObj.$router.push('/profiles/' + currentObj.profileId)
                         }
 
                         currentObj.userName = response.data.firstname;
@@ -175,7 +177,7 @@
                     .catch(function (error) {
                         console.log(error.response.data);
                         if (currentObj.isLoggedIn) {
-                            currentObj.$router.push('/profile/' + currentObj.profileId);
+                            currentObj.$router.push('/profiles/' + currentObj.profileId);
                             currentObj.$router.go(0);
                         } else {
                             currentObj.$router.push('/');

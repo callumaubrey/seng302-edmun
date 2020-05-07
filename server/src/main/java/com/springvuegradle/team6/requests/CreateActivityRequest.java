@@ -4,16 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.ActivityType;
+import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.OSMElementID;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
 public class CreateActivityRequest {
-  @NotNull
-  @NotEmpty
+  @NotNull(message = "activity_name cannot be null")
+  @NotEmpty(message = "activity_name cannot be empty")
   @JsonProperty("activity_name")
   public String activityName;
 
@@ -22,11 +24,11 @@ public class CreateActivityRequest {
 
   @JsonProperty("activity_type")
   @Size(min = 1)
-  @NotNull
+  @NotNull(message = "activity_type cannot be null")
   public Set<ActivityType> activityTypes;
 
   @JsonProperty("continuous")
-  @NotNull
+  @NotNull(message = "continuous cannot be null")
   public boolean continuous;
 
   @JsonProperty("start_time")
@@ -35,7 +37,15 @@ public class CreateActivityRequest {
   @JsonProperty("end_time")
   public String endTime;
 
-  //    @JsonProperty("location")
-  //    public OSMElementID location;
+  @JsonProperty("location")
+  @Valid
+  public LocationUpdateRequest location;
 
+  public LocationUpdateRequest getLocation() {
+    return location;
+  }
+
+  public void setLocation(LocationUpdateRequest location) {
+    this.location = location;
+  }
 }

@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class ActivityControllerTest {
 
   @Autowired private ActivityRepository activityRepository;
@@ -232,8 +234,8 @@ public class ActivityControllerTest {
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                + "  \"activity_type\":[ \n"
-                + "  ]\n"
+            + "  \"activity_type\":[ \n"
+            + "  ]\n"
             + "  \"continuous\": true\n"
             + "}";
     mvc.perform(
@@ -247,16 +249,16 @@ public class ActivityControllerTest {
   @Test
   void createActivityWithActivityTypeIsNullReturnStatusBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"continuous\": true\n"
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isBadRequest());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

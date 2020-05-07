@@ -47,7 +47,7 @@ public class Profile {
 
     private Integer fitness;
 
-    @OneToOne
+    @ManyToOne
     private NamedLocation location;
 
     @ElementCollection(targetClass=ActivityType.class)

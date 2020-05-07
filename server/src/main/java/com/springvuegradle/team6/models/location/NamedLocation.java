@@ -14,9 +14,9 @@ public class NamedLocation {
     @JsonIgnore
     private long locationID = 0;
 
-    String country;
-    String state;
-    String city;
+    private String country;
+    private String state;
+    private String city;
 
     public NamedLocation() {}
 
@@ -24,6 +24,14 @@ public class NamedLocation {
         this.country = country;
         this.state = state;
         this.city = city;
+    }
+
+    public long getLocationID() {
+        return locationID;
+    }
+
+    public void setLocationID(long locationID) {
+        this.locationID = locationID;
     }
 
     public String getCountry() {
@@ -49,6 +57,8 @@ public class NamedLocation {
     public void setCity(String city) {
         this.city = city;
     }
+
+
 
     @Override
     public String toString() {

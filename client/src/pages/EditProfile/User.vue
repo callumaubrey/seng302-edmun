@@ -707,6 +707,7 @@
                     });
                 }
                 else {
+                    let userId = this.profileId;
                     this.axios.put("http://localhost:9499/profiles/" + userId + "/location", {
                     }).then(function (response) {
                         console.log(response)

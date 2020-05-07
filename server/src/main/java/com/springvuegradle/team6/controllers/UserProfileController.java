@@ -277,9 +277,14 @@ public class UserProfileController {
             }
 
             // Update location
-            NamedLocation newLocation = location.getLocation();
-            locationRepository.save(newLocation);
-            profile.setLocation(newLocation);
+            Optional<NamedLocation> optionalNamedLocation = locationRepository.findByCountryAndStateAndCity(location.country, location.state, location.city);
+            if (optionalNamedLocation.isPresent()) {
+                profile.setLocation(optionalNamedLocation.get());
+            } else {
+                NamedLocation newLocation = new NamedLocation(location.country, location.state, location.city);
+                locationRepository.save(newLocation);
+                profile.setLocation(newLocation);
+            }
 
             repository.save(profile);
 
