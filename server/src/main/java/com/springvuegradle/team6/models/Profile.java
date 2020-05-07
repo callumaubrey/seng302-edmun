@@ -4,6 +4,7 @@ package com.springvuegradle.team6.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
+import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.OSMLocation;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -47,7 +48,7 @@ public class Profile {
     private Integer fitness;
 
     @OneToOne
-    private OSMLocation location;
+    private NamedLocation location;
 
     @ElementCollection(targetClass=ActivityType.class)
     @Enumerated(EnumType.ORDINAL)
@@ -229,11 +230,11 @@ public class Profile {
         throw new RoleNotFoundException();
     }
 
-    public OSMLocation getLocation() {
+    public NamedLocation getLocation() {
         return location;
     }
 
-    public void setLocation(OSMLocation location) {
+    public void setLocation(NamedLocation location) {
         this.location = location;
     }
 

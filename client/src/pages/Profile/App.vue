@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -79,8 +79,16 @@
 
                     <b-tab title="Location Info" >
                         <b-card style="margin: 1em;" title="Location Info:">
+                            <b-row>
+                                City: {{userData.location.city}}
+                            </b-row>
+                            <b-row>
+                                State: {{userData.location.state}}
+                            </b-row>
+                            <b-row>
+                                Country: {{userData.location.country}}
+                            </b-row>
                         </b-card>
-
                     </b-tab>
                     <b-tab title="Activity Info" >
                         <b-card style="margin: 1em" title="Activity Info:">
@@ -130,7 +138,8 @@
                 additionalEmails: [],
                 isLoggedIn: false,
                 userName: "",
-                locations: [],
+                userRoles: [],
+                profileId: null,
                 location: null,
                 dob: ''
             }
@@ -146,16 +155,31 @@
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
                         currentObj.additionalEmails = response.data.additional_email;
-                        console.log(currentObj.additionalEmails.length);
                         currentObj.isLoggedIn = true;
-                        currentObj.userName = response.data.firstname;
-                        console.log(currentObj.activities)
+                        currentObj.userRoles = response.data.roles;
                         currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
+                        let isAdmin = false;
+                        for (let i = 0; i < currentObj.userRoles.length; i++) {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                                isAdmin = true;
+                            }
+                        }
+                        if (isAdmin === false) {
+                            currentObj.profileId = response.data.id.toString();
+                            currentObj.$router.push('/profile/' + currentObj.profileId)
+                        }
+
+                        currentObj.userName = response.data.firstname;
+                        currentObj.location = response.data.location
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
-                        currentObj.isLoggedIn = false;
-                        currentObj.$router.push('/login');
+                        if (currentObj.isLoggedIn) {
+                            currentObj.$router.push('/profile/' + currentObj.profileId);
+                            currentObj.$router.go(0);
+                        } else {
+                            currentObj.$router.push('/');
+                        }
                     });
             },
 
@@ -183,7 +207,8 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
+                        currentObj.isLoggedIn = true;
                     })
                     .catch(function () {
                     });
@@ -194,9 +219,10 @@
             }
         },
         mounted: function () {
+            this.getUserId();
             this.getUserSession();
             this.getLocationData();
-            this.getUserId();
+
         }
     };
 

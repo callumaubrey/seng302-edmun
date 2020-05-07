@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.location.Location;
+import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -22,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
+        "ADMIN_PASSWORD=test"})
 class UserProfileControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -403,5 +408,40 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void updateLocation() throws Exception{
+        MockHttpSession session = new MockHttpSession();
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String updateUrl = "/profiles/%d/location";
+        updateUrl = String.format(updateUrl, id);
+
+        NamedLocation location = new NamedLocation();
+        location.setCountry("New Zealand");
+        location.setState("Canterbury");
+        location.setCity("Christchurch");
+
+        mvc.perform(
+                put(updateUrl)
+                        .content(mapper.writeValueAsString(location))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteLocation() throws Exception{
+        MockHttpSession session = new MockHttpSession();
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String updateUrl = "/profiles/%d/location";
+        updateUrl = String.format(updateUrl, id);
+
+        mvc.perform(
+                delete(updateUrl)
+                        .session(session)
+        ).andExpect(status().isOk());
     }
 }

@@ -2,13 +2,9 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.OSMElementID;
-import com.springvuegradle.team6.models.location.OSMLocation;
-import com.springvuegradle.team6.models.location.OSMLocationRepository;
-import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.EditEmailsRequest;
-import com.springvuegradle.team6.requests.EditPasswordRequest;
-import com.springvuegradle.team6.requests.EditProfileRequest;
+import com.springvuegradle.team6.models.location.NamedLocation;
+import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +25,14 @@ public class UserProfileController {
     private final CountryRepository countryRepository;
     private final RoleRepository roleRepository;
     private final EmailRepository emailRepository;
-    private final OSMLocationRepository locationRepository;
+    private final NamedLocationRepository locationRepository;
 
     UserProfileController(
             ProfileRepository rep,
             CountryRepository countryRepository,
             EmailRepository emailRepository,
             RoleRepository roleRep,
-            OSMLocationRepository locationRepository) {
+            NamedLocationRepository locationRepository) {
         this.repository = rep;
         this.countryRepository = countryRepository;
         this.roleRepository = roleRep;
@@ -263,12 +259,13 @@ public class UserProfileController {
      * Put request to update user's location
      *
      * @param id       user id under query
-     * @param location location of type OSMElementID
+     * @param location location of type NamedLocation
      * @param session  Http session
      * @return ResponseEntity will return 200 success if user is authorised to update location, else return 404 response if user is not found
      */
     @PutMapping("/{id}/location")
-    public ResponseEntity<String> updateLocation(@PathVariable Integer id, @Valid @RequestBody OSMElementID location, HttpSession session) {
+    public ResponseEntity<String> updateLocation(@PathVariable Integer id, @Valid @RequestBody LocationUpdateRequest location, HttpSession session) {
+
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
             Profile profile = p.get();
@@ -280,10 +277,9 @@ public class UserProfileController {
             }
 
             // Update location
-            OSMLocation osmLocation = new OSMLocation(location);
-            locationRepository.save(osmLocation);
-            profile.setLocation(osmLocation);
-            profile.getLocation().updateLocationData();
+            NamedLocation newLocation = location.getLocation();
+            locationRepository.save(newLocation);
+            profile.setLocation(newLocation);
 
             repository.save(profile);
 

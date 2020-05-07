@@ -44,10 +44,11 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'userName'],
+        props: ['isLoggedIn'],
         data: function () {
             return {
-                name: ""
+                name: "",
+                userName: this.getUserName()
             }
         },
         watch: {
@@ -67,18 +68,40 @@
                         console.log(error.response.data);
                     });
             },
+            getUserId: async function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profileId = response.data;
+                    })
+                    .catch(function () {
+                    });
+            },
             goToEdit() {
-                const profileId = this.$route.params.id;
+                const profileId = this.profileId;
                 this.$router.push('/profiles/edit/' + profileId);
             },
             goToProfile() {
-                const profileId = this.$route.params.id;
+                const profileId = this.profileId;
                 this.$router.push('/profiles/' + profileId);
             },
             goToActivities() {
-                const profileId = this.$route.params.id;
+                const profileId = this.profileId;
                 this.$router.push('/profiles/' + profileId + '/activities');
+            },
+            getUserName() {
+                let currentObj = this;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        currentObj.userName = response.data.firstname;
+                    })
+                    .catch(function () {
+                    });
             }
+        },
+        mounted: function () {
+            this.getUserId();
         }
     };
     export default NavBar
