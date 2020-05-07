@@ -203,6 +203,8 @@ public class SearchProfileController {
   @RequestMapping(params = "nickname")
   public ResponseEntity getProfileByNickname(
       @RequestParam(name = "nickname") String nickname,
+      @RequestParam(name = "activity", required = false) String activityType,
+      @RequestParam(name = "method", required = false) String method,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
       HttpSession session) {
@@ -210,14 +212,24 @@ public class SearchProfileController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
+    if (nickname == null && activityType == null) {
+      return new ResponseEntity("Must specify some search parameters", HttpStatus.BAD_REQUEST);
+    }
     if (offset == null) {
       offset = -1;
     }
     if (limit == null) {
       limit = -1;
     }
+
+    String activityTypesWithSpaces;
+    if (activityType == null) {
+      activityTypesWithSpaces = null;
+    } else {
+      activityTypesWithSpaces = activityType.replaceAll("%20", " ");
+    }
     JSONObject resultsObject = new JSONObject();
-    List<Profile> profiles = profileRepository.searchNickname(nickname, limit, offset);
+    List<Profile> profiles = profileRepository.searchNickname(nickname, activityTypesWithSpaces, method, limit, offset);
     List<SearchProfileResponse> results = new ArrayList<>();
     for (Profile profile : profiles) {
       SearchProfileResponse result =
@@ -247,13 +259,23 @@ public class SearchProfileController {
   @GetMapping
   @RequestMapping(value = "/count", params = "nickname")
   public ResponseEntity getProfileByNickNameCount(
-      @RequestParam(name = "nickname") String nickname, HttpSession session) {
+      @RequestParam(name = "nickname") String nickname,
+      @RequestParam(name = "activity", required = false) String activityType,
+      @RequestParam(name = "method", required = false) String method, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    Integer count = profileRepository.searchNicknameCount(nickname);
 
+    String activityTypesWithSpaces;
+    if (activityType == null) {
+      activityTypesWithSpaces = null;
+    } else {
+      activityTypesWithSpaces = activityType.replaceAll("%20", " ");
+    }
+
+
+    Integer count = profileRepository.searchNicknameCount(nickname, activityTypesWithSpaces, method);
     return new ResponseEntity(count, HttpStatus.OK);
   }
 }
