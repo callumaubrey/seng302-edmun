@@ -79,15 +79,17 @@
 
                     <b-tab title="Location Info" >
                         <b-card style="margin: 1em;" title="Location Info:">
-                            <b-row>
-                                City: {{userData.location.city}}
-                            </b-row>
-                            <b-row>
-                                State: {{userData.location.state}}
-                            </b-row>
-                            <b-row>
-                                Country: {{userData.location.country}}
-                            </b-row>
+                            <b-col v-if="userData.location">
+                                <b-row>
+                                    City: {{userData.location.city}}
+                                </b-row>
+                                <b-row>
+                                    State: {{userData.location.state}}
+                                </b-row>
+                                <b-row>
+                                    Country: {{userData.location.country}}
+                                </b-row>
+                            </b-col>
                         </b-card>
                     </b-tab>
                     <b-tab title="Activity Info" >
