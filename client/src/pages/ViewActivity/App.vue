@@ -131,10 +131,10 @@
 
                 let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
-                alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
+                // alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
                 this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
                 .then(() => {
-                    this.$router.push('/profiles/' + profileId);
+                    this.$router.push('/profiles/' + profileId + '/activities/');
                 })
                 .catch(err => alert(err));
             },

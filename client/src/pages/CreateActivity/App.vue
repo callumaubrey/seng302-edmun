@@ -166,8 +166,8 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
-    import { validationMixin } from "vuelidate";
-    import { required } from 'vuelidate/lib/validators';
+    import {validationMixin} from "vuelidate";
+    import {required} from 'vuelidate/lib/validators';
 
     export default {
         mixins: [validationMixin],
@@ -179,7 +179,7 @@
                 isLoggedIn: true,
                 userName: '',
                 isContinuous: 1,
-                profile_id: null,
+                profileId: null,
                 activityTypes: [],
                 form: {
                     name: null,
@@ -208,7 +208,13 @@
                 },
                 description: {},
                 selectedActivityType: {
-                    required
+                    required,
+                    validateActivityType() {
+                        if (this.form.selectedActivityTypes.length < 1) {
+                            return false
+                        }
+                        return true
+                    }
                 },
                 date: {},
                 location: {}
@@ -232,35 +238,23 @@
                     }
                 },
                 startTime: {
-                    timeValidate(val) {
-                        let startDate = this.durationForm.startDate;
-                        if (val && startDate) {
-                            let nowDate = new Date().toISOString().split('T')[0];
-                            if (nowDate == startDate) {
-                                let splitStartTime = val.split(':');
-                                let now = new Date();
-                                let startTimeObj = new Date();
-                                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
-                                if (startTimeObj < now) {
-                                    return false;
-                                }
-                            }
-                        }
-                        return true;
-                    }
                 },
                 endTime: {
                     timeValidate(val) {
                         let startTime = this.durationForm.startTime;
-                        if (val && startTime) {
-                            let splitStartTime = startTime.split(":");
-                            let splitEndTime = val.split(":");
-                            let startTimeObj = new Date();
-                            startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
-                            let endTimeObj = new Date();
-                            endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
-                            if (endTimeObj <= startTimeObj) {
-                                return false;
+                        let startDate = new Date(this.durationForm.startDate);
+                        let endDate = new Date(this.durationForm.endDate);
+                        if (startDate == endDate) {
+                            if (val && startTime) {
+                                let splitStartTime = startTime.split(":");
+                                let splitEndTime = val.split(":");
+                                let startTimeObj = new Date();
+                                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                                let endTimeObj = new Date();
+                                endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+                                if (endTimeObj <= startTimeObj) {
+                                    return false;
+                                }
                             }
                         }
                         return true;
@@ -281,8 +275,8 @@
                     });
             },
             deleteActivityType: function (activityType) {
-                this.$delete(this.form.selectedActivityTypes, this.form.selectedActivityTypes.indexOf(activityType))
-                const selectedActivitysLength = this.form.selectedActivityTypes.length
+                this.$delete(this.form.selectedActivityTypes, this.form.selectedActivityTypes.indexOf(activityType));
+                const selectedActivitysLength = this.form.selectedActivityTypes.length;
                 if(selectedActivitysLength == 0){
                     this.$v.form.selectedActivityType.$model = null
                 }else {
@@ -309,11 +303,6 @@
                 }
             },
             onSubmit() {
-                let splitStartTime = this.durationForm.startTime.split(':');
-                let startTimeObj = new Date();
-                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
-                alert(startTimeObj.toISOString());
-
                 this.$v.form.$touch();
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
@@ -321,7 +310,7 @@
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {
+                    this.axios.post("http://localhost:9499/profiles/" + this.profileId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -330,17 +319,14 @@
                         .then(function () {
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-
-                            currentObj.form.name = currentObj.form.description = currentObj.form.location = null;
-                            currentObj.form.selectedActivityType = null;
-                            currentObj.form.selectedActivityTypes = [];
-                            currentObj.$v.form.$reset();
-
+                            alert(currentObj.form.name + " was successfully added to your list of activities");
+                            currentObj.$router.go(0);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage= "";
-                            currentObj.activityErrorMessage= "Failed to add " + currentObj.form.name + " to your activities, please try again later";
-                            console.log(error.response.data); });
+                            currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
+                            console.log(error);
+                        });
 
                 }else {
                     this.$v.durationForm.$touch();
@@ -348,7 +334,7 @@
                         return;
                     }
                     const isoDates = this.getDates();
-                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {
+                    this.axios.post("http://localhost:9499/profiles/" + this.profileId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
@@ -358,26 +344,28 @@
                             console.log(response);
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-
-                            currentObj.form.name = currentObj.form.description = null
-                            currentObj.form.selectedActivityType = 0;
-                            currentObj.form.selectedActivityTypes = []
-                            currentObj.durationForm.startDate = currentObj.durationForm.startTime = null;
-                            currentObj.durationForm.endDate = currentObj.durationForm.endTime = null;
-                            currentObj.$v.$reset();
+                            alert(currentObj.form.name + " was successfully added to your list of activities");
+                            currentObj.$router.go(0);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage= "";
-                            currentObj.activityErrorMessage= "Failed to add " + currentObj.form.name + " to your activities, please try again later";
-                            console.log(error)
+                            currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
                         });
 
                 }
 
             },
             getDates: function() {
-                const startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime);
-                const endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime);
+                let startDate = new Date(this.durationForm.startDate);
+                let endDate = new Date(this.durationForm.endDate);
+
+                if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
+                    startDate = new Date(this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
+                }
+
+                if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
+                    endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
+                }
                 let startDateISO = startDate.toISOString().slice(0,-5);
                 let endDateISO = endDate.toISOString().slice(0,-5);
 
@@ -391,7 +379,13 @@
                 }
                 startDateISO += currentTimezone.toString() + "00";
                 endDateISO += currentTimezone.toString() + "00";
-                // alert(startDate + "\n" + startDateISO)
+
+                if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
+                    startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13, startDateISO.length);
+                }
+                if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
+                    endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13, endDateISO.length);
+                }
                 return [startDateISO, endDateISO];
 
             },
@@ -400,7 +394,7 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profile_id = response.data;
+                        currentObj.profileId = response.data;
                     })
                     .catch(function () {
                     });
