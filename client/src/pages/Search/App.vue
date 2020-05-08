@@ -225,16 +225,16 @@
 
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
+                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
                     query = this.searchNames(query)
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery = {activity: this.activityTypesForm.selectedOptions.join(' ')}
                     this.routeQuery.method = this.activityTypesForm.method
-                    alert("hello")
                 }else if (this.searchQuery != ''){
                     query = this.searchNames(query)
-                }else {
+                }
+                else {
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery = {activity: this.activityTypesForm.selectedOptions.join(' ')}
@@ -242,7 +242,6 @@
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
-                alert(query)
                 this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
@@ -308,24 +307,27 @@
                 this.currentPage = 1
                 if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
                 let query = 'http://localhost:9499/profiles/count';
-                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
+                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
                     query = this.searchNames(query)
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     // this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
-                }else if (this.searchQuery != ''){
+                }else if (this.searchBy == 'email'){
+                    this.getUsers()
+                    return;
+                }else if(this.searchQuery != ''){
                     query = this.searchNames(query)
-                }else {
+                }
+                else {
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
                 }
                 const currentObj = this
                 this.count = 10
                 console.log(query);
                 this.axios.get(query)
                     .then((res) => {
-                        currentObj.count = res.data/2
+                        currentObj.count = res.data / 2
                     })
                     .catch(err => console.log(err));
                 currentObj.getUsers()
