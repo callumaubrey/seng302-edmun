@@ -700,15 +700,14 @@
                         data.country = location.address.country;
                     }
                     console.log(data);
-                    this.axios.put("http://localhost:9499/profiles/" + this.profile_id + "/location", data).then(function (response) {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/location", data).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
                         console.log(error)
                     });
                 }
                 else {
-                    let userId = this.profileId;
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", {
+                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/location", {
                     }).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
