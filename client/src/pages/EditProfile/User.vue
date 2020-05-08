@@ -312,11 +312,18 @@
                     <hr>
                     <b-row>
                         <b-col>
-                            <p>Select a location from the search drop down:</p>
+                            Current location: {{locationDisplayText}}
+                        </b-col>
+                    </b-row>
+                    <hr>
+                    <b-row>
+                        <b-col>
+                            <p>Search for a location</p>
                             <b-input autocomplete="off" class="form-control" type="text" v-model="locationText" @keyup.native="getLocationData"></b-input>
                             <div v-for="i in locations" :key="i.place_id">
                                 <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
                             </div>
+                            <b-form-text>Locations searched will only display if the search includes a city/county or is part of a city e.g suburb</b-form-text>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -403,7 +410,8 @@
                 activityUpdateMessage: "",
                 activityErrorMessage: "",
                 timeout: null,
-                locationText: ""
+                locationText: "",
+                locationDisplayText: ""
             }
         },
         validations: {
@@ -702,6 +710,7 @@
                     console.log(data);
                     this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/location", data).then(function (response) {
                         console.log(response)
+                        vueObj.locationDisplayText = vueObj.location.display_name;
                     }).catch(function (error) {
                         console.log(error)
                     });
@@ -723,28 +732,47 @@
                     if (locationText == ''){
                         return
                     }
+                    console.log(locationText)
 
                     let locationData = _this.axios.create({
-                        baseURL: 'https://nominatim.openstreetmap.org/search?city=' + locationText + '&format=json&limit=8&addressdetails=1',
+                        baseURL: 'https://nominatim.openstreetmap.org/search?q=' + locationText + '&format=json&limit=8&addressdetails=1',
                         timeout: 1000,
                         withCredentials: false,
                     });
                     let data = await (locationData.get());
                     console.log(data);
+                    console.log("here");
                     let fixedData = JSON.parse('{"data":[]}');
                     for (var i = 0; i < data.data.length; i++) {
                         var obj = data.data[i];
-                        if (!(obj.address.city && obj.address.country)) {
+                        if (!((obj.address.city || obj.address.county) && obj.address.country)) {
                             console.log("deleted json index " + i);
                         } else {
                             var state = null;
                             if (obj.address.state) {
                                 state = obj.address.state;
                             }
-                            var display_name = obj.address.city.toString() + ", " + state + ", " + obj.address.country.toString();
-                            fixedData['data'].push({"address":
-                                    {"city":obj.address.city.toString(),"state":state, "country":obj.address.country.toString()},
+                            let display_name;
+                            if (obj.address.city) {
+                                if (state) {
+                                    display_name = obj.address.city.toString() + ", " + state + ", " + obj.address.country.toString();
+                                } else {
+                                    display_name = obj.address.city.toString() + ", " + obj.address.country.toString();
+                                }
+                                fixedData['data'].push({"address":
+                                        {"city":obj.address.city.toString(),"state":state, "country":obj.address.country.toString()},
                                     "display_name":display_name, "place_id":obj.place_id});
+                            } else if (obj.address.county) {
+                                if (state) {
+                                    display_name = obj.address.county.toString() + ", " + state + ", " + obj.address.country.toString();
+                                } else {
+                                    display_name = obj.address.county.toString() + ", " + obj.address.country.toString();
+                                }
+                                fixedData['data'].push({"address":
+                                        {"city":obj.address.county.toString(),"state":state, "country":obj.address.country.toString()},
+                                    "display_name":display_name, "place_id":obj.place_id});
+                            }
+
                         }
                     }
                     console.log("fixedData " + JSON.stringify(fixedData));
@@ -898,6 +926,13 @@
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
                         vueObj.location = response.data.location;
+                        if (vueObj.location) {
+                            vueObj.locationDisplayText = vueObj.location.city + ", ";
+                            if (vueObj.location.state) {
+                                vueObj.locationDisplayText += vueObj.location.state + ", ";
+                            }
+                            vueObj.locationDisplayText += vueObj.location.country;
+                        }
                     })
                     .catch(function (e) {
                         console.log(e)
