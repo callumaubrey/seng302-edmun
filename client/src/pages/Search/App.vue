@@ -229,8 +229,9 @@
                     query = this.searchNames(query)
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery = this.activityTypesForm.selectedOptions.join(' ')
+                    this.routeQuery = {activity: this.activityTypesForm.selectedOptions.join(' ')}
                     this.routeQuery.method = this.activityTypesForm.method
+                    alert("hello")
                 }else if (this.searchQuery != ''){
                     query = this.searchNames(query)
                 }else {
@@ -241,6 +242,7 @@
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
+                alert(query)
                 this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
