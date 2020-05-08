@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.models;
 
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
@@ -81,9 +83,13 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
         }
       }
     }
+    org.apache.lucene.search.Sort sort = new Sort(
+            SortField.FIELD_SCORE,
+            new SortField("id", SortField.Type.STRING, true));
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
+    jpaQuery.setSort(sort);
 
     // In the case where we want to implement server side pagination
     if (limit != -1) {
@@ -183,9 +189,13 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
       luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
     }
 
+    org.apache.lucene.search.Sort sort = new Sort(
+            SortField.FIELD_SCORE,
+            new SortField("id", SortField.Type.STRING, true));
+
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
-
+    jpaQuery.setSort(sort);
     // In the case where we want to implement server side pagination
     if (limit != -1) {
       jpaQuery.setMaxResults(limit);
