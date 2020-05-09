@@ -382,7 +382,7 @@
                         continuous: false,
                         start_time: isoDates[0],
                         end_time: isoDates[1],
-                        location: this.form.location
+                        location: this.form.locationData
                     })
                         .then(function (response) {
                             console.log(response);
