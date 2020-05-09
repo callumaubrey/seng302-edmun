@@ -67,5 +67,28 @@ export default {
 
             }, 1000);
         },
+        selectLocation(location) {
+            this.form.location = location.display_name;
+            this.locations = [];
+            console.log(location);
+
+            if (location !== null) {
+                let data = {
+                    country: null,
+                    state: null,
+                    city: null
+                };
+                if (location.address.city) {
+                    data.city = location.address.city;
+                }
+                if (location.address.state) {
+                    data.state = location.address.state;
+                }
+                if (location.address.country) {
+                    data.country = location.address.country;
+                }
+                this.locationData = data;
+            }
+        },
     }
 };

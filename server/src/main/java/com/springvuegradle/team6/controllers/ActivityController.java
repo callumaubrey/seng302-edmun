@@ -283,6 +283,7 @@ public class ActivityController {
 
       request.editActivityFromRequest(edit, locationRepository);
 
+
       ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(edit);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;

@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Optional;
 import java.util.Set;
 
 public class EditActivityRequest {
@@ -19,7 +20,6 @@ public class EditActivityRequest {
   @JsonProperty("activity_name")
   public String activityName;
 
-  @NotNull
   @JsonProperty("description")
   public String description;
 
@@ -59,6 +59,19 @@ public class EditActivityRequest {
       NamedLocation location =
           new NamedLocation(this.location.country, this.location.state, this.location.city);
       activity.setLocation(location);
+
+      if (activity.getLocation() != null) {
+        Optional<NamedLocation> optionalNamedLocation =
+                locationRepository.findByCountryAndStateAndCity(
+                        activity.getLocation().getCountry(),
+                        activity.getLocation().getState(),
+                        activity.getLocation().getCity());
+        if (optionalNamedLocation.isPresent()) {
+          activity.setLocation(optionalNamedLocation.get());
+        } else {
+          locationRepository.save(activity.getLocation());
+        }
+      }
     }
   }
 }

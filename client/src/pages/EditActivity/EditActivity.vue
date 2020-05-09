@@ -147,24 +147,34 @@
 
                     <b-row>
                         <b-col>
-                            <b-form-group id="location-input-group" label="Location" label-for="location-input">
-                                <b-form-input
-                                        :state="validateState('location')"
-                                        id="location-input"
-                                        name="location-input"
-                                        placeholder="Your location.."
-                                        v-model="$v.form.location.$model"
-                                ></b-form-input>
+                            <b-form-group id="location-input-group" label="Location" label-for="location-input"
+                                          description="Please enter the location you want to search for and select from the dropdown"
+                                          invalid-feedback="The location of the activity must be chosen from the drop down">
+                                <b-form-input id="location-input"
+                                              name="location-input"
+                                              placeholder="Search for a city/county"
+                                              autocomplete="off"
+                                              class="form-control"
+                                              type="text"
+                                              v-model="$v.form.location.$model"
+                                              :state="validateState('location')"
+                                              v-on:keyup="getLocationData(form.location)"
+                                              v-on:input="locationData=null">
+                                </b-form-input>
+                                <div v-for="i in locations" :key="i.place_id">
+                                    <b-input class="clickable" v-on:click="selectLocation(i)" type="button"
+                                             :value=i.display_name></b-input>
+                                </div>
                             </b-form-group>
-                            <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
-                                {{activityUpdateMessage}}
-                            </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
-                                {{activityErrorMessage}}
-                            </b-form-invalid-feedback>
                         </b-col>
                     </b-row>
                     <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
+                    <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
+                        {{activityUpdateMessage}}
+                    </b-form-valid-feedback>
+                    <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
+                        {{activityErrorMessage}}
+                    </b-form-invalid-feedback>
                 </b-form>
             </b-container>
         </div>
@@ -175,9 +185,10 @@
     import NavBar from "@/components/NavBar.vue";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
+    import locationMixin from "../../mixins/locationMixin";
 
     export default {
-        mixins: [validationMixin],
+        mixins: [validationMixin, locationMixin],
         components: {
             NavBar
         },
@@ -205,7 +216,8 @@
                     endDate: null,
                     startTime: null,
                     endTime: null
-                }
+                },
+                locationData: null
             }
         },
         validations: {
@@ -224,7 +236,20 @@
                     }
                 },
                 date: {},
-                location: {}
+                location: {
+                    locationValidate() {
+                        if (this.locations.length == 0 || this.locations == null) {
+                            if (this.locationData != null && (this.form.location != null || this.form.location != "")) {
+                                return true;
+                            } else if (this.locationData == null && (this.form.location == null || this.form.location == "")) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                        return false;
+                    }
+                }
             },
             durationForm: {
                 startDate: {
@@ -282,9 +307,18 @@
                         } else {
                             currentObj.isContinuous = '0';
                         }
+                        currentObj.locationData = response.data.location;
+                        if (currentObj.locationData) {
+                            currentObj.form.location = currentObj.locationData.city + ", ";
+                            if (response.data.location.state) {
+                                currentObj.form.location += currentObj.locationData.state + ", ";
+                            }
+                            currentObj.form.location += currentObj.locationData.country;
+
+                        }
                     })
                     .catch(function (error) {
-                        console.log(error.response.data);
+                        console.log(error.response);
                     });
             },
             validateState(name) {
@@ -321,7 +355,7 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.form.location
+                        location: this.locationData
                     })
                         .then(function (response) {
                             console.log(response);
