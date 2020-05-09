@@ -31,7 +31,9 @@
                                         v-model="$v.durationForm.startDate.$model"
                                         aria-describedby="start-date-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="start-date-feedback">This is a required field and cannot be in the past.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="start-date-feedback">This is a required field and cannot be
+                                    in the past.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -43,7 +45,9 @@
                                         v-model="$v.durationForm.endDate.$model"
                                         aria-describedby="end-date-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="end-date-feedback">This is a required field and cannot be before start date.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="end-date-feedback">This is a required field and cannot be
+                                    before start date.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -58,7 +62,8 @@
                                         v-model="$v.durationForm.startTime.$model"
                                         aria-describedby="start-time-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="start-time-feedback">Start time cannot be in the past.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="start-time-feedback">Start time cannot be in the past.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                         <b-col>
@@ -79,7 +84,9 @@
                                 Activity types:
                             </span>
                             <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
-                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes" :key="activityType" v-on:click="deleteActivityType(activityType)" class="clickable">
+                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes"
+                                                   :key="activityType" v-on:click="deleteActivityType(activityType)"
+                                                   class="clickable">
                                     {{ activityType }}
                                 </b-list-group-item>
                             </b-list-group>
@@ -93,7 +100,8 @@
                                         aria-describedby="activity-type-feedback"
                                         v-on:change="addActivityType()"
                                 ></b-form-select>
-                                <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                             <hr>
                         </b-col>
@@ -109,20 +117,22 @@
                                         :state="validateState('name')"
                                         aria-describedby="name-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="name-feedback">This is a required field.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="name-feedback">This is a required field.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
 
                     <b-row>
                         <b-col>
-                            <b-form-group id="description-input-group" label="Description" label-for="description-input">
+                            <b-form-group id="description-input-group" label="Description"
+                                          label-for="description-input">
                                 <b-form-textarea
                                         id="description-input"
                                         name="description-input"
                                         v-model="$v.form.description.$model"
                                         :state="validateState('description')"
-                                        placeholder="How did it go?"
+                                        placeholder="What is the activity about?"
                                 ></b-form-textarea>
                             </b-form-group>
                         </b-col>
@@ -130,14 +140,24 @@
 
                     <b-row>
                         <b-col>
-                            <b-form-group id="location-input-group" label="Location" label-for="location-input">
-                                <b-form-input
-                                        id="location-input"
-                                        name="location-input"
-                                        v-model="$v.form.location.$model"
-                                        :state="validateState('location')"
-                                        placeholder="Your location.."
-                                ></b-form-input>
+                            <b-form-group id="location-input-group" label="Location" label-for="location-input"
+                                          description="Please enter the location you want to search for and select from the dropdown"
+                                            invalid-feedback="The location of the activity must be chosen from the drop down">
+                                <b-form-input id="location-input"
+                                              name="location-input"
+                                              placeholder="Search for a city/county"
+                                              autocomplete="off"
+                                              class="form-control"
+                                              type="text"
+                                              v-model="$v.form.location.$model"
+                                              :state="validateState('location')"
+                                              v-on:keyup="getLocationData(form.location)"
+                                              v-on:input="locationData=null">
+                                </b-form-input>
+                                <div v-for="i in locations" :key="i.place_id">
+                                    <b-input class="clickable" v-on:click="selectLocation(i)" type="button"
+                                             :value=i.display_name></b-input>
+                                </div>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -168,9 +188,10 @@
     import NavBar from "@/components/NavBar.vue";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
+    import locationMixin from "../../mixins/locationMixin";
 
     export default {
-        mixins: [validationMixin],
+        mixins: [validationMixin, locationMixin],
         components: {
             NavBar
         },
@@ -197,8 +218,8 @@
                     endTime: null
                 },
                 activityUpdateMessage: "",
-                activityErrorMessage: ""
-
+                activityErrorMessage: "",
+                locationData: null
             }
         },
         validations: {
@@ -217,7 +238,20 @@
                     }
                 },
                 date: {},
-                location: {}
+                location: {
+                    locationValidate() {
+                        if (this.locations.length == 0 || this.locations == null) {
+                            if (this.locationData != null && (this.form.location != null || this.form.location != "")) {
+                                return true;
+                            } else if (this.locationData == null && (this.form.location == null || this.form.location == "")) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                        return false;
+                    }
+                }
             },
             durationForm: {
                 startDate: {
@@ -228,7 +262,7 @@
                 },
                 endDate: {
                     required,
-                    dateValidate (val) {
+                    dateValidate(val) {
                         let startDate = new Date(this.durationForm.startDate);
                         let endDate = new Date(val);
                         if (endDate < startDate) {
@@ -237,8 +271,7 @@
                         return true;
                     }
                 },
-                startTime: {
-                },
+                startTime: {},
                 endTime: {
                     timeValidate(val) {
                         let startTime = this.durationForm.startTime;
@@ -266,7 +299,7 @@
             getActivities: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/activity-types' )
+                this.axios.get('http://localhost:9499/profiles/activity-types')
                     .then(function (response) {
                         currentObj.activityTypes = response.data;
                     })
@@ -277,19 +310,19 @@
             deleteActivityType: function (activityType) {
                 this.$delete(this.form.selectedActivityTypes, this.form.selectedActivityTypes.indexOf(activityType));
                 const selectedActivitysLength = this.form.selectedActivityTypes.length;
-                if(selectedActivitysLength == 0){
+                if (selectedActivitysLength == 0) {
                     this.$v.form.selectedActivityType.$model = null
-                }else {
-                    this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivitysLength -1]
+                } else {
+                    this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivitysLength - 1]
                 }
 
             },
             validateState(name) {
-                const { $dirty, $error } = this.$v.form[name];
+                const {$dirty, $error} = this.$v.form[name];
                 return $dirty ? !$error : null;
             },
             validateDurationState(name) {
-                const { $dirty, $error } = this.$v.durationForm[name];
+                const {$dirty, $error} = this.$v.durationForm[name];
                 return $dirty ? !$error : null;
             },
             addActivityType() {
@@ -300,6 +333,29 @@
                 if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
                     this.form.selectedActivityTypes.push(this.form.selectedActivityType);
 
+                }
+            },
+            selectLocation(location) {
+                this.form.location = location.display_name;
+                this.locations = [];
+                console.log(location);
+
+                if (location !== null) {
+                    let data = {
+                        country: null,
+                        state: null,
+                        city: null
+                    };
+                    if (location.address.city) {
+                        data.city = location.address.city;
+                    }
+                    if (location.address.state) {
+                        data.state = location.address.state;
+                    }
+                    if (location.address.country) {
+                        data.country = location.address.country;
+                    }
+                    this.locationData = data;
                 }
             },
             onSubmit() {
@@ -315,6 +371,7 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
+                        location: this.locationData
                     })
                         .then(function () {
                             currentObj.activityErrorMessage = "";
@@ -323,12 +380,12 @@
                             currentObj.$router.go(0);
                         })
                         .catch(function (error) {
-                            currentObj.activityUpdateMessage= "";
+                            currentObj.activityUpdateMessage = "";
                             currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
                             console.log(error);
                         });
 
-                }else {
+                } else {
                     this.$v.durationForm.$touch();
                     if (this.$v.durationForm.$anyError) {
                         return;
@@ -348,14 +405,14 @@
                             currentObj.$router.go(0);
                         })
                         .catch(function (error) {
-                            currentObj.activityUpdateMessage= "";
+                            currentObj.activityUpdateMessage = "";
                             currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
                         });
 
                 }
 
             },
-            getDates: function() {
+            getDates: function () {
                 let startDate = new Date(this.durationForm.startDate);
                 let endDate = new Date(this.durationForm.endDate);
 
@@ -366,13 +423,13 @@
                 if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
                     endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
                 }
-                let startDateISO = startDate.toISOString().slice(0,-5);
-                let endDateISO = endDate.toISOString().slice(0,-5);
+                let startDateISO = startDate.toISOString().slice(0, -5);
+                let endDateISO = endDate.toISOString().slice(0, -5);
 
                 var currentTime = new Date();
                 const offset = (currentTime.getTimezoneOffset());
 
-                const currentTimezone = (offset/60) * -1;
+                const currentTimezone = (offset / 60) * -1;
                 if (currentTimezone !== 0) {
                     startDateISO += currentTimezone > 0 ? '+' : '';
                     endDateISO += currentTimezone > 0 ? '+' : '';
@@ -426,12 +483,14 @@
     [v-cloak] {
         display: none;
     }
+
     .container {
         background-color: #f2f2f2;
         padding: 20px 20px 20px 20px;
         border: 1px solid lightgrey;
         border-radius: 3px;
     }
+
     .clickable {
         cursor: pointer;
     }
