@@ -35,7 +35,7 @@
                     </b-row>
                     <b-row v-if="location!=null">
                         <b-col><b>Location:</b></b-col>
-                        <b-col><p>{{location}}</p></b-col>
+                        <b-col><p>{{locationString}}</p></b-col>
                     </b-row>
                     <b-row>
                         <b-col><b>Description:</b></b-col>
@@ -81,7 +81,8 @@
                 startTime: "",
                 endTime: "",
                 location: null,
-                activityOwner: null
+                activityOwner: null,
+                locationString: "",
             }
         },
         mounted() {
@@ -158,6 +159,13 @@
                         vueObj.startTime = res.data.startTime;
                         vueObj.endTime = res.data.endTime;
                         vueObj.location = res.data.location;
+                        if (vueObj.location != null) {
+                            vueObj.locationString = vueObj.location.city + ", ";
+                            if (vueObj.location.state) {
+                                vueObj.locationString += vueObj.location.state + ", ";
+                            }
+                            vueObj.locationString += vueObj.location.country;
+                        }
                         if (vueObj.activityOwner.id != profileId) {
                             vueObj.$router.push('/profiles/' + profileId);
                         }
