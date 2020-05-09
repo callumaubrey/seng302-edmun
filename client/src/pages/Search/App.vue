@@ -327,10 +327,12 @@
                 console.log(query);
                 this.axios.get(query)
                     .then((res) => {
-                        currentObj.count = res.data / 2
+                        currentObj.count = res.data
+                        currentObj.getUsers()
                     })
                     .catch(err => console.log(err));
-                currentObj.getUsers()
+                // const currentObj = this;
+                // currentObj.getUsers()
 
             },
             getActivities: function () {
