@@ -219,7 +219,6 @@
             },
             getUsers: function () {
                 if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
-                //This funtion seem to take at leaat 10 seconds to execute, when using database
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
 
@@ -331,8 +330,6 @@
                         currentObj.getUsers()
                     })
                     .catch(err => console.log(err));
-                // const currentObj = this;
-                // currentObj.getUsers()
 
             },
             getActivities: function () {
