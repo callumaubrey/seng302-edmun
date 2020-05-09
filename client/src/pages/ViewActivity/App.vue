@@ -4,7 +4,7 @@
         <div class="container">
             <div>
                 <b-row>
-                    <b-img center v-bind="mainProps" rounded= "circle" width ="150px" height="150px" src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg" alt="Center image"></b-img>
+                    <b-img center rounded= "circle" width ="150px" height="150px" src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg" alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -46,7 +46,7 @@
                     <b-row>
                         <b-col><b>Creator:</b></b-col>
                         <b-col>
-                            <p>{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
+                            <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
                         </b-col>
                     </b-row>
                     <b-row>
