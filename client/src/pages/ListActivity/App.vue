@@ -4,11 +4,11 @@
         <b-container>
             <b-row class="my-1">
                 <b-col sm="11">
-                    <h3>My Activities</h3>
+                    <h3>{{profileName}}'s Activities</h3>
                     <b-form-text>Click on an activity to view more information on the activity</b-form-text>
                 </b-col>
                 <b-col sm="1">
-                    <b-button align="right" @click="goToCreateActivity"> Create</b-button>
+                    <b-button v-if="profileId === loggedinId" align="right" @click="goToCreateActivity"> Create</b-button>
                 </b-col>
             </b-row>
             <b-table hover :items="items" :fields="fields" class="clickable" @row-clicked="goToActivity">
@@ -32,6 +32,8 @@
             return {
                 profileId: null,
                 isLoggedIn: true,
+                loggedinId: null,
+                profileName: '',
                 userName: '',
                 items: [],
                 fields: ['activityName', 'description', 'activityTypes'],
@@ -39,27 +41,39 @@
             }
         },
         methods: {
-            getUserIdAndActivities: function () {
+            getLoggedInId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
-                        currentObj.profileId = response.data;
+                        currentObj.loggedinId = response.data;
+                    })
+                    .catch (function (err) {
+                        alert(err);
+                    });
+            },
+            getProfileIdAndName: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/' + currentObj.$route.params.id)
+                    .then(function (response) {
+                        currentObj.profileId = response.data.id;
+                        currentObj.profileName = response.data.firstname;
                     })
                     .catch(function (err) {
                         alert(err);
                     });
             },
-            getName: function () {
-                let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
-                    .then(function (response) {
-                        currentObj.userName = response.data;
-                    })
-                    .catch(function () {
-                    });
-            },
+            // getName: function () {
+            //     let currentObj = this;
+            //     this.axios.defaults.withCredentials = true;
+            //     this.axios.get('http://localhost:9499/profiles/firstname')
+            //         .then(function (response) {
+            //             currentObj.userName = response.data;
+            //         })
+            //         .catch(function () {
+            //         });
+            // },
             getActivities: function (id) {
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
@@ -72,8 +86,10 @@
                     .catch(err => console.log(err))
             },
             goToCreateActivity: function() {
-                const profileId = this.$route.params.id;
-                this.$router.push('/profiles/' + profileId + '/activities/create');
+                // double check, if user somehow clicks create button when hidden.
+                if (this.profileId === this.loggedinId) {
+                    this.$router.push('/profiles/' + this.profileId + '/activities/create');
+                }
             },
             goToActivity: function (items) {
                 this.selectedActivity = items;
@@ -82,9 +98,11 @@
                 this.$router.push('/profiles/' + profileId + '/activities/' + activityId);
             }
         },
+        beforeMount() {
+            this.getProfileIdAndName();
+            this.getLoggedInId();
+        },
         mounted() {
-            this.getUserIdAndActivities();
-            this.getName();
         },
         watch: {
             profileId: function (val) {

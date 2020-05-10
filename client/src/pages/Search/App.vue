@@ -137,7 +137,7 @@
                             v-model="currentPage"
                             :total-rows="count"
                             :per-page="limit"
-                            @input="getUsers()"
+                            @input="calibratePagination()"
                     ></b-pagination>
                 </b-col>
                 <b-col>
@@ -255,6 +255,7 @@
                     this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
                     this.routeQuery.method = this.activityTypesForm.method;
                 }
+                this.routeQuery.page = this.currentPage;
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
                 this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
@@ -294,13 +295,19 @@
                 }
                 return false;
             },
+            calibratePagination: function () {
+                this.offset = (this.currentPage - 1) * this.limit;
+                this.routeQuery.offset = this.offset;
+                this.routeQuery.limit = this.limit;
+                this.routeQuery.page = this.currentPage;
+                console.log(this.routeQuery);
+                this.updateUrl();
+            },
             searchUser: function () {
+                this.routeQuery = {}
                 this.tableIsLoading = true;
-                this.currentPage = 1;
-                if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length == 0) {
-                    this.tableIsLoading = false;
-                    return;
-                }
+                // this.currentPage = 1;
+                if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length == 0) return;
                 let query = 'http://localhost:9499/profiles/count';
                 if (this.searchBy != 'email' && this.searchQuery.trim() != "" && this.activityTypesForm.selectedOptions.length != 0) {
                     query = this.searchNames(query);
@@ -317,7 +324,7 @@
                     query += "&method=" + this.activityTypesForm.method;
                 }
                 const currentObj = this;
-                this.count = 10;
+                // this.count = 10;
                 console.log(query);
                 this.axios.get(query)
                     .then((res) => {
@@ -372,10 +379,13 @@
                 if (this.$route.query.offset) {
                     this.offset = this.$route.query.offset;
                     this.limit = this.$route.query.limit;
-                    this.currentPage = (this.offset / this.limit) - 1;
+                    this.currentPage = this.$route.query.page;
+                    console.log(this.currentPage);
                     this.searchUser();
                 } else if (fromNavBar) {
                     this.searchUser();
+                } else {
+                    this.currentPage = 1;
                 }
             },
             isSearchButtonDisabled: function () {
@@ -387,8 +397,6 @@
                 }
                 return false;
             }
-
-
         },
         watch: {
             $route: function () {
