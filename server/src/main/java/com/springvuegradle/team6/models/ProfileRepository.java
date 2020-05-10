@@ -8,13 +8,13 @@ import java.util.Optional;
 @RepositoryRestResource
 public interface ProfileRepository
     extends JpaRepository<Profile, Integer>, CustomizedProfileRepository {
-  Profile findByEmail(Email email);
+    Profile findById(int id);
 
-  Profile findById(int id);
+    Profile findByEmailsContains(Email email);
 
-  boolean existsByEmail(Email email);
+    boolean existsByEmailsContaining(Email email);
 
-  Integer removeByEmail(Email email);
+    Integer removeById(int id);
 
-  Optional<Profile> findByAdditionalemail_AddressOrEmail_Address(String address1, String address2);
+    Optional<Profile> findByAdditionalemail_AddressOrEmail_Address(String address1, String address2);
 }

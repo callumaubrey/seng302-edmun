@@ -13,10 +13,7 @@ import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Indexed
 @Entity
@@ -63,12 +60,8 @@ public class Profile {
           analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String nickname;
 
-  @OneToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "email_id", referencedColumnName = "id")
-  private Email email;
-
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-  private Set<Email> additionalemail;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<Email> emails;
 
   private String password;
 
@@ -142,10 +135,24 @@ public class Profile {
     return this.nickname;
   }
 
-  @JsonProperty("primary_email")
-  public Email getEmail() {
-    return this.email;
-  }
+    @JsonProperty("primary_email")
+    public Email getPrimaryEmail() {
+        for(Email email: emails) {
+            if(email.isPrimary()) return email;
+        }
+
+        // If no primary email exists set first email to be primary
+        if(!emails.isEmpty()) {
+            Email newPrimary = emails.iterator().next();
+            newPrimary.setPrimary(true);
+            System.getLogger("SystemEvents").log(System.Logger.Level.INFO, String.format("User %d has no primary email so %s was set as primary", getId(), newPrimary.getAddress()));
+
+            return newPrimary;
+        } else {
+            System.getLogger("SystemEvents").log(System.Logger.Level.WARNING, String.format("User %d contains no emails", getId()));
+            return new Email("null");
+        }
+    }
 
   public String getPassword() {
     return this.password;
@@ -172,10 +179,12 @@ public class Profile {
     return roles;
   }
 
-  @JsonProperty("additional_email")
-  public Set<Email> getAdditionalemail() {
-    return this.additionalemail;
-  }
+    @JsonProperty("additional_email")
+    public Set<Email> getEmails() {
+        Set<Email> additionalEmails = new HashSet<>(this.emails);
+        additionalEmails.removeIf(Email::isPrimary);
+        return additionalEmails;
+    }
 
   @JsonProperty("activities")
   public Set<ActivityType> getActivityTypes() {
@@ -199,15 +208,18 @@ public class Profile {
     return fitness;
   }
 
-  @JsonProperty("primary_email")
-  public void setEmail(Email email) {
-    this.email = email;
-  }
+    @JsonProperty("primary_email")
+    public void setPrimaryEmail(Email email) {
+        if(emails == null) emails = new HashSet<>();
+        this.emails.add(email);
+    }
 
-  @JsonProperty("additional_email")
-  public void setAdditionalemail(Set<Email> emails) {
-    this.additionalemail = emails;
-  }
+    @JsonProperty("additional_email")
+    public void setEmails(Set<Email> emails) {
+        if(emails == null) emails = new HashSet<>();
+        clearNonPrimaryEmails();
+        this.emails.addAll(emails);
+    }
 
   public void setFirstname(String firstname) {
     this.firstname = firstname;
@@ -311,13 +323,13 @@ public class Profile {
                 ", middlename='" + middlename + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", nickname='" + nickname + '\'' +
-                ", email='" + email + '\'' +
+                ", email='" +  getPrimaryEmail() + '\'' +
                 ", password='" + password + '\'' +
                 ", bio='" + bio + '\'' +
                 ", dob='" + dob + '\'' +
                 ", gender='" + gender + '\'' +
                 ", fitness=" + fitness + '\'' +
-                ", additionalemail='" + additionalemail + '\'' +
+                ", additionalemail='" + getEmails() + '\'' +
                 ", passports='" + passports + '\'' +
                 '}';
     }
@@ -328,5 +340,12 @@ public class Profile {
 
     public void setActivities(List<Activity> activities) {
         this.activities = activities;
+    }
+
+    /**
+     * Clears all emails except for the primary email in emails
+     */
+    private void clearNonPrimaryEmails() {
+        emails.removeIf(email -> !email.isPrimary());
     }
 }

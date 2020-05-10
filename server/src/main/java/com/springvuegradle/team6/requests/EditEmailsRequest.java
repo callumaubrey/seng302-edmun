@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,14 +50,14 @@ public class EditEmailsRequest {
 
         // Check if primary email is being used by another user
         if (emailRepository.findByAddress(primaryEmail).isPresent()
-                && !(profile.getEmail().getAddress().equals(primaryEmail))
-                && !(profile.getAdditionalemail().contains(new Email(primaryEmail)))) {
+                && !(profile.getPrimaryEmail().getAddress().equals(primaryEmail))
+                && !(profile.getEmails().contains(new Email(primaryEmail)))) {
             return new ResponseEntity<>(primaryEmail + " is already being used", HttpStatus.BAD_REQUEST);
         }
         Email newPrimary = null;
         if (additionalEmail != null) {
-            if (profile.getAdditionalemail().contains(new Email(primaryEmail))) {
-                for (Email email : profile.getAdditionalemail()) {
+            if (profile.getEmails().contains(new Email(primaryEmail))) {
+                for (Email email : profile.getEmails()) {
                     if (email.equals(new Email(primaryEmail))) {
                         newPrimary = email;
                         break;
@@ -77,7 +76,7 @@ public class EditEmailsRequest {
             }
 
             // Find out which emails the user is associated with already from the emails requested
-            for (Iterator<Email> i = profile.getAdditionalemail().iterator(); i.hasNext(); ) {
+            for (Iterator<Email> i = profile.getEmails().iterator(); i.hasNext(); ) {
                 Email email = i.next();
                 if (!(newEmails.contains(email))) {
                     i.remove();
@@ -86,28 +85,28 @@ public class EditEmailsRequest {
 
             // Add the ones that are requested but not associated with the user
             for (Email email : newEmails) {
-                if (!(profile.getAdditionalemail().contains(email))) {
+                if (!(profile.getEmails().contains(email))) {
                     // Check if the email is being used by another user
                     if (emailRepository.findByAddress(email.getAddress()).isPresent()
-                            && !(profile.getEmail().equals(email))) {
+                            && !(profile.getPrimaryEmail().equals(email))) {
                         return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
                     } else {
-                        if (profile.getEmail().equals(email)) {
-                            profile.getAdditionalemail().add(profile.getEmail());
+                        if (profile.getPrimaryEmail().equals(email)) {
+                            profile.getEmails().add(profile.getPrimaryEmail());
                             flag = true;
                         } else {
-                            profile.getAdditionalemail().add(email);
+                            profile.getEmails().add(email);
                         }
                     }
                 }
             }
         } else {
-            profile.getAdditionalemail().clear();
+            profile.getEmails().clear();
         }
         if (flag) {
-            profile.setEmail(newPrimary);
+            profile.setPrimaryEmail(newPrimary);
         } else {
-            profile.getEmail().setAddress(primaryEmail);
+            profile.getPrimaryEmail().setAddress(primaryEmail);
         }
         return null;
     }
