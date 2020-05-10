@@ -72,7 +72,8 @@
                 searchQuery: "",
                 searchOptions: [
                     { value: 1, text: 'Users' }
-                ]
+                ],
+                profileId: "",
             }
         },
         watch: {
@@ -103,18 +104,15 @@
                     });
             },
             goToEdit() {
-                const profileId = this.loggedInId;
-                this.$router.push('/profiles/edit/' + profileId);
-                this.$router.go('/profiles/edit/' + profileId);
+                this.$router.push('/profiles/edit/' + this.profileId);
+                this.$router.go('/profiles/edit/' + this.profileId);
             },
             goToProfile() {
-                const profileId = this.loggedInId;
-                this.$router.push('/profiles/' + profileId);
-                this.$router.go(0);
+                this.$router.push('/profiles/' + this.profileId);
+                // this.$router.go(0);
             },
             goToActivities() {
-                const profileId = this.profileId;
-                this.$router.push('/profiles/' + profileId + '/activities');
+                this.$router.push('/profiles/' + this.profileId + '/activities');
             },
             getUserName() {
                 let currentObj = this;
