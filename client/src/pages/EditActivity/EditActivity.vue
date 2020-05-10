@@ -265,9 +265,9 @@
                 endTime: {
                     timeValidate(val) {
                         let startTime = this.durationForm.startTime;
-                        let startDate = new Date(this.durationForm.startDate);
-                        let endDate = new Date(this.durationForm.endDate);
-                        if (startDate == endDate) {
+                        //let startDate = new Date(this.durationForm.startDate);
+                        //let endDate = new Date(this.durationForm.endDate);
+                        if (this.durationForm.startDate == this.durationForm.endDate) {
                             if (val && startTime) {
                                 let splitStartTime = startTime.split(":");
                                 let splitEndTime = val.split(":");

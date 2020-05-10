@@ -81,7 +81,7 @@
                     <b-row>
                         <b-col>
                             <span v-if="this.form.selectedActivityTypes.length > 0">
-                                Activity Tsypes:
+                                Activity Types:
                                 <b-form-text>Click on the activity type to remove</b-form-text>
                             </span>
                             <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
@@ -276,9 +276,9 @@
                 endTime: {
                     timeValidate(val) {
                         let startTime = this.durationForm.startTime;
-                        let startDate = new Date(this.durationForm.startDate);
-                        let endDate = new Date(this.durationForm.endDate);
-                        if (startDate == endDate) {
+                        //let startDate = new Date(this.durationForm.startDate);
+                        //let endDate = new Date(this.durationForm.endDate);
+                        if (this.durationForm.startDate == this.durationForm.endDate) {
                             if (val && startTime) {
                                 let splitStartTime = startTime.split(":");
                                 let splitEndTime = val.split(":");
@@ -409,9 +409,7 @@
                             currentObj.activityUpdateMessage = "";
                             currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data + ". Please try again";
                         });
-
                 }
-
             },
             getDates: function () {
                 let startDate = new Date(this.durationForm.startDate);

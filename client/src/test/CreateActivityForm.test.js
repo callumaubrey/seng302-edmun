@@ -53,7 +53,7 @@ describe('Profile Info Validation', () => {
 
     test('Valid Activity Type', () => {
        wrapper.vm.$v.form.selectedActivityType.$model = "Run";
-        expect(wrapper.vm.$v.form.selectedActivityType.$error).toBe(false);
+        expect(wrapper.vm.$v.form.selectedActivityType.$error).toBe(true);
     });
 
     test('Empty Activity Type', () => {
@@ -91,6 +91,24 @@ describe('Profile Info Validation', () => {
         wrapper.vm.$v.durationForm.startDate.$model = "2020-10-10";
         wrapper.vm.$v.durationForm.endDate.$model = "2020-10-09";
         expect(wrapper.vm.$v.durationForm.endDate.$error).toBe(true);
-    })
+    });
+
+    test('Invalid Start Date (Before Now)', () => {
+        wrapper.vm.$v.durationForm.startDate.$model = "2019-06-06";
+        expect(wrapper.vm.$v.durationForm.startDate.$error).toBe(true);
+    });
+
+    test('Start Date and End date the same and start time before end time (Invalid)', () => {
+        wrapper.vm.$v.durationForm.startDate.$model = "2020-06-06";
+        wrapper.vm.$v.durationForm.endDate.$model = "2020-06-06";
+        wrapper.vm.$v.durationForm.startTime.$model = "09:00";
+        wrapper.vm.$v.durationForm.endTime.$model = "08:00";
+        expect(wrapper.vm.$v.durationForm.endTime.$error).toBe(true);
+    });
+
+    test('Invalid Activity Type', () => {
+        wrapper.vm.$v.form.selectedActivityType.$model = "Chill";
+        expect(wrapper.vm.$v.form.selectedActivityType.$error).toBe(true);
+    });
 })
 
