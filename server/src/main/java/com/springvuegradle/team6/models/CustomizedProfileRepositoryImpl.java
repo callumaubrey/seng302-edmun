@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.models;
 
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
@@ -34,10 +36,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     org.apache.lucene.search.Query luceneQuery;
 
     if (terms == null) {
-      BooleanJunction query =
-              queryBuilder
-                      .bool();
-      BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
+      BooleanJunction activityQuery = addActivityTypeQuery(queryBuilder, activityTypes, method);
       luceneQuery = activityQuery.createQuery();
     } else {
       String[] splited = terms.split(" ");
@@ -71,7 +70,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
         if (activityTypes == null) {
           luceneQuery = query.createQuery();
         } else {
-          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
+          BooleanJunction activityQuery = addActivityTypeQuery(queryBuilder, activityTypes, method);
           luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
         }
       } else {
@@ -79,14 +78,18 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
         if (activityTypes == null) {
           luceneQuery = query.createQuery();
         } else {
-          BooleanJunction activityQuery = addActivityTypeQuery(query, queryBuilder, activityTypes, method);
+          BooleanJunction activityQuery = addActivityTypeQuery(queryBuilder, activityTypes, method);
           luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
         }
       }
     }
+    org.apache.lucene.search.Sort sort = new Sort(
+            SortField.FIELD_SCORE,
+            new SortField("id", SortField.Type.STRING, true));
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
+    jpaQuery.setSort(sort);
 
     // In the case where we want to implement server side pagination
     if (limit != -1) {
@@ -98,7 +101,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     return jpaQuery;
   }
 
-  private BooleanJunction addActivityTypeQuery(BooleanJunction query, QueryBuilder queryBuilder, String activityTypes, String method) {
+  private BooleanJunction addActivityTypeQuery(QueryBuilder queryBuilder, String activityTypes, String method) {
     BooleanJunction query2 = queryBuilder.bool();
     String[] splitActivityTypes = activityTypes.split(" ");
     for (String activity : splitActivityTypes) {
@@ -158,7 +161,7 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return the query results
    */
   public org.hibernate.search.jpa.FullTextQuery searchNicknameQuery(
-      String terms, int limit, int offset) {
+      String terms, String activityTypes, String method, int limit, int offset) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -170,12 +173,29 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     QueryBuilder queryBuilder =
         fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Profile.class).get();
 
-    org.apache.lucene.search.Query luceneQuery =
+    org.apache.lucene.search.Query nicknameQuery =
         queryBuilder.keyword().onField("nickname").matching(terms).createQuery();
+
+    BooleanJunction query =
+            queryBuilder
+                    .bool()
+                    .must(nicknameQuery);
+
+    org.apache.lucene.search.Query luceneQuery;
+    if (activityTypes == null) {
+        luceneQuery =  queryBuilder.bool().must(query.createQuery()).createQuery();
+    } else {
+      BooleanJunction activityQuery = addActivityTypeQuery(queryBuilder, activityTypes, method);
+      luceneQuery = queryBuilder.bool().must(query.createQuery()).must(activityQuery.createQuery()).createQuery();
+    }
+
+    org.apache.lucene.search.Sort sort = new Sort(
+            SortField.FIELD_SCORE,
+            new SortField("id", SortField.Type.STRING, true));
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         fullTextEntityManager.createFullTextQuery(luceneQuery, Profile.class);
-
+    jpaQuery.setSort(sort);
     // In the case where we want to implement server side pagination
     if (limit != -1) {
       jpaQuery.setMaxResults(limit);
@@ -195,8 +215,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A list of profiles that matches the nickname
    */
   @Override
-  public List<Profile> searchNickname(String terms, int limit, int offset) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, limit, offset);
+  public List<Profile> searchNickname(String terms, String activityTypes, String method, int limit, int offset) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, activityTypes, method, limit, offset);
 
     return jpaQuery.getResultList();
   }
@@ -208,8 +228,8 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
    * @return A number of profiles that matches the nickname
    */
   @Override
-  public Integer searchNicknameCount(String terms) {
-    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, -1, -1);
+  public Integer searchNicknameCount(String terms, String activityTypes, String method) {
+    org.hibernate.search.jpa.FullTextQuery jpaQuery = searchNicknameQuery(terms, activityTypes, method,-1, -1);
 
     return jpaQuery.getResultSize();
   }

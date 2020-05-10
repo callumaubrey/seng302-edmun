@@ -31,6 +31,7 @@ public class Profile {
   @Id
   @GeneratedValue
   @Column(name = "id")
+  @SortableField
   private Integer id;
 
   @Field(

@@ -181,9 +181,9 @@
                 return this.activityTypesForm.search.trim().toLowerCase()
             },
             availableOptions() {
-                const criteria = this.criteria
+                const criteria = this.criteria;
                 // Filter out already selected options
-                const options = this.activityTypesForm.options.filter(opt => this.activityTypesForm.selectedOptions.indexOf(opt) === -1)
+                const options = this.activityTypesForm.options.filter(opt => this.activityTypesForm.selectedOptions.indexOf(opt) === -1);
                 if (criteria) {
                     // Show only options that match criteria
                     return options.filter(opt => opt.toLowerCase().indexOf(criteria) > -1);
@@ -198,9 +198,39 @@
                 return ''
             }
         },
+        created() {
+            let fromNavBar = this.getUsersFromNavBar();
+            if (this.$route.query.fullname) {
+                this.searchQuery = this.$route.query.fullname;
+                this.searchBy = "fullName";
+            } else if (this.$route.query.email) {
+                this.searchQuery = this.$route.query.email;
+                this.searchBy = "email";
+            } else if (this.$route.query.nickname) {
+                this.searchQuery = this.$route.query.nickname;
+                this.searchBy = "nickname";
+            }
+
+            this.activityTypesForm.method = this.$route.query.method;
+
+            if (this.$route.query.activity) {
+                this.activityTypesForm.selectedOptions = this.$route.query.activity.split(' ');
+            }
+
+            // if offset is null, the user is entering the search page for the first time, which means
+            // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
+            if (this.$route.query.offset) {
+                this.offset = this.$route.query.offset;
+                this.limit = this.$route.query.limit;
+                this.currentPage = (this.offset / this.limit) - 1;
+                this.searchUser();
+            } else if (fromNavBar) {
+                this.searchUser();
+            }
+        },
         methods: {
             onOptionClick({option, addTag}) {
-                addTag(option)
+                addTag(option);
                 this.activityTypesForm.search = ''
             },
             getUserId: function () {
@@ -222,31 +252,32 @@
             },
             getUsers: function () {
                 if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
-                //This funtion seem to take at leaat 10 seconds to execute, when using database
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
-
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
-                    query = this.searchNames(query)
+                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
+                    query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery = this.activityTypesForm.selectedOptions.join(' ')
-                    this.routeQuery.method = this.activityTypesForm.method
+                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
+                    this.routeQuery.method = this.activityTypesForm.method;
                 }else if (this.searchQuery != ''){
-                    query = this.searchNames(query)
-                }else {
+                    query = this.searchNames(query);
+                    this.routeQuery.method = this.activityTypesForm.method;
+                }
+                else {
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery = {activity: this.activityTypesForm.selectedOptions.join(' ')}
-                    this.routeQuery.method = this.activityTypesForm.method
+                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
+                    this.routeQuery.method = this.activityTypesForm.method;
                 }
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
                 this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
+                        currentObj.updateUrl();
                     })
                     .catch(err => console.log(err));
             },
@@ -276,60 +307,33 @@
                 }
                 return false;
             },
-            populatePage: function () {
-                let fromNavBar = this.getUsersFromNavBar();
-                if (this.$route.query.fullname) {
-                    this.searchQuery = this.$route.query.fullname;
-                    this.searchBy = "fullName";
-                } else if (this.$route.query.firstname) {
-                    this.searchQuery = this.$route.query.firstname;
-                    this.searchBy = "firstName";
-                } else if (this.$route.query.lastname) {
-                    this.searchQuery = this.$route.query.lastname;
-                    this.searchBy = "lastName";
-                } else if (this.$route.query.email) {
-                    this.searchQuery = this.$route.query.email;
-                    this.searchBy = "email";
-                } else if (this.$route.query.nickname) {
-                    this.searchQuery = this.$route.query.nickname;
-                    this.searchBy = "nickname";
-                }
-
-                // if offset is null, the user is entering the search page for the first time, which means
-                // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
-                if (this.$route.query.offset) {
-                    this.offset = this.$route.query.offset;
-                    this.limit = this.$route.query.limit;
-                    this.searchUser();
-                } else if (fromNavBar) {
-                    this.searchUser();
-                }
-            },
             searchUser: function () {
-                this.currentPage = 1
+                this.currentPage = 1;
                 if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
                 let query = 'http://localhost:9499/profiles/count';
-                if (this.searchBy == 'fullName' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
-                    query = this.searchNames(query)
+                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions.length != 0) {
+                    query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    // this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
-                }else if (this.searchQuery != ''){
+                }else if (this.searchBy == 'email'){
+                    this.getUsers();
+                    return;
+                }else if(this.searchQuery != ''){
                     query = this.searchNames(query)
-                }else {
+                }
+                else {
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
-                    this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ')
                 }
-                const currentObj = this
-                this.count = 10
+                const currentObj = this;
+                this.count = 10;
                 console.log(query);
                 this.axios.get(query)
                     .then((res) => {
-                        currentObj.count = res.data/2
+                        currentObj.count = res.data;
+                        currentObj.getUsers()
                     })
                     .catch(err => console.log(err));
-                currentObj.getUsers()
 
             },
             getActivities: function () {
@@ -352,7 +356,6 @@
         mounted() {
             this.getUserId();
             this.getUserName();
-            this.populatePage();
             this.getActivities();
         }
     };

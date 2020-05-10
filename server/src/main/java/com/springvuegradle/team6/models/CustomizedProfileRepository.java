@@ -7,7 +7,7 @@ public interface CustomizedProfileRepository {
 
   Integer searchFullnameCount(String terms, String activityType, String method);
 
-  List<Profile> searchNickname(String terms, int limit, int offset);
+  List<Profile> searchNickname(String terms, String activityType, String method, int limit, int offset);
 
-  Integer searchNicknameCount(String terms);
+  Integer searchNicknameCount(String terms, String activityType, String method);
 }
