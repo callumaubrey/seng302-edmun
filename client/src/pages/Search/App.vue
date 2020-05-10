@@ -32,7 +32,8 @@
 
                 </b-row>
                 <br>
-                <b-row>
+                <div v-if="searchBy!='email'" id="acitivity-tags">
+                <b-row >
                     <b-col>
                         <b-form-tags v-model="activityTypesForm.selectedOptions" no-outer-focus
                                      size="lg">
@@ -108,6 +109,7 @@
                         </b-form-text>
                     </b-col>
                 </b-row>
+                </div>
             </b-container>
 
             <b-row>
