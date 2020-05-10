@@ -101,8 +101,15 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
     return jpaQuery;
   }
 
+  /**
+   * Helper function that builds and returns a query on activity types
+   * @param queryBuilder the hibernate search query builder
+   * @param activityTypes the activity types searched for
+   * @param method the method used AND|OR
+   * @return query a BooleanJunction
+   */
   private BooleanJunction addActivityTypeQuery(QueryBuilder queryBuilder, String activityTypes, String method) {
-    BooleanJunction query2 = queryBuilder.bool();
+    BooleanJunction query = queryBuilder.bool();
     String[] splitActivityTypes = activityTypes.split(" ");
     for (String activity : splitActivityTypes) {
       org.apache.lucene.search.Query activityQuery =
@@ -112,16 +119,16 @@ public class CustomizedProfileRepositoryImpl implements CustomizedProfileReposit
               .matching(activity)
               .createQuery();
       if (method == null) {
-        query2.must(activityQuery);
+        query.must(activityQuery);
       } else {
         if (method.equals("OR")) {
-          query2.should(activityQuery);
+          query.should(activityQuery);
         } else {
-          query2.must(activityQuery);
+          query.must(activityQuery);
         }
       }
     }
-    return query2;
+    return query;
   }
 
   /**
