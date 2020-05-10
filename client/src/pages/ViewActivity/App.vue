@@ -98,8 +98,7 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/firstname')
                 .then((res) => {
-                    vueObj.userName = res.data.firstname;
-                    //this.checkIsOwner();
+                    vueObj.userName = res.data;
                 })
                 .catch(() => {
                     vueObj.isLoggedIn = false;
@@ -122,15 +121,6 @@
                 let vueObj = this;
                 vueObj.profileId = this.$route.params.id;
             },
-            // checkIsOwner: function () {
-            //     let vueObj = this;
-            //     console.log("loggedinId is " + vueObj.loggedInId);
-            //     if (vueObj.loggedInId == vueObj.$route.params.id) {
-            //         vueObj.isActivityOwner = true;
-            //     } else {
-            //         vueObj.isActivityOwner = false;
-            //     }
-            // },
             deleteActivity() {
                 // double check for if user clicks button when hidden.
                 if (this.profileId === this.loggedInId) {

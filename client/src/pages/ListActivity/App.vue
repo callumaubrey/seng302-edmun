@@ -64,16 +64,16 @@
                         alert(err);
                     });
             },
-            // getName: function () {
-            //     let currentObj = this;
-            //     this.axios.defaults.withCredentials = true;
-            //     this.axios.get('http://localhost:9499/profiles/firstname')
-            //         .then(function (response) {
-            //             currentObj.userName = response.data;
-            //         })
-            //         .catch(function () {
-            //         });
-            // },
+            getLoggedInName: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/firstname')
+                    .then(function (response) {
+                        currentObj.userName = response.data;
+                    })
+                    .catch(function () {
+                    });
+            },
             getActivities: function (id) {
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
@@ -101,6 +101,7 @@
         beforeMount() {
             this.getProfileIdAndName();
             this.getLoggedInId();
+            this.getLoggedInName();
         },
         mounted() {
         },
