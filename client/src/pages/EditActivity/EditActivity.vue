@@ -72,7 +72,9 @@
                                         id="end-time-input"
                                         type="time"
                                         v-model="$v.durationForm.endTime.$model"
+                                        aria-describedby="end-time-feedback"
                                 ></b-form-input>
+                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as start time.</b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
