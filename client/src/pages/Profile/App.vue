@@ -108,7 +108,7 @@
                             </b-row>
                             <b-row>
                                 <b-col>
-                                    <b-link @click="goToActivities">Click Here to view {{userName}}'s Activties</b-link>
+                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s Activities</b-link>
                                 </b-col>
                             </b-row>
                         </b-card>
@@ -158,13 +158,12 @@
                 this.axios.defaults.withCredentials = true;
                 return this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
-                        console.log("Logged in as:", response.data);
                         currentObj.loggedInUser = response.data;
                         currentObj.loggedInID = response.data.id;
                         currentObj.userName = response.data.firstname;
                     })
+                    // eslint-disable-next-line no-unused-vars
                     .catch(function (error) {
-                        console.log(error.response.data);
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/login');
                     });
@@ -174,7 +173,6 @@
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
-                        console.log("Viewing Profile:", response.data);
                         currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
@@ -190,19 +188,17 @@
                             }
                         }
 
-                        console.log(profileAdmin + " " + currentObj.loggedInIsAdmin);
+
                         if (profileAdmin && !currentObj.loggedInIsAdmin) {
                             currentObj.$router.push('/profiles/' + currentObj.loggedInID);
                         }
 
-                        currentObj.userName = response.data.firstname;
                         currentObj.location = response.data.location;
                         currentObj.checkHideElements();
                     })
+                    // eslint-disable-next-line no-unused-vars
                     .catch(function (error) {
-                        console.log(error);
                         if (currentObj.isLoggedIn) {
-                            // currentObj.$router.push('/profiles/' + currentObj.profileId);
                             currentObj.$router.go(0);
                         } else {
                             currentObj.$router.push('/');
@@ -216,9 +212,7 @@
             },
             checkHideElements: function () {
                 let currentObj = this;
-                console.log("loggedInID", currentObj.loggedInID);
-                console.log("profileId", currentObj.profileId);
-                if (currentObj.loggedInID == currentObj.profileId || currentObj.loggedInIsAdmin){
+                if (currentObj.loggedInID === currentObj.profileId || currentObj.loggedInIsAdmin){
                     currentObj.hidden = false;
                 }
                 else{
@@ -226,20 +220,6 @@
                 }
             },
 
-            getLocationData: async function () {
-                var locationText = document.getElementById("locationInput").value;
-                if (locationText == ''){
-                    return
-                }
-                var locationData = this.axios.create({
-                    baseURL: 'https://nominatim.openstreetmap.org/search/city/?q="' + locationText + '"&format=json&limit=10',
-                    timeout: 1000,
-                    withCredentials: false,
-                });
-                console.log('https://nominatim.openstreetmap.org/search?q="' + locationText + '"&format=json&limit=5');
-                var data = await (locationData.get());
-                this.locations = data.data
-            },
             getUserId: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
@@ -260,17 +240,14 @@
                 let currentObj = this;
                 return this.axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
-                        console.log(response);
                         currentObj.loggedInUserRoles = response.data;
                     })
             },
             checkUserIsAdmin: async function () {
                 await this.getUserRoles();
-                let currentObj = this
-                console.log(this.loggedInUserRoles);
+                let currentObj = this;
                 if (this.loggedInUserRoles) {
                     for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        console.log("HELLO")
                         if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
                             currentObj.loggedInIsAdmin = true;
                         }
@@ -289,7 +266,6 @@
         },
         beforeMount: async function () {
             await this.getLoggedInUserData();
-            await this.getLocationData();
         }
     };
 
