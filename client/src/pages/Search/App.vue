@@ -246,7 +246,7 @@
             },
             getUserName: function () {
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                this.axios.get('http://localhost:9499/profiles/firstname')
                     .then((res) => {
                         this.userName = res.data;
                     })
@@ -351,7 +351,7 @@
                     });
             },
             itemRowClicked: function (record) {
-                window.location.href = window.location.origin + ("/#/profile/" + record.profile_id);
+                this.$router.push('/profiles/' + record.profile_id);
             }
 
         },

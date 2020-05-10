@@ -118,9 +118,9 @@
             },
             getUserName() {
                 let currentObj = this;
-                this.axios.get('http://localhost:9499/profiles/user')
+                this.axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
-                        currentObj.userName = response.data.firstname;
+                        currentObj.userName = response.data;
                     })
                     .catch(function () {
                     });
