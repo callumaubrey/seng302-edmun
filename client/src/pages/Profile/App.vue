@@ -147,6 +147,8 @@
                 profileId: '',
                 location: '',
                 dob: '',
+                loggedInIsAdmin: false,
+                loggedInUserRoles: [],
                 hidden: null
             }
         },
@@ -154,7 +156,7 @@
             getLoggedInUserData: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                return this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         console.log("Logged in as:", response.data);
                         currentObj.loggedInUser = response.data;
@@ -187,8 +189,9 @@
                                 profileAdmin = true;
                             }
                         }
-                        let loggedInIsAdmin = currentObj.checkUserIsAdmin();
-                        if (profileAdmin && !loggedInIsAdmin) {
+
+                        console.log(profileAdmin + " " + currentObj.loggedInIsAdmin);
+                        if (profileAdmin && !currentObj.loggedInIsAdmin) {
                             currentObj.$router.push('/profiles/' + currentObj.loggedInID);
                         }
 
@@ -197,7 +200,7 @@
                         currentObj.checkHideElements();
                     })
                     .catch(function (error) {
-                        console.log(error.response.data);
+                        console.log(error);
                         if (currentObj.isLoggedIn) {
                             // currentObj.$router.push('/profiles/' + currentObj.profileId);
                             currentObj.$router.go(0);
@@ -215,7 +218,7 @@
                 let currentObj = this;
                 console.log("loggedInID", currentObj.loggedInID);
                 console.log("profileId", currentObj.profileId);
-                if (currentObj.loggedInID == currentObj.profileId){
+                if (currentObj.loggedInID == currentObj.profileId || currentObj.loggedInIsAdmin){
                     currentObj.hidden = false;
                 }
                 else{
@@ -254,33 +257,39 @@
             },
 
             getUserRoles: function () {
-                this.axios.get("http://localhost:9499/profiles/role")
+                let currentObj = this;
+                return this.axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
-                        if (response.status == 200) {
-                            return response.data;
-                        }
+                        console.log(response);
+                        currentObj.loggedInUserRoles = response.data;
                     })
             },
-            checkUserIsAdmin: function () {
-                let userRoles = this.getUserRoles();
-                console.log(userRoles);
-                if (userRoles) {
-                    for (let i = 0; i++; i < userRoles.length) {
-                        if (userRoles[i].roleName.equals("ROLE_ADMIN"))
-                            return true
+            checkUserIsAdmin: async function () {
+                await this.getUserRoles();
+                let currentObj = this
+                console.log(this.loggedInUserRoles);
+                if (this.loggedInUserRoles) {
+                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
+                        console.log("HELLO")
+                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
+                            currentObj.loggedInIsAdmin = true;
+                        }
                     }
                 }
-                return false
+            }
+        },
+        watch: {
+            $route: function () {
+                this.getProfileData();
             }
         },
         mounted: function () {
-            this.getLoggedInUserData();
+            this.checkUserIsAdmin();
             this.getProfileData();
         },
-        beforeMount () {
-            this.getLoggedInUserData();
-            this.getLocationData();
-
+        beforeMount: async function () {
+            await this.getLoggedInUserData();
+            await this.getLocationData();
         }
     };
 
