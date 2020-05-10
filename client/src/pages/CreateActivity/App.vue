@@ -81,7 +81,8 @@
                     <b-row>
                         <b-col>
                             <span v-if="this.form.selectedActivityTypes.length > 0">
-                                Activity types:
+                                Activity Tsypes:
+                                <b-form-text>Click on the activity type to remove</b-form-text>
                             </span>
                             <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
                                 <b-list-group-item v-for="activityType in this.form.selectedActivityTypes"

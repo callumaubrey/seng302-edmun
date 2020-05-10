@@ -80,30 +80,24 @@
                     <b-row>
                         <b-col>
                             <span v-if="this.form.selectedActivityTypes.length > 0">
-                                Activity types:
+                                Activity Types:
+                                <b-form-text>Click on the activity type to remove</b-form-text>
                             </span>
-                            <hr>
-                            <div :key="index" v-for="(activityType, index) in this.form.selectedActivityTypes">
-                                <b-row>
-                                    <b-col>
-                                        <label>{{activityType}}</label>
-                                    </b-col>
-                                    <b-col>
-                                        <b-button @click="deleteActivityType(index)" class="invisible-btn"
-                                                  style="float: right;">Remove
-                                        </b-button>
-                                    </b-col>
-                                </b-row>
-                            </div>
-                            <hr>
+                            <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
+                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes"
+                                                   :key="activityType" v-on:click="deleteActivityType(activityType)"
+                                                   class="clickable">
+                                    {{ activityType }}
+                                </b-list-group-item>
+                            </b-list-group>
                             <b-form-group id="activity-type-group" label="Add Activity Type" label-for="activity-type">
                                 <b-form-select
-                                        :options="activityTypes"
-                                        :state="validateState('selectedActivityType')"
-                                        aria-describedby="activity-type-feedback"
                                         id="activity-type"
                                         name="activity-type"
                                         v-model="$v.form.selectedActivityType.$model"
+                                        :state="validateState('selectedActivityType')"
+                                        :options="activityTypes"
+                                        aria-describedby="activity-type-feedback"
                                         v-on:change="addActivityType()"
                                 ></b-form-select>
                                 <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.
@@ -112,6 +106,7 @@
                             <hr>
                         </b-col>
                     </b-row>
+
                     <b-row>
                         <b-col>
                             <b-form-group id="name-input-group" label="Name" label-for="name-input">
@@ -488,6 +483,10 @@
 
     .feedback {
         padding-bottom: 10px;
+    }
+
+    .clickable {
+        cursor: pointer;
     }
 
 </style>
