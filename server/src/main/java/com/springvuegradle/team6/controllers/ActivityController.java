@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
+import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Table;
@@ -55,6 +56,15 @@ public class ActivityController {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.locationRepository = locationRepository;
+  }
+
+  /**
+   * This method is required to enable direct field access for activity controller, due to a weird bug where
+   * the fields of LocationUpdateRequest not being able to be accessed even with getters.
+   * @param dataBinder */
+  @InitBinder
+  private void activateDirectFieldAccess(DataBinder dataBinder) {
+    dataBinder.initDirectFieldAccess();
   }
 
   /**

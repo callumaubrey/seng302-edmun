@@ -279,6 +279,74 @@ public class ActivityControllerTest {
   }
 
   @Test
+  void createActivityWithLocationReturnStatusIsCreated() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"city\": \"Christchurch\",\n"
+            + " \t\"state\": \"Canterbury\",\n"
+            + " \t\"country\": \"New Zealand\"\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityWithLocationNoStateReturnStatusIsCreated() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true,\n"
+                    + " \"location\": {\n"
+                    + " \t\"city\": \"Christchurch\",\n"
+                    + " \t\"country\": \"New Zealand\"\n"
+                    + "  }"
+                    + ""
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityWithLocationEmptyReturnStatusBadRequest() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true,\n"
+                    + " \"location\": {\n"
+                    + "  }"
+                    + ""
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void getActivityById() throws Exception {
     Profile profile1 = profileRepository.findById(id);
     Activity testActivity1 = new Activity();

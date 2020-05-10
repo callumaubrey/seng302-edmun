@@ -20,11 +20,6 @@ public class Activity {
     this.activityTypes = null;
     this.activityTypes = myEmptySet;
     this.continuous = true;
-    //    if (!this.continuous) {
-    //      this.startTime = request.startTime;
-    //      this.endTime = request.endTime;
-    //    }
-    //    this.location = request.location;
   }
 
   public Activity(CreateActivityRequest request, Profile profile) {
