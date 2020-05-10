@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.OSMLocation;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.standard.StandardFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.search.annotations.*;
-import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
@@ -61,7 +59,7 @@ public class Profile {
   private String nickname;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private Set<Email> emails;
+    private Set<Email> emails = new HashSet<>();;
 
   private String password;
 
@@ -141,17 +139,7 @@ public class Profile {
             if(email.isPrimary()) return email;
         }
 
-        // If no primary email exists set first email to be primary
-        if(!emails.isEmpty()) {
-            Email newPrimary = emails.iterator().next();
-            newPrimary.setPrimary(true);
-            System.getLogger("SystemEvents").log(System.Logger.Level.INFO, String.format("User %d has no primary email so %s was set as primary", getId(), newPrimary.getAddress()));
-
-            return newPrimary;
-        } else {
-            System.getLogger("SystemEvents").log(System.Logger.Level.WARNING, String.format("User %d contains no emails", getId()));
-            return new Email("null");
-        }
+        return new Email("null");
     }
 
   public String getPassword() {
@@ -210,13 +198,14 @@ public class Profile {
 
     @JsonProperty("primary_email")
     public void setPrimaryEmail(Email email) {
-        if(emails == null) emails = new HashSet<>();
+        getPrimaryEmail().setPrimary(false);
+
+        email.setPrimary(true);
         this.emails.add(email);
     }
 
     @JsonProperty("additional_email")
     public void setEmails(Set<Email> emails) {
-        if(emails == null) emails = new HashSet<>();
         clearNonPrimaryEmails();
         this.emails.addAll(emails);
     }
