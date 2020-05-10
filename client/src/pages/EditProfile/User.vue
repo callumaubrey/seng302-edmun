@@ -650,7 +650,7 @@
                         console.log(vueObj.yourActivites);
                         if (response.status == 200) {
                             vueObj.activityErrorMessage = null;
-                            vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's"
+                            vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's";
                             vueObj.selectedActivity = null;
                         }
                     }).catch(function (error) {
@@ -742,6 +742,11 @@
                 vueObj.locations = [];
                 vueObj.location = location;
                 console.log(location.address.city);
+                let userId = this.profileId;
+                let isAdmin = this.checkUserIsAdmin();
+                if (isAdmin) {
+                    userId = this.$route.params.id;
+                }
 
                 if (this.location !== null) {
                     let data = {
@@ -759,18 +764,18 @@
                         data.country = location.address.country;
                     }
                     console.log(data);
-                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/location", data).then(function (response) {
-                        console.log(response)
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", data).then(function (response) {
+                        console.log(response);
                         vueObj.locationDisplayText = vueObj.location.display_name;
                         vueObj.locationUpdateMessage = "Location successfully updated";
                         vueObj.locationErrorMessage = "";
                     }).catch(function (error) {
-                        console.log(error)
+                        console.log(error);
                         vueObj.locationUpdateMessage = "";
                         vueObj.locationErrorMessage = "Location failed to update";
                     });
                 } else {
-                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/location", {}).then(function (response) {
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", {}).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
                         console.log(error)
@@ -1016,7 +1021,7 @@
                         currentObj.profileId = response.data;
                         console.log("profileId yeet" + currentObj.profileId);
                         console.log("paramId " + currentObj.$route.params.id);
-                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)) {
+                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !this.checkUserIsAdmin()) {
                             console.log("not equal");
                             currentObj.$router.push("/login");
                         }

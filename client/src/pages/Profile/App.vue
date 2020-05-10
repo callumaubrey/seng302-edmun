@@ -180,20 +180,20 @@
                         currentObj.additionalEmails = response.data.additional_email;
                         currentObj.isLoggedIn = true;
                         currentObj.userRoles = response.data.roles;
-                        currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj)
-                        let isAdmin = false;
+                        currentObj.getCorrectDateFormat(response.data.date_of_birth, currentObj);
+                        let profileAdmin = false;
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
                             if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
-                                isAdmin = true;
+                                profileAdmin = true;
                             }
                         }
-                        if (isAdmin === false) {
-                            currentObj.profileId = response.data.id.toString();
-                            currentObj.$router.push('/profiles/' + currentObj.profileId)
+                        let loggedInIsAdmin = currentObj.checkUserIsAdmin();
+                        if (profileAdmin && !loggedInIsAdmin) {
+                            currentObj.$router.push('/profiles/' + currentObj.loggedInID);
                         }
 
                         currentObj.userName = response.data.firstname;
-                        currentObj.location = response.data.location
+                        currentObj.location = response.data.location;
                         currentObj.checkHideElements();
                     })
                     .catch(function (error) {
@@ -213,8 +213,8 @@
             },
             checkHideElements: function () {
                 let currentObj = this;
-                console.log("loggedInID", currentObj.loggedInID)
-                console.log("profileId", currentObj.profileId)
+                console.log("loggedInID", currentObj.loggedInID);
+                console.log("profileId", currentObj.profileId);
                 if (currentObj.loggedInID == currentObj.profileId){
                     currentObj.hidden = false;
                 }
@@ -251,9 +251,30 @@
             goToActivities: function () {
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
+            },
+
+            getUserRoles: function () {
+                this.axios.get("http://localhost:9499/profiles/role")
+                    .then(function (response) {
+                        if (response.status == 200) {
+                            return response.data;
+                        }
+                    })
+            },
+            checkUserIsAdmin: function () {
+                let userRoles = this.getUserRoles();
+                console.log(userRoles);
+                if (userRoles) {
+                    for (let i = 0; i++; i < userRoles.length) {
+                        if (userRoles[i].roleName.equals("ROLE_ADMIN"))
+                            return true
+                    }
+                }
+                return false
             }
         },
         mounted: function () {
+            this.getLoggedInUserData();
             this.getProfileData();
         },
         beforeMount () {

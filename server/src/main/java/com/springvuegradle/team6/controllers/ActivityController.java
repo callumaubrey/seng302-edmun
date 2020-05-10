@@ -1,10 +1,5 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.ActivityType;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
-import ch.qos.logback.core.encoder.EchoEncoder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
@@ -13,25 +8,16 @@ import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
 import com.springvuegradle.team6.startup.UserSecurityService;
-import org.apache.coyote.Response;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.Table;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -70,29 +56,6 @@ public class ActivityController {
   @InitBinder
   private void activateDirectFieldAccess(DataBinder dataBinder) {
     dataBinder.initDirectFieldAccess();
-  }
-
-  /**
-   * Check if user is authorised to edit activity type
-   *
-   * @param requestId userid in endpoint
-   * @param session http session
-   * @return ResponseEntity or null
-   */
-  private ResponseEntity<String> checkAuthorised(Integer requestId, HttpSession session) {
-    Object id = session.getAttribute("id");
-    if (id == null) {
-      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-    }
-
-    if (!(id.toString().equals(requestId.toString()))) {
-      return new ResponseEntity<>("You can only edit you're own profile", HttpStatus.UNAUTHORIZED);
-    }
-
-    if (!profileRepository.existsById(requestId)) {
-      return new ResponseEntity<>("No such user", HttpStatus.NOT_FOUND);
-    }
-    return null;
   }
 
   /**
@@ -137,7 +100,7 @@ public class ActivityController {
     if (profile.isPresent()) {
       Profile user = profile.get();
 
-      ResponseEntity<String> authorisedResponse = this.checkAuthorised(profileId, session);
+      ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
@@ -234,7 +197,7 @@ public class ActivityController {
       @PathVariable Integer profileId,
       @Valid @RequestBody CreateActivityRequest request,
       HttpSession session) {
-    ResponseEntity<String> checkAuthorisedResponse = checkAuthorised(profileId, session);
+    ResponseEntity<String> checkAuthorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
@@ -383,7 +346,7 @@ public class ActivityController {
   @DeleteMapping("/profiles/{profileId}/activities/{activityId}")
   public ResponseEntity<String> createActivity(
       @PathVariable Integer profileId, @PathVariable Integer activityId, HttpSession session) {
-    ResponseEntity<String> checkAuthorisedResponse = checkAuthorised(profileId, session);
+    ResponseEntity<String> checkAuthorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
