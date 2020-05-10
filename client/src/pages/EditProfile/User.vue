@@ -462,7 +462,9 @@
                 activityErrorMessage: "",
                 locationUpdateMessage: "",
                 locationErrorMessage: "",
-                locationDisplayText: ""
+                locationDisplayText: "",
+                loggedInIsAdmin: false,
+                loggedInUserRoles: []
             }
         },
         validations: {
@@ -994,34 +996,38 @@
                     document.getElementById("passwordMessage").style.color = "red";
                 })
             },
-            getUserRoles: async function () {
-                this.axios.get("http://localhost:9499/profiles/role")
+
+            getUserRoles: function () {
+                let currentObj = this;
+                return this.axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
-                        if (response.status == 200) {
-                            return response.data;
-                        }
+                        console.log(response);
+                        currentObj.loggedInUserRoles = response.data;
                     })
             },
             checkUserIsAdmin: async function () {
-                let userRoles = this.getUserRoles();
-                console.log(userRoles);
-                if (userRoles) {
-                    for (let i = 0; i++; i < userRoles.length) {
-                        if (userRoles[i].roleName.equals("ROLE_ADMIN"))
-                            return true
+                await this.getUserRoles();
+                let currentObj = this
+                console.log(this.loggedInUserRoles);
+                if (this.loggedInUserRoles) {
+                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
+                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
+                            currentObj.loggedInIsAdmin = true;
+                        }
                     }
                 }
-                return false
+                return
             },
             checkAuthorized: async function () {
                 let currentObj = this;
+                await this.checkUserIsAdmin();
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         console.log("profileId yeet" + currentObj.profileId);
                         console.log("paramId " + currentObj.$route.params.id);
-                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !this.checkUserIsAdmin()) {
+                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
                             console.log("not equal");
                             currentObj.$router.push("/login");
                         }

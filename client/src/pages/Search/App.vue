@@ -208,36 +208,6 @@
                 return ''
             }
         },
-        created() {
-            let fromNavBar = this.getUsersFromNavBar();
-            if (this.$route.query.fullname) {
-                this.searchQuery = this.$route.query.fullname;
-                this.searchBy = "fullName";
-            } else if (this.$route.query.email) {
-                this.searchQuery = this.$route.query.email;
-                this.searchBy = "email";
-            } else if (this.$route.query.nickname) {
-                this.searchQuery = this.$route.query.nickname;
-                this.searchBy = "nickname";
-            }
-
-            this.activityTypesForm.method = this.$route.query.method;
-
-            if (this.$route.query.activity) {
-                this.activityTypesForm.selectedOptions = this.$route.query.activity.split(' ');
-            }
-
-            // if offset is null, the user is entering the search page for the first time, which means
-            // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
-            if (this.$route.query.offset) {
-                this.offset = this.$route.query.offset;
-                this.limit = this.$route.query.limit;
-                this.currentPage = (this.offset / this.limit) - 1;
-                this.searchUser();
-            } else if (fromNavBar) {
-                this.searchUser();
-            }
-        },
         methods: {
             onOptionClick({option, addTag}) {
                 addTag(option);
@@ -365,13 +335,55 @@
             },
             itemRowClicked: function (record) {
                 this.$router.push('/profiles/' + record.profile_id);
+            },
+            populatePage: function() {
+                let fromNavBar = this.getUsersFromNavBar();
+                if (this.$route.query.fullname) {
+                    this.searchQuery = this.$route.query.fullname;
+                    this.searchBy = "fullName";
+                } else if (this.$route.query.email) {
+                    this.searchQuery = this.$route.query.email;
+                    this.searchBy = "email";
+                } else if (this.$route.query.nickname) {
+                    this.searchQuery = this.$route.query.nickname;
+                    this.searchBy = "nickname";
+                }
+
+                if (this.$route.query.method) {
+                    this.activityTypesForm.method = this.$route.query.method;
+                } else {
+                    this.activityTypesForm.method = 'AND';
+                }
+
+                if (this.$route.query.activity) {
+                    this.activityTypesForm.selectedOptions = this.$route.query.activity.split(' ');
+                } else {
+                    this.activityTypesForm.selectedOptions = [];
+                }
+
+                // if offset is null, the user is entering the search page for the first time, which means
+                // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
+                if (this.$route.query.offset) {
+                    this.offset = this.$route.query.offset;
+                    this.limit = this.$route.query.limit;
+                    this.currentPage = (this.offset / this.limit) - 1;
+                    this.searchUser();
+                } else if (fromNavBar) {
+                    this.searchUser();
+                }
             }
 
+        },
+        watch: {
+            $route: function () {
+                this.populatePage();
+            }
         },
         mounted() {
             this.getUserId();
             this.getUserName();
             this.getActivities();
+            this.populatePage();
         }
     };
 

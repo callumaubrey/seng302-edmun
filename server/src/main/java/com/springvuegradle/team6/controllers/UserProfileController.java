@@ -176,7 +176,7 @@ public class UserProfileController {
         if (id == null) {
             return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
         } else {
-            int intId = (int) session.getAttribute("id");
+            int intId = Integer.parseInt(session.getAttribute("id").toString());
             return ResponseEntity.ok(repository.findById(intId).getRoles());
         }
     }
