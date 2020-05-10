@@ -1,10 +1,10 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
         <div class="container">
             <div>
                 <b-row>
-                <b-img center v-bind="mainProps" rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
+                <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -27,10 +27,10 @@
                                 <b-col><p>{{userData.gender}}</p></b-col>
                             </b-row>
                         </b-card>
-                        <b-card style="margin: 1em" title="Email(s):">
+                        <b-card style="margin: 1em" title="Email(s):" v-if="!hidden">
                             <b-row>
                                 <b-col><b>Primary Email:</b></b-col>
-                                <b-col><p>{{userData.primary_email.address}}</p></b-col>
+                                <b-col v-if="userData.primary_email"><p>{{userData.primary_email.address}}</p></b-col>
                             </b-row>
                             <b-row>
                                 <b-col><b>Additional Emails:</b></b-col>
@@ -49,7 +49,7 @@
                             </b-row>
                             <p>(Max 5 emails)</p>
                         </b-card>
-                        <b-card style="margin: 1em" title="Passport Info:">
+                        <b-card style="margin: 1em" title="Passport Info:" v-if="!hidden">
                             <b-row>
                                 <b-col><b>Your Passport Countries:</b></b-col>
                                 <b-col>
@@ -134,25 +134,46 @@
         },
         data: function() {
             return {
+                loggedInUser: '',
+                loggedInID: '',
                 userData: '',
                 passports: [],
                 activities: [],
                 additionalEmails: [],
-                isLoggedIn: false,
+                isLoggedIn: '',
                 userName: "",
+                locations: [],
                 userRoles: [],
-                profileId: null,
-                location: null,
-                dob: ''
+                profileId: '',
+                location: '',
+                dob: '',
+                hidden: null
             }
         },
         methods: {
-            getUserSession: function () {
+            getLoggedInUserData: function () {
+                let currentObj = this;
+                this.axios.defaults.withCredentials = true;
+                this.axios.get('http://localhost:9499/profiles/user')
+                    .then(function (response) {
+                        console.log("Logged in as:", response.data);
+                        currentObj.loggedInUser = response.data;
+                        currentObj.loggedInID = response.data.id;
+                        currentObj.userName = response.data.firstname;
+                    })
+                    .catch(function (error) {
+                        console.log(error.response.data);
+                        currentObj.isLoggedIn = false;
+                        currentObj.$router.push('/login');
+                    });
+            },
+            getProfileData: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
-                        console.log(response.data);
+                        console.log("Viewing Profile:", response.data);
+                        currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
                         currentObj.passports = response.data.passports;
                         currentObj.activities = response.data.activities;
@@ -173,11 +194,12 @@
 
                         currentObj.userName = response.data.firstname;
                         currentObj.location = response.data.location
+                        currentObj.checkHideElements();
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
                         if (currentObj.isLoggedIn) {
-                            currentObj.$router.push('/profiles/' + currentObj.profileId);
+                            // currentObj.$router.push('/profiles/' + currentObj.profileId);
                             currentObj.$router.go(0);
                         } else {
                             currentObj.$router.push('/');
@@ -188,6 +210,17 @@
             getCorrectDateFormat: function (date, currentObj) {
                 const dobCorrectFormat = new Date(date + "T00:00");
                 currentObj.dob = dobCorrectFormat.toLocaleDateString();
+            },
+            checkHideElements: function () {
+                let currentObj = this;
+                console.log("loggedInID", currentObj.loggedInID)
+                console.log("profileId", currentObj.profileId)
+                if (currentObj.loggedInID == currentObj.profileId){
+                    currentObj.hidden = false;
+                }
+                else{
+                    currentObj.hidden = true;
+                }
             },
 
             getLocationData: async function () {
@@ -221,8 +254,10 @@
             }
         },
         mounted: function () {
-            this.getUserId();
-            this.getUserSession();
+            this.getProfileData();
+        },
+        beforeMount () {
+            this.getLoggedInUserData();
             this.getLocationData();
 
         }

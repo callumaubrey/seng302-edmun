@@ -27,7 +27,7 @@
                     <template v-slot:button-content>
                         <em>{{ userName }}</em>
                     </template>
-                    <b-dropdown-item @click="goToEdit">Edit Profile</b-dropdown-item>
+                    <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
                     <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
                 </b-nav-item-dropdown>
             </b-navbar-nav>
@@ -44,16 +44,15 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn'],
+        props: ['isLoggedIn', 'userName', 'hideElements', 'loggedInId'],
         data: function () {
             return {
-                name: "",
-                userName: this.getUserName()
+                name: ""
             }
         },
         watch: {
             isLoggedIn: function (newVal, oldVal) {
-                console.log('IsLoggedIn prop changed' + newVal + ' ' + oldVal)
+                console.log('IsLoggedIn prop changed to ' + newVal + " from old value: " + oldVal);
             }
         },
         methods: {
@@ -79,12 +78,14 @@
                     });
             },
             goToEdit() {
-                const profileId = this.profileId;
+                const profileId = this.loggedInId;
                 this.$router.push('/profiles/edit/' + profileId);
+                this.$router.go('/profiles/edit/' + profileId);
             },
             goToProfile() {
-                const profileId = this.profileId;
+                const profileId = this.loggedInId;
                 this.$router.push('/profiles/' + profileId);
+                this.$router.go(0);
             },
             goToActivities() {
                 const profileId = this.profileId;

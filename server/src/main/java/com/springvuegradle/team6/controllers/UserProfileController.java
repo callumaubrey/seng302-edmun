@@ -49,9 +49,9 @@ public class UserProfileController {
      */
     @GetMapping("/{id}")
     public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session) throws JsonProcessingException {
-        ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(id, session, repository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
+        ResponseEntity<String> canViewResponse = UserSecurityService.canViewPermission(id, session, repository);
+        if (canViewResponse != null) {
+            return canViewResponse;
         }
         Optional<Profile> p = repository.findById(id);
         if (p.isPresent()) {
