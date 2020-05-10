@@ -9,6 +9,26 @@
                 <b-nav-item v-if="!isLoggedIn" to='/register'>Register</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
+                <b-collapse id="my-collapse" v-if="isLoggedIn">
+                    <b-form inline>
+                        <b-input-group>
+                            <template v-slot:prepend>
+                                <b-form-select v-model="searchBy" :options="searchOptions"></b-form-select>
+                            </template>
+
+                            <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
+
+                            <b-input-group-append>
+                                <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
+                            </b-input-group-append>
+                        </b-input-group>
+                    </b-form>
+                </b-collapse>
+                <b-nav-item v-if="isLoggedIn">
+                    <span v-b-toggle.my-collapse>
+                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
+                    </span>
+                </b-nav-item>
             </b-navbar-nav>
 
             <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
@@ -47,7 +67,12 @@
         props: ['isLoggedIn', 'userName', 'hideElements', 'loggedInId'],
         data: function () {
             return {
-                name: ""
+                name: "",
+                searchBy: 1,
+                searchQuery: "",
+                searchOptions: [
+                    { value: 1, text: 'Users' }
+                ]
             }
         },
         watch: {
@@ -99,6 +124,11 @@
                     })
                     .catch(function () {
                     });
+            },
+            search() {
+                if (this.searchQuery === '') return;
+
+                this.$router.push('/profiles?fullname=' + this.searchQuery);
             }
         },
         mounted: function () {
@@ -121,4 +151,8 @@
         margin-right: 0px;
     }
 
+    .collapsed > .when-opened,
+    :not(.collapsed) > .when-closed {
+        display: none;
+    }
 </style>

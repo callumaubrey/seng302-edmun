@@ -10,6 +10,7 @@ import CreateActivity from './pages/CreateActivity/App';
 import Activity from './pages/ViewActivity/App';
 import EditActivity from "./pages/EditActivity/EditActivity";
 import ListActivity from './pages/ListActivity/App';
+import Search from './pages/Search/App';
 
 const routes = [
     {path: '/', component: Home},
@@ -21,7 +22,8 @@ const routes = [
     {path: '/profiles/:id/activities/create', component: CreateActivity},
     {path: '/profiles/:id/activities/:activityId/edit', component: EditActivity},
     {path: '/profiles/:id/activities/:activityId', component: Activity},
-    {path: '/profiles/:id/activities/', component: ListActivity}
-];
+    {path: '/profiles/:id/activities/', component: ListActivity},
+    {path: '/profiles', component: Search, name: 'Users' }
+    ];
 
 export default routes;

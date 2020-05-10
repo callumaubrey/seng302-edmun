@@ -7,13 +7,14 @@ import Vuelidate from 'vuelidate'
 import VueRouter from 'vue-router'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
-import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
+import {BootstrapVue, IconsPlugin, NavbarPlugin, BootstrapVueIcons } from 'bootstrap-vue'
 import routes from './routes';
 
 Vue.use(VueRouter)
 Vue.use(Vuelidate)
 // Install BootstrapVue
 Vue.use(BootstrapVue)
+Vue.use(BootstrapVueIcons)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
 

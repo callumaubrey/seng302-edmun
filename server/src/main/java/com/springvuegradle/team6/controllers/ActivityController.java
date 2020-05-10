@@ -1,5 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.ActivityType;
+import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.ProfileRepository;
 import ch.qos.logback.core.encoder.EchoEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +30,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -428,4 +433,18 @@ public class ActivityController {
   public ResponseEntity getUserActivities(@PathVariable int profileId) {
     return ResponseEntity.ok(activityRepository.findByProfile_Id(profileId));
   }
+
+   /**
+       * Get all activity types
+       *
+       * @return 200 response with headers
+       */
+      @GetMapping("/profiles/activity-types")
+      public ResponseEntity getActivityTypes() {
+          List<String> activityList = new ArrayList();
+          for (ActivityType myVar : ActivityType.values()) {
+              activityList.add(myVar.toString());
+          }
+          return ResponseEntity.ok(activityList);
+      }
 }
