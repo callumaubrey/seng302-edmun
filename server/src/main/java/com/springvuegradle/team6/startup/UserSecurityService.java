@@ -45,12 +45,12 @@ public class UserSecurityService {
     }
 
     /**
-     * Check if user is authorised to edit requested user information.
+     * Check if user is authorised to view requested user information.
      *
      * @param requestId  user id under query
      * @param session    Http session
      * @param repository profile repository
-     * @return ResponseEntity will return 401 if user is not logged in or user is not authorized to edit the requested user's information,
+     * @return ResponseEntity will return 401 if user is not logged in
      * or 404 if requested user's profile is not found, else it will return null if user is authorized
      */
     public static ResponseEntity<String> canViewPermission(Integer requestId, HttpSession session, ProfileRepository repository) {

@@ -4,7 +4,7 @@
         <b-container>
             <b-row class="my-1">
                 <b-col sm="11">
-                    <h3>My Activities</h3>
+                    <h3>{{profileName}}'s Activities</h3>
                     <b-form-text>Click on an activity to view more information on the activity</b-form-text>
                 </b-col>
                 <b-col sm="1">
@@ -32,6 +32,7 @@
             return {
                 profileId: null,
                 isLoggedIn: true,
+                profileName: '',
                 userName: '',
                 items: [],
                 fields: ['activityName', 'description', 'activityTypes'],
@@ -39,27 +40,28 @@
             }
         },
         methods: {
-            getUserIdAndActivities: function () {
+            getUserIdAndName: function () {
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                this.axios.get('http://localhost:9499/profiles/' + currentObj.$route.params.id)
                     .then(function (response) {
-                        currentObj.profileId = response.data;
+                        currentObj.profileId = response.data.id;
+                        currentObj.profileName = response.data.firstname;
                     })
                     .catch(function (err) {
                         alert(err);
                     });
             },
-            getName: function () {
-                let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
-                    .then(function (response) {
-                        currentObj.userName = response.data;
-                    })
-                    .catch(function () {
-                    });
-            },
+            // getName: function () {
+            //     let currentObj = this;
+            //     this.axios.defaults.withCredentials = true;
+            //     this.axios.get('http://localhost:9499/profiles/firstname')
+            //         .then(function (response) {
+            //             currentObj.userName = response.data;
+            //         })
+            //         .catch(function () {
+            //         });
+            // },
             getActivities: function (id) {
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
@@ -82,9 +84,11 @@
                 this.$router.push('/profiles/' + profileId + '/activities/' + activityId);
             }
         },
+        beforeMount() {
+            this.getUserIdAndName();
+        },
         mounted() {
-            this.getUserIdAndActivities();
-            this.getName();
+            //this.getName();
         },
         watch: {
             profileId: function (val) {

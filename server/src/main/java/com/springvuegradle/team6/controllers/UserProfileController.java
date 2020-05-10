@@ -41,7 +41,7 @@ public class UserProfileController {
     }
 
     /**
-     * Gets the user where the provided id matches the session id. Otherwise return unauthorized.
+     * Gets the user where the provided id. Otherwise return unauthorized if id doesnt exist or not logged in.
      * @param id The requested id
      * @param session The current Http Session
      * @return The response code and message/Json
