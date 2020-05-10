@@ -549,8 +549,7 @@
             },
             saveProfileInfo() {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 this.$v.profileForm.$touch();
@@ -592,8 +591,7 @@
             },
             addPassport() {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 if (this.selectedCountry && !this.passportsCode.includes(this.selectedCountry[1])) {
@@ -638,8 +636,7 @@
             },
             addActivity() {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 if (this.selectedActivity && !this.yourActivites.includes(this.selectedActivity)) {
@@ -679,8 +676,7 @@
             },
             deletePassport(index) {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 const vueObj = this;
@@ -717,8 +713,7 @@
             },
             deleteActivity(index) {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 const vueObj = this;
@@ -745,8 +740,7 @@
                 vueObj.location = location;
                 console.log(location.address.city);
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
 
@@ -796,8 +790,7 @@
             },
             makePrimary(index) {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 const tempEmails = this.emails.slice();
@@ -829,8 +822,7 @@
             },
             deleteEmail(index) {
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 const tempEmails = this.emails.slice();
@@ -861,8 +853,7 @@
                     return;
                 }
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 var newEmail = this.emailForm.emailInput;
@@ -899,8 +890,8 @@
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                console.log(this.profileId, this.$route.params.id);
+                if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
                 this.axios.get('http://localhost:9499/profiles/' + userId)
@@ -965,8 +956,7 @@
                     return;
                 }
                 let userId = this.profileId;
-                let isAdmin = this.checkUserIsAdmin();
-                if (isAdmin) {
+                if (this.loggedInIsAdmin) {
                     console.log("I was here");
                     userId = this.$route.params.id;
                 }
@@ -1016,13 +1006,12 @@
                         }
                     }
                 }
-                return
             },
             checkAuthorized: async function () {
                 let currentObj = this;
                 await this.checkUserIsAdmin();
                 this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                return this.axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         console.log("profileId yeet" + currentObj.profileId);
@@ -1052,13 +1041,13 @@
                     });
             },
         },
-        mounted: function () {
-            this.getProfileData();
+        mounted: async function () {
+            await this.checkAuthorized();
+            await this.getProfileData();
             this.getActivityTypes();
         },
         beforeMount() {
             this.getCountryData();
-            this.checkAuthorized();
             this.getLoggedInUserData();
         }
 
