@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
             <div>
                 <b-row>
@@ -135,7 +135,7 @@
         data: function() {
             return {
                 loggedInUser: '',
-                loggedInID: '',
+                loggedInId: '',
                 userData: '',
                 passports: [],
                 activities: [],
@@ -159,7 +159,7 @@
                 return this.axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         currentObj.loggedInUser = response.data;
-                        currentObj.loggedInID = response.data.id;
+                        currentObj.loggedInId = response.data.id;
                         currentObj.userName = response.data.firstname;
                     })
                     // eslint-disable-next-line no-unused-vars
@@ -190,7 +190,7 @@
 
 
                         if (profileAdmin && !currentObj.loggedInIsAdmin) {
-                            currentObj.$router.push('/profiles/' + currentObj.loggedInID);
+                            currentObj.$router.push('/profiles/' + currentObj.loggedInId);
                         }
 
                         currentObj.location = response.data.location;
@@ -212,7 +212,7 @@
             },
             checkHideElements: function () {
                 let currentObj = this;
-                if (currentObj.loggedInID === currentObj.profileId || currentObj.loggedInIsAdmin){
+                if (currentObj.loggedInId === currentObj.profileId || currentObj.loggedInIsAdmin){
                     currentObj.hidden = false;
                 }
                 else{

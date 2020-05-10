@@ -10,10 +10,10 @@
                 <b-row align-h="center">
                     <h3>{{activityName}}</h3>
                 </b-row>
-                <b-row align-h="center" v-if="isActivityOwner">
-                    <b-dropdown text="Actions" class="m-md-2">
-                        <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
-                        <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
+                <b-row align-h="center">
+                    <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
+                        <b-dropdown-item  @click="editActivity()">Edit</b-dropdown-item>
+                        <b-dropdown-item  @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
                 <b-card style="margin: 1em" title="About:" >
@@ -69,11 +69,12 @@
         },
         data: function() {
             return {
-                isActivityOwner: false,
+                //isActivityOwner: false,
                 userData: '',
                 isLoggedIn: false,
                 userName: "",
-                loggedInId: 0,
+                loggedInId: null,
+                profileId: null,
                 activityName: "",
                 description: "",
                 activityTypes: [],
@@ -88,7 +89,8 @@
         mounted() {
             this.getUserName();
             this.getActivityData();
-            this.getUserId();
+            this.getLoggedInId();
+            this.setProfileId();
         },
         methods: {
             getUserName: function () {
@@ -97,14 +99,14 @@
                 this.axios.get('http://localhost:9499/profiles/firstname')
                 .then((res) => {
                     vueObj.userName = res.data.firstname;
-                    this.checkIsOwner();
+                    //this.checkIsOwner();
                 })
                 .catch(() => {
                     vueObj.isLoggedIn = false;
                     vueObj.$router.push('/login');
                 });
             },
-            getUserId: function () {
+            getLoggedInId: function () {
                 let vueObj = this;
                 this.axios.defaults.withCredentials = true;
                 this.axios.get('http://localhost:9499/profiles/id')
@@ -116,33 +118,43 @@
                     vueObj.$router.push('/login');
                 })
             },
-            checkIsOwner: function () {
+            setProfileId: function () {
                 let vueObj = this;
-                console.log("loggedinId is " + vueObj.loggedInId);
-                if (vueObj.loggedInId == vueObj.$route.params.id) {
-                    vueObj.isActivityOwner = true;
-                } else {
-                    vueObj.isActivityOwner = false;
-                }
+                vueObj.profileId = this.$route.params.id;
             },
+            // checkIsOwner: function () {
+            //     let vueObj = this;
+            //     console.log("loggedinId is " + vueObj.loggedInId);
+            //     if (vueObj.loggedInId == vueObj.$route.params.id) {
+            //         vueObj.isActivityOwner = true;
+            //     } else {
+            //         vueObj.isActivityOwner = false;
+            //     }
+            // },
             deleteActivity() {
-                if (!confirm("Are you sure you want to delete this activity?")) {
-                    return;
-                }
+                // double check for if user clicks button when hidden.
+                if (this.profileId === this.loggedInId) {
+                    if (!confirm("Are you sure you want to delete this activity?")) {
+                        return;
+                    }
 
-                let profileId = this.$route.params.id;
-                let activityId = this.$route.params.activityId;
-                // alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
-                this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
-                .then(() => {
-                    this.$router.push('/profiles/' + profileId + '/activities/');
-                })
-                .catch(err => alert(err));
+                    let profileId = this.$route.params.id;
+                    let activityId = this.$route.params.activityId;
+                    // alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
+                    this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
+                        .then(() => {
+                            this.$router.push('/profiles/' + profileId + '/activities/');
+                        })
+                        .catch(err => alert(err));
+                }
             },
             editActivity() {
                 let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
-                this.$router.push('/profiles/' + profileId + '/activities/' + activityId + '/edit');
+                // double check for it somehow user clicks edit button when hidden.
+                if (this.profileId === this.loggedInId) {
+                    this.$router.push('/profiles/' + profileId + '/activities/' + activityId + '/edit');
+                }
             },
             getActivityData() {
                 let vueObj = this;
