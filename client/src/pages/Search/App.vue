@@ -119,8 +119,15 @@
                             hover
                             :fields="fields"
                             :items="data"
+                            :busy="tableIsLoading"
                             @row-clicked="itemRowClicked"
                     >
+                        <template v-slot:table-busy>
+                            <div class="text-center text-primary my-2">
+                                <b-spinner class="align-middle"></b-spinner>
+                                <strong> Loading...</strong>
+                            </div>
+                        </template>
                     </b-table>
                 </b-col>
             </b-row>
@@ -174,7 +181,8 @@
                     search: "",
                     selectedOptions: [],
                     method: "AND"
-                }
+                },
+                tableIsLoading: false,
             }
         },
         computed: {
@@ -280,8 +288,12 @@
                     .then((res) => {
                         currentObj.data = res.data.results;
                         currentObj.updateUrl();
+                        currentObj.tableIsLoading = false;
                     })
-                    .catch(err => console.log(err));
+                    .catch(err => {
+                        currentObj.tableIsLoading = false;
+                        console.log(err)
+                    });
             },
             searchNames: function (query){
                 if (this.searchBy == 'email') {
@@ -310,6 +322,7 @@
                 return false;
             },
             searchUser: function () {
+                this.tableIsLoading = true;
                 this.currentPage = 1;
                 if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
                 let query = 'http://localhost:9499/profiles/count';
