@@ -302,6 +302,7 @@
                 this.routeQuery.page = this.currentPage;
                 console.log(this.routeQuery);
                 this.updateUrl();
+                console.log(this.$route.query);
             },
             searchUser: function () {
                 this.routeQuery = {}
@@ -376,7 +377,7 @@
 
                 // if offset is null, the user is entering the search page for the first time, which means
                 // there wouldn't be a need to repopulate the page (except when query is from the nav bar)
-                if (this.$route.query.offset) {
+                if (this.$route.query.offset || this.$route.query.page) {
                     this.offset = this.$route.query.offset;
                     this.limit = this.$route.query.limit;
                     this.currentPage = this.$route.query.page;
@@ -399,9 +400,11 @@
             }
         },
         watch: {
-            $route: function () {
+            '$route': function () {
                 this.populatePage();
-            }
+            },
+            deep: true,
+            immediate: true
         },
         mounted() {
             this.getUserId();
