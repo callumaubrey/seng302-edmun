@@ -12,8 +12,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class EditEmailsRequest {
@@ -48,66 +48,41 @@ public class EditEmailsRequest {
             }
         }
 
+        // Set Primary Email
+        Optional<Email> profilePrimaryEmail = emailRepository.findByAddress(primaryEmail);
+
         // Check if primary email is being used by another user
-        if (emailRepository.findByAddress(primaryEmail).isPresent()
-                && !(profile.getPrimaryEmail().getAddress().equals(primaryEmail))
-                && !(profile.getEmails().contains(new Email(primaryEmail)))) {
+        if(profilePrimaryEmail.isPresent() && !profile.getAllEmails().contains(profilePrimaryEmail.get())) {
             return new ResponseEntity<>(primaryEmail + " is already being used", HttpStatus.BAD_REQUEST);
         }
-        Email newPrimary = null;
-        if (additionalEmail != null) {
-            if (profile.getEmails().contains(new Email(primaryEmail))) {
-                for (Email email : profile.getEmails()) {
-                    if (email.equals(new Email(primaryEmail))) {
-                        newPrimary = email;
-                        break;
-                    }
-                }
-            }
+
+        if(profilePrimaryEmail.isEmpty()) {
+            profilePrimaryEmail = Optional.of(new Email(primaryEmail));
         }
 
-        boolean flag = false;
+        if(additionalEmail != null) {
+            Set<Email> profileAdditionalEmails = new HashSet<>();
 
-        if (additionalEmail != null) {
-            // Create a set containing all the emails requested
-            Set<Email> newEmails = new HashSet<>();
-            for (String email : additionalEmail) {
-                newEmails.add(new Email(email));
-            }
+            for(String email : additionalEmail) {
+                Optional<Email> profileEmail = emailRepository.findByAddress(email);
 
-            // Find out which emails the user is associated with already from the emails requested
-            for (Iterator<Email> i = profile.getEmails().iterator(); i.hasNext(); ) {
-                Email email = i.next();
-                if (!(newEmails.contains(email))) {
-                    i.remove();
+                // Exists and associates another user
+                if(profileEmail.isPresent() && !profile.getAllEmails().contains(profileEmail.get())) {
+                    return new ResponseEntity<>(email + " is already being used", HttpStatus.BAD_REQUEST);
                 }
+
+                if(profileEmail.isEmpty()) {
+                    profileEmail = Optional.of(new Email(email));
+                }
+
+                profileAdditionalEmails.add(profileEmail.get());
             }
 
-            // Add the ones that are requested but not associated with the user
-            for (Email email : newEmails) {
-                if (!(profile.getEmails().contains(email))) {
-                    // Check if the email is being used by another user
-                    if (emailRepository.findByAddress(email.getAddress()).isPresent()
-                            && !(profile.getPrimaryEmail().equals(email))) {
-                        return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
-                    } else {
-                        if (profile.getPrimaryEmail().equals(email)) {
-                            profile.getEmails().add(profile.getPrimaryEmail());
-                            flag = true;
-                        } else {
-                            profile.getEmails().add(email);
-                        }
-                    }
-                }
-            }
-        } else {
-            profile.getEmails().clear();
+            profile.setEmails(profileAdditionalEmails);
         }
-        if (flag) {
-            profile.setPrimaryEmail(newPrimary);
-        } else {
-            profile.getPrimaryEmail().setAddress(primaryEmail);
-        }
+
+        profile.setPrimaryEmail(profilePrimaryEmail.get());
+
         return null;
     }
 

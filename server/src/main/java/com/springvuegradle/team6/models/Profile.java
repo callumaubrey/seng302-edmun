@@ -174,6 +174,10 @@ public class Profile {
         return additionalEmails;
     }
 
+  public Set<Email> getAllEmails() {
+    return this.emails;
+  }
+
   @JsonProperty("activities")
   public Set<ActivityType> getActivityTypes() {
     return this.activityTypes;
