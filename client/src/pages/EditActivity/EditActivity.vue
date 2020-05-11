@@ -214,6 +214,7 @@
                     startTime: null,
                     endTime: null
                 },
+                dbStartDate: null,
                 locationData: null
             }
         },
@@ -252,6 +253,7 @@
                 startDate: {
                     required,
                     dateValidate(val) {
+                        if (val == this.dbStartDate) return true;
                         return val >= new Date().toISOString().split('T')[0];
                     }
                 },
@@ -303,6 +305,7 @@
                         if (response.data.continuous == false) {
                             currentObj.isContinuous = '1';
                             [currentObj.durationForm.startDate, currentObj.durationForm.startTime] = currentObj.convertISOtoDateTime(response.data.startTime);
+                            [currentObj.dbStartDate, ] = currentObj.convertISOtoDateTime(response.data.startTime);
                             [currentObj.durationForm.endDate, currentObj.durationForm.endTime] = currentObj.convertISOtoDateTime(response.data.endTime);
                         } else {
                             currentObj.isContinuous = '0';
