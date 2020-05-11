@@ -250,7 +250,10 @@
             },
             durationForm: {
                 startDate: {
-                    required
+                    required,
+                    dateValidate(val) {
+                        return val >= new Date().toISOString().split('T')[0];
+                    }
                 },
                 endDate: {
                     required,
