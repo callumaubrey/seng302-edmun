@@ -385,6 +385,7 @@
     import NavBar from "@/components/NavBar.vue"
     import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
     import locationMixin from "../../mixins/locationMixin";
+
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
     const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
@@ -557,9 +558,9 @@
                     return;
                 }
                 const vueObj = this;
-                this.axios.defaults.withCredentials = true;
+                axios.defaults.withCredentials = true;
                 console.log(this.profileForm.fitness);
-                this.axios.put("http://localhost:9499/profiles/" + userId, {
+                axios.put("http://localhost:9499/profiles/" + userId, {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -601,7 +602,7 @@
                     tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
                     tempCodes.push(this.selectedCountry[1]);
-                    this.axios.put("http://localhost:9499/profiles/" + userId, {
+                    axios.put("http://localhost:9499/profiles/" + userId, {
                         firstname: this.profileForm.firstname,
                         middlename: this.profileForm.middlename,
                         lastname: this.profileForm.lastname,
@@ -643,7 +644,7 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
+                    axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
                         activities: this.yourActivites
                     }).then(function (response) {
                         console.log(vueObj.yourActivites);
@@ -665,8 +666,8 @@
             },
             getActivityTypes() {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/activity-types')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/activity-types')
                     .then(function (response) {
                         currentObj.availActivitys = response.data;
                     })
@@ -684,7 +685,7 @@
                 const tempCodes = this.passportsCode.slice();
                 const removedPassport = (tempPassports.splice(index, 1))[0];
                 tempCodes.splice(index, 1);
-                this.axios.put("http://localhost:9499/profiles/" + userId, {
+                axios.put("http://localhost:9499/profiles/" + userId, {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -719,7 +720,7 @@
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
                 // Need to change to the new activities api
-                this.axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
+                axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
                     activities: this.yourActivites
                 }).then(function (response) {
                     if (response.status == 200) {
@@ -760,7 +761,7 @@
                         data.country = location.address.country;
                     }
                     console.log(data);
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", data).then(function (response) {
+                    axios.put("http://localhost:9499/profiles/" + userId + "/location", data).then(function (response) {
                         console.log(response);
                         vueObj.locationDisplayText = vueObj.location.display_name;
                         vueObj.locationUpdateMessage = "Location successfully updated";
@@ -771,7 +772,7 @@
                         vueObj.locationErrorMessage = "Location failed to update";
                     });
                 } else {
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/location", {}).then(function (response) {
+                    axios.put("http://localhost:9499/profiles/" + userId + "/location", {}).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
                         console.log(error)
@@ -802,7 +803,7 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: tempPrimary[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -828,7 +829,7 @@
                 const tempEmails = this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: tempEmails
                 }).then(function (response) {
@@ -860,7 +861,7 @@
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                this.axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
                     primary_email: this.primaryEmail[0],
                     additional_email: newEmails
                 }).then(function (response) {
@@ -888,13 +889,13 @@
             }),
             getProfileData: async function () {
                 let vueObj = this;
-                this.axios.defaults.withCredentials = true;
+                axios.defaults.withCredentials = true;
                 let userId = this.profileId;
                 console.log(this.profileId, this.$route.params.id);
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
-                this.axios.get('http://localhost:9499/profiles/' + userId)
+                axios.get('http://localhost:9499/profiles/' + userId)
                     .then(function (response) {
                         console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
@@ -938,8 +939,8 @@
             },
             // getUserId: async function () {
             //     let currentObj = this;
-            //     this.axios.defaults.withCredentials = true;
-            //     this.axios.get('http://localhost:9499/profiles/id')
+            //     axios.defaults.withCredentials = true;
+            //     axios.get('http://localhost:9499/profiles/id')
             //         .then(function (response) {
             //             currentObj.profileId = response.data;
             //         })
@@ -960,8 +961,8 @@
                     console.log("I was here");
                     userId = this.$route.params.id;
                 }
-                this.axios.defaults.withCredentials = true;
-                this.axios.put("http://localhost:9499/profiles/" + userId + "/password", {
+                axios.defaults.withCredentials = true;
+                axios.put("http://localhost:9499/profiles/" + userId + "/password", {
                     old_password: this.passwordForm.oldPassword,
                     new_password: this.passwordForm.password,
                     repeat_password: this.passwordForm.passwordRepeat
@@ -989,7 +990,7 @@
 
             getUserRoles: function () {
                 let currentObj = this;
-                return this.axios.get("http://localhost:9499/profiles/role")
+                return axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
                         console.log(response);
                         currentObj.loggedInUserRoles = response.data;
@@ -1010,8 +1011,8 @@
             checkAuthorized: async function () {
                 let currentObj = this;
                 await this.checkUserIsAdmin();
-                this.axios.defaults.withCredentials = true;
-                return this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         console.log("profileId yeet" + currentObj.profileId);
@@ -1026,8 +1027,8 @@
             },
             getLoggedInUserData: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         console.log("Logged in as:", response.data);
                         currentObj.loggedInUser = response.data;

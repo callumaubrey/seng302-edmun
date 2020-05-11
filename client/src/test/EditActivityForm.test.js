@@ -3,7 +3,6 @@ import Component from '../pages/EditActivity/EditActivity.vue'; // name of your 
 import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
 import Vuelidate from "vuelidate";
 import axios from "axios";
-import VueAxios from 'vue-axios'
 import VueRouter from 'vue-router'
 import routes from '../routes'
 

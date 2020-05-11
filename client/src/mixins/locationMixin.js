@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 export default {
     data: function() {
         return {
@@ -18,7 +20,7 @@ export default {
                 }
                 console.log(locationText)
 
-                let locationData = _this.axios.create({
+                let locationData = axios.create({
                     baseURL: 'https://nominatim.openstreetmap.org/search?q=' + locationText + '&format=json&limit=8&addressdetails=1',
                     timeout: 2000,
                     withCredentials: false,

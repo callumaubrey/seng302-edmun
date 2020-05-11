@@ -42,6 +42,7 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
+    import axios from 'axios'
 
     const App = {
         name: 'App',
@@ -60,8 +61,8 @@
         methods: {
             getUserSession: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/user')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         currentObj.userData = response.data;
                         currentObj.isLoggedIn = true;

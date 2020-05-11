@@ -59,6 +59,7 @@
 
 <script>
   import NavBar from '@/components/NavBar.vue';
+  import axios from 'axios'
 
   export default {
     components: {
@@ -105,8 +106,8 @@
         this.submitted = true;
         if (this.emailState != false && this.passwordState != false) {
           let currentObj = this;
-          this.axios.defaults.withCredentials = true;
-          this.axios.post('http://localhost:9499/login', {
+          axios.defaults.withCredentials = true;
+          axios.post('http://localhost:9499/login', {
             email: this.email,
             password: this.password
           })

@@ -130,6 +130,7 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
+    import axios from 'axios'
 
     const App = {
         name: 'App',
@@ -159,8 +160,8 @@
         methods: {
             getLoggedInUserData: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                return this.axios.get('http://localhost:9499/profiles/user')
+                axios.defaults.withCredentials = true;
+                return axios.get('http://localhost:9499/profiles/user')
                     .then(function (response) {
                         currentObj.loggedInUser = response.data;
                         currentObj.loggedInId = response.data.id;
@@ -174,8 +175,8 @@
             },
             getProfileData: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
                     .then(function (response) {
                         currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
@@ -226,8 +227,8 @@
 
             getUserId: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;
@@ -242,7 +243,7 @@
 
             getUserRoles: function () {
                 let currentObj = this;
-                return this.axios.get("http://localhost:9499/profiles/role")
+                return axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
                         currentObj.loggedInUserRoles = response.data;
                     })

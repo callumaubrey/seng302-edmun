@@ -114,6 +114,7 @@
 <script>
   import NavBar from '@/components/NavBar.vue';
   import {alphaNum, email, helpers, required, sameAs} from 'vuelidate/lib/validators'
+  import axios from 'axios'
 
   const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
   const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -191,8 +192,8 @@
           return;
         }
         let currentObj = this;
-        this.axios.defaults.withCredentials = true;
-        this.axios.post('http://localhost:9499/profiles', {
+        axios.defaults.withCredentials = true;
+        axios.post('http://localhost:9499/profiles', {
           date_of_birth: this.date_of_birth,
           firstname: this.firstname,
           middlename: this.middlename,

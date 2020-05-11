@@ -27,7 +27,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue"
-    // import axios from 'axios'
+    import axios from 'axios'
 
     const List = {
         name: 'List',
@@ -50,8 +50,8 @@
         methods: {
             getLoggedInId: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.loggedinId = response.data;
                     })
@@ -61,8 +61,8 @@
             },
             getProfileIdAndName: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/' + currentObj.$route.params.id)
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/' + currentObj.$route.params.id)
                     .then(function (response) {
                         currentObj.profileId = response.data.id;
                         currentObj.profileName = response.data.firstname;
@@ -73,8 +73,8 @@
             },
             getLoggedInName: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
                         currentObj.isLoggedIn = true;
@@ -83,9 +83,9 @@
                     });
             },
             getActivities: function (id) {
-                this.axios.defaults.withCredentials = true;
+                axios.defaults.withCredentials = true;
                 let vueObject = this;
-                this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
+                axios.get('http://localhost:9499/profiles/' + id + '/activities')
                     .then((res) => {
                         this.items = res.data;
                         for (let i = 0; i < res.data.length; i++) {

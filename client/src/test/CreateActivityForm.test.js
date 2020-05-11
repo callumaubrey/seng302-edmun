@@ -3,7 +3,6 @@ import Component from '../pages/CreateActivity/App.vue'; // name of your Vue com
 import {BootstrapVue, IconsPlugin, NavbarPlugin} from 'bootstrap-vue'
 import Vuelidate from "vuelidate";
 import axios from "axios";
-import VueAxios from 'vue-axios'
 import VueRouter from 'vue-router'
 import routes from '../routes'
 //

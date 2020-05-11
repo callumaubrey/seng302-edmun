@@ -192,6 +192,7 @@
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
+    import axios from 'axios'
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -303,8 +304,8 @@
         methods: {
             getActivities: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/activity-types')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/activity-types')
                     .then(function (response) {
                         currentObj.activityTypes = response.data;
                     })
@@ -366,7 +367,7 @@
             onSubmit() {
                 this.$v.form.$touch();
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
+                axios.defaults.withCredentials = true;
                 let userId = this.profileId;
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
@@ -375,7 +376,7 @@
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    this.axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -400,7 +401,7 @@
                         return;
                     }
                     const isoDates = this.getDates();
-                    this.axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
@@ -455,8 +456,8 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -465,8 +466,8 @@
             },
             getUserName: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -479,7 +480,7 @@
             },
             getUserRoles: function () {
                 let currentObj = this;
-                return this.axios.get("http://localhost:9499/profiles/role")
+                return axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
                         currentObj.loggedInUserRoles = response.data;
                     })
@@ -498,8 +499,8 @@
             checkAuthorized: async function () {
                 let currentObj = this;
                 await this.checkUserIsAdmin();
-                this.axios.defaults.withCredentials = true;
-                return this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {

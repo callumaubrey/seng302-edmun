@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import App from './App'
 import axios from 'axios'
-import VueAxios from 'vue-axios'
 import VueLogger from 'vuejs-logger';
 import Vuelidate from 'vuelidate'
 import VueRouter from 'vue-router'
@@ -34,7 +33,6 @@ const options = {
 const router = new VueRouter({routes});
 
 Vue.use(VueLogger, options);
-Vue.use(VueAxios, axios);
 Vue.use(NavbarPlugin);
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);

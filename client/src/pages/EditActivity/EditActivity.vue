@@ -183,6 +183,7 @@
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
+    import axios from 'axios'
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -297,8 +298,8 @@
         methods: {
             getActivity: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/activities/' + this.activityId)
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/activities/' + this.activityId)
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.form.name = response.data.activityName;
@@ -357,9 +358,9 @@
                     return;
                 }
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
+                axios.defaults.withCredentials = true;
                 if (this.isContinuous == '0') {
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
+                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -384,7 +385,7 @@
                     }
                     const isoDates = this.getISODates();
                     console.log(isoDates);
-                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
+                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -450,8 +451,8 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;
@@ -461,7 +462,7 @@
             },
             getUserRoles: function () {
                 let currentObj = this;
-                return this.axios.get("http://localhost:9499/profiles/role")
+                return axios.get("http://localhost:9499/profiles/role")
                     .then(function (response) {
                         currentObj.loggedInUserRoles = response.data;
                     })
@@ -480,8 +481,8 @@
             checkAuthorized: async function () {
                 let currentObj = this;
                 await this.checkUserIsAdmin();
-                this.axios.defaults.withCredentials = true;
-                return this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {

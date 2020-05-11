@@ -60,6 +60,7 @@
 <script>
     import 'bootstrap/dist/css/bootstrap.css'
     import 'bootstrap-vue/dist/bootstrap-vue.css'
+    import axios from 'axios'
 
     const NavBar = {
         name: 'NavBar',
@@ -82,7 +83,7 @@
         methods: {
             logout() {
                 const vueObj = this;
-                this.axios.get('http://localhost:9499/logout/')
+                axios.get('http://localhost:9499/logout/')
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
@@ -93,8 +94,8 @@
             },
             getUserId: async function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -114,7 +115,7 @@
             },
             getUserName() {
                 let currentObj = this;
-                this.axios.get('http://localhost:9499/profiles/firstname')
+                axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })

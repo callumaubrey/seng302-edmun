@@ -77,6 +77,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import axios from 'axios'
 
     const App = {
         name: 'App',
@@ -112,8 +113,8 @@
         methods: {
             getUserName: function () {
                 let vueObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/firstname')
                 .then((res) => {
                     vueObj.userName = res.data;
                 })
@@ -124,8 +125,8 @@
             },
             getLoggedInId: function () {
                 let vueObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then((res) => {
                         vueObj.loggedInId = res.data;
                         vueObj.isLoggedIn = true;
@@ -148,7 +149,7 @@
                     let profileId = this.$route.params.id;
                     let activityId = this.$route.params.activityId;
                     // alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
-                    this.axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
+                    axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
                         .then(() => {
                             this.$router.push('/profiles/' + profileId + '/activities/');
                         })
@@ -170,8 +171,8 @@
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
                 let profileId = this.$route.params.id;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/activities/' + activityId)
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/activities/' + activityId)
                     .then((res) => {
                         vueObj.activityOwner = res.data.profile;
                         vueObj.activityName = res.data.activityName;

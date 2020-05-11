@@ -56,6 +56,7 @@
 
 <script>
   import api from '../Api';
+  import axios from 'axios'
 
   // visibility filters
   let filters = {

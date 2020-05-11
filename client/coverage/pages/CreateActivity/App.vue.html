@@ -1021,8 +1021,8 @@
         methods: {
             getActivities: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-<span class="fstat-no" title="function not covered" >                this.axios.get('http://localhost:9499/profiles/activity-types' )</span>
+                axios.defaults.withCredentials = true;
+<span class="fstat-no" title="function not covered" >                axios.get('http://localhost:9499/profiles/activity-types' )</span>
                     .then(function (response) {
 <span class="cstat-no" title="statement not covered" >                        currentObj.activityTypes = response.data;</span>
 <span class="fstat-no" title="function not covered" >                    })</span>
@@ -1050,12 +1050,12 @@
 <span class="fstat-no" title="function not covered" >            onSubmit() {</span>
 <span class="cstat-no" title="statement not covered" >                this.$v.form.$touch();</span>
 <span class="cstat-no" title="statement not covered" >                let currentObj = this;</span>
-<span class="cstat-no" title="statement not covered" >                this.axios.defaults.withCredentials = true;</span>
+<span class="cstat-no" title="statement not covered" >                axios.defaults.withCredentials = true;</span>
 <span class="cstat-no" title="statement not covered" >                if (this.isContinuous == '1') {</span>
 <span class="cstat-no" title="statement not covered" >                    if (this.$v.form.$anyError) {</span>
 <span class="cstat-no" title="statement not covered" >                        return;</span>
                     }
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {</span></span>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >                    axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {</span></span>
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -1077,7 +1077,7 @@
 <span class="cstat-no" title="statement not covered" >                        return;</span>
                     }
 <span class="cstat-no" title="statement not covered" >                    const isoDates = this.getDates();</span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >                    this.axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {</span></span>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >                    axios.post("http://localhost:9499/profiles/" + this.profile_id + "/activities", {</span></span>
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
@@ -1121,8 +1121,8 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-<span class="fstat-no" title="function not covered" >                this.axios.get('http://localhost:9499/profiles/id')</span>
+                axios.defaults.withCredentials = true;
+<span class="fstat-no" title="function not covered" >                axios.get('http://localhost:9499/profiles/id')</span>
                     .then(function (response) {
 <span class="cstat-no" title="statement not covered" >                        currentObj.profile_id = response.data;</span>
 <span class="fstat-no" title="function not covered" >                    })</span>
@@ -1131,8 +1131,8 @@
             },
             getUserName: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-<span class="fstat-no" title="function not covered">                this.axios.get('http://localhost:9499/profiles/user')</span>
+                axios.defaults.withCredentials = true;
+<span class="fstat-no" title="function not covered">                axios.get('http://localhost:9499/profiles/user')</span>
                     .then(function (response) {
 <span class="cstat-no" title="statement not covered">                        currentObj.userName = response.data;</span>
 <span class="fstat-no" title="function not covered">                    })</span>

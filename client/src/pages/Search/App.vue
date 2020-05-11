@@ -150,6 +150,7 @@
 
 <script>
     import NavBar from '@/components/NavBar.vue';
+    import axios from 'axios'
 
     const App = {
         name: 'App',
@@ -214,8 +215,8 @@
                 this.activityTypesForm.search = ''
             },
             getUserId: function () {
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/id')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/id')
                     .then((res) => {
                         this.profileId = res.data;
                         this.isLoggedIn = true;
@@ -223,8 +224,8 @@
                     .catch((err) => console.log(err));
             },
             getUserName: function () {
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/firstname')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/firstname')
                     .then((res) => {
                         this.userName = res.data;
                     })
@@ -258,7 +259,7 @@
                 this.routeQuery.page = this.currentPage;
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
-                this.axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
+                axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
                         currentObj.updateUrl();
@@ -327,7 +328,7 @@
                 const currentObj = this;
                 // this.count = 10;
                 console.log(query);
-                this.axios.get(query)
+                axios.get(query)
                     .then((res) => {
                         currentObj.count = res.data;
                         currentObj.getUsers()
@@ -337,8 +338,8 @@
             },
             getActivities: function () {
                 let currentObj = this;
-                this.axios.defaults.withCredentials = true;
-                this.axios.get('http://localhost:9499/profiles/activity-types')
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/profiles/activity-types')
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.activityTypesForm.options = response.data;
