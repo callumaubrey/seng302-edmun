@@ -349,13 +349,17 @@
                 this.activityErrorMessage = "";
                 this.activityUpdateMessage = "";
                 this.$v.form.$touch();
+                let userId = this.profileId;
+                if (this.loggedInIsAdmin) {
+                    userId = this.$route.params.id;
+                }
                 if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1) {
                     return;
                 }
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
                 if (this.isContinuous == '0') {
-                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities/" + this.activityId, {
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -380,7 +384,7 @@
                     }
                     const isoDates = this.getISODates();
                     console.log(isoDates);
-                    this.axios.put("http://localhost:9499/profiles/" + this.profileId + "/activities/" + this.activityId, {
+                    this.axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,

@@ -10,6 +10,8 @@ import com.springvuegradle.team6.requests.EditActivityTypeRequest;
 import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +76,9 @@ public class ActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    if (!(id.toString().equals(activity.getProfile().getId().toString()))) {
+    Collection<SimpleGrantedAuthority> userRoles = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+    boolean isAdmin = userRoles.stream().anyMatch(simpleGrantedAuthority -> simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+    if (!(id.toString().equals(activity.getProfile().getId().toString())) && !isAdmin) {
       return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
     }
 
@@ -252,6 +257,7 @@ public class ActivityController {
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
+
 
       ResponseEntity<String> activityAuthorizedResponse =
           this.checkAuthorisedToEditActivity(edit, session);

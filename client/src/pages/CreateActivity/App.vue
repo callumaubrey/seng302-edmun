@@ -367,11 +367,15 @@
                 this.$v.form.$touch();
                 let currentObj = this;
                 this.axios.defaults.withCredentials = true;
+                let userId = this.profileId;
+                if (this.loggedInIsAdmin) {
+                    userId = this.$route.params.id;
+                }
                 if (this.isContinuous == '1') {
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    this.axios.post("http://localhost:9499/profiles/" + this.profileId + "/activities", {
+                    this.axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -396,7 +400,7 @@
                         return;
                     }
                     const isoDates = this.getDates();
-                    this.axios.post("http://localhost:9499/profiles/" + this.profileId + "/activities", {
+                    this.axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
