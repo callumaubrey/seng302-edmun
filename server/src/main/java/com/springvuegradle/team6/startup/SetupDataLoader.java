@@ -56,7 +56,7 @@ public class SetupDataLoader implements
         user.setPassword(adminPassword);
         Email email = new Email((adminEmail));
         emailRepository.save(email);
-        user.setEmail(email);
+        user.setPrimaryEmail(email);
         Collection<Role> roles = new ArrayList<>(Arrays.asList(adminRole));
         user.setRoles(roles);
     }

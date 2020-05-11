@@ -1,22 +1,16 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
-import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.responses.SearchProfileResponse;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.apache.coyote.Response;
-import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -101,7 +95,7 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress(),
+              profile.getPrimaryEmail().getAddress(),
               profile.getActivityTypes().toString());
       results.add(result);
     }
@@ -169,11 +163,13 @@ public class SearchProfileController {
     JSONObject resultsObject = new JSONObject();
     List<SearchProfileResponse> results = new ArrayList<>();
 
-    Optional<Profile> optionalProfile =
-        profileRepository.findByAdditionalemail_AddressOrEmail_Address(
-            searchedEmail, searchedEmail);
-    if (optionalProfile.isPresent()) {
-      Profile profile = optionalProfile.get();
+    Profile profile = null;
+    Optional<Email> optionalEmail = emailRepository.findByAddress(searchedEmail);
+    if (optionalEmail.isPresent()) {
+      profile = profileRepository.findByEmailsContains(optionalEmail.get());
+    }
+
+    if (profile != null) {
       SearchProfileResponse result =
           new SearchProfileResponse(
               profile.getId(),
@@ -181,7 +177,7 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress(),
+              profile.getPrimaryEmail().getAddress(),
               profile.getActivityTypes().toString());
       results.add(result);
     }
@@ -239,7 +235,7 @@ public class SearchProfileController {
               profile.getFirstname(),
               profile.getMiddlename(),
               profile.getNickname(),
-              profile.getEmail().getAddress(),
+              profile.getPrimaryEmail().getAddress(),
               profile.getActivityTypes().toString());
       results.add(result);
     }

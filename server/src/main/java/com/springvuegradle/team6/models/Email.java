@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.models;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -14,8 +16,12 @@ public class Email {
     @Column(unique=true)
     private String address;
 
-    @OneToOne(mappedBy = "email")
-    private Profile profile;
+    @ColumnDefault("false")
+    @Column(name="is_primary")
+    private boolean primary;
+
+    @ManyToOne
+    Profile profile;
 
     public Email() { }
 
@@ -29,6 +35,10 @@ public class Email {
 
     public void setAddress(String email) {
         this.address = email;
+    }
+
+    public Profile getProfile() {
+        return profile;
     }
 
     @Override
@@ -47,5 +57,13 @@ public class Email {
     @Override
     public int hashCode() {
         return Objects.hash(address);
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    public boolean isPrimary() {
+        return this.primary;
     }
 }

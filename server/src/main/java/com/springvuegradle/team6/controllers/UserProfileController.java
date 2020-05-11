@@ -196,19 +196,15 @@ public class UserProfileController {
         profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
         // Check if primary email is being used by another user
-        String emailAddress = profile.getEmail().getAddress();
+        String emailAddress = profile.getPrimaryEmail().getAddress();
 
         if (emailRepository.findByAddress(emailAddress).isPresent()) {
             return new ResponseEntity<>(emailAddress + " is already being used", HttpStatus.BAD_REQUEST);
         }
 
-        if (profile.getAdditionalemail() != null) {
-            // Check that the request additional email is not in the request primary email and vice versa
-            if (profile.getAdditionalemail().contains(profile.getEmail())) {
-                return new ResponseEntity<>("The primary email cannot be an additional email", HttpStatus.BAD_REQUEST);
-            }
+        if (profile.getEmails() != null) {
             // Check that none of the additional emails are in the repository already
-            for (Email email: profile.getAdditionalemail()) {
+            for (Email email: profile.getEmails()) {
                 if (emailRepository.findByAddress(email.getAddress()).isPresent()) {
                     return new ResponseEntity<>(email.getAddress() + " is already being used", HttpStatus.BAD_REQUEST);
                 }
