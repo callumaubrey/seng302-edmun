@@ -222,7 +222,9 @@
                 },
                 activityUpdateMessage: "",
                 activityErrorMessage: "",
-                locationData: null
+                locationData: null,
+                loggedInIsAdmin: false,
+                loggedInUserRoles: []
             }
         },
         validations: {
@@ -470,9 +472,42 @@
             goToActivities() {
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
+            },
+            getUserRoles: function () {
+                let currentObj = this;
+                return this.axios.get("http://localhost:9499/profiles/role")
+                    .then(function (response) {
+                        currentObj.loggedInUserRoles = response.data;
+                    })
+            },
+            checkUserIsAdmin: async function () {
+                await this.getUserRoles();
+                let currentObj = this;
+                if (this.loggedInUserRoles) {
+                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
+                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
+                            currentObj.loggedInIsAdmin = true;
+                        }
+                    }
+                }
+            },
+            checkAuthorized: async function () {
+                let currentObj = this;
+                await this.checkUserIsAdmin();
+                this.axios.defaults.withCredentials = true;
+                return this.axios.get('http://localhost:9499/profiles/id')
+                    .then(function (response) {
+                        currentObj.profileId = response.data;
+                        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
+                            currentObj.$router.push("/login");
+                        }
+                    })
+                    .catch(function () {
+                    });
             }
         },
-        mounted: function () {
+        mounted: async function () {
+            await this.checkAuthorized();
             this.getActivities();
             this.getUserId();
             this.getUserName();
