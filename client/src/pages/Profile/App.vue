@@ -26,6 +26,10 @@
                                 <b-col><b>Gender:</b></b-col>
                                 <b-col><p>{{userData.gender}}</p></b-col>
                             </b-row>
+                            <b-row v-if="userData.bio != ''">
+                                <b-col><b>Bio:</b></b-col>
+                                <b-col><p>{{userData.bio}}</p></b-col>
+                            </b-row>
                         </b-card>
                         <b-card style="margin: 1em" title="Email(s):" v-if="!hidden">
                             <b-row>
