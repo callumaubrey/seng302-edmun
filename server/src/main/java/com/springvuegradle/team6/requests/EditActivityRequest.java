@@ -69,7 +69,8 @@ public class EditActivityRequest {
         if (optionalNamedLocation.isPresent()) {
           activity.setLocation(optionalNamedLocation.get());
         } else {
-          locationRepository.save(activity.getLocation());
+          locationRepository.save(location);
+          activity.setLocation(location);
         }
       }
     }
