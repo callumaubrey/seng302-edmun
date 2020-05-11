@@ -100,7 +100,7 @@
             },
             goToCreateActivity: function() {
                 // double check, if user somehow clicks create button when hidden.
-                if (this.profileId === this.loggedinId) {
+                if (parseInt(this.profileId) === parseInt(this.loggedinId)) {
                     this.$router.push('/profiles/' + this.profileId + '/activities/create');
                 }
             },

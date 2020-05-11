@@ -283,7 +283,7 @@ public class SearchProfileControllerTest {
       profile.setFirstname("Foo");
       profile.setLastname("Bar");
       Set<Email> addtionalEmails = new HashSet<Email>();
-      profile.setAdditionalemail(addtionalEmails );
+      profile.setEmails(addtionalEmails );
       profileRepository.save(profile);
     }
     long startTime = System.nanoTime();
@@ -405,7 +405,7 @@ public class SearchProfileControllerTest {
       Profile profile = new Profile();
       profile.setNickname("FooBar");
       Set<Email> addtionalEmails = new HashSet<Email>();
-      profile.setAdditionalemail(addtionalEmails );
+      profile.setEmails(addtionalEmails );
       profileRepository.save(profile);
     }
     long startTime = System.nanoTime();

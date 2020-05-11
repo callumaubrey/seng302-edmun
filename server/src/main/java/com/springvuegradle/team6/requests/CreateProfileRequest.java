@@ -81,7 +81,7 @@ public class CreateProfileRequest {
         profile.setLastname(lastname);
         profile.setNickname(nickname);
         Email primaryEmail = new Email(email);
-        profile.setEmail(primaryEmail);
+        profile.setPrimaryEmail(primaryEmail);
         profile.setPassword(password);
         profile.setBio(bio);
         profile.setDob(dob);
@@ -109,7 +109,7 @@ public class CreateProfileRequest {
                 emails.add(newEmail);
             }
 
-            profile.setAdditionalemail(emails);
+            profile.setEmails(emails);
         }
 
         if (this.activityTypes != null) {
