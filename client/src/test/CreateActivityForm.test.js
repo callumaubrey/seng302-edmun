@@ -13,7 +13,7 @@ localVue.use(IconsPlugin);
 localVue.use(NavbarPlugin);
 localVue.use(Vuelidate);
 localVue.use(VueRouter);
-localVue.use(VueAxios, axios);
+localVue.use(axios);
 
 let wrapper;
 
