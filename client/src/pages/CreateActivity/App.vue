@@ -1,6 +1,6 @@
 <template>
-    <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+    <div id="app" v-if="isLoggedIn">
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
         <div class="container">
             <b-container fluid>
                 <b-row>

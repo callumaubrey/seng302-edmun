@@ -64,9 +64,10 @@
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'userName', 'hideElements', 'loggedInId'],
+        props: ['isLoggedIn','hideElements', 'loggedInId'],
         data: function () {
             return {
+                userName: "",
                 name: "",
                 searchBy: 1,
                 searchQuery: "",
@@ -126,8 +127,9 @@
                 this.$router.push('/profiles?fullname=' + this.searchQuery);
             }
         },
-        mounted: function () {
+        beforeMount: function () {
             this.getUserId();
+            this.getUserName();
         }
     };
     export default NavBar

@@ -1,5 +1,5 @@
 <template>
-    <div id = 'app'>
+    <div id = 'app' v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div class="container">
             <div>
@@ -17,42 +17,58 @@
                     </b-dropdown>
                 </b-row>
                 <b-card style="margin: 1em" title="About:" >
-                    <b-row>
-                        <b-col><b>Activity Type(s):</b></b-col>
-                        <b-col><p>{{activityTypes}}</p></b-col>
-                    </b-row>
-                    <b-row v-if="!continuous">
-                        <b-col><b>Start:</b></b-col>
-                        <b-col><p>{{startTime}}</p></b-col>
-                    </b-row>
-                    <b-row v-if="!continuous">
-                        <b-col><b>End:</b></b-col>
-                        <b-col><p>{{endTime}}</p></b-col>
-                    </b-row>
-                    <b-row v-if="location==null">
-                        <b-col><b>Location:</b></b-col>
-                        <b-col><p>No location available</p></b-col>
-                    </b-row>
-                    <b-row v-if="location!=null">
-                        <b-col><b>Location:</b></b-col>
-                        <b-col><p>{{locationString}}</p></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col><b>Description:</b></b-col>
-                        <b-col><p>{{description}}</p></b-col>
-                    </b-row>
+                    <div v-if="locationDataLoading">
+                        <div class="text-center text-primary my-2">
+                            <b-spinner class="align-middle"></b-spinner>
+                            <strong> Loading...</strong>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <b-row>
+                            <b-col><b>Activity Type(s):</b></b-col>
+                            <b-col><p>{{activityTypes}}</p></b-col>
+                        </b-row>
+                        <b-row v-if="!continuous">
+                            <b-col><b>Start:</b></b-col>
+                            <b-col><p>{{startTime}}</p></b-col>
+                        </b-row>
+                        <b-row v-if="!continuous">
+                            <b-col><b>End:</b></b-col>
+                            <b-col><p>{{endTime}}</p></b-col>
+                        </b-row>
+                        <b-row v-if="location==null">
+                            <b-col><b>Location:</b></b-col>
+                            <b-col><p>No location available</p></b-col>
+                        </b-row>
+                        <b-row v-if="location!=null">
+                            <b-col><b>Location:</b></b-col>
+                            <b-col><p>{{locationString}}</p></b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col><b>Description:</b></b-col>
+                            <b-col><p>{{description}}</p></b-col>
+                        </b-row>
+                    </div>
                 </b-card>
                 <b-card style="margin: 1em" title="Participants:">
-                    <b-row>
-                        <b-col><b>Creator:</b></b-col>
-                        <b-col>
-                            <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
-                        </b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col><b>Other Participants:</b></b-col>
-                        <b-col><p>List of other participants possibly with links to profiles</p></b-col>
-                    </b-row>
+                    <div v-if="locationDataLoading">
+                        <div class="text-center text-primary my-2">
+                            <b-spinner class="align-middle"></b-spinner>
+                            <strong> Loading...</strong>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <b-row>
+                            <b-col><b>Creator:</b></b-col>
+                            <b-col>
+                                <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col><b>Other Participants:</b></b-col>
+                            <b-col><p>List of other participants possibly with links to profiles</p></b-col>
+                        </b-row>
+                    </div>
                 </b-card>
             </div>
         </div>
@@ -84,6 +100,7 @@
                 location: null,
                 activityOwner: null,
                 locationString: "",
+                locationDataLoading: true
             }
         },
         mounted() {
@@ -175,6 +192,7 @@
                             this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
                         }
                         this.getActivityTypeDisplay(vueObj);
+                        vueObj.locationDataLoading = false;
                     }).catch(() => {
                     let profileId = this.$route.params.id;
                     vueObj.$router.push('/profiles/' + profileId);

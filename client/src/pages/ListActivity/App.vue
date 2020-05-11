@@ -1,6 +1,6 @@
 <template>
-    <div id="app">
-        <NavBar isLoggedIn=true v-bind:userName="userName"></NavBar>
+    <div id="app" v-if="isLoggedIn">
+        <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
         <b-container>
             <b-row class="my-1">
                 <b-col sm="11">
@@ -11,8 +11,14 @@
                     <b-button v-if="profileId === loggedinId" align="right" @click="goToCreateActivity"> Create</b-button>
                 </b-col>
             </b-row>
-            <b-table hover :items="items" :fields="fields" class="clickable" @row-clicked="goToActivity">
+            <b-table hover :items="items" :fields="fields" class="clickable" @row-clicked="goToActivity" :busy="tableIsLoading">
                 <template v-slot:cell(selectedActivity)></template>
+                <template v-slot:table-busy>
+                    <div class="text-center text-primary my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong> Loading...</strong>
+                    </div>
+                </template>
             </b-table>
         </b-container>
     </div>
@@ -30,8 +36,9 @@
         },
         data: function () {
             return {
+                tableIsLoading: true,
                 profileId: null,
-                isLoggedIn: true,
+                isLoggedIn: false,
                 loggedinId: null,
                 profileName: '',
                 userName: '',
@@ -70,20 +77,26 @@
                 this.axios.get('http://localhost:9499/profiles/firstname')
                     .then(function (response) {
                         currentObj.userName = response.data;
+                        currentObj.isLoggedIn = true;
                     })
                     .catch(function () {
                     });
             },
             getActivities: function (id) {
                 this.axios.defaults.withCredentials = true;
+                let vueObject = this;
                 this.axios.get('http://localhost:9499/profiles/' + id + '/activities')
                     .then((res) => {
                         this.items = res.data;
                         for (let i = 0; i < res.data.length; i++) {
                             this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
                         }
+                        vueObject.tableIsLoading = false;
                     })
-                    .catch(err => console.log(err))
+                    .catch(err => {
+                        console.log(err);
+                        vueObject.tableIsLoading = false;
+                    })
             },
             goToCreateActivity: function() {
                 // double check, if user somehow clicks create button when hidden.

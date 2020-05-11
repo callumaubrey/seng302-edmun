@@ -1,6 +1,6 @@
 <template>
-    <div id="app">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
+    <div id="app" v-if="isLoggedIn">
+        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
             <div>
                 <b-row>
