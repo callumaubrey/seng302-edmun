@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import App from './App'
-import axios from 'axios'
 import VueLogger from 'vuejs-logger';
 import Vuelidate from 'vuelidate'
 import VueRouter from 'vue-router'
