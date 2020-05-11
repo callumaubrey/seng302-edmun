@@ -24,7 +24,7 @@
                         </b-form>
                     </b-col>
                     <b-col sm="2">
-                        <b-button class="float-right" @click.prevent="updateUrl()" v-on:click="searchUser()"
+                        <b-button :disabled=isSearchButtonDisabled() class="float-right" @click.prevent="updateUrl()" v-on:click="searchUser()"
                                   variant="light">Search
                         </b-button>
                     </b-col>
@@ -231,18 +231,21 @@
                     .catch(err => console.log(err));
             },
             getUsers: function () {
-                if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
+                if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length == 0) {
+                    this.tableIsLoading = false;
+                    return;
+                }
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions != '') {
+                if (this.searchBy != 'email' && this.searchQuery.trim() != "" && this.activityTypesForm.selectedOptions != '') {
                     query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
                     this.routeQuery.method = this.activityTypesForm.method;
-                }else if (this.searchQuery != ''){
+                }else if (this.searchQuery.trim() != ''){
                     query = this.searchNames(query);
                     this.routeQuery.method = this.activityTypesForm.method;
                 }
@@ -268,16 +271,16 @@
             },
             searchNames: function (query){
                 if (this.searchBy == 'email') {
-                    this.routeQuery = {email: this.searchQuery};
-                    query += '?email=' + this.searchQuery;
+                    this.routeQuery = {email: this.searchQuery.trim()};
+                    query += '?email=' + this.searchQuery.trim();
                 }
                 else if (this.searchBy == 'nickname') {
-                    this.routeQuery = {nickname: this.searchQuery};
-                    query += '?nickname=' + this.searchQuery;
+                    this.routeQuery = {nickname: this.searchQuery.trim()};
+                    query += '?nickname=' + this.searchQuery.trim();
                 }
                 else {
-                    this.routeQuery = {fullname: this.searchQuery};
-                    query += '?fullname=' + this.searchQuery;
+                    this.routeQuery = {fullname: this.searchQuery.trim()};
+                    query += '?fullname=' + this.searchQuery.trim();
                 }
                 return query;
             },
@@ -286,7 +289,7 @@
             },
             getUsersFromNavBar: function () {
                 let navBarQuery = this.$route.query.fullname;
-                if (this.searchQuery === '' && navBarQuery) {
+                if (this.searchQuery.trim() === '' && navBarQuery) {
                     this.searchQuery = navBarQuery;
                     return true;
                 }
@@ -304,16 +307,16 @@
                 this.routeQuery = {}
                 this.tableIsLoading = true;
                 // this.currentPage = 1;
-                if (this.searchQuery === '' && this.activityTypesForm.selectedOptions == '') return;
+                if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length == 0) return;
                 let query = 'http://localhost:9499/profiles/count';
-                if (this.searchBy != 'email' && this.searchQuery != "" && this.activityTypesForm.selectedOptions.length != 0) {
+                if (this.searchBy != 'email' && this.searchQuery.trim() != "" && this.activityTypesForm.selectedOptions.length != 0) {
                     query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                 }else if (this.searchBy == 'email'){
                     this.getUsers();
                     return;
-                }else if(this.searchQuery != ''){
+                }else if(this.searchQuery.trim() != ''){
                     query = this.searchNames(query)
                 }
                 else {
@@ -384,8 +387,16 @@
                 } else {
                     this.currentPage = 1;
                 }
+            },
+            isSearchButtonDisabled: function () {
+                if (this.activityTypesForm.selectedOptions.length == 0 && this.searchQuery.trim() =='')
+                {
+                    return true;
+                } else if (this.searchBy== "email" && this.searchQuery.trim() == '') {
+                    return true;
+                }
+                return false;
             }
-
         },
         watch: {
             $route: function () {
