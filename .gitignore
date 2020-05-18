@@ -6,7 +6,7 @@ build/
 !**/src/test/**
 dist/
 node_modules/
-server/src/main/resources/application.properties
+*/application.properties
 coverage/
 
 ### STS ###
