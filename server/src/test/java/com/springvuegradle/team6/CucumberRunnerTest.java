@@ -3,6 +3,8 @@ package com.springvuegradle.team6;
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
@@ -11,5 +13,8 @@ import org.junit.runner.RunWith;
         features = "src/test/resources/edmun/features/", // Where to look for your features
         strict = true // Causes cucumber to fail if any step definitions are still undefined
 )
+@ContextConfiguration(
+        classes = Application.class)
+@WebAppConfiguration
 public class CucumberRunnerTest {
 }

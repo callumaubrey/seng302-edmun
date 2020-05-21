@@ -5,7 +5,7 @@ import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.requests.*;
-import com.springvuegradle.team6.startup.UserSecurityService;
+import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

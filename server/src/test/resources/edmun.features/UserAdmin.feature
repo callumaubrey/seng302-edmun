@@ -1,24 +1,31 @@
 Feature: Create an user admin account that can do any functionality available within the system
 
-  Background:
-    Given I log in as the user admin with email "poly@pocket.com" and password "Password1"
+  @13
+  Scenario: Create a dummy user
+    When I register a dummy user
+    Then dummy user is created and I receive a 201 status code.
 
-  @U6
-  Scenario: User admin can edit user's primary email
-    Given I registered a test user
-    When I edit the primary email of the user to "adminwashere@test.com"
-    Then primary email of the user is "adminwashere@test.com"
+  @13
+  Scenario: Log in as an admin user
+    Given I create a user admin
+    When I log in as user admin
+    Then I am logged in as an admin user and I receive 200 status code
 
-  @U6
-  Scenario: User admin can edit user's additional email
-    When I add "adminwashere2@test.com" to the user's list of additional email
-    Then "adminwashere2@test.com" is in the user's list of additional email
+  @13
+  Scenario: User admin can edit dummy user's primary email
+    When I edit the primary email of the dummy user to "adminwashere@test.com"
+    Then primary email of the dummy user is "adminwashere@test.com"
 
-  @U6
-  Scenario: User admin can edit user's password
-    Given I change the user's password from "Cucumber123" to "Admin123"
-    When I log out of the admin account
-    Then I will log in successfully with the changed password "Admin123"
+  @13
+  Scenario: User admin can edit dummy user's additional email
+    When I add "adminwashere2@test.com" to the dummy user's list of additional email
+    Then "adminwashere2@test.com" is in the dummy user's list of additional email
+
+  @13
+  Scenario: User admin can edit dummy user's password
+    When I change the dummy user's password from "Cucumber123" to "Admin123"
+    And I log out of the user admin account
+    Then I will log in successfully as the dummy user with the changed password "Admin123"
 
   @13
   Scenario: User admin can give another user admin rights

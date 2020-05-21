@@ -4,7 +4,7 @@ import com.springvuegradle.team6.models.EmailRepository;
 import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
-import com.springvuegradle.team6.startup.UserSecurityService;
+import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

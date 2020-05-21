@@ -1,21 +1,26 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.SpringIntegration;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 @AutoConfigureMockMvc
-public class AdminFeatureSteps extends SpringIntegration {
+@SpringBootTest
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
+        "ADMIN_PASSWORD=test"})
+public class AdminFeatureSteps {
     public static String profileId;
     private String jsonString;
     private MockHttpSession session;
