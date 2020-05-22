@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.*;
@@ -13,7 +14,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.DocFlavor;
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -116,6 +119,21 @@ public class AdminController {
             return new ResponseEntity("User does not exist", HttpStatus.BAD_REQUEST);
         }
     }
+    /**
+     * Get request to return particular users id
+     *
+     * @return response entity with the  user's role
+     */
+    @GetMapping("/role/{profileId}")
+    public ResponseEntity getRole(@PathVariable int profileId) {
+        Profile profile = profileRepository.findById(profileId);
+        if (profile == null) {
+            return new ResponseEntity("No such user", HttpStatus.BAD_REQUEST);
+        }else {
+            return ResponseEntity.ok(profile.getRoles());
+        }
+    }
+
 
 
 }

@@ -1,6 +1,7 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
+        <AdminSideBar v-bind:notLoggedInIsAdmin="notLoggedInIsAdmin" :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
         <div class="container">
             <div>
                 <b-row>
@@ -130,12 +131,14 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
+    import AdminSideBar from "@/components/AdminSideBar.vue"
     import axios from 'axios'
 
     const App = {
         name: 'App',
         components: {
-            NavBar
+            NavBar,
+            AdminSideBar
         },
         data: function() {
             return {
@@ -154,10 +157,31 @@
                 dob: '',
                 loggedInIsAdmin: false,
                 loggedInUserRoles: [],
-                hidden: null
+                hidden: null,
+                //for admin useage
+                notLoggedInUserRoles:null,
+                notLoggedInIsAdmin:null
             }
         },
         methods: {
+            getUserRole: function () {
+                const currentObj = this;
+                return axios.get('http://localhost:9499/admin/role/' + this.$route.params.id)
+                    .then(function (response) {
+                        currentObj.notLoggedInUserRoles = response
+                        for (let i = 0; i < currentObj.notLoggedInUserRoles.length; i++) {
+                            if (currentObj.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
+                                currentObj.notLoggedInIsAdmin = true;
+                            }
+                        }
+                        if (currentObj.notLoggedInIsAdmin == null) {
+                            currentObj.notLoggedInIsAdmin= false
+                        }
+                    })
+                    .catch(function (error) {
+                        alert(error)
+                    });
+            },
             getLoggedInUserData: function () {
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
@@ -255,6 +279,7 @@
                     for (let i = 0; i < this.loggedInUserRoles.length; i++) {
                         if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
                             currentObj.loggedInIsAdmin = true;
+                            alert(true)
                         }
                     }
                 }
