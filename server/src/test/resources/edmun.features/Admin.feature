@@ -17,7 +17,7 @@ Feature: Create an admin account that can do any functionality available within 
   @U6
   Scenario: Admin can edit user's password with old user password
     Given I change the user's password from "Cucumber123" to "Admin123"
-    When I log out of the admin account
+    And I log out of the admin account
     Then I will log in successfully with the changed password "Admin123"
 
   @13

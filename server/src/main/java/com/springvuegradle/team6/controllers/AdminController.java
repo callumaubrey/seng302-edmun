@@ -10,7 +10,6 @@ import com.springvuegradle.team6.requests.DeleteRoleRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -20,7 +19,7 @@ import java.util.Optional;
  * Controller for "/admin" endpoints
  */
 
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('USER_ADMIN')")
 @RequestMapping("/admin")
 @RestController
 public class AdminController {
