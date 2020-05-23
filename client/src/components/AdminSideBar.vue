@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-button v-b-toggle.sidebar-1 v-if="loggedInIsAdmin && loggedInId != $route.params.id" @click="$parent.getUserRole()">Admin</b-button>
+        <b-button v-b-toggle.sidebar-1 v-if="loggedInIsAdmin && loggedInId != $route.params.id" @click="$parent.getUserRole()" >Admin</b-button>
         <b-sidebar id="sidebar-1" :title="'Admin Controls: ' + userData.firstname + ' ' + userData.lastname" shadow>
             <div class="px-3 py-2">
                 Currently the user is a:   <p v-if="notLoggedInIsAdmin">Admin</p> <p v-if="notLoggedInIsAdmin == false">Standard User</p>

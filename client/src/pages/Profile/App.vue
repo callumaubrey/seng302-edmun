@@ -1,8 +1,8 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
-        <AdminSideBar v-bind:notLoggedInIsAdmin="notLoggedInIsAdmin" :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
         <div class="container">
+            <AdminSideBar v-bind:notLoggedInIsAdmin="notLoggedInIsAdmin" :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
             <div>
                 <b-row>
                 <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
@@ -279,7 +279,6 @@
                     for (let i = 0; i < this.loggedInUserRoles.length; i++) {
                         if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
                             currentObj.loggedInIsAdmin = true;
-                            alert(true)
                         }
                     }
                 }
