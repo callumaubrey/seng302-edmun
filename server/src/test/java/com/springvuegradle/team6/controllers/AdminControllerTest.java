@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -31,17 +32,19 @@ class AdminControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
+    private int id;
+
     @BeforeEach
     void createJohnDoeUser() throws Exception {
         CreateProfileRequest validRequest = new CreateProfileRequest();
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly1@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
-        mvc.perform(MockMvcRequestBuilders
+        String result = mvc.perform(MockMvcRequestBuilders
                 .post("/profiles")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isCreated());
-
+        ).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        id = Integer.parseInt(result);
     }
 
     @AfterEach
@@ -225,6 +228,25 @@ class AdminControllerTest {
                 .delete(deleteRoleUrl)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void getRoleOfExistingUser() throws Exception {
+        String getRoleUrl = "/admin/role/" + id;
+        mvc.perform(MockMvcRequestBuilders
+                .get(getRoleUrl)
+        ).andExpect(status().isOk());
+
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void getRoleOfNotExistingUser() throws Exception {
+        String getRoleUrl = "/admin/role/12342342345235434765426468732764367675676745";
+        mvc.perform(MockMvcRequestBuilders
+                .get(getRoleUrl)
         ).andExpect(status().isBadRequest());
     }
 }
