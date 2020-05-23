@@ -121,9 +121,9 @@ public class AdminController {
    *
    * @param profileId  id of the user to be edited
    * @param request the edit password request containing the new password
-   * @return
+   * @return ResponseEntity which can be success(2xx) or error(4xx)
    */
-  @PutMapping("/profiles//{profileId}/password")
+  @PutMapping("/profiles/{profileId}/password")
   public ResponseEntity<String> adminEditPassword(
       @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
 
