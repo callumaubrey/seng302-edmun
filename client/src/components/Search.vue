@@ -214,17 +214,21 @@
                 this.offset = (this.currentPage - 1) * this.limit;
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions !== '') {
+                console.log(this.activityTypesForm.selectedOptions.length === 0);
+                if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
+                    console.log("reached1");
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
                     this.routeQuery.method = this.activityTypesForm.method;
                 }else if (this.searchQuery.trim() !== ''){
+                    console.log("reached2");
                     query = this.searchNames(query);
                     this.routeQuery.method = this.activityTypesForm.method;
                 }
                 else if (this.activityTypesForm.selectedOptions !== '') {
+                    console.log("reached3");
                     query += "?activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
@@ -236,7 +240,6 @@
                 this.routeQuery.page = this.currentPage;
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
-                console.log("yeet " + query + '&offset=' + this.offset + "&limit=" + this.limit);
                 axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
