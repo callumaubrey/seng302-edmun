@@ -1,9 +1,8 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.Application;
 import com.springvuegradle.team6.SpringIntegration;
-import com.springvuegradle.team6.models.Email;
 import com.springvuegradle.team6.models.ProfileRepository;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -14,12 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+@ContextConfiguration
+@DirtiesContext
 @AutoConfigureMockMvc
 public class AdminFeatureSteps extends SpringIntegration {
 
@@ -29,6 +29,11 @@ public class AdminFeatureSteps extends SpringIntegration {
 
   @Autowired private ProfileRepository profileRepository;
   @Autowired private MockMvc mvc;
+
+  @After
+  public void resetDatabase() {
+
+  }
 
   @Given("I log in as the default admin with email {string} and password {string}")
   public void i_log_in_as_the_default_admin_with_email_and_password(String email, String password)
@@ -145,7 +150,7 @@ public class AdminFeatureSteps extends SpringIntegration {
     Assert.assertTrue(profileData.contains(email));
   }
 
-  @Given("I change the user's password from {string} to {string}")
+  @When("I change the user's password from {string} to {string}")
   public void i_change_the_user_s_password_from_to(String oldPassword, String newPassword)
       throws Exception {
     jsonString =
