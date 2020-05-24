@@ -1,31 +1,28 @@
 Feature: Create an user admin account that can do any functionality available within the system
 
   @13
-  Scenario: Create a dummy user
-    When I register a dummy user
-    Then dummy user is created and I receive a 201 status code.
+  Background:
+    Given There is a normal user with email "adminwashere2@test.com" registered in the database
+    And There is a user admin with email "useradmin@test.com" registered in the database
+    And I log in as a user admin with email "useradmin@test.com"
+    And I receive response status code 200
 
   @13
-  Scenario: Log in as an admin user
-    Given I create a user admin
-    When I log in as user admin
-    Then I am logged in as an admin user and I receive 200 status code
+  Scenario: User admin can edit another user's primary email
+    When I edit the primary email of another user to "adminwashere@test.com"
+    Then primary email of another user is "adminwashere@test.com"
 
   @13
-  Scenario: User admin can edit dummy user's primary email
-    When I edit the primary email of the dummy user to "adminwashere@test.com"
-    Then primary email of the dummy user is "adminwashere@test.com"
+  Scenario: User admin can edit another user's additional email
+    When I add "adminwashere3@test.com" to another user's list of additional email
+    Then "adminwashere3@test.com" is in another user's list of additional email
 
   @13
-  Scenario: User admin can edit dummy user's additional email
-    When I add "adminwashere2@test.com" to the dummy user's list of additional email
-    Then "adminwashere2@test.com" is in the dummy user's list of additional email
-
-  @13
-  Scenario: User admin can edit dummy user's password
-    When I change the dummy user's password from "Cucumber123" to "Admin123"
+  Scenario: User admin can edit another user's password
+    When I change another user's password to "Admin123" with old password
     And I log out of the user admin account
-    Then I will log in successfully as the dummy user with the changed password "Admin123"
+    Then I can log in as the other user with the changed password "Admin123"
+    And I receive response status code 200
 
   @13
   Scenario: User admin can give another user admin rights
@@ -45,6 +42,6 @@ Feature: Create an user admin account that can do any functionality available wi
 
   @13
   Scenario: User admin cannot remove admin role from default admin
-    Given I have a admin with email "test@test.com" and password "test"
+    Given I have an admin with email "test@test.com" and password "test"
     When I remove admin rights from "test@test.com"
     Then "test@test.com" still has admin rights

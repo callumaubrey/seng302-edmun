@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.permission;
 
+import com.springvuegradle.team6.models.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -13,6 +14,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,14 +32,23 @@ class UserAdminPermissionTest {
     @Autowired
     private MockMvc mvc;
 
-    private String dummyId;
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    private EmailRepository emailRepository;
+
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    private String anotherUserId;
 
     private MockHttpSession session;
 
     private String activityId;
 
     @BeforeAll
-    void setup() throws Exception {
+    void createDummyUser() throws Exception {
         String jsonString = "{\n"
                 + "  \"lastname\": \"Houston\",\n"
                 + "  \"firstname\": \"Jacky\",\n"
@@ -52,7 +65,7 @@ class UserAdminPermissionTest {
                 + "  \"date_of_birth\": \"1999-08-08\",\n"
                 + "  \"gender\": \"male\"\n"
                 + "}";
-        dummyId = mvc.perform(MockMvcRequestBuilders
+        anotherUserId = mvc.perform(MockMvcRequestBuilders
                 .post("/profiles")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +74,7 @@ class UserAdminPermissionTest {
     }
 
     @BeforeAll
-    void createAndLogInAsUserAdmin() throws Exception {
+    void createUserAdminAndLogInAsUserAdmin() throws Exception {
         session = new MockHttpSession();
         String jsonString = "{\n"
                 + "  \"lastname\": \"Dallas\",\n"
@@ -102,8 +115,8 @@ class UserAdminPermissionTest {
 
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void EditAnotherUserPrimaryEmailReturnStatusIsOk() throws Exception {
-        String updateEmailsUrl = "/profiles/" + dummyId + "/emails";
+    void EditAnotherUserPrimaryEmailReturnCorrectUserIdWhenSearchByPrimaryEmail() throws Exception {
+        String updateEmailsUrl = "/profiles/" + anotherUserId + "/emails";
         String jsonString = "{\n" +
                 "  \"primary_email\": \"poly123@pocket.com\",\n" +
                 "  \"additional_email\": [\n" +
@@ -115,12 +128,15 @@ class UserAdminPermissionTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
         ).andExpect(status().isOk());
+        Optional<Email> emailObject = emailRepository.findByAddress("poly123@pocket.com");
+        Profile userProfile = profileRepository.findByEmailsContains(emailObject.get());
+        org.junit.jupiter.api.Assertions.assertEquals(anotherUserId, userProfile.getId().toString());
     }
 
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void EditAnotherUserAdditionalEmailReturnStatusIsOk() throws Exception {
-        String updateEmailsUrl = "/profiles/" + dummyId + "/emails";
+    void EditAnotherUserAdditionalEmailReturnCorrectUserIdWhenSearchByAdditionalEmail() throws Exception {
+        String updateEmailsUrl = "/profiles/" + anotherUserId + "/emails";
         String jsonString = "{\n" +
                 "  \"primary_email\": \"poly123@pocket.com\",\n" +
                 "  \"additional_email\": [\n" +
@@ -133,27 +149,33 @@ class UserAdminPermissionTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
         ).andExpect(status().isOk());
+        Optional<Email> emailObject = emailRepository.findByAddress("carlsjr@burger.com");
+        Profile anotherUserProfile = profileRepository.findByEmailsContains(emailObject.get());
+        org.junit.jupiter.api.Assertions.assertEquals(anotherUserId, anotherUserProfile.getId().toString());
     }
 
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void ChangeAnotherUserPasswordWithOldPasswordReturnStatusIsOk() throws Exception {
+    void ChangeAnotherUserPasswordWithOldPasswordReturnTrueWhenComparingAnotherUserCurrentPasswordAgainstNewPassword() throws Exception {
         String jsonString = "{\n" +
                 "\t\"old_password\": \"Houston123\",\n" +
                 "\t\"new_password\": \"Covid123\",\n" +
                 "\t\"repeat_password\": \"Covid123\"\n" +
                 "}";
         mvc.perform(MockMvcRequestBuilders
-                .put("/profiles/{profileId}/password", dummyId)
+                .put("/profiles/{profileId}/password", anotherUserId)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
         ).andExpect(status().isOk());
+
+        Profile anotherUserProfile = profileRepository.findById(Integer.parseInt(anotherUserId));
+        org.junit.jupiter.api.Assertions.assertTrue(anotherUserProfile.comparePassword("Covid123"));
     }
 
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void CreateActivityForAnotherUserReturnStatusIsCreated() throws Exception {
+    void CreateActivityForAnotherUserReturnCorrectActivityIdWhenSearchForAnotherUserActivities() throws Exception {
         String jsonActivityString =
                 "{\n"
                         + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -163,22 +185,14 @@ class UserAdminPermissionTest {
                         + "  \"continuous\": true\n"
                         + "}";
         activityId = mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", dummyId)
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", anotherUserId)
                         .content(jsonActivityString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
-    }
-
-    @Test
-    @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void DeleteActivityForAnotherUserReturnStatusIsOK() throws Exception {
-        mvc.perform(
-                MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/{activityId}", dummyId, activityId)
-                        .session(session))
-                .andExpect(status().isOk());
-
+        List<Activity> anotherUserActivities = activityRepository.findByProfile_Id(Integer.parseInt(anotherUserId));
+        org.junit.jupiter.api.Assertions.assertEquals(activityId, anotherUserActivities.get(0).getId().toString());
     }
 
 
