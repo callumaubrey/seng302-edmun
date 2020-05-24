@@ -34,5 +34,6 @@ Feature: Create an admin account that can do any functionality available within 
 
   @13
   Scenario: Admin can edit user's password without old user password
+    Given "adminwashere2@test.com" is a registered user
     When I change the password of "adminwashere2@test.com" to "Admin123"
     Then I can log into "adminwashere2@test.com" with password "Admin123"
