@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
+import java.util.Collection;
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -125,7 +126,7 @@ public class AdminController {
    */
   @PutMapping("/profiles/{profileId}/password")
   public ResponseEntity<String> adminEditPassword(
-      @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
+          @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
 
     if (profileRepository.findById(profileId).isPresent()) {
       Profile profile = profileRepository.findById(profileId).get();
@@ -135,6 +136,48 @@ public class AdminController {
       profile.setPassword(request.newPassword);
       profileRepository.save(profile);
       return ResponseEntity.ok("Password Edited Successfully");
+    } else {
+      return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * The admin may assign another user's role
+   *
+   * @param profileId id of the user to be edited
+   * @param request the edit role request containing the new role as a string
+   * @return ResponseEntity which can be success(2xx) or error(4xx)
+   */
+  @PutMapping("/profiles/{profileId}/role")
+  public ResponseEntity<String> adminEditRole(
+          @PathVariable Integer profileId, @Valid @RequestBody AdminEditRole request) {
+    Role role;
+    //Invalid role input
+    if (request.getRole() != "ROLE_ADMIN" | request.getRole() != "ROLE_USER"){
+      return new ResponseEntity<>("Role does not exist", HttpStatus.BAD_REQUEST);
+    }
+    role = roleRepository.findByName(request.getRole());
+    //Check to see if profile is valid
+    if (profileRepository.findById(profileId).isPresent()) {
+      Profile profile = profileRepository.findById(profileId).get();
+      //Demoting
+      if (request.getRole() == "ROLE_USER") {
+        try {
+          profile.removeRole(request.getRole());
+          profileRepository.save(profile);
+          return ResponseEntity.ok("Role removed successfully");
+        } catch (RoleNotFoundException e) {
+          return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+        }
+      }
+      try{
+        profile.addRole(role);
+        profileRepository.save(profile);
+      }
+      catch (DuplicateRoleException e){
+        return new ResponseEntity("User already has this role", HttpStatus.CONFLICT);
+      }
+      return ResponseEntity.ok("Role added successfully");
     } else {
       return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
     }
