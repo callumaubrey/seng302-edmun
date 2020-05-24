@@ -11,14 +11,15 @@ Feature: Create an admin account that can do any functionality available within 
 
   @U6
   Scenario: Admin can edit user's additional email
+    Given "adminwashere2@test.com" is a registered user
     When I add "adminwashere2@test.com" to the user's list of additional email
     Then "adminwashere2@test.com" is in the user's list of additional email
 
   @U6
   Scenario: Admin can edit user's password with old user password
-    Given I change the user's password from "Cucumber123" to "Admin123"
-    When I log out of the admin account
-    Then I will log in successfully with the changed password "Admin123"
+    Given "adminwashere2@test.com" is a registered user
+    When I change the user's password from "Cucumber123" to "Admin123"
+    Then I can log into "adminwashere2@test.com" with password "Admin123"
 
   @13
   Scenario: Admin can give another user admin rights
@@ -33,5 +34,6 @@ Feature: Create an admin account that can do any functionality available within 
 
   @13
   Scenario: Admin can edit user's password without old user password
+    Given "adminwashere2@test.com" is a registered user
     When I change the password of "adminwashere2@test.com" to "Admin123"
     Then I can log into "adminwashere2@test.com" with password "Admin123"

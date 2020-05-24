@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers;
+package com.springvuegradle.team6.controllers.AdminControllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
