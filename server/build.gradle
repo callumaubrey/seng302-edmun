@@ -94,8 +94,8 @@ jacocoTestReport {
 // Sonarqube specific configuration
 sonarqube {
 	properties {
-		property "sonar.projectKey", "seng302team700"
-		property "sonar.projectName", "team 700 - server"
+		property "sonar.projectKey", "team-700-server"
+		property "sonar.projectName", "Team 700 - Server"
 		property "sonar.sourceEncoding", "UTF-8"
 		// replace "X" hereunder to match your VM url
 		property "sonar.host.url", "https://csse-s302g7.canterbury.ac.nz/sonarqube/"
