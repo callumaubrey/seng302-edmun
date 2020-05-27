@@ -5,9 +5,9 @@ import javax.validation.constraints.NotNull;
 public class AdminEditRole {
 
     @NotNull
-    public String role_name;
+    public String role;
 
     public String getRole() {
-        return role_name;
+        return role;
     }
 }
