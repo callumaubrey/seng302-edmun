@@ -49,6 +49,7 @@ public class SetupDataLoader implements
             return;
         createRoleIfNotFound("ROLE_ADMIN");
         createRoleIfNotFound("ROLE_USER");
+        createRoleIfNotFound("ROLE_USER_ADMIN");
 
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         Profile user = new Profile();
@@ -79,7 +80,6 @@ public class SetupDataLoader implements
      */
     @Transactional
     public void createRoleIfNotFound(String name) {
-
         Role role = roleRepository.findByName(name);
         if (role == null) {
             role = new Role(name);

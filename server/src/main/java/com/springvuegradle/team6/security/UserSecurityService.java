@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.startup;
+package com.springvuegradle.team6.security;
 
 import com.springvuegradle.team6.models.ProfileRepository;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ public class UserSecurityService {
 
         if (!(id.toString().equals(requestId.toString()))) {
             Collection<SimpleGrantedAuthority> userRoles = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-            boolean isAdmin = userRoles.stream().anyMatch(simpleGrantedAuthority -> simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+            boolean isAdmin = userRoles.stream().anyMatch(simpleGrantedAuthority -> (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN") || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
             if (!isAdmin) {
                 return new ResponseEntity<>("You can only edit your own profile", HttpStatus.UNAUTHORIZED);
             }
