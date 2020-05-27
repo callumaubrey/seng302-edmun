@@ -122,13 +122,13 @@ public class AdminController {
     /**
      * Get request to return particular users id
      *
-     * @return response entity with the  user's role
+     * @return response entity with the  user's role can be success(200) or profile not found(404)
      */
     @GetMapping("/role/{profileId}")
     public ResponseEntity getRole(@PathVariable int profileId) {
         Profile profile = profileRepository.findById(profileId);
         if (profile == null) {
-            return new ResponseEntity("No such user", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
         }else {
             return ResponseEntity.ok(profile.getRoles());
         }

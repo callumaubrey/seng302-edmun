@@ -2,7 +2,7 @@
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
-            <AdminSideBar v-bind:notLoggedInIsAdmin="notLoggedInIsAdmin" :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
+            <AdminSideBar :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
             <div>
                 <b-row>
                 <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
@@ -159,29 +159,10 @@
                 loggedInUserRoles: [],
                 hidden: null,
                 //for admin useage
-                notLoggedInUserRoles:null,
-                notLoggedInIsAdmin:null
+                profileUserRoles:null,
             }
         },
         methods: {
-            getUserRole: function () {
-                const currentObj = this;
-                return axios.get('http://localhost:9499/admin/role/' + this.$route.params.id)
-                    .then(function (response) {
-                        currentObj.notLoggedInUserRoles = response
-                        for (let i = 0; i < currentObj.notLoggedInUserRoles.length; i++) {
-                            if (currentObj.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                                currentObj.notLoggedInIsAdmin = true;
-                            }
-                        }
-                        if (currentObj.notLoggedInIsAdmin == null) {
-                            currentObj.notLoggedInIsAdmin= false
-                        }
-                    })
-                    .catch(function (error) {
-                        alert(error)
-                    });
-            },
             getLoggedInUserData: function () {
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
