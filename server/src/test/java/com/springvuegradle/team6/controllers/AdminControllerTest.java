@@ -17,6 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 
 
 @SpringBootTest
@@ -238,7 +241,6 @@ class AdminControllerTest {
         mvc.perform(MockMvcRequestBuilders
                 .get(getRoleUrl)
         ).andExpect(status().isOk());
-
     }
 
     @Test
@@ -249,4 +251,19 @@ class AdminControllerTest {
                 .get(getRoleUrl)
         ).andExpect(status().isBadRequest());
     }
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+    void checkCorrectRoleIsReturned() throws Exception {
+        String getRoleUrl = "/admin/role/" + id;
+        String response =
+            mvc.perform(MockMvcRequestBuilders
+                    .get(getRoleUrl)
+            ).andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+        String expectedResult = "[{\"roleName\":\"ROLE_USER\"}]";
+        org.junit.jupiter.api.Assertions.assertEquals(expectedResult, response);
+    }
+
 }
