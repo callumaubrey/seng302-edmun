@@ -1,24 +1,28 @@
 Feature: Create an user admin account that can do any functionality available within the system
 
+  @13
   Background:
-    Given I log in as the user admin with email "poly@pocket.com" and password "Password1"
+    Given There is a normal user with email "adminwashere2@test.com" registered in the database
+    And There is a user admin with email "useradmin@test.com" registered in the database
+    And I log in as a user admin with email "useradmin@test.com"
+    And I receive response status code 200
 
-  @U6
-  Scenario: User admin can edit user's primary email
-    Given I registered a test user
-    When I edit the primary email of the user to "adminwashere@test.com"
-    Then primary email of the user is "adminwashere@test.com"
+  @13
+  Scenario: User admin can edit another user's primary email
+    When I edit the primary email of another user to "adminwashere@test.com"
+    Then primary email of another user is "adminwashere@test.com"
 
-  @U6
-  Scenario: User admin can edit user's additional email
-    When I add "adminwashere2@test.com" to the user's list of additional email
-    Then "adminwashere2@test.com" is in the user's list of additional email
+  @13
+  Scenario: User admin can edit another user's additional email
+    When I add "adminwashere3@test.com" to another user's list of additional email
+    Then "adminwashere3@test.com" is in another user's list of additional email
 
-  @U6
-  Scenario: User admin can edit user's password
-    Given I change the user's password from "Cucumber123" to "Admin123"
-    When I log out of the admin account
-    Then I will log in successfully with the changed password "Admin123"
+  @13
+  Scenario: User admin can edit another user's password
+    When I change another user's password to "Admin123" with old password
+    And I log out of the user admin account
+    Then I can log in as the other user with the changed password "Admin123"
+    And I receive response status code 200
 
   @13
   Scenario: User admin can give another user admin rights
@@ -38,6 +42,6 @@ Feature: Create an user admin account that can do any functionality available wi
 
   @13
   Scenario: User admin cannot remove admin role from default admin
-    Given I have a admin with email "test@test.com" and password "test"
+    Given I have an admin with email "test@test.com" and password "test"
     When I remove admin rights from "test@test.com"
     Then "test@test.com" still has admin rights

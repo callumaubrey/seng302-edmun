@@ -1,26 +1,26 @@
 package com.springvuegradle.team6.controllers;
 
-
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.AddRoleRequest;
+import com.springvuegradle.team6.requests.AdminEditPasswordRequest;
 import com.springvuegradle.team6.requests.DeleteProfileRequest;
 import com.springvuegradle.team6.requests.DeleteRoleRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.Optional;
 
 /**
  * Controller for "/admin" endpoints
  */
 
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('USER_ADMIN')")
 @RequestMapping("/admin")
 @RestController
 public class AdminController {
@@ -32,9 +32,9 @@ public class AdminController {
     /**
      * Constructor for AdminController class which gets the profile, email and role repository
      *
-     * @param profileRep
-     * @param emailRep
-     * @param roleRep
+     * @param profileRep the profile repository
+     * @param emailRep   the email repository
+     * @param roleRep    the role repository
      */
     AdminController(ProfileRepository profileRep, EmailRepository emailRep, RoleRepository roleRep) {
         this.profileRepository = profileRep;
@@ -58,7 +58,8 @@ public class AdminController {
 
             return ResponseEntity.ok("User account with email: " + request.getEmail() + " is terminated");
         } else {
-            return new ResponseEntity("No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(
+                    "No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -117,5 +118,27 @@ public class AdminController {
         }
     }
 
+    /**
+     * The admin may edit another user's password without providing the user's current password
+     *
+     * @param profileId id of the user to be edited
+     * @param request   the edit password request containing the new password
+     * @return ResponseEntity which can be success(2xx) or error(4xx)
+     */
+    @PutMapping("/profiles/{profileId}/password")
+    public ResponseEntity<String> adminEditPassword(
+            @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
 
+        if (profileRepository.findById(profileId).isPresent()) {
+            Profile profile = profileRepository.findById(profileId).get();
+            if (!request.newPassword.equals(request.repeatPassword)) {
+                return new ResponseEntity<>("Passwords don't match", HttpStatus.BAD_REQUEST);
+            }
+            profile.setPassword(request.newPassword);
+            profileRepository.save(profile);
+            return ResponseEntity.ok("Password Edited Successfully");
+        } else {
+            return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
+        }
+    }
 }
