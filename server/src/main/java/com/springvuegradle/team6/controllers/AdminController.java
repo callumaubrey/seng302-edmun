@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.DocFlavor;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.Optional;
@@ -117,6 +118,21 @@ public class AdminController {
             return new ResponseEntity("User does not exist", HttpStatus.BAD_REQUEST);
         }
     }
+    /**
+     * Get request to return particular users id
+     *
+     * @return response entity with the  user's role can be success(200) or profile not found(404)
+     */
+    @GetMapping("/role/{profileId}")
+    public ResponseEntity getRole(@PathVariable int profileId) {
+        Profile profile = profileRepository.findById(profileId);
+        if (profile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }else {
+            return ResponseEntity.ok(profile.getRoles());
+        }
+    }
+
 
     /**
      * The admin may edit another user's password without providing the user's current password

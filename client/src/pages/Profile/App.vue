@@ -2,6 +2,7 @@
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
+            <AdminSideBar :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
             <div>
                 <b-row>
                 <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
@@ -130,12 +131,14 @@
 <script>
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
+    import AdminSideBar from "@/components/AdminSideBar.vue"
     import axios from 'axios'
 
     const App = {
         name: 'App',
         components: {
-            NavBar
+            NavBar,
+            AdminSideBar
         },
         data: function() {
             return {
@@ -154,7 +157,9 @@
                 dob: '',
                 loggedInIsAdmin: false,
                 loggedInUserRoles: [],
-                hidden: null
+                hidden: null,
+                //for admin useage
+                profileUserRoles:null,
             }
         },
         methods: {
