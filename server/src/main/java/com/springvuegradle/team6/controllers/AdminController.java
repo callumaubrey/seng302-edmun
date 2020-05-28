@@ -163,7 +163,7 @@ public class AdminController {
       //Demoting
       if (request.getRole() == "ROLE_USER") {
         try {
-          String roleName = request.getRole()
+          String roleName = request.getRole();
           profile.removeRole(roleName);
           profileRepository.save(profile);
           return ResponseEntity.ok("Role removed successfully");
