@@ -183,6 +183,7 @@
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
+    import AdminMixin from "../../mixins/AdminMixin";
     import axios from 'axios'
 
     export default {
@@ -218,7 +219,6 @@
                 dbStartDate: null,
                 locationData: null,
                 loggedInIsAdmin: false,
-                loggedInUserRoles: []
             }
         },
         validations: {
@@ -460,27 +460,9 @@
                     .catch(function () {
                     });
             },
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 axios.defaults.withCredentials = true;
                 return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {

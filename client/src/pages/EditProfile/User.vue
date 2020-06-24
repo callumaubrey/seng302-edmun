@@ -385,6 +385,7 @@
     import NavBar from "@/components/NavBar.vue"
     import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
     import locationMixin from "../../mixins/locationMixin";
+    import AdminMixin from "../../mixins/AdminMixin";
 
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -464,8 +465,7 @@
                 locationUpdateMessage: "",
                 locationErrorMessage: "",
                 locationDisplayText: "",
-                loggedInIsAdmin: false,
-                loggedInUserRoles: []
+                loggedInIsAdmin: false
             }
         },
         validations: {
@@ -987,30 +987,9 @@
                     document.getElementById("passwordMessage").style.color = "red";
                 })
             },
-
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        console.log(response);
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this
-                console.log(this.loggedInUserRoles);
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 axios.defaults.withCredentials = true;
                 return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {

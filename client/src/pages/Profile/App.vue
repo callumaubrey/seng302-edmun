@@ -132,6 +132,7 @@
     // import api from '../Api';
     import NavBar from "@/components/NavBar.vue"
     import AdminSideBar from "@/components/AdminSideBar.vue"
+    import AdminMixin from "../../mixins/AdminMixin";
     import axios from 'axios'
 
     const App = {
@@ -156,10 +157,7 @@
                 location: '',
                 dob: '',
                 loggedInIsAdmin: false,
-                loggedInUserRoles: [],
                 hidden: null,
-                //for admin useage
-                profileUserRoles:null,
             }
         },
         methods: {
@@ -178,7 +176,9 @@
                         currentObj.$router.push('/login');
                     });
             },
-            getProfileData: function () {
+            getProfileData: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
+                console.log(this.loggedInIsAdmin);
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
@@ -245,25 +245,6 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
-
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            }
         },
         watch: {
             $route: function () {
@@ -271,7 +252,6 @@
             }
         },
         mounted: function () {
-            this.checkUserIsAdmin();
             this.getProfileData();
         },
         beforeMount: async function () {

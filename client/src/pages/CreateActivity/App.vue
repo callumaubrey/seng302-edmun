@@ -192,6 +192,7 @@
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
+    import AdminMixin from "../../mixins/AdminMixin";
     import axios from 'axios'
 
     export default {
@@ -224,8 +225,7 @@
                 activityUpdateMessage: "",
                 activityErrorMessage: "",
                 locationData: null,
-                loggedInIsAdmin: false,
-                loggedInUserRoles: []
+                loggedInIsAdmin: false
             }
         },
         validations: {
@@ -478,27 +478,9 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
+                this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
                 axios.defaults.withCredentials = true;
                 return axios.get('http://localhost:9499/profiles/id')
                     .then(function (response) {
