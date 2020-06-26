@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -56,6 +57,13 @@ public class Activity {
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
+
+  @ManyToMany
+  @JoinTable(
+          name = "activity_tags",
+          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  private Set<Tag> tags;
 
   private boolean continuous;
 
