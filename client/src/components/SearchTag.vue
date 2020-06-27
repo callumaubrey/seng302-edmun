@@ -1,13 +1,11 @@
 <template>
     <div>
-            <label>
-                {{ titleLabel }}
-            </label>
-            <b-form-text>{{ helpText }}</b-form-text>
+        <label>
+            {{ titleLabel }}
+        </label>
+        <b-form-text>{{ helpText }}</b-form-text>
         <b-form-tags v-model="values" no-outer-focus
                      style="margin: 0; padding: 0; background-color: initial; border: 0;">
-
-
             <ul v-if="values.length > 0" class="list-inline d-inline-block mb-2">
                 <li v-for="tag in values" :key="tag" class="list-inline-item">
                     <b-form-tag
@@ -20,7 +18,6 @@
                     </b-form-tag>
                 </li>
             </ul>
-
             <b-input-group>
                 <b-form-input
                         v-model="value"
@@ -30,31 +27,21 @@
                         list="autocomplete"
                         v-on:input="emitInputToParent">
                 </b-form-input>
-
                 <b-input-group-append>
                     <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached">Add</b-button>
                 </b-input-group-append>
-
-
             </b-input-group>
-
             <div v-for="option in options" :key="option">
-
                 <b-input
                         class="autocomplete-item"
                         readonly=true
                         v-on:click="setInput(option)"
                         type="button"
                         :value=option>
-
                 </b-input>
-
             </div>
-
         </b-form-tags>
-
     </div>
-
 </template>
 
 <script>
@@ -98,7 +85,6 @@
         },
         computed: {
             maxEntriesReached() {
-                console.log(this.values);
                 return this.values.length >= this.maxEntries;
             }
         }
