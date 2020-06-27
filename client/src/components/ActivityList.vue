@@ -10,40 +10,16 @@
 </template>
 
 <script>
-    import axios from 'axios';
-
     export default {
         name: "ActivityList",
         props: {
-            tag: String
+            tag: String,
+            items: Array
         },
         data() {
             return {
-                items: [],
                 fields: ['name', 'description', 'location', 'start_date', 'end_date', 'activity_types']
             }
-        },
-        methods: {
-            getActivities: function() {
-                if (!this.tag) {
-                    return;
-                }
-
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/activities/' + this.tag)
-                    .then((res) => {
-                        this.items = res.data;
-                        for (let i = 0; i < res.data.length; i++) {
-                            this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
-                        }
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
-            }
-        },
-        mounted() {
-            this.getActivities();
         }
     }
 </script>
