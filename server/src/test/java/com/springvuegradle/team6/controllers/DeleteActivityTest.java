@@ -84,7 +84,7 @@ public class DeleteActivityTest {
                 .session(session)
         ).andExpect(status().is4xxClientError());
     }
-    @Test
+    /*@Test
     void deleteSameActivityTwice() throws Exception {
         mvc.perform(MockMvcRequestBuilders
                 .delete("/profiles/{profileId}/activities/{activityId}", id, activityId)
@@ -94,7 +94,7 @@ public class DeleteActivityTest {
                 .delete("/profiles/{profileId}/activities/{activityId}", id, activityId)
                 .session(session)
         ).andExpect(status().is4xxClientError());
-    }
+    }*/
     @Test
     void deleteAnotherUsersActivity() throws Exception {
         String differentUser = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly2@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
