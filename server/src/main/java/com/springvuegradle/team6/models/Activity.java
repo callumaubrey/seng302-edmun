@@ -7,6 +7,7 @@ import com.springvuegradle.team6.requests.CreateActivityRequest;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -72,6 +73,9 @@ public class Activity {
   private String endTime;
 
   @ManyToOne private NamedLocation location;
+
+  @Column(columnDefinition = "date default NOW()")
+  private Date creationDate;
 
   public String getActivityName() {
     return activityName;
@@ -143,5 +147,9 @@ public class Activity {
 
   public void setLocation(NamedLocation location) {
     this.location = location;
+  }
+
+  public Date getCreationDate() {
+    return creationDate;
   }
 }
