@@ -1,11 +1,20 @@
 <template>
     <div>
-        <h3>Activities</h3>
-        <p>Activity Results with the tag: {{ tag }}</p>
-        <b-table
+        <slot></slot>
+        <b-table hover
             :items="items"
             :fields="fields"
-        ></b-table>
+            @row-clicked="goToActivity"
+            :busy="tableIsLoading"
+        >
+            <template v-slot:cell(selectedActivity)></template>
+            <template v-slot:table-busy>
+                <div class="text-center text-primary my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong> Loading...</strong>
+                </div>
+            </template>
+        </b-table>
     </div>
 </template>
 
@@ -13,12 +22,21 @@
     export default {
         name: "ActivityList",
         props: {
-            tag: String,
-            items: Array
+            items: Array,
+            fields: Array,
+            profileId: Number,
+            tableIsLoading: Number
         },
         data() {
             return {
-                fields: ['name', 'description', 'location', 'start_date', 'end_date', 'activity_types']
+                selectedActivity: []
+            }
+        },
+        methods: {
+            goToActivity: function(items) {
+                this.selectedActivity = items;
+                let activityId = this.selectedActivity.id;
+                this.$router.push('/profiles/' + this.profileId + '/activities/' + activityId);
             }
         }
     }
