@@ -111,6 +111,13 @@
 
                     <b-row>
                         <b-col>
+                            <SearchTag :max-entries="2" :title-label="'Hashtags'"></SearchTag>
+                        </b-col>
+                    </b-row>
+                    <hr>
+
+                    <b-row>
+                        <b-col>
                             <b-form-group id="name-input-group" label="Name" label-for="name-input">
                                 <b-form-input
                                         :state="validateState('name')"
@@ -180,6 +187,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import SearchTag from "../../components/SearchTag";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
@@ -189,6 +197,7 @@
     export default {
         mixins: [validationMixin, locationMixin],
         components: {
+            SearchTag,
             NavBar
         },
         data() {

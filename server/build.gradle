@@ -3,6 +3,9 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'maven-publish'
+	id 'jacoco'
+	// run Sonarqube from gradle task
+	id "org.sonarqube" version "2.8"
 }
 
 group = 'com.spring-vue-gradle'
@@ -50,6 +53,7 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 	minHeapSize = "128m"
 	maxHeapSize = "2048m"
 	testLogging.showStandardStreams = true
@@ -72,5 +76,31 @@ task cucumber() {
 					'--tags', selectedTags // Only runs certain tagged scenarios of tags arg is given
 			]
 		}
+	}
+}
+
+// Jacoco test coverage configuration
+jacoco {
+	toolVersion = "0.8.2"
+}
+// select what reports to generate and where to put them
+jacocoTestReport {
+	reports {
+		xml.enabled true
+		xml.destination file("${buildDir}/jacoco/test-report.xml")
+		csv.enabled false
+		html.destination file("${buildDir}/jacoco/html")
+	}
+}
+
+// Sonarqube specific configuration
+sonarqube {
+	properties {
+		property "sonar.projectKey", "team-700-server"
+		property "sonar.projectName", "Team 700 - Server"
+		property "sonar.sourceEncoding", "UTF-8"
+		// replace "X" hereunder to match your VM url
+		property "sonar.host.url", "https://csse-s302g7.canterbury.ac.nz/sonarqube/"
+		property "sonar.login", "3dc052fa137c831175f0212b5cf6dec7ea2412d1"
 	}
 }
