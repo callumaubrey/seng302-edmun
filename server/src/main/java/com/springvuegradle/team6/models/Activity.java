@@ -5,7 +5,9 @@ import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -57,6 +59,13 @@ public class Activity {
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
+  @ManyToMany
+  @JoinTable(
+          name = "activity_tags",
+          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  private Set<Tag> tags;
+
   private boolean continuous;
 
   private String startTime;
@@ -64,6 +73,9 @@ public class Activity {
   private String endTime;
 
   @ManyToOne private NamedLocation location;
+
+  @Column(columnDefinition = "date default NOW()")
+  private Date creationDate;
 
   public String getActivityName() {
     return activityName;
@@ -135,5 +147,9 @@ public class Activity {
 
   public void setLocation(NamedLocation location) {
     this.location = location;
+  }
+
+  public Date getCreationDate() {
+    return creationDate;
   }
 }
