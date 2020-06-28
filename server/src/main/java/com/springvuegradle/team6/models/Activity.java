@@ -1,11 +1,9 @@
 package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -15,7 +13,7 @@ public class Activity {
 
   // For testing purposes only
   public Activity() {
-    Set<ActivityType> myEmptySet = Collections.<ActivityType>emptySet();
+    Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
     this.activityName = null;
     this.description = null;
@@ -29,6 +27,7 @@ public class Activity {
     this.activityName = request.activityName;
     this.description = request.description;
     this.activityTypes = request.activityTypes;
+    this.tags = request.hashTags;
     this.continuous = request.continuous;
     if (!this.continuous) {
       this.startTime = request.startTime;
@@ -151,5 +150,9 @@ public class Activity {
 
   public Date getCreationDate() {
     return creationDate;
+  }
+
+  public Set<Tag> getTags() {
+    return tags;
   }
 }
