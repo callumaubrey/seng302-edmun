@@ -1,12 +1,12 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.*;
-import org.hamcrest.Matchers;
+import com.springvuegradle.team6.models.Activity;
+import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.ProfileRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONString;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,17 +17,13 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import javax.lang.model.type.ArrayType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -344,6 +340,112 @@ public class ActivityControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createActivityWithHashtagReturnStatusIsCreatedAndActivityIsCreated() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Running\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true,\n" +
+            "  \"hashtags\": [\n" +
+            "    \"#a1\",\n" +
+            "    \"#a2\",\n" +
+            "    \"#a3\",\n" +
+            "    \"#a4\",\n" +
+            "    \"#a5\"\n" +
+            "  ]\n" +
+            "}";
+    ResultActions responseString = mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+    responseString.andExpect(status().isCreated());
+    Assert.assertTrue(activityRepository.findById(Integer.parseInt(responseString.andReturn().getResponse().getContentAsString())).isPresent());
+  }
+
+  @Test
+  void createActivityWithInvalidHashtagReturnStatusIsBadRequestAndErrorMessageIsReturned() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Running\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true,\n" +
+            "  \"hashtags\": [\n" +
+            "    \"#a1 123\",\n" +
+            "    \"#a2\",\n" +
+            "    \"#a3\",\n" +
+            "    \"#a4\",\n" +
+            "    \"#a5\"\n" +
+            "  ]\n" +
+            "}";
+    ResultActions responseString = mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+    responseString.andExpect(status().isBadRequest());
+    Assert.assertTrue(responseString.andReturn().getResponse().getContentAsString().contains("contains characters other than alphanumeric characters"));
+  }
+
+  @Test
+  void createActivityWithMoreThan30HashtagReturnStatusIsBadRequest() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Running\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true,\n" +
+            "  \"hashtags\": [\n" +
+            "    \"#a1\",\n" +
+            "    \"#a2\",\n" +
+            "    \"#a3\",\n" +
+            "    \"#a4\",\n" +
+            "    \"#a5\",\n" +
+            "    \"#a6\",\n" +
+            "    \"#a7\",\n" +
+            "    \"#a8\",\n" +
+            "    \"#a9\",\n" +
+            "    \"#a10\",\n" +
+            "    \"#a11\",\n" +
+            "    \"#a12\",\n" +
+            "    \"#a13\",\n" +
+            "    \"#a14\",\n" +
+            "    \"#a15\",\n" +
+            "    \"#a16\",\n" +
+            "    \"#a17\",\n" +
+            "    \"#a18\",\n" +
+            "    \"#a19\",\n" +
+            "    \"#a20\",\n" +
+            "    \"#a21\",\n" +
+            "    \"#a22\",\n" +
+            "    \"#a23\",\n" +
+            "    \"#a24\",\n" +
+            "    \"#a25\",\n" +
+            "    \"#a26\",\n" +
+            "    \"#a27\",\n" +
+            "    \"#a28\",\n" +
+            "    \"#a29\",\n" +
+            "    \"#a30\",\n" +
+            "    \"#a31\"\n" +
+            "  ]\n" +
+            "}";
+    ResultActions responseString = mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+    responseString.andExpect(status().isBadRequest());
   }
 
   @Test

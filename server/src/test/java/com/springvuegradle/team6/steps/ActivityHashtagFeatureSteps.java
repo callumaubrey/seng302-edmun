@@ -86,10 +86,9 @@ public class ActivityHashtagFeatureSteps {
     public void i_create_an_activity_with_hashtags(String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
         List<String> hashTags = new ArrayList<>();
         for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
-            String hashTag = hashTagMapping.get("Hashtag");
+            String hashTag = '"' + hashTagMapping.get("Hashtag") + '"';
             hashTags.add(hashTag);
         }
-
         jsonString = "{\n" +
                 "  \"activity_name\": \"" + activityName + "\",\n" +
                 "  \"description\": \"tramping iz fun\",\n" +
@@ -100,37 +99,43 @@ public class ActivityHashtagFeatureSteps {
                 "  \"continuous\": true,\n" +
                 "  \"hashtags\": " + hashTags + "\n" +
                 "}";
-
         String createActivityUrl = "/profiles/" + profileId + "/activities";
-        activityId =
+        mvcResponse =
                 mvc.perform(
                         MockMvcRequestBuilders.post(createActivityUrl)
                                 .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isCreated())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .session(session));
+
     }
 
     @Then("I have an activity {string} with hashtags")
     public void i_have_an_activity_with_hashtags(String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
+        Assert.assertTrue(activityRepository.findByActivityName(activityName) != null);
+
+        activityId = mvcResponse.andReturn().getResponse().getContentAsString();
         String getActivityUrl = "/activities/" + activityId;
         String responseString =
                 mvc.perform(
                         MockMvcRequestBuilders.get(getActivityUrl)
                                 .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isCreated())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .session(session))
+                        .andExpect(status().isOk())
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
 
-        Assert.assertTrue(responseString.contains(activityName));
         for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
-            String hashTag = hashTagMapping.get("Hashtag");
+            String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
             Assert.assertTrue(responseString.contains(hashTag));
         }
+    }
+
+    @Then("I do not have an activity {string} and receive {string} status code")
+    public void i_do_not_have_an_activity_and_receive_status_code(String activityName, String statusCode) throws Exception {
+        Assert.assertTrue(activityRepository.findByActivityName(activityName) == null);
+        mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
     }
 
 

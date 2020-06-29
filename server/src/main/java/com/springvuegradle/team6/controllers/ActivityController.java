@@ -189,21 +189,40 @@ public class ActivityController {
     return null;
   }
 
-  private ResponseEntity<String> checkHashtagsValidity(Set<Tag> hashtags) {
-    for (Tag tag : hashtags) {
-      convertHashtagToLowerCase(tag);
-
-      // check if tagname only contains alphanumeric characters
-      if (!tag.getName().substring(1, tag.getName().length() - 1).matches("[A-Za-z0-9]+")) {
-        return new ResponseEntity(
-                "Tag name '" + tag.getName() + "' contains characters other than alphanumeric characters", HttpStatus.BAD_REQUEST
+  /**
+   * Helper function to check if tags associated to the activity is not more that 30 and
+   * check if each tag only contains alphanumeric characters
+   *
+   * @param hashtags set of hashtags associated to the activity
+   * @return return ResponseEntity with personalised error message if error is found, otherwise null
+   */
+  private ResponseEntity<String> checkAllTagsValidity(Set<Tag> hashtags) {
+    if (hashtags != null) {
+      if (hashtags.size() > 30) {
+        return new ResponseEntity<>(
+                "More than 30 hashtags per activity is not allowed", HttpStatus.BAD_REQUEST
         );
+      }
+      for (Tag tag : hashtags) {
+        convertHashtagToLowerCase(tag);
+
+        // check if tagname only contains alphanumeric characters
+        if (!tag.getName().substring(1).matches("[A-Za-z0-9]+")) {
+          return new ResponseEntity<>(
+                  "Tag name " + tag.getName() + " contains characters other than alphanumeric characters", HttpStatus.BAD_REQUEST
+          );
+        }
       }
     }
 
     return null;
   }
 
+  /**
+   * Helper function to convert hashtag to lower case
+   *
+   * @param hashtag
+   */
   private void convertHashtagToLowerCase(Tag hashtag) {
     hashtag.setName(hashtag.getName().toLowerCase());
   }
@@ -230,7 +249,7 @@ public class ActivityController {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
     }
 
-    ResponseEntity<String> checkHashtagsValidityResponse = checkHashtagsValidity(request.hashTags);
+    ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.hashTags);
     if (checkHashtagsValidityResponse != null) {
       return checkHashtagsValidityResponse;
     }
@@ -253,9 +272,13 @@ public class ActivityController {
       return checkActivityDateTimeResponse;
     }
 
-    for (Tag tag : activity.getTags()) {
-      tagRepository.save(tag);
+    Set<Tag> hashtags = activity.getTags();
+    if (hashtags != null) {
+      for (Tag tag : hashtags) {
+        tagRepository.save(tag);
+      }
     }
+
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
