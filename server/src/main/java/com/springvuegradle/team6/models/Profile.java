@@ -2,7 +2,9 @@ package com.springvuegradle.team6.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
+import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
+import com.springvuegradle.team6.exceptions.SubscriptionNotFoundException;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.standard.StandardFilterFactory;
@@ -103,6 +105,16 @@ public class Profile {
 
     public Profile() {}
 
+   /**
+    * Maps users to the activities they have subscribed to/followed
+    */
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+          name = "profile_subscriptions",
+          joinColumns = @JoinColumn(name = "profile_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "activity_id"))
+  private Collection<Activity> subscriptions;
+
   public Integer getId() {
     return this.id;
   }
@@ -165,6 +177,10 @@ public class Profile {
 
   public Collection<Role> getRoles() {
     return roles;
+  }
+
+  public Collection<Activity> getSubscriptions() {
+    return subscriptions;
   }
 
     @JsonProperty("additional_email")
@@ -269,6 +285,27 @@ public class Profile {
       }
     }
     throw new RoleNotFoundException();
+  }
+
+  public void setSubscriptions(final Collection<Activity> subscriptions) {
+    this.subscriptions = subscriptions;
+  }
+
+  public void addSubscription(Activity newSubscription) throws DuplicateSubscriptionException {
+    for (Activity activity : activities) {
+      if (activity.getId().equals(newSubscription.getId())) {
+        throw new DuplicateSubscriptionException();
+      }
+    }
+    subscriptions.add(newSubscription);
+  }
+
+  public void removeSubscription(Activity oldSubscription) throws SubscriptionNotFoundException {
+    if (subscriptions.contains(oldSubscription)) {
+      subscriptions.remove(oldSubscription);
+    } else {
+      throw new SubscriptionNotFoundException();
+    }
   }
 
     public NamedLocation getLocation() {

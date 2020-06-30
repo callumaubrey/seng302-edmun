@@ -77,6 +77,14 @@ public class Activity {
   @Column(columnDefinition = "date default NOW()")
   private Date creationDate;
 
+  /**
+   * Map activity id to user id to create profile_subscriptions table in database
+   */
+  @ManyToMany(
+          mappedBy = "subscriptions",
+          fetch = FetchType.EAGER)
+  private Collection<Profile> subscribers;
+
   public String getActivityName() {
     return activityName;
   }
