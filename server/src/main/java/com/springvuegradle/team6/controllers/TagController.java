@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.TagRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +23,11 @@ import javax.servlet.http.HttpSession;
 public class TagController {
 
   private final TagRepository tagRepository;
+  private final ActivityRepository activityRepository;
 
-  TagController(TagRepository tagRepository) {
+  TagController(TagRepository tagRepository, ActivityRepository activityRepository) {
     this.tagRepository = tagRepository;
+    this.activityRepository = activityRepository;
   }
 
   @GetMapping("/{hashTag}")
@@ -33,6 +36,6 @@ public class TagController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    return new ResponseEntity(tagRepository.findActivitiesByName(hashTag), HttpStatus.OK);
+    return new ResponseEntity(activityRepository.findByTags_Name(hashTag), HttpStatus.OK);
   }
 }

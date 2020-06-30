@@ -8,6 +8,4 @@ import java.util.List;
 public interface TagRepository extends JpaRepository<Tag, Integer> {
 
   List<Tag> findByNameContaining(String name);
-
-  List<Activity> findActivitiesByName(String name);
 }
