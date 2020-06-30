@@ -152,4 +152,8 @@ public class Activity {
   public Date getCreationDate() {
     return creationDate;
   }
+
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
+  }
 }
