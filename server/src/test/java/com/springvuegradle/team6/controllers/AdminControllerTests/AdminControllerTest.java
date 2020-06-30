@@ -227,21 +227,4 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
-
-    @Test
-    @WithMockUser(username = "poly@pocket.com", roles = {"USER"})
-    void editUserRoleAsUserReturnsStatusForbidden() throws Exception {
-        String editRoleUrl = "/profiles/" + id + "/role";
-
-        String jsonString =
-                "{\n"
-                        + "  \"role\": \"ROLE_ADMIN\"\n"
-                        + "}";
-
-        mvc.perform(MockMvcRequestBuilders
-                .put(editRoleUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isForbidden());
-    }
 }
