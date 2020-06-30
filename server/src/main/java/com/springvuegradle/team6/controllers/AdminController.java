@@ -4,18 +4,13 @@ import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.*;
-import com.springvuegradle.team6.startup.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-import java.util.Collection;
 import javax.validation.Valid;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /** Controller for "/admin" endpoints */
@@ -142,45 +137,47 @@ public class AdminController {
   }
 
   /**
-   * The admin may assign another user's role
-   *
+   * The admin may assign another user's role in a toggle format. So if a user already has the requested role
+   * then it will be removed (except for ROLE_ADMIN which can not be deleted and is the global admin).
    * @param profileId id of the user to be edited
    * @param request the edit role request containing the new role as a string
    * @return ResponseEntity which can be success(2xx) or error(4xx)
    */
   @PutMapping("/profiles/{profileId}/role")
   public ResponseEntity<String> adminEditRole(
-          @PathVariable Integer profileId, @Valid @RequestBody AdminEditRole request) {
-    Role role;
-    //Invalid role input
-    if (request.getRole() != "ROLE_ADMIN" | request.getRole() != "ROLE_USER"){
-      return new ResponseEntity<>("Role does not exist", HttpStatus.BAD_REQUEST);
-    }
-    role = roleRepository.findByName(request.getRole());
+          @PathVariable Integer profileId, @Valid @RequestBody AdminEditRoleRequest request) {
     //Check to see if profile is valid
-    if (profileRepository.findById(profileId).isPresent()) {
-      Profile profile = profileRepository.findById(profileId).get();
-      //Demoting
-      if (request.getRole() == "ROLE_USER") {
-        try {
-          String roleName = request.getRole();
-          profile.removeRole(roleName);
-          profileRepository.save(profile);
-          return ResponseEntity.ok("Role removed successfully");
-        } catch (RoleNotFoundException e) {
-          return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
-        }
-      }
-      try{
-        profile.addRole(role);
-        profileRepository.save(profile);
-      }
-      catch (DuplicateRoleException e){
-        return new ResponseEntity("User already has this role", HttpStatus.CONFLICT);
-      }
-      return ResponseEntity.ok("Role added successfully");
-    } else {
+    if (!profileRepository.findById(profileId).isPresent()) {
       return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
     }
+    Profile profile = profileRepository.findById(profileId).get();
+    String requestedRole = request.getRole();
+
+    //Check if requested role is valid
+    if (!roleRepository.existsByName(requestedRole)){
+      return new ResponseEntity<>("This role does not exist", HttpStatus.BAD_REQUEST);
+    }
+    Role role = roleRepository.findByName(requestedRole);
+    //Remove role if user already has it and is not ROLE_ADMIN
+    if (profile.getRoles().contains(role)) {
+      if (role.getRoleName() == "ROLE_ADMIN"){
+        return new ResponseEntity<>("ROLE_ADMIN can not be removed", HttpStatus.FORBIDDEN);
+      }
+      try {
+        profile.removeRole(role.getRoleName());
+        profileRepository.save(profile);
+        return new ResponseEntity<>("Role removed from user", HttpStatus.OK);
+      } catch (Exception e){
+        return new ResponseEntity<>("The user does not have this role", HttpStatus.BAD_REQUEST);
+      }
+    }
+    //Add the new role to the user
+    try {
+      profile.addRole(role);
+      profileRepository.save(profile);
+    } catch (Exception e){
+      return new ResponseEntity<>("This role does not exist", HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>("Role added to user", HttpStatus.OK);
   }
 }
