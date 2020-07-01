@@ -42,8 +42,9 @@ public class TagController {
   }
 
   /**
-   * Search for hashtags in the database that starts with the given hashtag
-   * e.g searching for cool, would return coolor and coolstory if they exist in the database.
+   * Search for hashtags in the database that starts with the given hashtag e.g searching for cool,
+   * would return coolor and coolstory if they exist in the database.
+   *
    * @param hashtag the hashtag to search for, does not contain # at the start
    * @param session the current session
    * @return the list of hashtags that match the hashtag
@@ -59,8 +60,6 @@ public class TagController {
 
     hashtag = hashtag.toLowerCase();
 
-    System.out.println(hashtag);
-
     if (!hashtag.matches("^[a-zA-Z0-9_]*$")) {
       return new ResponseEntity(
           "Is not a hashtag, needs to begin with # and can only contain alphanumeric characters and underscore",
@@ -73,7 +72,7 @@ public class TagController {
       resultList.add(hashtag);
     } else {
       hashtag = hashtag.replace("_", "\\_");
-      resultList = tagRepository.findTagsMatchingSearch(hashtag, PageRequest.of(0,10));
+      resultList = tagRepository.findTagsMatchingSearch(hashtag, PageRequest.of(0, 10));
     }
 
     Map<String, List<String>> result = new HashMap<>();
