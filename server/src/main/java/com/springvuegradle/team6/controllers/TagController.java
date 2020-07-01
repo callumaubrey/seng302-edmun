@@ -36,6 +36,6 @@ public class TagController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    return new ResponseEntity(activityRepository.findByTags_Name(hashTag), HttpStatus.OK);
+    return new ResponseEntity(activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
   }
 }
