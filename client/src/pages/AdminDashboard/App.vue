@@ -2,9 +2,11 @@
     <div id="app">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div>
-            <b-tabs>
+            <b-tabs align="center">
                 <b-tab title="Manage Users">
-                    <Search></Search>
+                    <div class="p-2">
+                        <Search></Search>
+                    </div>
                 </b-tab>
 
                 <b-tab title="Command">
@@ -29,7 +31,6 @@
             return {
                 isLoggedIn: false,
                 userName: "",
-                primaryEmail: "",
                 userRoles: []
             }
         },
@@ -57,6 +58,9 @@
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/');
                     });
+            },
+            mounted: function () {
+                this.getUserSession();
             }
         }
     };
@@ -65,5 +69,9 @@
 </script>
 
 <style scoped>
+
+    .p-2 {
+        margin: 20px;
+    }
 
 </style>
