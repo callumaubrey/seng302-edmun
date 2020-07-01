@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,5 +17,5 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
 
   @Query(
       "SELECT t.name from Tag t left join t.activities a where t.name like :search% group by (t.name) ORDER BY COUNT(t.name) DESC")
-  List<String> findTagsMatchingSearch(@Param("search") String search);
+  List<String> findTagsMatchingSearch(@Param("search") String search, Pageable pageable);
 }

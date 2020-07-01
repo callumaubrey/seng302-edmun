@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.test.context.jdbc.Sql;
@@ -40,19 +41,19 @@ public class TagRepositoryTest {
       profile = profileRepository.save(profile);
 
       Tag cool = new Tag();
-      cool.setName("#cool");
+      cool.setName("cool");
       cool = tagRepository.save(cool);
 
       Tag cold = new Tag();
-      cold.setName("#cold");
+      cold.setName("cold");
       cold = tagRepository.save(cold);
 
       Tag colour = new Tag();
-      colour.setName("#colour");
+      colour.setName("colour");
       colour = tagRepository.save(colour);
 
       Tag awesome = new Tag();
-      awesome.setName("#awesome");
+      awesome.setName("awesome");
       awesome = tagRepository.save(awesome);
 
       Activity activity = new Activity();
@@ -92,19 +93,19 @@ public class TagRepositoryTest {
 
   @Test
   void testFindTagsMatchingSearchSingleResult() {
-    List<String> result = tagRepository.findTagsMatchingSearch("#awes");
+    List<String> result = tagRepository.findTagsMatchingSearch("awes", PageRequest.of(0, 10));
     List<String> expectedResult = new ArrayList<>();
-    expectedResult.add("#awesome");
+    expectedResult.add("awesome");
     org.junit.jupiter.api.Assertions.assertEquals(expectedResult, result);
   }
 
   @Test
   void testFindTagsMatchingSearchMultipleResult() {
-    List<String> result = tagRepository.findTagsMatchingSearch("#co");
+    List<String> result = tagRepository.findTagsMatchingSearch("co", PageRequest.of(0, 10));
     List<String> expectedResult = new ArrayList<>();
-    expectedResult.add("#cold");
-    expectedResult.add("#cool");
-    expectedResult.add("#colour");
+    expectedResult.add("cold");
+    expectedResult.add("cool");
+    expectedResult.add("colour");
     org.junit.jupiter.api.Assertions.assertEquals(expectedResult, result);
   }
 }
