@@ -75,7 +75,9 @@
                                         v-model="$v.durationForm.endTime.$model"
                                         aria-describedby="end-time-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as start time.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as
+                                    start time.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -112,7 +114,12 @@
 
                     <b-row>
                         <b-col>
-                            <SearchTag :max-entries="2" :title-label="'Hashtags'"></SearchTag>
+                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                       :values="hashtag.values"
+                                       :input-error-message="'You have already selected this hashtag'"
+                                       :help-text="'Max 30 hashtags'"
+                                       v-on:emitInput="autocompleteInput"
+                                       v-on:emitTags="manageTags"></SearchTag>
                         </b-col>
                     </b-row>
                     <hr>
@@ -151,7 +158,7 @@
                         <b-col>
                             <b-form-group id="location-input-group" label="Location" label-for="location-input"
                                           description="Please enter the location you want to search for and select from the dropdown"
-                                            invalid-feedback="The location of the activity must be chosen from the drop down">
+                                          invalid-feedback="The location of the activity must be chosen from the drop down">
                                 <b-form-input id="location-input"
                                               name="location-input"
                                               placeholder="Search for a city/county"
@@ -233,7 +240,11 @@
                 activityUpdateMessage: "",
                 activityErrorMessage: "",
                 locationData: null,
-                loggedInIsAdmin: false
+                loggedInIsAdmin: false,
+                hashtag: {
+                    options: [],
+                    values: []
+                }
             }
         },
         validations: {
@@ -310,6 +321,31 @@
             }
         },
         methods: {
+            manageTags: function (value) {
+                this.hashtag.values = value;
+                this.hashtag.options = [];
+            },
+            autocompleteInput: function (value) {
+                if (value[0] == "#") {
+                    value = value.substr(1);
+                }
+                if (value.length > 2) {
+                    let vue = this;
+                    axios.get('http://localhost:9499/hashtag/autocomplete?hashtag=' + value)
+                        .then(function (response) {
+                            let results = response.data.results;
+                            for (let i = 0; i < results.length; i++) {
+                                results[i] = "#" + results[i];
+                            }
+                            vue.hashtag.options = results;
+                        })
+                        .catch(function () {
+
+                        });
+                } else {
+                    this.hashtag.options = [];
+                }
+            },
             getActivities: function () {
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
@@ -428,6 +464,7 @@
                         });
                 }
             },
+
             getDates: function () {
                 let startDate = new Date(this.durationForm.startDate);
                 let endDate = new Date(this.durationForm.endDate);

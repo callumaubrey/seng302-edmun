@@ -23,22 +23,29 @@
                         v-model="value"
                         :placeholder="inputPlaceholder"
                         class="form-control"
+                        :state="tagUsed"
                         :disabled="maxEntriesReached"
                         list="autocomplete"
                         v-on:input="emitInputToParent">
                 </b-form-input>
+
                 <b-input-group-append>
                     <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached">Add</b-button>
                 </b-input-group-append>
+                <b-form-invalid-feedback>
+                    {{ inputErrorMessage }}
+                </b-form-invalid-feedback>
+
             </b-input-group>
-            <div v-for="option in options" :key="option">
-                <b-input
-                        class="autocomplete-item"
-                        readonly=true
-                        v-on:click="setInput(option)"
-                        type="button"
-                        :value=option>
-                </b-input>
+            <div v-if="!selected">
+                <div v-for="option in options" :key="option">
+                    <b-input
+                            class="autocomplete-item"
+                            :readonly=true
+                            v-on:click="setInput(option)"
+                            :value=option>
+                    </b-input>
+                </div>
             </div>
         </b-form-tags>
     </div>
@@ -53,21 +60,29 @@
             titleLabel: String,
             inputPlaceholder: String,
             helpText: String,
+            values: Array,
+            inputErrorMessage: String
         },
         data() {
             return {
-                values: [],
-                value: ""
+                value: "",
+                selected: false
             }
         },
         methods: {
             setInput(value) {
                 this.value = value;
+                this.selected = true;
             },
             addTag(value) {
-                this.values.push(value);
-                this.value = "";
-                this.emitTagsToParent();
+                if (value[0] !== "#") {
+                    value = "#" + value;
+                }
+                if (!this.values.includes(value)) {
+                    this.values.push(value);
+                    this.value = "";
+                    this.emitTagsToParent();
+                }
             },
             removeTag(value) {
                 const index = this.values.indexOf(value);
@@ -80,12 +95,20 @@
                 this.$emit('emitTags', this.values);
             },
             emitInputToParent() {
+                this.selected = false;
                 this.$emit('emitInput', this.value);
             }
         },
         computed: {
             maxEntriesReached() {
                 return this.values.length >= this.maxEntries;
+            },
+            tagUsed() {
+                if (this.values.includes(this.value) || this.values.includes("#" + this.value)) {
+                    return false;
+                } else {
+                    return null;
+                }
             }
         }
     }
