@@ -204,10 +204,10 @@ public class ActivityController {
         );
       }
       for (Tag tag : hashtags) {
-        convertHashtagToLowerCase(tag);
+        formatHashtagToStoreInDb(tag);
 
         // check if tagname only contains alphanumeric characters
-        if (!tag.getName().substring(1).matches("[A-Za-z0-9]+")) {
+        if (!tag.getName().matches("[A-Za-z0-9]+")) {
           return new ResponseEntity<>(
                   "Tag name " + tag.getName() + " contains characters other than alphanumeric characters", HttpStatus.BAD_REQUEST
           );
@@ -219,12 +219,12 @@ public class ActivityController {
   }
 
   /**
-   * Helper function to convert hashtag to lower case
+   * Helper function to convert hashtag to lower case and remove '#'
    *
    * @param hashtag
    */
-  private void convertHashtagToLowerCase(Tag hashtag) {
-    hashtag.setName(hashtag.getName().toLowerCase());
+  private void formatHashtagToStoreInDb(Tag hashtag) {
+    hashtag.setName(hashtag.getName().toLowerCase().substring(1));
   }
 
   /**

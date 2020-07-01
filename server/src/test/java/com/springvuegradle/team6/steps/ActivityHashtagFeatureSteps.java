@@ -127,7 +127,7 @@ public class ActivityHashtagFeatureSteps {
                         .getContentAsString();
 
         for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
-            String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
+            String hashTag = hashTagMapping.get("Hashtag").toLowerCase().substring(1);
             Assert.assertTrue(responseString.contains(hashTag));
         }
     }
