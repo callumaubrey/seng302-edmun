@@ -25,6 +25,7 @@
                         class="form-control"
                         :state="tagUsed"
                         :disabled="maxEntriesReached"
+                        :maxlength="maxCharacters"
                         list="autocomplete"
                         v-on:input="emitInputToParent">
                 </b-form-input>
@@ -61,7 +62,8 @@
             inputPlaceholder: String,
             helpText: String,
             values: Array,
-            inputErrorMessage: String
+            inputErrorMessage: String,
+            inputCharacterLimit: Number
         },
         data() {
             return {
@@ -109,7 +111,15 @@
                 } else {
                     return null;
                 }
+            },
+            maxCharacters() {
+                if (this.values[0] == "#") {
+                    return this.inputCharacterLimit + 1;
+                } else {
+                    return this.inputCharacterLimit;
+                }
             }
+
         }
     }
 </script>

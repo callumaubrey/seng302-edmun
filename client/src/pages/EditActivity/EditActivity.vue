@@ -115,6 +115,7 @@
                                        :values="hashtag.values"
                                        :input-error-message="'You have already selected this hashtag'"
                                        :help-text="'Max 30 hashtags'"
+                                       :input-character-limit="140"
                                        v-on:emitInput="autocompleteInput"
                                        v-on:emitTags="manageTags"></SearchTag>
                         </b-col>
