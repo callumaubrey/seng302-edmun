@@ -75,6 +75,7 @@ class UserAdminPermissionTest {
 
     @BeforeAll
     void createUserAdminAndLogInAsUserAdmin() throws Exception {
+        profileRepository.deleteAll();
         session = new MockHttpSession();
         String jsonString = "{\n"
                 + "  \"lastname\": \"Dallas\",\n"

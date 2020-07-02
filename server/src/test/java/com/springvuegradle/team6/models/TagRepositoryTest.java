@@ -40,6 +40,9 @@ public class TagRepositoryTest {
       profile.setGender("male");
       profile = profileRepository.save(profile);
 
+      tagRepository.deleteAll();
+      activityRepository.deleteAll();
+
       Tag cool = new Tag();
       cool.setName("cool");
       cool = tagRepository.save(cool);
