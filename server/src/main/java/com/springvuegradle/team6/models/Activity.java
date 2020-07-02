@@ -155,4 +155,8 @@ public class Activity {
   public Set<Tag> getTags() {
     return tags;
   }
+
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
+  }
 }

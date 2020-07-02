@@ -30,10 +30,8 @@
                 isLoggedIn: false,
                 userName: '',
                 profileId: null,
-                items: [
-                    { name: 'Test', description: 'a description', location: 'NZ', start_date: '2020-10-10', end_date: '2020-10-10', activity_types: 'Run'}
-                ],
-                fields: ['name', 'description', 'location', 'start_date', 'end_date', 'activity_types']
+                items: [],
+                fields: ['activityName', 'description', 'location', 'startTime', 'endTime', 'activityTypes']
             }
         },
         methods: {
@@ -54,10 +52,32 @@
                     })
                     .catch(err => console.log(err));
             },
+            getActivities: function () {
+                let hashTag = this.$route.params.hashtag;
+                if (!hashTag) {
+                    return;
+                }
+
+                axios.defaults.withCredentials = true;
+                axios.get('http://localhost:9499/hashtag/' + hashTag)
+                    .then((res) => {
+                        this.items = res.data;
+                        for (let i = 0; i < res.data.length; i++) {
+                            this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
+                        }
+                    })
+                    .catch(err => console.log(err));
+            }
         },
         mounted() {
             this.getUserId();
             this.getUserName();
+            this.getActivities();
+        },
+        watch: {
+            '$route.params.hashtag' () {
+                this.getActivities();
+            }
         }
     }
 </script>

@@ -52,14 +52,14 @@ public class Profile {
   private String lastname;
 
   @Field(
-          index = org.hibernate.search.annotations.Index.YES,
-          analyze = Analyze.YES,
-          store = Store.NO,
-          analyzer = @Analyzer(definition = "profileAnalyzer"))
+      index = org.hibernate.search.annotations.Index.YES,
+      analyze = Analyze.YES,
+      store = Store.NO,
+      analyzer = @Analyzer(definition = "profileAnalyzer"))
   private String nickname;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private Set<Email> emails = new HashSet<>();;
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  private Set<Email> emails = new HashSet<>();;
 
   private String password;
 
@@ -71,13 +71,10 @@ public class Profile {
 
   private Integer fitness;
 
-    @ManyToOne
-    private NamedLocation location;
+  @ManyToOne private NamedLocation location;
 
   @IndexedEmbedded
-  @Field(
-          analyze = Analyze.YES,
-          store = Store.NO)
+  @Field(analyze = Analyze.YES, store = Store.NO)
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
@@ -98,10 +95,10 @@ public class Profile {
       inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
   private Collection<Role> roles;
 
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
-    private List<Activity> activities;
+  @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
+  private List<Activity> activities;
 
-    public Profile() {}
+  public Profile() {}
 
   public Integer getId() {
     return this.id;
@@ -133,14 +130,14 @@ public class Profile {
     return this.nickname;
   }
 
-    @JsonProperty("primary_email")
-    public Email getPrimaryEmail() {
-        for(Email email: emails) {
-            if(email.isPrimary()) return email;
-        }
-
-        return new Email("null");
+  @JsonProperty("primary_email")
+  public Email getPrimaryEmail() {
+    for (Email email : emails) {
+      if (email.isPrimary()) return email;
     }
+
+    return new Email("null");
+  }
 
   public String getPassword() {
     return this.password;
@@ -167,12 +164,12 @@ public class Profile {
     return roles;
   }
 
-    @JsonProperty("additional_email")
-    public Set<Email> getEmails() {
-        Set<Email> additionalEmails = new HashSet<>(this.emails);
-        additionalEmails.removeIf(Email::isPrimary);
-        return additionalEmails;
-    }
+  @JsonProperty("additional_email")
+  public Set<Email> getEmails() {
+    Set<Email> additionalEmails = new HashSet<>(this.emails);
+    additionalEmails.removeIf(Email::isPrimary);
+    return additionalEmails;
+  }
 
   public Set<Email> getAllEmails() {
     return this.emails;
@@ -200,19 +197,19 @@ public class Profile {
     return fitness;
   }
 
-    @JsonProperty("primary_email")
-    public void setPrimaryEmail(Email email) {
-        getPrimaryEmail().setPrimary(false);
+  @JsonProperty("primary_email")
+  public void setPrimaryEmail(Email email) {
+    getPrimaryEmail().setPrimary(false);
 
-        email.setPrimary(true);
-        this.emails.add(email);
-    }
+    email.setPrimary(true);
+    this.emails.add(email);
+  }
 
-    @JsonProperty("additional_email")
-    public void setEmails(Set<Email> emails) {
-        clearNonPrimaryEmails();
-        this.emails.addAll(emails);
-    }
+  @JsonProperty("additional_email")
+  public void setEmails(Set<Email> emails) {
+    clearNonPrimaryEmails();
+    this.emails.addAll(emails);
+  }
 
   public void setFirstname(String firstname) {
     this.firstname = firstname;
@@ -271,13 +268,13 @@ public class Profile {
     throw new RoleNotFoundException();
   }
 
-    public NamedLocation getLocation() {
-        return location;
-    }
+  public NamedLocation getLocation() {
+    return location;
+  }
 
-    public void setLocation(NamedLocation location) {
-        this.location = location;
-    }
+  public void setLocation(NamedLocation location) {
+    this.location = location;
+  }
 
   /**
    * This is used by the searching profile by full name functionality
@@ -308,37 +305,60 @@ public class Profile {
     return passwordEncoder.matches(password, this.password);
   }
 
-    @Override
-    public String toString() {
-        return "Profile{" +
-                "id=" + id +
-                ", firstname='" + firstname + '\'' +
-                ", middlename='" + middlename + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", nickname='" + nickname + '\'' +
-                ", email='" +  getPrimaryEmail() + '\'' +
-                ", password='" + password + '\'' +
-                ", bio='" + bio + '\'' +
-                ", dob='" + dob + '\'' +
-                ", gender='" + gender + '\'' +
-                ", fitness=" + fitness + '\'' +
-                ", additionalemail='" + getEmails() + '\'' +
-                ", passports='" + passports + '\'' +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "Profile{"
+        + "id="
+        + id
+        + ", firstname='"
+        + firstname
+        + '\''
+        + ", middlename='"
+        + middlename
+        + '\''
+        + ", lastname='"
+        + lastname
+        + '\''
+        + ", nickname='"
+        + nickname
+        + '\''
+        + ", email='"
+        + getPrimaryEmail()
+        + '\''
+        + ", password='"
+        + password
+        + '\''
+        + ", bio='"
+        + bio
+        + '\''
+        + ", dob='"
+        + dob
+        + '\''
+        + ", gender='"
+        + gender
+        + '\''
+        + ", fitness="
+        + fitness
+        + '\''
+        + ", additionalemail='"
+        + getEmails()
+        + '\''
+        + ", passports='"
+        + passports
+        + '\''
+        + '}';
+  }
 
-    public List<Activity> getActivities() {
-        return activities;
-    }
+  public List<Activity> getActivities() {
+    return activities;
+  }
 
-    public void setActivities(List<Activity> activities) {
-        this.activities = activities;
-    }
+  public void setActivities(List<Activity> activities) {
+    this.activities = activities;
+  }
 
-    /**
-     * Clears all emails except for the primary email in emails
-     */
-    private void clearNonPrimaryEmails() {
-        emails.removeIf(email -> !email.isPrimary());
-    }
+  /** Clears all emails except for the primary email in emails */
+  private void clearNonPrimaryEmails() {
+    emails.removeIf(email -> !email.isPrimary());
+  }
 }

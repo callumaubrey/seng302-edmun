@@ -2,9 +2,12 @@ package com.springvuegradle.team6.steps;
 
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.TagRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,6 +35,7 @@ public class ActivityHashtagFeatureSteps {
     private ResultActions mvcResponse;
     private String profileId;
     private String activityId;
+    private List<String> autocompleteResult;
 
 
     @Autowired
@@ -138,5 +142,33 @@ public class ActivityHashtagFeatureSteps {
         mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
     }
 
+    @When("I search for hashtag {string}")
+    public void i_search_for_hashtag(String string) throws Exception {
+        String response =
+                mvc.perform(
+                        MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=number", profileId)
+                                .session(session))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
 
+        JSONObject obj = new JSONObject(response);
+        JSONArray arr = obj.getJSONArray("results");
+        List<String> list = new ArrayList<String>();
+        for (int i = 0; i < arr.length(); i++) {
+            list.add(arr.getString(i));
+        }
+        autocompleteResult = list;
+    }
+
+    @Then("I get hashtag search results containing")
+    public void i_get_hashtag_search_results_containing(io.cucumber.datatable.DataTable dataTable) {
+        Assert.assertTrue(autocompleteResult.containsAll(dataTable.asList()));
+    }
+
+    @Then("I get hashtag search results in order")
+    public void i_get_hashtag_search_results_in_order(io.cucumber.datatable.DataTable dataTable) {
+        Assert.assertTrue(autocompleteResult.equals(dataTable.asList()));
+    }
 }
