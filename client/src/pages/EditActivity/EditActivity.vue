@@ -111,7 +111,12 @@
 
                     <b-row>
                         <b-col>
-                            <SearchTag :max-entries="2" :title-label="'Hashtags'"></SearchTag>
+                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                       :values="hashtag.values"
+                                       :help-text="'Max 30 hashtags'"
+                                       :input-character-limit="140"
+                                       v-on:emitInput="autocompleteInput"
+                                       v-on:emitTags="manageTags"></SearchTag>
                         </b-col>
                     </b-row>
                     <hr>
@@ -228,6 +233,10 @@
                 dbStartDate: null,
                 locationData: null,
                 loggedInIsAdmin: false,
+                hashtag: {
+                    options: [],
+                    values: []
+                }
             }
         },
         validations: {
@@ -305,6 +314,36 @@
             }
         },
         methods: {
+            manageTags: function (value) {
+                this.hashtag.values = value;
+                this.hashtag.options = [];
+            },
+            autocompleteInput: function (value) {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(value)) {
+                    this.hashtag.options = [];
+                    return;
+                }
+                if (value[0] == "#") {
+                    value = value.substr(1);
+                }
+                if (value.length > 2) {
+                    let vue = this;
+                    axios.get('http://localhost:9499/hashtag/autocomplete?hashtag=' + value)
+                        .then(function (response) {
+                            let results = response.data.results;
+                            for (let i = 0; i < results.length; i++) {
+                                results[i] = "#" + results[i];
+                            }
+                            vue.hashtag.options = results;
+                        })
+                        .catch(function () {
+
+                        });
+                } else {
+                    this.hashtag.options = [];
+                }
+            },
             getActivity: function () {
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
