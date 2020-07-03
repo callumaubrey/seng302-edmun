@@ -1,7 +1,9 @@
 package com.springvuegradle.team6.models;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Entity to keep track of each time a subscription is change. Used to display this change
@@ -10,6 +12,14 @@ import java.util.Date;
  */
 @Entity
 public class SubscriptionHistory {
+
+    // For testing purposes only
+    public SubscriptionHistory() {
+        this.profile = null;
+        this.activity = null;
+        this.timeDate = null;
+        this.subscribe = null;
+    }
 
     /**
      * Each history item has its own id

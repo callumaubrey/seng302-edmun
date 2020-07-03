@@ -82,7 +82,7 @@ public class Activity {
    */
   @ManyToMany(
           mappedBy = "subscriptions",
-          fetch = FetchType.EAGER)
+          fetch = FetchType.LAZY)
   private Collection<Profile> subscribers;
 
   public String getActivityName() {

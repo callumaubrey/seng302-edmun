@@ -1,13 +1,22 @@
 package com.springvuegradle.team6.models;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 /**
  *
  */
 @Entity
 public class ActivityHistory {
+
+    // For testing purposes only
+    public ActivityHistory() {
+        this.activity = null;
+        this.timeDate = null;
+        this.message = null;
+    }
 
     /**
      * Each activity history instance has its own unique id

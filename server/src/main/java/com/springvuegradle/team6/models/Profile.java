@@ -108,7 +108,7 @@ public class Profile {
    /**
     * Maps users to the activities they have subscribed to/followed
     */
-  @ManyToMany(fetch = FetchType.EAGER)
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
           name = "profile_subscriptions",
           joinColumns = @JoinColumn(name = "profile_id", referencedColumnName = "id"),
