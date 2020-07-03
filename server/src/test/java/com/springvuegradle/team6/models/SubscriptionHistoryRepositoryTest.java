@@ -21,8 +21,6 @@ public class SubscriptionHistoryRepositoryTest {
     @BeforeEach
     void setup() {
         subscriptionHistoryRepository.deleteAll();
-        activityRepository.deleteAll();
-        profileRepository.deleteAll();
     }
 
     @Test
@@ -60,11 +58,11 @@ public class SubscriptionHistoryRepositoryTest {
     @Test
     void testSingleSubscriptionFindByActivity() {
         Set<Email> emails = new HashSet<>();
-        Email email = new Email("johnydoe99@gmail.com");
+        Email email = new Email("secondemail@gmail.com");
         emails.add(email);
         Profile profile = new Profile();
-        profile.setFirstname("John");
-        profile.setLastname("Doe");
+        profile.setFirstname("Gon");
+        profile.setLastname("Freecss");
         profile.setEmails(emails);
         profile.setDob("2010-01-01");
         profile.setPassword("Password1");
@@ -73,7 +71,7 @@ public class SubscriptionHistoryRepositoryTest {
 
         Activity activity = new Activity();
         activity.setProfile(profile);
-        activity.setActivityName("Run at Hagley Park");
+        activity.setActivityName("Fight at heavens arena");
         activity.setContinuous(true);
         activity = activityRepository.save(activity);
 
