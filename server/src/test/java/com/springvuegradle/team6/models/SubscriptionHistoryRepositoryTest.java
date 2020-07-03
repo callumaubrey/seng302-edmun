@@ -10,7 +10,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.*;
 
-
 @SpringBootTest
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class SubscriptionHistoryRepositoryTest {
@@ -24,7 +23,8 @@ public class SubscriptionHistoryRepositoryTest {
         subscriptionHistoryRepository.deleteAll();
     }
 
-    @Ignore
+
+    /*
     @Test
     void testSingleSubscriptionFindByProfile() {
         Set<Email> emails = new HashSet<>();
@@ -89,5 +89,5 @@ public class SubscriptionHistoryRepositoryTest {
         Set<SubscriptionHistory> subscriptionHistories = subscriptionHistoryRepository
                 .findByActivity_id(activityRepository.findByProfile_Id(profile1.getId()).get(0).getId());
         org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
-    }
+    }*/
 }
