@@ -493,7 +493,7 @@ public class ActivityControllerTest {
   }
 
   @Test
-  void getActivitiesByUserId() throws Exception {
+  void getActivitiesByUserIdReturnActivities() throws Exception {
     Activity testActivity1 = new Activity();
     Profile profile1 = profileRepository.findById(id);
     Profile profile2 = new Profile();
@@ -524,7 +524,7 @@ public class ActivityControllerTest {
   }
 
   @Test
-  void getActivitiesWhenUserHasNoActivities() throws Exception {
+  void getActivitiesWhenUserHasNoActivitiesReturnNoActivities() throws Exception {
     Activity testActivity1 = new Activity();
     Profile profile1 = profileRepository.findById(id);
     Profile profile2 = new Profile();
@@ -547,4 +547,26 @@ public class ActivityControllerTest {
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("[]"));
   }
+
+  @Test
+  void getActivitiesWhereUserDoesNotExistReturnStatusNotFound() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities", 9999)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().is4xxClientError());
+  }
+
+
+  @Test
+  void getActivityThatIsArchivedReturnStatusOKAndNoData() throws Exception {
+      Activity activity = new Activity();
+      Profile profile = profileRepository.findById(id);
+      activity.setProfile(profile);
+      activity.setArchived(true);
+      activity = activityRepository.save(activity);
+      mvc.perform(MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId()).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().is2xxSuccessful())
+              .andExpect(content().string("Activity is archived"));;
+  }
+
 }
