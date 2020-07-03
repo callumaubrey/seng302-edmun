@@ -113,7 +113,6 @@
                         <b-col>
                             <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
                                        :values="hashtag.values"
-                                       :input-error-message="'You have already selected this hashtag'"
                                        :help-text="'Max 30 hashtags'"
                                        :input-character-limit="140"
                                        v-on:emitInput="autocompleteInput"
@@ -320,6 +319,11 @@
                 this.hashtag.options = [];
             },
             autocompleteInput: function (value) {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(value)) {
+                    this.hashtag.options = [];
+                    return;
+                }
                 if (value[0] == "#") {
                     value = value.substr(1);
                 }

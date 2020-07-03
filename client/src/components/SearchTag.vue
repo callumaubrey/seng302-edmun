@@ -23,7 +23,7 @@
                         v-model="value"
                         :placeholder="inputPlaceholder"
                         class="form-control"
-                        :state="tagUsed"
+                        :state="inputState()"
                         :disabled="maxEntriesReached"
                         :maxlength="maxCharacters"
                         list="autocomplete"
@@ -31,7 +31,7 @@
                 </b-form-input>
 
                 <b-input-group-append>
-                    <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached">Add</b-button>
+                    <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached || noInput || !checkInput()">Add</b-button>
                 </b-input-group-append>
                 <b-form-invalid-feedback>
                     {{ inputErrorMessage }}
@@ -62,13 +62,13 @@
             inputPlaceholder: String,
             helpText: String,
             values: Array,
-            inputErrorMessage: String,
             inputCharacterLimit: Number
         },
         data() {
             return {
                 value: "",
-                selected: false
+                selected: false,
+                inputErrorMessage: ""
             }
         },
         methods: {
@@ -99,18 +99,38 @@
             emitInputToParent() {
                 this.selected = false;
                 this.$emit('emitInput', this.value);
-            }
+            },
+            valueValid() {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(this.value)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            inputState() {
+                if (this.checkInput()) {
+                    return null;
+                } else {
+                    return false;
+                }
+            },
+            checkInput() {
+                if (!this.valueValid()) {
+                    this.inputErrorMessage = "Hashtags may only contain alphabets, numbers and underscores.";
+                    return false;
+                }
+                if (this.values.includes(this.value) || this.values.includes("#" + this.value)) {
+                    this.inputErrorMessage = "This hashtag has already been added";
+                    return false;
+                } else {
+                    return true;
+                }
+            },
         },
         computed: {
             maxEntriesReached() {
                 return this.values.length >= this.maxEntries;
-            },
-            tagUsed() {
-                if (this.values.includes(this.value) || this.values.includes("#" + this.value)) {
-                    return false;
-                } else {
-                    return null;
-                }
             },
             maxCharacters() {
                 if (this.values[0] == "#") {
@@ -118,8 +138,19 @@
                 } else {
                     return this.inputCharacterLimit;
                 }
-            }
+            },
 
+            noInput() {
+                let tempValue = this.value;
+                if (this.value[0] == "#") {
+                    tempValue = tempValue.substr(1);
+                }
+                if (tempValue.length == 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         }
     }
 </script>
