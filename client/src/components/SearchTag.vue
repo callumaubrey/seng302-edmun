@@ -77,6 +77,7 @@
                 this.selected = true;
             },
             addTag(value) {
+                value = value.toLowerCase();
                 if (value[0] !== "#") {
                     value = "#" + value;
                 }
@@ -120,7 +121,8 @@
                     this.inputErrorMessage = "Hashtags may only contain alphabets, numbers and underscores.";
                     return false;
                 }
-                if (this.values.includes(this.value) || this.values.includes("#" + this.value)) {
+                let value = this.value.toLowerCase();
+                if (this.values.includes(value) || this.values.includes("#" + value)) {
                     this.inputErrorMessage = "This hashtag has already been added";
                     return false;
                 } else {
