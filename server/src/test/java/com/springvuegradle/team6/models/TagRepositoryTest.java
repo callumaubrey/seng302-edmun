@@ -29,6 +29,10 @@ public class TagRepositoryTest {
   @BeforeEach
   void setup() {
     if (!dataLoaded) {
+      tagRepository.deleteAll();
+      activityRepository.deleteAll();
+      profileRepository.deleteAll();
+
       Set<Email> emails = new HashSet<>();
       Email email = new Email("johnydoe99@gmail.com");
       email.setPrimary(true);
@@ -42,8 +46,6 @@ public class TagRepositoryTest {
       profile.setGender("male");
       profile = profileRepository.save(profile);
 
-      tagRepository.deleteAll();
-      activityRepository.deleteAll();
 
       Tag cool = new Tag();
       cool.setName("cool");

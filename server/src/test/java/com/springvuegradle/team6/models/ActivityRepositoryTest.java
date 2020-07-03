@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.models;
 
 import io.cucumber.java.en_old.Ac;
+import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
