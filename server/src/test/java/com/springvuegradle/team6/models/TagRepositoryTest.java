@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class TagRepositoryTest {
 
@@ -29,10 +30,6 @@ public class TagRepositoryTest {
   @BeforeEach
   void setup() {
     if (!dataLoaded) {
-      tagRepository.deleteAll();
-      activityRepository.deleteAll();
-      profileRepository.deleteAll();
-
       Set<Email> emails = new HashSet<>();
       Email email = new Email("johnydoe99@gmail.com");
       email.setPrimary(true);
