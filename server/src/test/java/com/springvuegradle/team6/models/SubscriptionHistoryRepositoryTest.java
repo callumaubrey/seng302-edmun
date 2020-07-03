@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ public class SubscriptionHistoryRepositoryTest {
         subscriptionHistoryRepository.deleteAll();
     }
 
+    @Ignore
     @Test
     void testSingleSubscriptionFindByProfile() {
         Set<Email> emails = new HashSet<>();
@@ -55,6 +57,7 @@ public class SubscriptionHistoryRepositoryTest {
         org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
     }
 
+    @Ignore
     @Test
     void testSingleSubscriptionFindByActivity() {
         Set<Email> emails = new HashSet<>();
