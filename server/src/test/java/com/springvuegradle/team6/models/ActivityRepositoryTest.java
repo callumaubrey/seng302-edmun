@@ -38,6 +38,7 @@ public class ActivityRepositoryTest {
     void setup() throws Exception {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
+        email.setPrimary(true);
         emails.add(email);
         profile = new Profile();
         profile.setFirstname("John");
