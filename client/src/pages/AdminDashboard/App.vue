@@ -5,7 +5,7 @@
             <b-tabs align="center">
                 <b-tab title="Manage Users">
                     <div class="p-2">
-                        <Search></Search>
+                        <AdminUserSearch></AdminUserSearch>
                     </div>
                 </b-tab>
 
@@ -21,10 +21,12 @@
     import NavBar from "@/components/NavBar.vue";
     import Search from '@/components/Search.vue';
     import axios from "axios";
+    import AdminUserSearch from "../../components/AdminUserSearch";
 
     const App = {
         name: 'App',
         components: {
+            AdminUserSearch,
             NavBar, Search
         },
         data: function () {
