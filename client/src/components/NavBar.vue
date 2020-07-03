@@ -31,25 +31,26 @@
                 </b-nav-item>
             </b-navbar-nav>
 
-            <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
-            <!--            <b-navbar-nav class="ml-auto">-->
-            <!--                <b-nav-form>-->
-            <!--                    <b-form-input class="mr-sm-2" placeholder="Search" size="sm"></b-form-input>-->
-            <!--                    <b-button class="searchbtn" size="sm" type="submit" variant="primary">Search</b-button>-->
-            <!--                </b-nav-form>-->
-            <!--            </b-navbar-nav>-->
-
             <b-navbar-nav class="ml-auto">
                 <b-button class="loginbtn" to="/login" size="sm" type="button" v-if="!isLoggedIn" variant="primary">
                     Log in
                 </b-button>
-                <b-nav-item-dropdown right v-else>
-                    <template v-slot:button-content>
-                        <em>{{ userName }}</em>
-                    </template>
-                    <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
-                    <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
-                </b-nav-item-dropdown>
+                <div v-else>
+                    <b-button-group class="access-control-button" title="Toggle to switch role access"
+                                    v-b-popover.hover.bottom="">
+                        <b-button @click="switchAccessControl(false)" pill v-if="adminAccess" variant="success">Admin
+                        </b-button>
+                        <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">User
+                        </b-button>
+                    </b-button-group>
+                    <b-nav-item-dropdown right>
+                        <template v-slot:button-content>
+                            <em>{{ userName }}</em>
+                        </template>
+                        <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
+                        <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
+                    </b-nav-item-dropdown>
+                </div>
             </b-navbar-nav>
 
 
@@ -61,11 +62,12 @@
     import 'bootstrap/dist/css/bootstrap.css'
     import 'bootstrap-vue/dist/bootstrap-vue.css'
     import axios from 'axios'
+    import {mutations, store} from "../store";
 
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn','hideElements', 'loggedInId'],
+        props: ['isLoggedIn', 'hideElements', 'loggedInId', 'loggedInIsAdmin'],
         data: function () {
             return {
                 userName: "",
@@ -73,12 +75,15 @@
                 searchBy: 1,
                 searchQuery: "",
                 searchOptions: [
-                    { value: 1, text: 'Users' }
+                    {value: 1, text: 'Users'}
                 ],
-                profileId: "",
+                profileId: ""
             }
         },
-        watch: {
+        computed: {
+            adminAccess() {
+                return store.adminAccess
+            }
         },
         methods: {
             logout() {
@@ -126,6 +131,9 @@
                 if (this.searchQuery === '') return;
 
                 this.$router.push('/profiles?fullname=' + this.searchQuery);
+            },
+            switchAccessControl(value) {
+                mutations.switchAccessControl(value);
             }
         },
         beforeMount: function () {
@@ -141,10 +149,7 @@
         display: none;
     }
 
-    .searchbtn {
-        margin-right: 10px;
-    }
-    .nav-bar{
+    .nav-bar {
         margin-bottom: 50px;
         margin-right: 0px;
     }
@@ -153,4 +158,10 @@
     :not(.collapsed) > .when-closed {
         display: none;
     }
+
+    .access-control-button {
+        position: absolute;
+        right: 150px;
+    }
+
 </style>
