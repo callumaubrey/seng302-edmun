@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.test.context.jdbc.Sql;
@@ -30,6 +31,7 @@ public class TagRepositoryTest {
     if (!dataLoaded) {
       Set<Email> emails = new HashSet<>();
       Email email = new Email("johnydoe99@gmail.com");
+      email.setPrimary(true);
       emails.add(email);
       Profile profile = new Profile();
       profile.setFirstname("John");
