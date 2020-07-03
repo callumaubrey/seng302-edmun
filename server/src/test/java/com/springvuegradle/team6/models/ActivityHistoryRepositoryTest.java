@@ -6,27 +6,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-
-import java.util.*;
-
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @SpringBootTest
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class SubscriptionHistoryRepositoryTest {
+public class ActivityHistoryRepositoryTest {
 
-    @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
+    @Autowired private ActivityHistoryRepository activityHistoryRepository;
     @Autowired private ActivityRepository activityRepository;
     @Autowired private ProfileRepository profileRepository;
 
     @BeforeEach
     void setup() {
-        subscriptionHistoryRepository.deleteAll();
+        activityHistoryRepository.deleteAll();
         activityRepository.deleteAll();
         profileRepository.deleteAll();
     }
 
     @Test
-    void testSingleSubscriptionFindByProfile() {
+    void testSingleHistoryFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
         emails.add(email);
@@ -45,20 +45,20 @@ public class SubscriptionHistoryRepositoryTest {
         activity.setContinuous(true);
         activity = activityRepository.save(activity);
 
-        SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
-        subscriptionHistory.setActivity(activity);
-        subscriptionHistory.setProfile(profile);
-        subscriptionHistory.setSubscribe(true);
-        subscriptionHistory.setTimeDate(new Date());
-        subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+        ActivityHistory history = new ActivityHistory();
+        history.setActivity(activity);
+        history.setTimeDate(new Date());
+        history.setMessage("A change to this activity has occurred!!!");
+        history = activityHistoryRepository.save(history);
 
         Profile profile1 = profileRepository.findByEmailsContains(email);
-        Set<SubscriptionHistory> subscriptionHistories = subscriptionHistoryRepository.findByProfile_id(profile1.getId());
-        org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
+        Activity activity1 = activityRepository.findByProfile_Id(profile1.getId()).get(0);
+        Set<ActivityHistory> histories = activityHistoryRepository.findByActivity_id(activity1.getId());
+        org.junit.jupiter.api.Assertions.assertEquals(1, histories.size());
     }
 
     @Test
-    void testSingleSubscriptionFindByActivity() {
+    void testTwoHistoryUpdatesOneActivityFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
         emails.add(email);
@@ -77,16 +77,21 @@ public class SubscriptionHistoryRepositoryTest {
         activity.setContinuous(true);
         activity = activityRepository.save(activity);
 
-        SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
-        subscriptionHistory.setActivity(activity);
-        subscriptionHistory.setProfile(profile);
-        subscriptionHistory.setSubscribe(true);
-        subscriptionHistory.setTimeDate(new Date());
-        subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+        ActivityHistory history = new ActivityHistory();
+        history.setActivity(activity);
+        history.setTimeDate(new Date());
+        history.setMessage("A change to this activity has occurred!!!");
+        history = activityHistoryRepository.save(history);
+
+        ActivityHistory history1 = new ActivityHistory();
+        history1.setActivity(activity);
+        history1.setTimeDate(new Date());
+        history1.setMessage("A second change to this activity has occurred!!!");
+        history1 = activityHistoryRepository.save(history1);
 
         Profile profile1 = profileRepository.findByEmailsContains(email);
-        Set<SubscriptionHistory> subscriptionHistories = subscriptionHistoryRepository
-                .findByActivity_id(activityRepository.findByProfile_Id(profile1.getId()).get(0).getId());
-        org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
+        Activity activity1 = activityRepository.findByProfile_Id(profile1.getId()).get(0);
+        Set<ActivityHistory> histories = activityHistoryRepository.findByActivity_id(activity1.getId());
+        org.junit.jupiter.api.Assertions.assertEquals(2, histories.size());
     }
 }
