@@ -6,6 +6,7 @@ import com.springvuegradle.team6.requests.CreateActivityRequest;
 import javax.persistence.*;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -75,6 +76,9 @@ public class Activity {
 
   @Column(columnDefinition = "date default NOW()")
   private Date creationDate;
+
+  @OneToMany(mappedBy = "activity")
+  private List<ActivityRole> activityRole;
 
   public String getActivityName() {
     return activityName;
