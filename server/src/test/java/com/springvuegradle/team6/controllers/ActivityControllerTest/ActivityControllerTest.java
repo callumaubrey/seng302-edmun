@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers;
+package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
@@ -301,150 +301,166 @@ public class ActivityControllerTest {
   @Test
   void createActivityWithLocationNoStateReturnStatusIsCreated() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true,\n"
-                    + " \"location\": {\n"
-                    + " \t\"city\": \"Christchurch\",\n"
-                    + " \t\"country\": \"New Zealand\"\n"
-                    + "  }"
-                    + ""
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"city\": \"Christchurch\",\n"
+            + " \t\"country\": \"New Zealand\"\n"
+            + "  }"
+            + ""
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
   }
 
   @Test
   void createActivityWithLocationEmptyReturnStatusBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true,\n"
-                    + " \"location\": {\n"
-                    + "  }"
-                    + ""
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + "  }"
+            + ""
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isBadRequest());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
   void createActivityWithHashtagReturnStatusIsCreatedAndActivityIsCreated() throws Exception {
-    String jsonString = "{\n" +
-            "  \"activity_name\": \"Running\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true,\n" +
-            "  \"hashtags\": [\n" +
-            "    \"#a1\",\n" +
-            "    \"#a2\",\n" +
-            "    \"#a3\",\n" +
-            "    \"#a4\",\n" +
-            "    \"#a5\"\n" +
-            "  ]\n" +
-            "}";
-    ResultActions responseString = mvc.perform(
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Running\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\"\n"
+            + "  ]\n"
+            + "}";
+    ResultActions responseString =
+        mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isCreated());
-    Assert.assertTrue(activityRepository.findById(Integer.parseInt(responseString.andReturn().getResponse().getContentAsString())).isPresent());
+    Assert.assertTrue(
+        activityRepository
+            .findById(
+                Integer.parseInt(responseString.andReturn().getResponse().getContentAsString()))
+            .isPresent());
   }
 
   @Test
-  void createActivityWithInvalidHashtagReturnStatusIsBadRequestAndErrorMessageIsReturned() throws Exception {
-    String jsonString = "{\n" +
-            "  \"activity_name\": \"Running\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true,\n" +
-            "  \"hashtags\": [\n" +
-            "    \"#a1 123\",\n" +
-            "    \"#a2\",\n" +
-            "    \"#a3\",\n" +
-            "    \"#a4\",\n" +
-            "    \"#a5\"\n" +
-            "  ]\n" +
-            "}";
-    ResultActions responseString = mvc.perform(
+  void createActivityWithInvalidHashtagReturnStatusIsBadRequestAndErrorMessageIsReturned()
+      throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Running\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1 123\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\"\n"
+            + "  ]\n"
+            + "}";
+    ResultActions responseString =
+        mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isBadRequest());
-    Assert.assertTrue(responseString.andReturn().getResponse().getContentAsString().contains("contains characters other than alphanumeric characters"));
+    Assert.assertTrue(
+        responseString
+            .andReturn()
+            .getResponse()
+            .getContentAsString()
+            .contains("contains characters other than alphanumeric characters"));
   }
 
   @Test
   void createActivityWithMoreThan30HashtagReturnStatusIsBadRequest() throws Exception {
-    String jsonString = "{\n" +
-            "  \"activity_name\": \"Running\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true,\n" +
-            "  \"hashtags\": [\n" +
-            "    \"#a1\",\n" +
-            "    \"#a2\",\n" +
-            "    \"#a3\",\n" +
-            "    \"#a4\",\n" +
-            "    \"#a5\",\n" +
-            "    \"#a6\",\n" +
-            "    \"#a7\",\n" +
-            "    \"#a8\",\n" +
-            "    \"#a9\",\n" +
-            "    \"#a10\",\n" +
-            "    \"#a11\",\n" +
-            "    \"#a12\",\n" +
-            "    \"#a13\",\n" +
-            "    \"#a14\",\n" +
-            "    \"#a15\",\n" +
-            "    \"#a16\",\n" +
-            "    \"#a17\",\n" +
-            "    \"#a18\",\n" +
-            "    \"#a19\",\n" +
-            "    \"#a20\",\n" +
-            "    \"#a21\",\n" +
-            "    \"#a22\",\n" +
-            "    \"#a23\",\n" +
-            "    \"#a24\",\n" +
-            "    \"#a25\",\n" +
-            "    \"#a26\",\n" +
-            "    \"#a27\",\n" +
-            "    \"#a28\",\n" +
-            "    \"#a29\",\n" +
-            "    \"#a30\",\n" +
-            "    \"#a31\"\n" +
-            "  ]\n" +
-            "}";
-    ResultActions responseString = mvc.perform(
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Running\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\",\n"
+            + "    \"#a6\",\n"
+            + "    \"#a7\",\n"
+            + "    \"#a8\",\n"
+            + "    \"#a9\",\n"
+            + "    \"#a10\",\n"
+            + "    \"#a11\",\n"
+            + "    \"#a12\",\n"
+            + "    \"#a13\",\n"
+            + "    \"#a14\",\n"
+            + "    \"#a15\",\n"
+            + "    \"#a16\",\n"
+            + "    \"#a17\",\n"
+            + "    \"#a18\",\n"
+            + "    \"#a19\",\n"
+            + "    \"#a20\",\n"
+            + "    \"#a21\",\n"
+            + "    \"#a22\",\n"
+            + "    \"#a23\",\n"
+            + "    \"#a24\",\n"
+            + "    \"#a25\",\n"
+            + "    \"#a26\",\n"
+            + "    \"#a27\",\n"
+            + "    \"#a28\",\n"
+            + "    \"#a29\",\n"
+            + "    \"#a30\",\n"
+            + "    \"#a31\"\n"
+            + "  ]\n"
+            + "}";
+    ResultActions responseString =
+        mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isBadRequest());
   }
 
