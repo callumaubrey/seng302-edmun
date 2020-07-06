@@ -435,6 +435,9 @@ public class ActivityController {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
     Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
     try {
       ObjectMapper mapper = new ObjectMapper();
       String postJson = mapper.writeValueAsString(activity);
@@ -445,13 +448,25 @@ public class ActivityController {
   }
 
   /**
-   * Get all activity that a user has created by their userID
+   * Get all activity that a user has created by their userID that is not archived
    *
    * @param profileId The id of the user profile
+   * @param session The session of the current user logged in
    * @return 200 response with headers
    */
   @GetMapping("/profiles/{profileId}/activities")
-  public ResponseEntity getUserActivities(@PathVariable int profileId) {
-    return ResponseEntity.ok(activityRepository.findByProfile_Id(profileId));
+  public ResponseEntity getUserActivities(@PathVariable int profileId, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
 }

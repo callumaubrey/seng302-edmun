@@ -16,7 +16,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    */
   Optional<Activity> findById(int id);
 
-  List<Activity> findByProfile_Id(int id);
+  List<Activity> findByProfile_IdAndArchivedFalse(int id);
 
   List<Activity> findByTags_NameOrderByCreationDateDesc(String name);
 
