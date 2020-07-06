@@ -181,7 +181,7 @@ public class Activity {
       return false;
     }
 
-    Activity activity = (Activity)o;
+    Activity activity = (Activity) o;
 
     return this.id == activity.getId();
   }

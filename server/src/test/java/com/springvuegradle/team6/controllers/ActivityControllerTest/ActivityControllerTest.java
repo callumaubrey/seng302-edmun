@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers;
+package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
