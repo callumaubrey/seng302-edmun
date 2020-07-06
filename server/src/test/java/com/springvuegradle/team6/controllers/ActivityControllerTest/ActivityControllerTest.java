@@ -482,7 +482,8 @@ public class ActivityControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get("/activities/" + activity1Id)
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -504,12 +505,15 @@ public class ActivityControllerTest {
     testActivity2.setProfile(profile1);
     activityRepository.save(testActivity2);
 
-    mvc.perform(MockMvcRequestBuilders.get("/activities/3").contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/3")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
 
   @Test
-  void getActivitiesByUserId() throws Exception {
+  void getActivitiesByUserIdReturnActivities() throws Exception {
     Activity testActivity1 = new Activity();
     Profile profile1 = profileRepository.findById(id);
     Profile profile2 = new Profile();
@@ -530,7 +534,8 @@ public class ActivityControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get("/profiles/{profileId}/activities", profile1.getId())
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -540,7 +545,7 @@ public class ActivityControllerTest {
   }
 
   @Test
-  void getActivitiesWhenUserHasNoActivities() throws Exception {
+  void getActivitiesWhenUserHasNoActivitiesReturnNoActivities() throws Exception {
     Activity testActivity1 = new Activity();
     Profile profile1 = profileRepository.findById(id);
     Profile profile2 = new Profile();
@@ -559,8 +564,34 @@ public class ActivityControllerTest {
 
     mvc.perform(
             MockMvcRequestBuilders.get("/profiles/{profileId}/activities", profile1.getId())
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("[]"));
+  }
+
+  @Test
+  void getActivitiesWhereUserDoesNotExistReturnStatusNotFound() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities", 9999)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void getActivityThatIsArchivedReturnStatusOKAndNoData() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setArchived(true);
+    activity = activityRepository.save(activity);
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful())
+        .andExpect(content().string("Activity is archived"));
+    ;
   }
 }
