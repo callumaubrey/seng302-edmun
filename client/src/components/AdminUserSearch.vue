@@ -369,7 +369,9 @@
                 console.log(this.selectedRow.primary_email);
                 axios.defaults.withCredentials = true;
                 axios.delete('http://localhost:9499/admin/profiles', {
-                    primary_email: this.selectedRow.primary_email
+                    data: {
+                        primary_email: this.selectedRow.primary_email
+                    }
                 });
                 this.selectedRow = null;
             },
