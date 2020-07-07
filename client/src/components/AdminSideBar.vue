@@ -9,10 +9,52 @@
                 <p v-else>Standard User</p>
                 Possible actions:
                 <br>
-                <b-button @click="toggleAdminRights" v-if="profileIsAdmin" variant="danger">Remove Admin Privilege
+                <b-button @click="toggleAdminRights" class="ui-button" v-if="profileIsAdmin" variant="danger">Remove
+                    Admin Privilege
                 </b-button>
-                <b-button @click="toggleAdminRights" v-else variant="success">Add Admin Privilege</b-button>
+                <b-button @click="toggleAdminRights" class="ui-button" v-else variant="success">Add Admin Privilege
+                </b-button>
                 <p style="color:red;" v-if="roleEditedErrorMsg != null">{{roleEditedErrorMsg}}</p>
+
+                <b-button class="ui-button" v-b-modal.modal-pwd variant="primary">Change User Password</b-button>
+                <b-modal
+                        @hidden="resetModal"
+                        @ok="handleOk"
+                        @show="resetModal"
+                        id="modal-pwd"
+                        title="Change User Password">
+                    <b-form @submit.stop.prevent="changeUserPassword">
+                        <b-form-group
+                                label="Enter new user password:">
+                            <b-form-input
+                                    :state="validateForm('newUserPassword')"
+                                    type="password"
+                                    v-model="$v.form.newUserPassword.$model">
+                            </b-form-input>
+                            <b-form-invalid-feedback> Password should contain at least 8 characters with at least one
+                                digit, one lower case and one upper case
+                            </b-form-invalid-feedback>
+                        </b-form-group>
+                        <b-form-group
+                                label="Repeat new user password:">
+                            <b-form-input
+                                    :state="validateForm('repeatNewUserPassword')"
+                                    type="password"
+                                    v-model="$v.form.repeatNewUserPassword.$model">
+                            </b-form-input>
+                            <b-form-valid-feedback> {{ form.passwordEditSuccessMsg }}</b-form-valid-feedback>
+                            <b-form-invalid-feedback> {{ form.passwordEditErrorMsg ? form.passwordEditErrorMsg:
+                                "Repeated password must match new password"}}
+                            </b-form-invalid-feedback>
+                        </b-form-group>
+                    </b-form>
+                </b-modal>
+
+                <br>
+                Go to:
+                <br>
+                <b-button @click="goToUserEditProfilePage" class="ui-button">Edit User Profile</b-button>
+                <b-button @click="goToUserActivityListPage" class="ui-button">User Activities</b-button>
             </div>
         </b-sidebar>
     </div>
@@ -21,6 +63,9 @@
 
 <script>
     import axios from 'axios'
+    import {helpers, sameAs} from 'vuelidate/lib/validators'
+
+    const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
     const AdminSideBar = {
         name: "AdminSideBar",
@@ -41,10 +86,30 @@
         data: function () {
             return {
                 profileIsAdmin: null,
-                roleEditedErrorMsg: null
+                roleEditedErrorMsg: null,
+                form: {
+                    newUserPassword: null,
+                    repeatNewUserPassword: null,
+                    passwordEditSuccessMsg: null,
+                    passwordEditErrorMsg: null
+                }
+            }
+        },
+        validations: {
+            form: {
+                newUserPassword: {
+                    passwordValidate
+                },
+                repeatNewUserPassword: {
+                    sameAsPassword: sameAs('newUserPassword')
+                }
             }
         },
         methods: {
+            validateForm: function (name) {
+                const {$dirty, $error} = this.$v['form'][name];
+                return $dirty ? !$error : null;
+            },
             getOtherUserRole: function () {
                 const currentObj = this;
                 return axios.get('http://localhost:9499/admin/role/' + this.$route.params.id)
@@ -72,6 +137,39 @@
                     .catch(function (err) {
                         vue.roleEditedErrorMsg = err.data;
                     })
+            },
+            changeUserPassword: function () {
+                let vue = this;
+                this.$v.form.$touch();
+                if (this.$v.form.$anyError || this.form.newUserPassword == null || this.form.repeatNewUserPassword == null) {
+                    return;
+                }
+                axios.put("http://localhost:9499/admin/profiles/" + this.$route.params.id + "/password", {
+                    new_password: vue.form.newUserPassword,
+                    repeat_password: vue.form.repeatNewUserPassword
+                }).then(function (response) {
+                    vue.form.passwordEditSuccessMsg = response.data;
+                    this.$v.form.$reset();
+                }).catch(function (err) {
+                    vue.form.passwordEditErrorMsg = err.response;
+                })
+            },
+            handleOk: function (bvModalEvent) {
+                bvModalEvent.preventDefault();
+                this.changeUserPassword();
+            },
+            resetModal: function () {
+                this.form.newUserPassword = null;
+                this.form.repeatNewUserPassword = null;
+                this.form.passwordEditSuccessMsg = null;
+                this.form.passwordEditErrorMsg = null;
+                this.$v.form.$reset();
+            },
+            goToUserEditProfilePage: function () {
+                this.$router.push('/profiles/edit/' + this.$route.params.id);
+            },
+            goToUserActivityListPage: function () {
+                this.$router.push('/profiles/' + this.$route.params.id + '/activities/');
             }
         }
     }
@@ -80,5 +178,8 @@
 </script>
 
 <style scoped>
+    .ui-button {
+        margin: 5px;
+    }
 
 </style>
