@@ -23,8 +23,9 @@ public class SubscriptionHistoryRepositoryTest {
         subscriptionHistoryRepository.deleteAll();
     }
 
+    @Ignore
     @Test
-    void testSingleSubscriptionFindByProfile() {
+    void singleSubscriptionFindByProfile() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
         emails.add(email);
@@ -57,7 +58,7 @@ public class SubscriptionHistoryRepositoryTest {
 
     @Ignore
     @Test
-    void testSingleSubscriptionFindByActivity() {
+    void singleSubscriptionFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("secondemail@gmail.com");
         emails.add(email);
