@@ -19,7 +19,7 @@ const routes = [
     {path: '/register', component: Register},
     {path: '/login', component: Login},
     {path: '/admin', component: Admin},
-    {path: '/admin/dashboard', component: AdminDashboard},
+    {path: '/admin/dashboard', component: AdminDashboard, name: 'AdminDashboard'},
     {path: '/profiles/:id', component: Profile},
     {path: '/profiles/edit/:id', component: EditProfile},
     {path: '/profiles/:id/activities/create', component: CreateActivity},

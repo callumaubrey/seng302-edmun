@@ -123,9 +123,26 @@
                         <b-button size="sm" @click="editUserClicked(row.item)">
                             Edit
                         </b-button>
-                        <b-button size="sm" @click="deleteUserClicked(row.item)">
+                        <b-button size="sm" id="btnDelete" danger @click="openDeleteModal">
                             Delete
                         </b-button>
+                        <template>
+                            <div>
+                                <b-modal id="deleteModal" v-model="modalShow" @ok="handleDelete" @cancel="handleCancel" modal-ok="Delete">
+                                    <div class="d-block text-center">
+                                        <h3>Are you sure you want to delete this User?</h3>
+                                    </div>
+                                    <template v-slot:modal-footer="{ handleCancel, handleDelete}">
+                                        <b-button size="sm"  @click="handleCancel">
+                                            Cancel
+                                        </b-button>
+                                        <b-button size="sm" variant="danger" @click="handleDelete">
+                                            DELETE
+                                        </b-button>
+                                    </template>
+                                </b-modal>
+                            </div>
+                        </template>
                     </template>
                     <template v-slot:table-busy>
                         <div class="text-center text-primary my-2">
@@ -184,6 +201,8 @@
                     method: "AND"
                 },
                 tableIsLoading: false,
+                modalShow: false,
+                selectedRow: null
             }
         },
         computed: {
@@ -278,7 +297,7 @@
                 return query;
             },
             updateUrl: function () {
-                this.$router.push({name: "Users", query: this.routeQuery});
+                this.$router.push({name: "AdminDashboard", query: this.routeQuery});
             },
             getUsersFromNavBar: function () {
                 let navBarQuery = this.$route.query.fullname;
@@ -347,9 +366,25 @@
             editUserClicked: function (userRow) {
                 this.$router.push('/profiles/edit/' + userRow.profile_id);
             },
-            deleteUserClicked: function (userRow) {
-                //implement axios call for deleting a user.
-                console.log(userRow);
+            deleteUserClicked: function () {
+                console.log(this.selectedRow.primary_email);
+                axios.defaults.withCredentials = true;
+                axios.delete('http://localhost:9499/admin/profiles', {
+                    primary_email: this.selectedRow.primary_email
+                });
+                this.selectedRow = null;
+            },
+            handleDelete() {
+                // Prevent modal from closing
+                this.$root.$emit('bv::hide::modal', 'deleteModal', '#btnDelete');
+                this.deleteUserClicked();
+            },
+            handleCancel() {
+                this.$root.$emit('bv::hide::modal', 'deleteModal', '#btnDelete');
+            },
+            openDeleteModal(userRow) {
+                this.modalShow = !this.modalShow;
+                this.selectedRow = userRow;
             },
             populatePage: function() {
                 let fromNavBar = this.getUsersFromNavBar();
