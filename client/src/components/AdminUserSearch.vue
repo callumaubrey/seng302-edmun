@@ -123,23 +123,22 @@
                         <b-button size="sm" @click="editUserClicked(row.item)">
                             Edit
                         </b-button>
-                        <b-button size="sm" id="btnDelete" danger @click="openDeleteModal">
+                        <b-button size="sm" id="btnDelete" danger @click="openDeleteModal(row.item)">
                             Delete
                         </b-button>
                         <template>
                             <div>
-                                <b-modal id="deleteModal" v-model="modalShow" @ok="handleDelete" @cancel="handleCancel" modal-ok="Delete">
+                                <b-modal id="deleteModal" ref="deleteModal" v-model="modalShow" @ok="handleDelete" @cancel="handleCancel" hide-footer>
                                     <div class="d-block text-center">
                                         <h3>Are you sure you want to delete this User?</h3>
                                     </div>
-                                    <template v-slot:modal-footer="{ handleCancel, handleDelete}">
-                                        <b-button size="sm"  @click="handleCancel">
-                                            Cancel
-                                        </b-button>
-                                        <b-button size="sm" variant="danger" @click="handleDelete">
-                                            DELETE
-                                        </b-button>
-                                    </template>
+                                    <b-button size="lg"  @click="handleCancel" class="modalBtn">
+                                        Cancel
+                                    </b-button>
+                                    <b-button size="lg" variant="danger" @click="handleDelete" class="modalBtn">
+                                        DELETE
+                                    </b-button>
+
                                 </b-modal>
                             </div>
                         </template>
@@ -376,11 +375,13 @@
             },
             handleDelete() {
                 // Prevent modal from closing
-                this.$root.$emit('bv::hide::modal', 'deleteModal', '#btnDelete');
+                this.$refs['deleteModal'].hide();
                 this.deleteUserClicked();
+                this.selectedRow = null;
             },
             handleCancel() {
-                this.$root.$emit('bv::hide::modal', 'deleteModal', '#btnDelete');
+                this.$refs['deleteModal'].hide();
+                this.selectedRow = null;
             },
             openDeleteModal(userRow) {
                 this.modalShow = !this.modalShow;
@@ -451,5 +452,10 @@
 
 
 <style scoped>
+
+    .modalBtn {
+        float: left;
+        width: 50%;
+    }
 
 </style>
