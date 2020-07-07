@@ -16,20 +16,14 @@
                     <b-row align-h="center">
                         <h3>{{ userName }}'s Feed</h3>
                     </b-row>
-                    <b-row style="margin-top:20px;">
-                        <b-card title="Activity Update Card 1" style="width:100%">
-                            <b-card-text>
-                                Some quick example text to build on the <em>card title</em> and make up the bulk of the card's
-                                content.
-                            </b-card-text>
-                        </b-card>
-
-                        <b-card title="Activity Update Card 2" style="width:100%; margin-top:10px;">
-                            <b-card-text>
-                                Some quick example text to build on the <em>card title</em> and make up the bulk of the card's
-                                content.
-                            </b-card-text>
-                        </b-card>
+                    <b-row style="margin-top:10px;">
+                        <div v-for="item in items" :key="item" style="width:100%;margin-top:10px;">
+                            <b-card :title="item.title">
+                                <b-card-text>
+                                    {{ item.text }}
+                                </b-card-text>
+                            </b-card>
+                        </div>
                     </b-row>
                 </b-col>
             </b-row>
@@ -50,7 +44,11 @@
                 isLoggedIn: false,
                 userName: '',
                 fullName: '',
-                followingCount: 46
+                followingCount: 46,
+                items: [
+                    { title: 'Card 1', text: 'Card 1 text' },
+                    { title: 'Card 2', text: 'Card 2 text' }
+                ]
             }
         },
         methods: {

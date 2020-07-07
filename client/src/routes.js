@@ -27,7 +27,7 @@ const routes = [
     {path: '/profiles/:id/activities/', component: ListActivity},
     {path: '/profiles', component: Search, name: 'Users' },
     {path: '/hashtag/:hashtag', component: HashTag },
-    {path: '/feed', component: HomeFeed }
+    {path: '/home', component: HomeFeed }
     ];
 
 export default routes;
