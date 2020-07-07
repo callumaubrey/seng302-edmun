@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers.AdminControllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,12 +34,16 @@ class AdminControllerTest {
     private MockMvc mvc;
 
     @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
     private ObjectMapper mapper;
 
     private int id;
 
     @BeforeEach
     void createJohnDoeUser() throws Exception {
+        profileRepository.deleteAll();
         CreateProfileRequest validRequest = new CreateProfileRequest();
         String jsonString = "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly1@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 

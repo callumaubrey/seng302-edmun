@@ -20,10 +20,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(
     origins = "http://localhost:9500",
@@ -42,20 +39,25 @@ public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
   private final NamedLocationRepository locationRepository;
+  private final TagRepository tagRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
-      NamedLocationRepository locationRepository) {
+      NamedLocationRepository locationRepository,
+      TagRepository tagRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.locationRepository = locationRepository;
+    this.tagRepository = tagRepository;
   }
 
   /**
-   * This method is required to enable direct field access for activity controller, due to a weird bug where
-   * the fields of LocationUpdateRequest not being able to be accessed even with getters.
-   * @param dataBinder */
+   * This method is required to enable direct field access for activity controller, due to a weird
+   * bug where the fields of LocationUpdateRequest not being able to be accessed even with getters.
+   *
+   * @param dataBinder
+   */
   @InitBinder
   private void activateDirectFieldAccess(DataBinder dataBinder) {
     dataBinder.initDirectFieldAccess();
@@ -76,8 +78,15 @@ public class ActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    Collection<SimpleGrantedAuthority> userRoles = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-    boolean isAdmin = userRoles.stream().anyMatch(simpleGrantedAuthority -> (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN") || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
+    Collection<SimpleGrantedAuthority> userRoles =
+        (Collection<SimpleGrantedAuthority>)
+            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+    boolean isAdmin =
+        userRoles.stream()
+            .anyMatch(
+                simpleGrantedAuthority ->
+                    (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
+                        || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
     if (!(id.toString().equals(activity.getProfile().getId().toString())) && !isAdmin) {
       return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
     }
@@ -105,7 +114,8 @@ public class ActivityController {
     if (profile.isPresent()) {
       Profile user = profile.get();
 
-      ResponseEntity<String> authorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+      ResponseEntity<String> authorisedResponse =
+          UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
@@ -190,6 +200,45 @@ public class ActivityController {
   }
 
   /**
+   * Helper function to check if tags associated to the activity is not more that 30 and check if
+   * each tag only contains alphanumeric characters
+   *
+   * @param hashtags set of hashtags associated to the activity
+   * @return return ResponseEntity with personalised error message if error is found, otherwise null
+   */
+  private ResponseEntity<String> checkAllTagsValidity(Set<Tag> hashtags) {
+    if (hashtags != null) {
+      if (hashtags.size() > 30) {
+        return new ResponseEntity<>(
+            "More than 30 hashtags per activity is not allowed", HttpStatus.BAD_REQUEST);
+      }
+      for (Tag tag : hashtags) {
+        formatHashtagToStoreInDb(tag);
+
+        // check if tagname only contains alphanumeric characters
+        if (!tag.getName().matches("[A-Za-z0-9]+")) {
+          return new ResponseEntity<>(
+              "Tag name "
+                  + tag.getName()
+                  + " contains characters other than alphanumeric characters",
+              HttpStatus.BAD_REQUEST);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Helper function to convert hashtag to lower case and remove '#'
+   *
+   * @param hashtag
+   */
+  private void formatHashtagToStoreInDb(Tag hashtag) {
+    hashtag.setName(hashtag.getName().toLowerCase().substring(1));
+  }
+
+  /**
    * Post Request to create an activity for the given profile based on the request
    *
    * @param profileId The id of the profile where the activity is created for
@@ -202,7 +251,8 @@ public class ActivityController {
       @PathVariable Integer profileId,
       @Valid @RequestBody CreateActivityRequest request,
       HttpSession session) {
-    ResponseEntity<String> checkAuthorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    ResponseEntity<String> checkAuthorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
@@ -210,6 +260,12 @@ public class ActivityController {
     if (profile.isEmpty()) {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
     }
+
+    ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.hashTags);
+    if (checkHashtagsValidityResponse != null) {
+      return checkHashtagsValidityResponse;
+    }
+
     Activity activity = new Activity(request, profile.get());
     if (activity.getLocation() != null) {
       Optional<NamedLocation> optionalNamedLocation =
@@ -227,6 +283,14 @@ public class ActivityController {
     if (checkActivityDateTimeResponse != null) {
       return checkActivityDateTimeResponse;
     }
+
+    Set<Tag> hashtags = activity.getTags();
+    if (hashtags != null) {
+      for (Tag tag : hashtags) {
+        tagRepository.save(tag);
+      }
+    }
+
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
@@ -258,7 +322,6 @@ public class ActivityController {
         return authorisedResponse;
       }
 
-
       ResponseEntity<String> activityAuthorizedResponse =
           this.checkAuthorisedToEditActivity(edit, session);
       if (activityAuthorizedResponse != null) {
@@ -266,7 +329,6 @@ public class ActivityController {
       }
 
       request.editActivityFromRequest(edit, locationRepository);
-
 
       ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(edit);
       if (checkActivityDateTimeResponse != null) {
@@ -350,21 +412,23 @@ public class ActivityController {
    * @return The response code and message
    */
   @DeleteMapping("/profiles/{profileId}/activities/{activityId}")
-  public ResponseEntity<String> createActivity(
+  public ResponseEntity<String> deleteActivity(
       @PathVariable Integer profileId, @PathVariable Integer activityId, HttpSession session) {
-    ResponseEntity<String> checkAuthorisedResponse = UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    ResponseEntity<String> checkAuthorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
-    Optional<Activity> p = activityRepository.findById(activityId);
-    if (p.isPresent()) {
-      Activity activity = p.get();
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
       if (!activity.getProfile().getId().equals(profileId)) {
         return new ResponseEntity<>(
             "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-      activityRepository.delete(activity);
-      return ResponseEntity.ok("OK");
+      activity.setArchived(true);
+      activityRepository.save(activity);
+      return new ResponseEntity<>("Activity is now archived", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -383,6 +447,9 @@ public class ActivityController {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
     Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
     try {
       ObjectMapper mapper = new ObjectMapper();
       String postJson = mapper.writeValueAsString(activity);
@@ -393,13 +460,25 @@ public class ActivityController {
   }
 
   /**
-   * Get all activity that a user has created by their userID
+   * Get all activity that a user has created by their userID that is not archived
    *
    * @param profileId The id of the user profile
+   * @param session The session of the current user logged in
    * @return 200 response with headers
    */
   @GetMapping("/profiles/{profileId}/activities")
-  public ResponseEntity getUserActivities(@PathVariable int profileId) {
-    return ResponseEntity.ok(activityRepository.findByProfile_Id(profileId));
+  public ResponseEntity getUserActivities(@PathVariable int profileId, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
 }

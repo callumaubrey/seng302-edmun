@@ -17,7 +17,7 @@ export default {
                 .then((roles) => {
                     if (roles) {
                         for (let i = 0; i < roles.length; i++) {
-                            if (roles[i].roleName === "ROLE_ADMIN") {
+                            if (roles[i].roleName === "ROLE_ADMIN" || roles[i].roleName === "ROLE_USER_ADMIN") {
                                 return true;
                             }
                         }
