@@ -27,6 +27,7 @@ public class ActivityHistoryRepositoryTest {
     void testSingleHistoryFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
+        email.setPrimary(true);
         emails.add(email);
         Profile profile = new Profile();
         profile.setFirstname("John");
@@ -59,6 +60,7 @@ public class ActivityHistoryRepositoryTest {
     void testTwoHistoryUpdatesOneActivityFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("secondemail@gmail.com");
+        email.setPrimary(true);
         emails.add(email);
         Profile profile = new Profile();
         profile.setFirstname("Gon");

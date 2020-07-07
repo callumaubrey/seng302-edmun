@@ -23,11 +23,11 @@ public class SubscriptionHistoryRepositoryTest {
         subscriptionHistoryRepository.deleteAll();
     }
 
-    @Ignore
     @Test
     void singleSubscriptionFindByProfile() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("johnydoe99@gmail.com");
+        email.setPrimary(true);
         emails.add(email);
         Profile profile = new Profile();
         profile.setFirstname("John");
@@ -56,11 +56,11 @@ public class SubscriptionHistoryRepositoryTest {
         org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
     }
 
-    @Ignore
     @Test
     void singleSubscriptionFindByActivity() {
         Set<Email> emails = new HashSet<>();
         Email email = new Email("secondemail@gmail.com");
+        email.setPrimary(true);
         emails.add(email);
         Profile profile = new Profile();
         profile.setFirstname("Gon");
