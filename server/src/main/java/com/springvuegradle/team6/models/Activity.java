@@ -61,9 +61,9 @@ public class Activity {
 
   @ManyToMany
   @JoinTable(
-          name = "activity_tags",
-          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+      name = "activity_tags",
+      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
@@ -76,6 +76,9 @@ public class Activity {
 
   @Column(columnDefinition = "date default NOW()")
   private Date creationDate;
+
+  @Column(columnDefinition = "boolean default false")
+  private boolean archived;
 
   @OneToMany(mappedBy = "activity")
   private List<ActivityRole> activityRole;
@@ -162,5 +165,28 @@ public class Activity {
 
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public void setArchived(boolean archived) {
+    this.archived = archived;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Activity activity = (Activity) o;
+
+    return this.id == activity.getId();
   }
 }

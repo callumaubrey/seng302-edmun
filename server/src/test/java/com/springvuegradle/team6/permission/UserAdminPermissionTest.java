@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.permission;
 
 import com.springvuegradle.team6.models.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -192,8 +193,8 @@ class UserAdminPermissionTest {
                         .session(session))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
-        List<Activity> anotherUserActivities = activityRepository.findByProfile_Id(Integer.parseInt(anotherUserId));
-        org.junit.jupiter.api.Assertions.assertEquals(activityId, anotherUserActivities.get(0).getId().toString());
+        List<Activity> anotherUserActivities = activityRepository.findByProfile_IdAndArchivedFalse(Integer.parseInt(anotherUserId));
+        Assertions.assertEquals(activityId, anotherUserActivities.get(0).getId().toString());
     }
 
 
