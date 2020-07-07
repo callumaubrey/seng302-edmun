@@ -379,6 +379,7 @@
                 // Prevent modal from closing
                 this.$refs['deleteModal'].hide();
                 this.deleteUserClicked();
+                this.searchUser();
                 this.selectedRow = null;
             },
             handleCancel() {
