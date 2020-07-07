@@ -9,5 +9,5 @@ import java.util.List;
 @RepositoryRestResource
 public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Integer> {
 
-  List<ActivityRole> findByActivityRoleTypes(ActivityRoleType type);
+  List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
 }

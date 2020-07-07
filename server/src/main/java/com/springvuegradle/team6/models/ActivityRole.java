@@ -21,5 +21,21 @@ public class ActivityRole {
   private List<Profile> profile;
 
   @Enumerated(EnumType.ORDINAL)
-  private ActivityRoleType activityRoleTypes;
+  private ActivityRoleType activityRoleType;
+
+  public void setActivity(Activity activity) {
+    this.activity = activity;
+  }
+
+  public Activity getActivity() {
+    return activity;
+  }
+
+  public void setProfile(List<Profile> profiles) {
+    this.profile = profiles;
+  }
+
+  public void setActivityRoleType(ActivityRoleType activityRoleType) {
+    this.activityRoleType = activityRoleType;
+  }
 }
