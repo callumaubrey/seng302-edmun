@@ -186,13 +186,6 @@ public class Profile {
     return subscriptions;
   }
 
-    @JsonProperty("additional_email")
-    public Set<Email> getEmails() {
-        Set<Email> additionalEmails = new HashSet<>(this.emails);
-        additionalEmails.removeIf(Email::isPrimary);
-        return additionalEmails;
-    }
-
   public Set<Email> getAllEmails() {
     return this.emails;
   }
@@ -293,6 +286,7 @@ public class Profile {
   public NamedLocation getLocation() {
     return location;
   }
+
   public void setSubscriptions(final Collection<Activity> subscriptions) {
     this.subscriptions = subscriptions;
   }
@@ -313,10 +307,6 @@ public class Profile {
       throw new SubscriptionNotFoundException();
     }
   }
-
-    public NamedLocation getLocation() {
-        return location;
-    }
 
   public void setLocation(NamedLocation location) {
     this.location = location;

@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;

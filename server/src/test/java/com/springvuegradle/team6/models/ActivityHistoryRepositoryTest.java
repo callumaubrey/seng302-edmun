@@ -50,7 +50,7 @@ public class ActivityHistoryRepositoryTest {
         history = activityHistoryRepository.save(history);
 
         Profile profile1 = profileRepository.findByEmailsContains(email);
-        Activity activity1 = activityRepository.findByProfile_Id(profile1.getId()).get(0);
+        Activity activity1 = activityRepository.findByProfile_IdAndArchivedFalse(profile1.getId()).get(0);
         Set<ActivityHistory> histories = activityHistoryRepository.findByActivity_id(activity1.getId());
         org.junit.jupiter.api.Assertions.assertEquals(1, histories.size());
     }
@@ -88,7 +88,7 @@ public class ActivityHistoryRepositoryTest {
         history1 = activityHistoryRepository.save(history1);
 
         Profile profile1 = profileRepository.findByEmailsContains(email);
-        Activity activity1 = activityRepository.findByProfile_Id(profile1.getId()).get(0);
+        Activity activity1 = activityRepository.findByProfile_IdAndArchivedFalse(profile1.getId()).get(0);
         Set<ActivityHistory> histories = activityHistoryRepository.findByActivity_id(activity1.getId());
         org.junit.jupiter.api.Assertions.assertEquals(2, histories.size());
     }
