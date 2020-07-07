@@ -17,8 +17,8 @@ public class ActivityRole {
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
 
-  @OneToMany
-  private List<Profile> profile;
+  @OneToOne
+  private Profile profile;
 
   @Enumerated(EnumType.ORDINAL)
   private ActivityRoleType activityRoleType;
@@ -31,8 +31,8 @@ public class ActivityRole {
     return activity;
   }
 
-  public void setProfile(List<Profile> profiles) {
-    this.profile = profiles;
+  public void setProfile(Profile profile) {
+    this.profile = profile;
   }
 
   public void setActivityRoleType(ActivityRoleType activityRoleType) {

@@ -51,9 +51,7 @@ public class ActivityRoleRepositoryTest {
     activityRepository.save(activity);
 
     ActivityRole role = new ActivityRole();
-    List<Profile> profiles = new ArrayList<>();
-    profiles.add(profile);
-    role.setProfile(profiles);
+    role.setProfile(profile);
     role.setActivityRoleType(ActivityRoleType.Creator);
     role.setActivity(activity);
     activityRoleRepository.save(role);
