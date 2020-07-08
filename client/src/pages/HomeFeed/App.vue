@@ -9,6 +9,8 @@
                     </b-row>
                     <b-row style="margin-top: 10px;" align-h="center">
                         <p style="padding-bottom:0;margin-bottom: 0;font-size:18px">{{ fullName }}</p>
+                    </b-row>
+                    <b-row align-h="center">
                         <p style="font-size:14px">Following: {{ followingCount }}</p>
                     </b-row>
                 </b-col>
