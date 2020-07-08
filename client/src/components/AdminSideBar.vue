@@ -149,7 +149,8 @@
                     repeat_password: vue.form.repeatNewUserPassword
                 }).then(function (response) {
                     vue.form.passwordEditSuccessMsg = response.data;
-                    this.$v.form.$reset();
+                    vue.form.newUserPassword = null;
+                    vue.form.repeatNewUserPassword = null;
                 }).catch(function (err) {
                     vue.form.passwordEditErrorMsg = err.response;
                 })
