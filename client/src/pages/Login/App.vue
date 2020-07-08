@@ -111,13 +111,12 @@
             email: this.email,
             password: this.password
           })
-                  .then(function (response) {
+                  .then(function () {
                     let adminPattern = new RegExp("Admin");
                     if (adminPattern.test(currentObj.output)) {
                       currentObj.$router.push('/admin');
                     } else {
-                      const profileId = response.data.toString();
-                      currentObj.$router.push('/profiles/' + profileId)
+                      currentObj.$router.push('/home')
                     }
                   })
                   .catch(function (error) {
