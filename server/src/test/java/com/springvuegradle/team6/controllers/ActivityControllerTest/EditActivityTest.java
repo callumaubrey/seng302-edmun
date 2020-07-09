@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers;
+package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class EditActivityTest {
 
@@ -283,52 +283,52 @@ public class EditActivityTest {
   @Test
   void EditActivityLocationEmptyReturnStatusBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-                    + " \"location\": {\n"
-                    + "  }"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + "  }"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isBadRequest());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
   void EditActivityLocationNoStateReturnStatusIsOk() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-                    + " \"location\": {\n"
-                    + " \t\"city\": \"Christchurch\",\n"
-                    + " \t\"country\": \"New Zealand\"\n"
-                    + "  }"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"city\": \"Christchurch\",\n"
+            + " \t\"country\": \"New Zealand\"\n"
+            + "  }"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
   }
 }

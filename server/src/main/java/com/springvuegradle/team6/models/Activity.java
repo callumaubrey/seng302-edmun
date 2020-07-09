@@ -1,11 +1,9 @@
 package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.OSMLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -15,7 +13,7 @@ public class Activity {
 
   // For testing purposes only
   public Activity() {
-    Set<ActivityType> myEmptySet = Collections.<ActivityType>emptySet();
+    Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
     this.activityName = null;
     this.description = null;
@@ -29,6 +27,7 @@ public class Activity {
     this.activityName = request.activityName;
     this.description = request.description;
     this.activityTypes = request.activityTypes;
+    this.tags = request.hashTags;
     this.continuous = request.continuous;
     if (!this.continuous) {
       this.startTime = request.startTime;
@@ -61,9 +60,9 @@ public class Activity {
 
   @ManyToMany
   @JoinTable(
-          name = "activity_tags",
-          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+      name = "activity_tags",
+      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
@@ -76,6 +75,9 @@ public class Activity {
 
   @Column(columnDefinition = "date default NOW()")
   private Date creationDate;
+
+  @Column(columnDefinition = "boolean default false")
+  private boolean archived;
 
   public String getActivityName() {
     return activityName;
@@ -159,5 +161,28 @@ public class Activity {
 
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public void setArchived(boolean archived) {
+    this.archived = archived;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Activity activity = (Activity) o;
+
+    return this.id == activity.getId();
   }
 }
