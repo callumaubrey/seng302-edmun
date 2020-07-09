@@ -38,7 +38,6 @@
         },
         methods: {
             getUserSession: function () {
-                console.log("yeetmartin");
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/profiles/user')

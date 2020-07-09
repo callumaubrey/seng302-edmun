@@ -241,10 +241,8 @@
                 this.offset = (this.currentPage - 1) * this.limit;
                 // Full name by default
                 let query = 'http://localhost:9499/profiles';
-                console.log(this.activityTypesForm.selectedOptions.length === 0);
                 if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
-                    console.log("reached1");
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
                     query += "&method=" + this.activityTypesForm.method;
                     this.routeQuery.activity = this.activityTypesForm.selectedOptions.join(' ');
