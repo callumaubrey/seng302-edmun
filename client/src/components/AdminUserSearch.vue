@@ -119,11 +119,11 @@
                         :busy="tableIsLoading"
                         @row-clicked="itemRowClicked"
                 >
-                    <template v-slot:cell(actions)="row">
-                        <b-button size="sm" @click="editUserClicked(row.item)">
+                    <template v-slot:cell(actions)="row" >
+                        <b-button size="sm" @click="editUserClicked(row.item)" class="actionBtn">
                             Edit
                         </b-button>
-                        <b-button size="sm" id="btnDelete" danger @click="openDeleteModal(row.item)">
+                        <b-button size="sm" id="btnDelete" danger @click="openDeleteModal(row.item)" class="actionBtn" variant="danger">
                             Delete
                         </b-button>
                         <template>
@@ -458,7 +458,12 @@
 
     .modalBtn {
         float: left;
-        width: 50%;
+        width: 49%;
+        margin: 5px 2px;
+    }
+
+    .actionBtn {
+        margin: 2px 5px;
     }
 
 </style>

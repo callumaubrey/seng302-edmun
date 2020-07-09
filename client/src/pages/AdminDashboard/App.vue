@@ -38,6 +38,7 @@
         },
         methods: {
             getUserSession: function () {
+                console.log("yeetmartin");
                 let currentObj = this;
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/profiles/user')
@@ -60,10 +61,10 @@
                         currentObj.isLoggedIn = false;
                         currentObj.$router.push('/');
                     });
-            },
-            mounted: function () {
-                this.getUserSession();
             }
+        },
+        mounted: function () {
+            this.getUserSession();
         }
     };
 
@@ -75,5 +76,6 @@
     .p-2 {
         margin: 20px;
     }
+
 
 </style>
