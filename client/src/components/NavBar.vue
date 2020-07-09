@@ -10,6 +10,7 @@
                 <b-nav-item v-if="isLoggedIn" to="/home">Home</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
+                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && isAdminAccess">Admin Dashboard</b-nav-item>
                 <b-collapse id="my-collapse" v-if="isLoggedIn">
                     <b-form inline>
                         <b-input-group>
@@ -39,9 +40,9 @@
                 <div v-else>
                     <b-button-group class="access-control-button" title="Toggle to switch role access"
                                     v-b-popover.hover.bottom="">
-                        <b-button @click="switchAccessControl(false)" pill v-if="adminAccess" variant="success">Admin
+                        <b-button @click="switchAccessControl(false)" pill v-if="isAdminAccess" variant="success">Admin
                         </b-button>
-                        <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">User
+                        <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">Standard User
                         </b-button>
                     </b-button-group>
                     <b-nav-item-dropdown right>
@@ -82,7 +83,7 @@
             }
         },
         computed: {
-            adminAccess() {
+            isAdminAccess() {
                 return store.adminAccess
             }
         },
@@ -118,6 +119,9 @@
             },
             goToActivities() {
                 this.$router.push('/profiles/' + this.profileId + '/activities');
+            },
+            goToAdminDashBoard() {
+                this.$router.push('/admin/dashboard');
             },
             getUserName() {
                 let currentObj = this;

@@ -1,7 +1,7 @@
 <template>
     <div>
         <b-button @click="getOtherUserRole()" v-b-toggle.sidebar-1
-                  v-if="loggedInIsAdmin && loggedInId != $route.params.id">Admin
+                  v-if="loggedInIsAdmin && loggedInId != $route.params.id">Admin Controls
         </b-button>
         <b-sidebar id="sidebar-1" :title="'Admin Controls: ' + userData.firstname + ' ' + userData.lastname" shadow>
             <div class="px-3 py-2">
