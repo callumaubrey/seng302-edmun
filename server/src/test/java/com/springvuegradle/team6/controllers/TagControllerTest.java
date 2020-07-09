@@ -188,5 +188,59 @@ public class TagControllerTest {
         org.junit.jupiter.api.Assertions.assertEquals(10, arr.length());
     }
 
+    @Test
+    void getActivitiesByHashTagOneResult() throws Exception {
+        // Set up data
+        Tag tag = new Tag();
+        tag.setName("myrun");
+
+        Activity activity = new Activity();
+        activity.setActivityName("Test");
+        Set<Tag> tags = new HashSet<Tag>();
+        tags.add(tag);
+        activity.setTags(tags);
+        activity.setContinuous(false);
+        activity.setDescription("description blah blah");
+        Profile profile = profileRepository.findById(id);
+        activity.setProfile(profile);
+
+        tagRepository.save(tag);
+        activityRepository.save(activity);
+
+        // Actual MVC response
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/hashtag/myrun")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONArray result = new JSONArray(response);
+        org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+    }
+
+    @Test
+    void getActivitiesByHashtagNoResult() throws Exception {
+        Tag tag = new Tag();
+        tag.setName("myrun");
+        tagRepository.save(tag);
+
+        // Actual MVC response
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/hashtag/myrun")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONArray result = new JSONArray(response);
+        org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
+    }
 
 }

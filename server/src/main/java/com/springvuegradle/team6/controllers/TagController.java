@@ -80,4 +80,13 @@ public class TagController {
     JSONObject obj = new JSONObject(result);
     return new ResponseEntity(obj, HttpStatus.OK);
   }
+
+    @GetMapping("/{hashTag}")
+    public ResponseEntity getActivities(@PathVariable String hashTag, HttpSession session) {
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity(activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+    }
 }

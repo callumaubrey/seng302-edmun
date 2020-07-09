@@ -23,22 +23,30 @@
                         v-model="value"
                         :placeholder="inputPlaceholder"
                         class="form-control"
+                        :state="inputState()"
                         :disabled="maxEntriesReached"
+                        :maxlength="maxCharacters"
                         list="autocomplete"
                         v-on:input="emitInputToParent">
                 </b-form-input>
+
                 <b-input-group-append>
-                    <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached">Add</b-button>
+                    <b-button @click="addTag(value)" variant="primary" :disabled="maxEntriesReached || noInput || !checkInput()">Add</b-button>
                 </b-input-group-append>
+                <b-form-invalid-feedback>
+                    {{ inputErrorMessage }}
+                </b-form-invalid-feedback>
+
             </b-input-group>
-            <div v-for="option in options" :key="option">
-                <b-input
-                        class="autocomplete-item"
-                        readonly=true
-                        v-on:click="setInput(option)"
-                        type="button"
-                        :value=option>
-                </b-input>
+            <div v-if="!selected">
+                <div v-for="option in options" :key="option">
+                    <b-input
+                            class="autocomplete-item"
+                            :readonly=true
+                            v-on:click="setInput(option)"
+                            :value=option>
+                    </b-input>
+                </div>
             </div>
         </b-form-tags>
     </div>
@@ -53,21 +61,31 @@
             titleLabel: String,
             inputPlaceholder: String,
             helpText: String,
+            values: Array,
+            inputCharacterLimit: Number
         },
         data() {
             return {
-                values: [],
-                value: ""
+                value: "",
+                selected: false,
+                inputErrorMessage: ""
             }
         },
         methods: {
             setInput(value) {
                 this.value = value;
+                this.selected = true;
             },
             addTag(value) {
-                this.values.push(value);
-                this.value = "";
-                this.emitTagsToParent();
+                value = value.toLowerCase();
+                if (value[0] !== "#") {
+                    value = "#" + value;
+                }
+                if (!this.values.includes(value)) {
+                    this.values.push(value);
+                    this.value = "";
+                    this.emitTagsToParent();
+                }
             },
             removeTag(value) {
                 const index = this.values.indexOf(value);
@@ -80,12 +98,60 @@
                 this.$emit('emitTags', this.values);
             },
             emitInputToParent() {
+                this.selected = false;
                 this.$emit('emitInput', this.value);
-            }
+            },
+            valueValid() {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(this.value)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            inputState() {
+                if (this.checkInput()) {
+                    return null;
+                } else {
+                    return false;
+                }
+            },
+            checkInput() {
+                if (!this.valueValid()) {
+                    this.inputErrorMessage = "Hashtags may only contain alphabets, numbers and underscores.";
+                    return false;
+                }
+                let value = this.value.toLowerCase();
+                if (this.values.includes(value) || this.values.includes("#" + value)) {
+                    this.inputErrorMessage = "This hashtag has already been added";
+                    return false;
+                } else {
+                    return true;
+                }
+            },
         },
         computed: {
             maxEntriesReached() {
                 return this.values.length >= this.maxEntries;
+            },
+            maxCharacters() {
+                if (this.values[0] == "#") {
+                    return this.inputCharacterLimit + 1;
+                } else {
+                    return this.inputCharacterLimit;
+                }
+            },
+
+            noInput() {
+                let tempValue = this.value;
+                if (this.value[0] == "#") {
+                    tempValue = tempValue.substr(1);
+                }
+                if (tempValue.length == 0) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
     }

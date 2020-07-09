@@ -1,8 +1,6 @@
 package com.springvuegradle.team6.steps;
 
 
-import com.springvuegradle.team6.models.ProfileRepository;
-import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -33,14 +31,8 @@ public class AdminFeatureSteps {
     private ResultActions mvcResponse;
 
     @Autowired
-    private ProfileRepository profileRepository;
-    @Autowired
     private MockMvc mvc;
 
-    @After
-    public void resetDatabase() {
-
-    }
 
     @Given("There is a normal user with email {string} registered in the database.")
     public void there_is_a_normal_user_with_email_registered_in_the_database(String email) throws Exception {

@@ -25,4 +25,11 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Override
     void delete(Role role);
 
+    /**
+     * Returns a boolean if a roleName exists
+     *
+     * @param roleName of Role class
+     */
+    boolean existsByName(String roleName);
+
 }

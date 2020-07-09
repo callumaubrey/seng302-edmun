@@ -2,7 +2,6 @@ package com.springvuegradle.team6.models;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.Set;
 
 @Entity
 public class Tag {
@@ -15,8 +14,18 @@ public class Tag {
   @Column(name = "name")
   private String name;
 
-  @ManyToMany(mappedBy = "tags")
+  @ManyToMany(mappedBy = "tags", cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE
+  })
   private Collection<Activity> activities;
+
+  public Tag() {
+  }
+
+  public Tag(String name) {
+    this.name = name;
+  }
 
   public String getName() {
     return name;
