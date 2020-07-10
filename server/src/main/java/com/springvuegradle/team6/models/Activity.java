@@ -194,4 +194,12 @@ public class Activity {
 
     return this.id == activity.getId();
   }
+
+  public Collection<Profile> getSubscribers() {
+    return subscribers;
+  }
+
+  public void setSubscribers(Collection<Profile> subscribers) {
+    this.subscribers = subscribers;
+  }
 }

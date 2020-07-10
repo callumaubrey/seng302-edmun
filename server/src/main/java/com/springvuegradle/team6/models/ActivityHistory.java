@@ -36,7 +36,7 @@ public class ActivityHistory {
     /**
      * The time at which this change was made
      */
-    @Column(name = "time_date")
+    @Column(name = "time_date", columnDefinition = "date default NOW()")
     private Date timeDate;
 
     /**

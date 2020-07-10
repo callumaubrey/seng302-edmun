@@ -43,9 +43,9 @@ public class SubscriptionHistory {
     private Activity activity;
 
     /**
-     * The time this instance of sub hostory was created
+     * The time this instance of sub history was created
      */
-    @Column(name = "time_date")
+    @Column(name = "time_date", columnDefinition = "date default NOW()")
     private Date timeDate;
 
     /**
