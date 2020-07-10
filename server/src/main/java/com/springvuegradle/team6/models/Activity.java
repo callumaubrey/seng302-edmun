@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -75,6 +76,14 @@ public class Activity {
 
   @Column(columnDefinition = "date default NOW()")
   private Date creationDate;
+
+  /**
+   * Map activity id to user id to create profile_subscriptions table in database
+   */
+  @ManyToMany(
+          mappedBy = "subscriptions",
+          fetch = FetchType.LAZY)
+  private Collection<Profile> subscribers;
 
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
