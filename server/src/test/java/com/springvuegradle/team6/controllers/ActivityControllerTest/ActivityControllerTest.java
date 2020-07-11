@@ -407,7 +407,7 @@ public class ActivityControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString()
-            .contains("contains characters other than alphanumeric characters"));
+            .contains("contains characters other than alphanumeric characters and underscores"));
   }
 
   @Test
