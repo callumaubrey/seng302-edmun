@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -88,6 +89,9 @@ public class Activity {
 
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
+
+  @OneToMany(mappedBy = "activity")
+  private List<ActivityRole> activityRole;
 
   public String getActivityName() {
     return activityName;

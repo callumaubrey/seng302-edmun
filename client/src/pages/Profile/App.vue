@@ -1,11 +1,15 @@
 <template>
     <div id="app" v-if="isLoggedIn">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
+        <NavBar :loggedInIsAdmin="loggedInIsAdmin" v-bind:hideElements="hidden" v-bind:isLoggedIn="isLoggedIn"
+                v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
-            <AdminSideBar :loggedInIsAdmin="loggedInIsAdmin" :userData="userData" :loggedInId="loggedInId" ></AdminSideBar>
+            <AdminSideBar :loggedInId="loggedInId" :loggedInIsAdmin="loggedInIsAdmin"
+                          :userData="userData" v-if="adminAccess"></AdminSideBar>
             <div>
                 <b-row>
-                <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
+                    <b-img alt="Center image" center height="150px" rounded="circle"
+                           src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+                           width="150px"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -133,6 +137,7 @@
     import NavBar from "@/components/NavBar.vue"
     import AdminSideBar from "@/components/AdminSideBar.vue"
     import AdminMixin from "../../mixins/AdminMixin";
+    import {store} from "../../store";
     import axios from 'axios'
 
     const App = {
@@ -158,6 +163,11 @@
                 dob: '',
                 loggedInIsAdmin: false,
                 hidden: null,
+            }
+        },
+        computed: {
+            adminAccess() {
+                return store.adminAccess;
             }
         },
         methods: {
@@ -222,10 +232,9 @@
             },
             checkHideElements: function () {
                 let currentObj = this;
-                if (currentObj.loggedInId === currentObj.profileId || currentObj.loggedInIsAdmin){
+                if (currentObj.loggedInId === currentObj.profileId || store.adminAccess) {
                     currentObj.hidden = false;
-                }
-                else{
+                } else {
                     currentObj.hidden = true;
                 }
             },
@@ -249,6 +258,9 @@
         watch: {
             $route: function () {
                 this.getProfileData();
+            },
+            adminAccess: function () {
+                this.checkHideElements();
             }
         },
         mounted: function () {
@@ -261,3 +273,6 @@
 
     export default App;
 </script>
+
+<style>
+</style>
