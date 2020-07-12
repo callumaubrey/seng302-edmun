@@ -16,10 +16,4 @@ public interface ProfileRepository
   boolean existsByEmailsContaining(Email email);
 
   Integer removeById(int id);
-
-  @Query(
-      value =
-          "SELECT p.activity_id as id, a.message as message, a.time_date as dateTime FROM profile_subscriptions p left join activity_history a on p.activity_id = a.activity_id where profile_id = :id",
-      nativeQuery = true)
-  List<ActivityUpdateNotification> getActivityFeed(int id);
 }

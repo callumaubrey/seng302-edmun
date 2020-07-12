@@ -8,9 +8,9 @@ import java.util.Set;
 @RepositoryRestResource
 public interface SubscriptionHistoryRepository extends JpaRepository<SubscriptionHistory, Integer> {
 
-    SubscriptionHistory findById(int id);
+  SubscriptionHistory findById(int id);
 
-    Set<SubscriptionHistory> findByActivity_id(int activityId);
+  Set<SubscriptionHistory> findByActivity_id(int activityId);
 
-    Set<SubscriptionHistory> findByProfile_id(int profileId);
+  Set<SubscriptionHistory> findByProfile_id(int profileId);
 }

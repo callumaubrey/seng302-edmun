@@ -4,15 +4,14 @@ import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.responses.FeedResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
+import net.minidev.json.JSONObject;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(
     origins = "http://localhost:9500",
@@ -44,6 +43,13 @@ public class FeedController {
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
   }
 
+  /**
+   * Get all the feed that is to be displayed onto the user home feed.
+   * This includes all information all updates to activities that the user has subscribed.
+   * @param profileId The profile that the feed belongs to
+   * @param session The current logged in session
+   * @return The resulting feed information
+   */
   @GetMapping("/homefeed/{profileId}")
   private ResponseEntity getHomeFeed(@PathVariable Integer profileId, HttpSession session) {
 
@@ -62,7 +68,7 @@ public class FeedController {
         List<ActivityHistory> activityHistories =
             activityHistoryRepository
                 .getActivityHistoryBetweenSubscribeStartEndDateTimeAndActivityId(
-                    subscriptionHistory.getId(),
+                    subscriptionHistory.getActivity().getId(),
                     subscriptionHistory.getStartDateTime(),
                     subscriptionHistory.getEndDateTime());
 
@@ -87,17 +93,22 @@ public class FeedController {
         feeds.add(feed);
         if (subscriptionHistory.getEndDateTime() != null) {
           FeedResponse feed1 =
-                  new FeedResponse(
-                          subscriptionHistory.getActivity().getId(),
-                          "Unsubscribed to the activity: "
-                                  + subscriptionHistory.getActivity().getActivityName()
-                                  + ".",
-                          subscriptionHistory.getEndDateTime().toString());
+              new FeedResponse(
+                  subscriptionHistory.getActivity().getId(),
+                  "Unsubscribed to the activity: "
+                      + subscriptionHistory.getActivity().getActivityName()
+                      + ".",
+                  subscriptionHistory.getEndDateTime().toString());
           feeds.add(feed1);
         }
       }
     }
-    feeds.sort((o1, o2) -> o1.dateTime.compareTo(o2.dateTime));
-    return new ResponseEntity<>(feeds, HttpStatus.OK);
+    // Sorts the feeds in descending order of dateTime
+    feeds.sort((o1, o2) -> o2.dateTime.compareTo(o1.dateTime));
+
+    Map<String, List<FeedResponse>> result = new HashMap<>();
+    result.put("feeds", feeds);
+    JSONObject obj = new JSONObject(result);
+    return new ResponseEntity(obj, HttpStatus.OK);
   }
 }

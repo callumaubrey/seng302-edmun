@@ -14,12 +14,12 @@ public interface ActivityHistoryRepository extends JpaRepository<ActivityHistory
   ActivityHistory findById(int id);
 
   Set<ActivityHistory> findByActivity_id(int id);
-  
+
   @Query(
       value =
           "SELECT * FROM activity_history a WHERE a.activity_id = :id AND a.time_date > :startDateTime "
               + "AND (a.time_date < :endDateTime OR :endDateTime is NULL)",
       nativeQuery = true)
   List<ActivityHistory> getActivityHistoryBetweenSubscribeStartEndDateTimeAndActivityId(
-          int id, LocalDateTime startDateTime, LocalDateTime endDateTime);
+      int id, LocalDateTime startDateTime, LocalDateTime endDateTime);
 }
