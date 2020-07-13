@@ -1,13 +1,13 @@
 package com.springvuegradle.team6.models;
 
 import org.junit.Ignore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @SpringBootTest
@@ -42,8 +42,7 @@ public class SubscriptionHistoryRepositoryTest {
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
-    subscriptionHistory.setSubscribe(true);
-    subscriptionHistory.setTimeDate(new Date());
+    subscriptionHistory.setStartDateTime(LocalDateTime.now());
     subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
 
     Profile profile1 = profileRepository.findByEmailsContains(email);
@@ -76,8 +75,7 @@ public class SubscriptionHistoryRepositoryTest {
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
-    subscriptionHistory.setSubscribe(true);
-    subscriptionHistory.setTimeDate(new Date());
+    subscriptionHistory.setStartDateTime(LocalDateTime.now());
     subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
 
     Profile profile1 = profileRepository.findByEmailsContains(email);

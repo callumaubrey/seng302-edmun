@@ -61,7 +61,9 @@ public class Profile {
   private String nickname;
 
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-  private Set<Email> emails = new HashSet<>();;
+  private Set<Email> emails = new HashSet<>();
+
+  ;
 
   private String password;
 
@@ -102,14 +104,12 @@ public class Profile {
 
   public Profile() {}
 
-   /**
-    * Maps users to the activities they have subscribed to/followed
-    */
+  /** Maps users to the activities they have subscribed to/followed */
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
-          name = "profile_subscriptions",
-          joinColumns = @JoinColumn(name = "profile_id", referencedColumnName = "id"),
-          inverseJoinColumns = @JoinColumn(name = "activity_id"))
+      name = "profile_subscriptions",
+      joinColumns = @JoinColumn(name = "profile_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "activity_id"))
   private Collection<Activity> subscriptions;
 
   public Integer getId() {
@@ -182,6 +182,7 @@ public class Profile {
     additionalEmails.removeIf(Email::isPrimary);
     return additionalEmails;
   }
+
   public Collection<Activity> getSubscriptions() {
     return subscriptions;
   }

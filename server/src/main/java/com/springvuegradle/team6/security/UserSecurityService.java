@@ -16,7 +16,7 @@ public class UserSecurityService {
     }
 
     /**
-     * Check if user is authorised to edit requested user information.
+     * Check if user is authorised to access requested user information.
      *
      * @param requestId  user id under query
      * @param session    Http session
@@ -34,7 +34,7 @@ public class UserSecurityService {
             Collection<SimpleGrantedAuthority> userRoles = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
             boolean isAdmin = userRoles.stream().anyMatch(simpleGrantedAuthority -> (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN") || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
             if (!isAdmin) {
-                return new ResponseEntity<>("You can only edit your own profile", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("Only accessible by the owner", HttpStatus.UNAUTHORIZED);
             }
         }
 

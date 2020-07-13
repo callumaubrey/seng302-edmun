@@ -62,7 +62,7 @@ public class TagController {
 
     if (!hashtag.matches("^[a-zA-Z0-9_]*$")) {
       return new ResponseEntity(
-          "Is not a hashtag, needs to begin with # and can only contain alphanumeric characters and underscore",
+          "Is not a hashtag, can only contain alphanumeric characters and underscore",
           HttpStatus.BAD_REQUEST);
     }
 
@@ -81,12 +81,13 @@ public class TagController {
     return new ResponseEntity(obj, HttpStatus.OK);
   }
 
-    @GetMapping("/{hashTag}")
-    public ResponseEntity getActivities(@PathVariable String hashTag, HttpSession session) {
-        Object id = session.getAttribute("id");
-        if (id == null) {
-            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity(activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+  @GetMapping("/{hashTag}")
+  public ResponseEntity getActivities(@PathVariable String hashTag, HttpSession session) {
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
+    return new ResponseEntity(
+        activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+  }
 }

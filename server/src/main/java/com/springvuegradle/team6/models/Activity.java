@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -75,8 +76,8 @@ public class Activity {
 
   @ManyToOne private NamedLocation location;
 
-  @Column(columnDefinition = "date default NOW()")
-  private Date creationDate;
+  @Column(columnDefinition = "datetime default NOW()")
+  private LocalDateTime creationDate;
 
   /**
    * Map activity id to user id to create profile_subscriptions table in database
@@ -164,7 +165,7 @@ public class Activity {
     this.location = location;
   }
 
-  public Date getCreationDate() {
+  public LocalDateTime getCreationDate() {
     return creationDate;
   }
 
@@ -197,5 +198,13 @@ public class Activity {
     Activity activity = (Activity) o;
 
     return this.id == activity.getId();
+  }
+
+  public Collection<Profile> getSubscribers() {
+    return subscribers;
+  }
+
+  public void setSubscribers(Collection<Profile> subscribers) {
+    this.subscribers = subscribers;
   }
 }

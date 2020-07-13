@@ -1,99 +1,86 @@
 package com.springvuegradle.team6.models;
 
 import javax.persistence.*;
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Set;
 
 /**
- * Entity to keep track of each time a subscription is change. Used to display this change
- * on home feed. Each time subscription state changes a new row is created with the current timestamp
- * and the current state of the subscription.
+ * Entity to keep track of each time a subscription is change. Used to display this change on home
+ * feed. Each time subscription state changes a new row is created with the current timestamp and
+ * the current state of the subscription.
  */
 @Entity
 public class SubscriptionHistory {
 
-    // For testing purposes only
-    public SubscriptionHistory() {
-        this.profile = null;
-        this.activity = null;
-        this.timeDate = null;
-        this.subscribe = null;
-    }
+  // For testing purposes only
+  public SubscriptionHistory() {
+    this.profile = null;
+    this.activity = null;
+    this.startDateTime = null;
+    this.endDateTime = null;
+  }
 
-    /**
-     * Each history item has its own id
-     */
-    @Id
-    @GeneratedValue
-    private Integer id;
+  /** Each history item has its own id */
+  @Id @GeneratedValue private Integer id;
 
-    /**
-     * Link to the profile this sub is associated with
-     */
-    @ManyToOne
-    @JoinColumn(name = "profile_id", nullable = false)
-    private Profile profile;
+  /** Link to the profile this sub is associated with */
+  @ManyToOne
+  @JoinColumn(name = "profile_id", nullable = false)
+  private Profile profile;
 
-    /**
-     * Link to the activity this sub is associated with
-     */
-    @ManyToOne
-    @JoinColumn(name = "activity_id", nullable = false)
-    private Activity activity;
+  /** Link to the activity this sub is associated with */
+  @ManyToOne
+  @JoinColumn(name = "activity_id", nullable = false)
+  private Activity activity;
 
-    /**
-     * The time this instance of sub hostory was created
-     */
-    @Column(name = "time_date")
-    private Date timeDate;
+  /** The time this instance of sub history was created */
+  @Column(name = "start_date_time", columnDefinition = "datetime default NOW()")
+  private LocalDateTime startDateTime;
 
-    /**
-     * Whether the user is subscribed or not to the activity at the point of this history item
-     */
-    private Boolean subscribe;
+  @Column(name = "end_date_time")
+  private LocalDateTime endDateTime;
 
-    //==========GETTERS==========
+  // ==========GETTERS==========
 
-    public Integer getId() {
-        return id;
-    }
+  public Integer getId() {
+    return id;
+  }
 
-    public Profile getProfile() {
-        return profile;
-    }
+  public Profile getProfile() {
+    return profile;
+  }
 
-    public Activity getActivity() {
-        return activity;
-    }
+  public Activity getActivity() {
+    return activity;
+  }
 
-    public Date getTimeDate() {
-        return timeDate;
-    }
+  public LocalDateTime getStartDateTime() {
+    return startDateTime;
+  }
 
-    public Boolean getSubscribe() {
-        return subscribe;
-    }
+  public LocalDateTime getEndDateTime() {
+    return endDateTime;
+  }
 
-    //==========SETTERS===========
+  // ==========SETTERS===========
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-    public void setProfile(Profile profile) {
-        this.profile = profile;
-    }
+  public void setProfile(Profile profile) {
+    this.profile = profile;
+  }
 
-    public void setActivity(Activity activity) {
-        this.activity = activity;
-    }
+  public void setActivity(Activity activity) {
+    this.activity = activity;
+  }
 
-    public void setTimeDate(Date timeDate) {
-        this.timeDate = timeDate;
-    }
+  public void setStartDateTime(LocalDateTime startDateTime) {
+    this.startDateTime = startDateTime;
+  }
 
-    public void setSubscribe(Boolean subscribe) {
-        this.subscribe = subscribe;
-    }
+  public void setEndDateTime(LocalDateTime endDateTime) {
+    this.endDateTime = endDateTime;
+  }
 }
