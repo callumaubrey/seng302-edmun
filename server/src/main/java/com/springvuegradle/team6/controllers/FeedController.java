@@ -44,14 +44,19 @@ public class FeedController {
   }
 
   /**
-   * Get all the feed that is to be displayed onto the user home feed.
-   * This includes all information all updates to activities that the user has subscribed.
+   * Get all the feed that is to be displayed onto the user home feed. This includes all information
+   * all updates to activities that the user has subscribed.
+   *
    * @param profileId The profile that the feed belongs to
    * @param session The current logged in session
    * @return The resulting feed information
    */
   @GetMapping("/homefeed/{profileId}")
-  private ResponseEntity getHomeFeed(@PathVariable Integer profileId, HttpSession session) {
+  private ResponseEntity getHomeFeed(
+      @PathVariable Integer profileId,
+      @RequestParam(name = "offset", required = false) Integer offset,
+      @RequestParam(name = "limit", required = false) Integer limit,
+      HttpSession session) {
 
     // Check if authorised
     ResponseEntity<String> authorisedResponse =
@@ -106,8 +111,25 @@ public class FeedController {
     // Sorts the feeds in descending order of dateTime
     feeds.sort((o1, o2) -> o2.dateTime.compareTo(o1.dateTime));
 
+    if (offset == null) {
+      offset = 0;
+    }
+    List limitedFeeds;
+
+    if (limit == null) {
+      limitedFeeds = feeds;
+    } else {
+      if (offset > feeds.size()) {
+        limitedFeeds = new ArrayList();
+      } else if (offset + limit > feeds.size()) {
+        limitedFeeds = feeds.subList(offset, feeds.size());
+      } else {
+        limitedFeeds = feeds.subList(offset, offset + limit);
+      }
+    }
+
     Map<String, List<FeedResponse>> result = new HashMap<>();
-    result.put("feeds", feeds);
+    result.put("feeds", limitedFeeds);
     JSONObject obj = new JSONObject(result);
     return new ResponseEntity(obj, HttpStatus.OK);
   }
