@@ -109,7 +109,7 @@ public class FollowController {
         }
         boolean subscribed;
         // Check if already subbed
-        subscribed = subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty();
+        subscribed = !subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty();
         JSONObject obj = new JSONObject();
         obj.appendField("subscribed", subscribed);
         return new ResponseEntity(obj, HttpStatus.OK);

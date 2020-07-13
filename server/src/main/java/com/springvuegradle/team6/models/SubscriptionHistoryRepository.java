@@ -19,8 +19,8 @@ public interface SubscriptionHistoryRepository extends JpaRepository<Subscriptio
 
   @Query(
           value =
-                  "SELECT * from subscription_history where activty_id = :activityId " +
-                          "and profile_id = :profileId and end_date_time = null",
+                  "SELECT * from subscription_history where activity_id = :activityId " +
+                          "and profile_id = :profileId and end_date_time is null",
           nativeQuery = true)
   List<SubscriptionHistory> findActive(int activityId, int profileId);
 }
