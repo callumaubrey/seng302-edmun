@@ -586,10 +586,14 @@ public class ActivityController {
         return new ResponseEntity<>(
                 "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-
-      activity.setVisibilityType(request.getVisibilityType());
-      activityRepository.save(activity);
-      return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
+      try {
+        activity.setVisibilityType(request.generateVisibilityType());
+        activityRepository.save(activity);
+        return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
+      } catch (IllegalArgumentException e) {
+        return new ResponseEntity<>(
+                "Invalid visibility type", HttpStatus.BAD_REQUEST);
+      }
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }

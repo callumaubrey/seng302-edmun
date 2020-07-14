@@ -8,9 +8,10 @@ public class EditActivityVisibilityRequest {
 
   @NotNull
   @JsonProperty("visibility")
-  public VisibilityType visibilityType;
+  public String visibilityType;
 
-  public VisibilityType getVisibilityType() {
-    return visibilityType;
+  public VisibilityType generateVisibilityType() {
+    String toUpperCase = visibilityType.substring(0, 1).toUpperCase() + visibilityType.substring(1);
+    return VisibilityType.valueOf(toUpperCase);
   }
 }
