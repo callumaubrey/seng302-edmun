@@ -209,7 +209,8 @@ public class Activity {
     this.subscribers = subscribers;
   }
 
-  public void setVisibilityType(VisibilityType visibilityType) {
-    this.visibilityType = visibilityType;
+  public void setVisibilityType(String type) {
+    String toCamelCase = type.substring(0, 1).toUpperCase() + type.substring(1);
+    this.visibilityType = VisibilityType.valueOf(toCamelCase);
   }
 }

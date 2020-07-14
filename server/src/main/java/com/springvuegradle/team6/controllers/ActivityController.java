@@ -587,7 +587,7 @@ public class ActivityController {
                 "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
       try {
-        activity.setVisibilityType(request.generateVisibilityType());
+        activity.setVisibilityType(request.getVisibilityType());
         activityRepository.save(activity);
         return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
       } catch (IllegalArgumentException e) {
