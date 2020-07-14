@@ -1,7 +1,7 @@
 Feature: Adding hashtags to activities
 
   Background:
-    Given I log in as a user with email "poly@pocket.com" and password "Password1"
+    Given I log in with email "poly@pocket.com" and password "Password1"
 
   @U17
   Scenario: I can view a public activity
