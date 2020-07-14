@@ -3,6 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -212,5 +213,181 @@ public class FeedControllerTest {
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("feeds");
     org.junit.jupiter.api.Assertions.assertEquals(4, arr.length());
+  }
+
+  @Test
+  void testGetHomeFeedWithOffsetLimitReturnStatusOkReturnCorrectResults() throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setActivityName("Running");
+    activity1.setContinuous(true);
+    activity1 = activityRepository.save(activity1);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    history = activityHistoryRepository.save(history);
+
+    ActivityHistory history1 = new ActivityHistory();
+    history1.setActivity(activity1);
+    history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
+    history1.setMessage("Activity " + activity1.getActivityName() + " was created");
+    history1 = activityHistoryRepository.save(history1);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+
+    SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
+    subscriptionHistory1.setActivity(activity1);
+    subscriptionHistory1.setProfile(profile);
+    subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
+    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/feed/homefeed/" + profile.getId() + "?offset=1&limit=2")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("feeds");
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+  }
+
+  @Test
+  void testGetHomeFeedWithLimitLargerThanNumberOfFeedsLeftReturnStatusOkReturnCorrectResults()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setActivityName("Running");
+    activity1.setContinuous(true);
+    activity1 = activityRepository.save(activity1);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    history = activityHistoryRepository.save(history);
+
+    ActivityHistory history1 = new ActivityHistory();
+    history1.setActivity(activity1);
+    history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
+    history1.setMessage("Activity " + activity1.getActivityName() + " was created");
+    history1 = activityHistoryRepository.save(history1);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+
+    SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
+    subscriptionHistory1.setActivity(activity1);
+    subscriptionHistory1.setProfile(profile);
+    subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
+    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?limit=20")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("feeds");
+    org.junit.jupiter.api.Assertions.assertEquals(4, arr.length());
+  }
+
+  @Test
+  void testGetHomeFeedWithOffsetLargerThanNumberOfFeedsLeftReturnStatusOkReturnNoResults()
+          throws Exception {
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?offset=1")
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("feeds");
+    org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
+  }
+
+  @Test
+  void testGetHomeFeedWithOffsetPlusLimitLargerThanNumberOfFeedsLeftReturnStatusOkReturnCorrectResults()
+          throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setActivityName("Running");
+    activity1.setContinuous(true);
+    activity1 = activityRepository.save(activity1);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    history = activityHistoryRepository.save(history);
+
+    ActivityHistory history1 = new ActivityHistory();
+    history1.setActivity(activity1);
+    history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
+    history1.setMessage("Activity " + activity1.getActivityName() + " was created");
+    history1 = activityHistoryRepository.save(history1);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+
+    SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
+    subscriptionHistory1.setActivity(activity1);
+    subscriptionHistory1.setProfile(profile);
+    subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
+    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?offset=2&limit=4")
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("feeds");
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
   }
 }
