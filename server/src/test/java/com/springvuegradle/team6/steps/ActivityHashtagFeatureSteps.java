@@ -36,6 +36,7 @@ public class ActivityHashtagFeatureSteps {
     private String profileId;
     private String activityId;
     private List<String> autocompleteResult;
+    private List<String> activityNamesByHashtag;
 
 
     @Autowired
@@ -93,6 +94,8 @@ public class ActivityHashtagFeatureSteps {
             String hashTag = '"' + hashTagMapping.get("Hashtag") + '"';
             hashTags.add(hashTag);
         }
+
+        System.out.println(hashTags);
         jsonString = "{\n" +
                 "  \"activity_name\": \"" + activityName + "\",\n" +
                 "  \"description\": \"tramping iz fun\",\n" +
@@ -110,6 +113,9 @@ public class ActivityHashtagFeatureSteps {
                                 .content(jsonString)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .session(session));
+
+        List<Activity> test = activityRepository.findByTags_NameOrderByCreationDateDesc("someHashTag");
+        System.out.println(test);
 
     }
 
@@ -170,5 +176,23 @@ public class ActivityHashtagFeatureSteps {
     @Then("I get hashtag search results in order")
     public void i_get_hashtag_search_results_in_order(io.cucumber.datatable.DataTable dataTable) {
         Assert.assertTrue(autocompleteResult.equals(dataTable.asList()));
+    }
+
+    @When("I search for activity by hashtag {string}")
+    public void i_search_for_activity_by_hashtag(String string) throws Exception {
+        String response =
+                mvc.perform(
+                        MockMvcRequestBuilders.get("/hashtag/" + string).contentType(MediaType.APPLICATION_JSON)
+                                .session(session))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        System.out.println(response);
+    }
+
+    @Then("I get the activities in order")
+    public void i_get_the_activities_in_order(io.cucumber.datatable.DataTable dataTable) {
+        Assert.assertTrue(activityNamesByHashtag.equals(dataTable.asList()));
     }
 }

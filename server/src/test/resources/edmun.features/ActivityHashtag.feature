@@ -114,14 +114,13 @@ Feature: Adding hashtags to activities
   @15
   #AC4
   Scenario: Searching for activity by hashtag
-    Given I have an activity "Running" with hashtags
+    Given I create an activity "Running" with hashtags
       | Hashtag      |
       | #someHashTag |
-    And wait a time "1000" ms
-    And I have an activity "Walking" with hashtags
+    And I create an activity "Walking" with hashtags
       | Hashtag      |
       | #someHashTag |
-    And I have an activity "Jumping" with hashtags
+    And I create an activity "Jumping" with hashtags
       | Hashtag |
       | #abc    |
     When I search for activity by hashtag "someHashTag"
