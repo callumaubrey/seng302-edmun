@@ -1,3 +1,9 @@
+stages:
+  - build
+  - setup
+  - test
+  - deploy
+
 tag_checker:
   stage: build
   script:
@@ -5,11 +11,29 @@ tag_checker:
   only:
     - tags
 
+setup:
+  stage: setup
+  script:
+    - cd client
+    - npm install
+  cache:
+    paths:
+      - client/node_modules/
+  artifacts:
+    paths:
+      - client/node_modules/
+
 junit:
   stage: test
   script:
     - cd server
     - ./gradlew test
+
+jest:
+  stage: test
+  script:
+    - cd client
+    - npm run test
 
 dev-build:
   stage: deploy
