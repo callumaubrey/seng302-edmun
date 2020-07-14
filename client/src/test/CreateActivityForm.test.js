@@ -61,7 +61,7 @@ describe('Profile Info Validation', () => {
     });
 
     test('Valid Start Date', () => {
-        wrapper.vm.$v.durationForm.startDate.$model = "2040-06-19";
+        wrapper.vm.$v.durationForm.startDate.$model = "2020-06-19";
         expect(wrapper.vm.$v.durationForm.startDate.$error).toBe(false);
     });
 
