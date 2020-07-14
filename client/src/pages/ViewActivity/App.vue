@@ -11,6 +11,9 @@
                     <h3>{{activityName}}</h3>
                 </b-row>
                 <b-row align-h="center">
+                    <FollowUnfollow v-bind:activityId="this.$route.params.activityId"
+                                    v-bind:activityOwnerId="this.$route.params.id"
+                                    v-bind:loggedInId="loggedInId"></FollowUnfollow>
                     <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
                         <b-dropdown-item  @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item  @click="deleteActivity()">Delete</b-dropdown-item>
@@ -77,12 +80,14 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import axios from 'axios'
 
     const App = {
         name: 'App',
         components: {
-            NavBar
+            NavBar,
+            FollowUnfollow
         },
         data: function() {
             return {
