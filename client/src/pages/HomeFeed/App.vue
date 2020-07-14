@@ -67,7 +67,6 @@
             },
             getHomeFeed: async function () {
                 axios.defaults.withCredentials = true;
-                console.log(this.userId);
                 let url = 'http://localhost:9499/feed/homefeed/' + this.userId + "?offset=" + this.offset + "&limit=" + this.limit;
                 await axios.get(url)
                     .then((res) => {
