@@ -95,7 +95,6 @@ public class ActivityHashtagFeatureSteps {
             hashTags.add(hashTag);
         }
 
-        System.out.println(hashTags);
         jsonString = "{\n" +
                 "  \"activity_name\": \"" + activityName + "\",\n" +
                 "  \"description\": \"tramping iz fun\",\n" +
@@ -106,6 +105,8 @@ public class ActivityHashtagFeatureSteps {
                 "  \"continuous\": true,\n" +
                 "  \"hashtags\": " + hashTags + "\n" +
                 "}";
+
+        System.out.println(hashTags);
         String createActivityUrl = "/profiles/" + profileId + "/activities";
         mvcResponse =
                 mvc.perform(
@@ -113,10 +114,6 @@ public class ActivityHashtagFeatureSteps {
                                 .content(jsonString)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .session(session));
-
-        List<Activity> test = activityRepository.findByTags_NameOrderByCreationDateDesc("someHashTag");
-        System.out.println(test);
-
     }
 
     @Then("I have an activity {string} with hashtags")
@@ -181,14 +178,17 @@ public class ActivityHashtagFeatureSteps {
     @When("I search for activity by hashtag {string}")
     public void i_search_for_activity_by_hashtag(String string) throws Exception {
         String response =
-                mvc.perform(
-                        MockMvcRequestBuilders.get("/hashtag/" + string).contentType(MediaType.APPLICATION_JSON)
-                                .session(session))
-                        .andExpect(status().isOk())
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/hashtag/someHashTag")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
-        System.out.println(response);
+        JSONArray result = new JSONArray(response);
+        System.out.println(result.length());
     }
 
     @Then("I get the activities in order")
