@@ -61,10 +61,10 @@ Feature: Adding hashtags to activities
     When I search for hashtag "some"
     Then I get hashtag search results containing
       | Hashtag      |
-      | #someHashTag |
-      | #someStuff   |
-      | #someNumber  |
-      | #someThings  |
+      | someHashTag |
+      | someStuff   |
+      | someNumber  |
+      | someThings  |
 
   @15
   #AC2
@@ -88,9 +88,9 @@ Feature: Adding hashtags to activities
     When I search for hashtag "not"
     Then I get hashtag search results in order
       | Hashtag   |
-      | #notEvery |
-      | #nothing  |
-      | #not      |
+      | notEvery |
+      | nothing  |
+      | not      |
 
   @15
   #AC2
@@ -109,19 +109,18 @@ Feature: Adding hashtags to activities
     When I search for hashtag "so"
     Then I get hashtag search results containing
       | Hashtag |
-      | #so     |
+      | so   |
 
   @15
   #AC4
   Scenario: Searching for activity by hashtag
-    Given I have an activity "Running" with hashtags
+    Given I create an activity "Running" with hashtags
       | Hashtag      |
       | #someHashTag |
-    And wait a time "1000" ms
-    And I have an activity "Walking" with hashtags
+    And I create an activity "Walking" with hashtags
       | Hashtag      |
       | #someHashTag |
-    And I have an activity "Jumping" with hashtags
+    And I create an activity "Jumping" with hashtags
       | Hashtag |
       | #abc    |
     When I search for activity by hashtag "someHashTag"
@@ -242,7 +241,7 @@ Feature: Adding hashtags to activities
   @15
   #AC3
   Scenario: Edit an activity and add more than 30 hashtag will fail
-    Given I have an activity "Running" with no hashtags
+    Given I create an activity "Running" with no hashtags
     When I edit an activity "Running" and add hashtags
       | Hashtag      |
       | #someHashTag |
@@ -276,12 +275,13 @@ Feature: Adding hashtags to activities
       | #f2          |
       | #g2          |
       | #h2          |
-    Then I do not have an activity "Running" and receive "400" status code
+    Then I will receive "400" status code
+    And the activity "Running" has no hashtags
 
   @15
   #AC3
   Scenario: Edit an activity and add 30 hashtags will work
-    Given I have an activity "Running" with no hashtags
+    Given I create an activity "Running" with no hashtags
     When I edit an activity "Running" and add hashtags
       | Hashtag      |
       | #someHashTag |
