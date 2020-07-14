@@ -465,6 +465,26 @@ public class ActivityControllerTest {
   }
 
   @Test
+  void createActivityWithVisibilityTypePublicReturnStatusOk() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Tramping\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": \"true\",\n" +
+            "  \"visibility\": \"public\"\n" +
+            "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+            .andExpect(status().isCreated());
+  }
+
+  @Test
   void getActivityById() throws Exception {
     Profile profile1 = profileRepository.findById(id);
     Activity testActivity1 = new Activity();
@@ -594,4 +614,5 @@ public class ActivityControllerTest {
         .andExpect(content().string("Activity is archived"));
     ;
   }
+
 }

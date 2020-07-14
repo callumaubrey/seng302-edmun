@@ -41,6 +41,8 @@ public class Activity {
               request.location.country, request.location.state, request.location.city);
       this.location = location;
     }
+
+    this.visibilityType = VisibilityType.PUBLIC;
   }
 
   @Id
@@ -92,6 +94,7 @@ public class Activity {
   @OneToMany(mappedBy = "activity")
   private List<ActivityRole> activityRole;
 
+  @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
 
   public String getActivityName() {
