@@ -1,9 +1,6 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -19,6 +16,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -593,5 +594,81 @@ public class ActivityControllerTest {
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("Activity is archived"));
     ;
+  }
+
+  @Test
+  void changeVisibilityTypeValidType() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("my activity");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\n"
+                    + "  \"visibility\": \"restricted\"\n"
+                    + "}";
+
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().isOk());
+  }
+
+  @Test
+  void changeVisibilityTypeNotOwner() throws Exception {
+    Profile profile = new Profile();
+    profile.setFirstname("john");
+    profile.setLastname("doe");
+    Set<Email> emails = new HashSet<Email>();
+    emails.add(new Email("johnny@email.com"));
+    profile.setEmails(emails);
+    profile = profileRepository.save(profile);
+
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("my activity");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\n"
+                    + "  \"visibility\": \"restricted\"\n"
+                    + "}";
+
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void changeVisibilityTypeInvalidType() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("my activity");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\n"
+                    + "  \"visibility\": \"blah\"\n"
+                    + "}";
+
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().is4xxClientError());
   }
 }
