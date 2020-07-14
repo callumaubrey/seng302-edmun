@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
 import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.VisibilityType;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class EditActivityTest {
+class EditActivityTest {
 
   @Autowired
   private MockMvc mvc;
@@ -338,7 +340,7 @@ public class EditActivityTest {
   }
 
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOk() throws Exception {
+  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged() throws Exception {
     String jsonString =
             "{\n" +
                     "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
@@ -359,5 +361,7 @@ public class EditActivityTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().isOk());
+
+    Assert.assertSame(VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
 }
