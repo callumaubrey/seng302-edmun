@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
+import com.springvuegradle.team6.models.ActivityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class EditActivityTest {
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
+
+  @Autowired
+  private ActivityRepository activityRepository;
 
   private int id;
 
@@ -311,24 +316,48 @@ public class EditActivityTest {
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
             + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Walk\"\n"
-            + "  ],\n"
-            + "  \"continuous\": false,\n"
-            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-            + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
-            + "  }"
-            + "}";
+                + "  \"activity_type\":[ \n"
+                + "    \"Walk\"\n"
+                + "  ],\n"
+                + "  \"continuous\": false,\n"
+                + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+                + " \"location\": {\n"
+                + " \t\"city\": \"Christchurch\",\n"
+                + " \t\"country\": \"New Zealand\"\n"
+                + "  }"
+                + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isOk());
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOk() throws Exception {
+    String jsonString =
+            "{\n" +
+                    "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                    "  \"activity_type\":[ \n" +
+                    "    \"Walk\"\n" +
+                    "  ],\n" +
+                    "  \"continuous\": false,\n" +
+                    "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
+                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
+                    "  \"visibility\": \"private\"\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
   }
 }

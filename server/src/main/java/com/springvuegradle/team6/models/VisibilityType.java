@@ -1,5 +1,5 @@
 package com.springvuegradle.team6.models;
 
 public enum VisibilityType {
-    PUBLIC, PRIVATE, RESTRICTED
+    Public, Private, Restricted
 }

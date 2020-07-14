@@ -42,12 +42,19 @@ public class EditActivityRequest {
   @Valid
   public LocationUpdateRequest location;
 
+  @JsonProperty("visibility")
+
+  public String visibility;
+
   public void editActivityFromRequest(
-      Activity activity, NamedLocationRepository locationRepository) {
+          Activity activity, NamedLocationRepository locationRepository) {
     activity.setActivityName(this.activityName);
     activity.setDescription(this.description);
     activity.setActivityTypes(this.activityTypes);
     activity.setContinuous(this.continuous);
+    if (this.visibility != null) {
+      activity.setVisibilityType(this.visibility);
+    }
     if (activity.isContinuous()) {
       activity.setStartTime(null);
       activity.setEndTime(null);
@@ -57,7 +64,7 @@ public class EditActivityRequest {
     }
     if (this.location != null) {
       NamedLocation location =
-          new NamedLocation(this.location.country, this.location.state, this.location.city);
+              new NamedLocation(this.location.country, this.location.state, this.location.city);
       activity.setLocation(location);
 
       if (activity.getLocation() != null) {
