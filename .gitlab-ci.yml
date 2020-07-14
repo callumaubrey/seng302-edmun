@@ -35,24 +35,38 @@ jest:
     - cd client
     - npm run test
 
-dev-build:
+deploy-test-server:
   stage: deploy
   script:
-    - fuser -k 9499/tcp 9500/tcp || true
-    - cd client
-    - npm install
-    - npm run build
-    - cd ../server
+    # Create artifact
+    - cd server
     - ./gradlew bootJar
-    - cd ..
-    - mkdir -p ../client-dev/
-    - mkdir -p ../server-dev/
-    - cp -r ./client/dist/ ../client-dev/
-    - cp -r ./server/build/libs ../server-dev
-    - screen -d -m bash -c "java -jar ../server-prod/libs/server-0.0.1-SNAPSHOT.jar --server.port=9499 --spring.jpa.hibernate.ddl-auto='update' --spring.datasource.url='jdbc:mariadb://db2.csse.canterbury.ac.nz:3306/seng302-2020-team700-test' --spring.datasource.driver-class-name='org.mariadb.jdbc.Driver'  --spring.datasource.username=$DB_USER --spring.datasource.password=$DB_PASSWORD --spring.jpa.properties.hibernate.search.default.directory_provider='local-heap'"
-    - screen -d -m bash -c "serve -s ../client-dev/dist -l 9500" # convert to be run with service
-  except:
-    - tags
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/test-server/
+    - mkdir -p /home/gitlab-runner/test-server/
+    - cp -r ./build/libs /home/gitlab-runner/test-server
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runTestServer.sh || true
+    - cp ../deployment-scripts/runTestServer.sh /home/gitlab-runner/runTestServer.sh
+    - sudo systemctl restart testServer
+
+
+deploy-test-client:
+  stage: deploy
+  script:
+    # Create artifact
+    - cd client
+    - npm run build
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/test-client/
+    - mkdir -p /home/gitlab-runner/test-client/
+    - cp -r ./dist /home/gitlab-runner/test-client
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runTestClient.sh || true
+    - cp ../deployment-scripts/runTestClient.sh /home/gitlab-runner/runTestClient.sh
+    - sudo systemctl restart testClient
+
+
 
 release-build:
  stage: deploy
