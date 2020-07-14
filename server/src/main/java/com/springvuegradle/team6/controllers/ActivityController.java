@@ -7,6 +7,7 @@ import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
+import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -557,5 +558,40 @@ public class ActivityController {
     }
 
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
+  }
+
+  /**
+   * Changes the visibility of a users activity
+   *
+   * @param profileId The id of the user profile
+   * @param activityId The id of the activity
+   * @param session The current session of the logged in user
+   * @return
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/visibility")
+  public ResponseEntity changeVisibility(
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestBody EditActivityVisibilityRequest request,
+          HttpSession session) {
+    ResponseEntity<String> checkAuthorisedResponse =
+            UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (checkAuthorisedResponse != null) {
+      return checkAuthorisedResponse;
+    }
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
+      if (!activity.getProfile().getId().equals(profileId)) {
+        return new ResponseEntity<>(
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+      }
+
+      activity.setVisibilityType(request.getVisibilityType());
+      activityRepository.save(activity);
+      return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
   }
 }

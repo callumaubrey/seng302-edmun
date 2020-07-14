@@ -208,4 +208,8 @@ public class Activity {
   public void setSubscribers(Collection<Profile> subscribers) {
     this.subscribers = subscribers;
   }
+
+  public void setVisibilityType(VisibilityType visibilityType) {
+    this.visibilityType = visibilityType;
+  }
 }
