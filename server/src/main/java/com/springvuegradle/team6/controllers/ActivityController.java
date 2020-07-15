@@ -38,16 +38,19 @@ import java.util.*;
 public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
+  private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
+      ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
       TagRepository tagRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
+    this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
   }
@@ -518,7 +521,7 @@ public class ActivityController {
    * @return 200 response with headers
    */
   @GetMapping("/activities/{activityId}")
-  public ResponseEntity<String> getActivity(@PathVariable int activityId) {
+  public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
@@ -526,6 +529,23 @@ public class ActivityController {
     Activity activity = optionalActivity.get();
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+    Object profileId = session.getAttribute("id");
+    boolean isAuthor = true;
+    if (!activity.getProfile().getId().equals(profileId.toString())) {
+      isAuthor = false;
+    }
+    if (!isAuthor) {
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+      }
+
+      if (activity.getVisibilityType() == VisibilityType.Restricted) {
+        List<ActivityRole> activityRoles = activityRoleRepository.findByProfileIdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
+        if (activityRoles.size() == 0) {
+          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+        }
+      }
     }
     try {
       ObjectMapper mapper = new ObjectMapper();

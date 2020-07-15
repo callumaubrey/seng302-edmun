@@ -10,4 +10,6 @@ import java.util.List;
 public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Integer> {
 
   List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
+
+  List<ActivityRole> findByProfileIdAndActivity_Id(int profileId, int activityId);
 }
