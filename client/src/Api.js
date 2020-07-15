@@ -1,12 +1,12 @@
-import axios from 'axios'
-
+import axios from 'axios';
   
 const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 console.log(SERVER_URL + "@@@");
   
 const instance = axios.create({  
   baseURL: SERVER_URL,  
-  timeout: 1000  
+  timeout: 1000,
+  withCredentials: true
 });  
   
 export default {  
@@ -21,5 +21,8 @@ export default {
   // (U)pdate  
   updateForId: (id, name) => instance.put('students/'+id, {name}), 
   // (D)elete  
-  removeForId: (id) => instance.delete('students/'+id)  
+  removeForId: (id) => instance.delete('students/'+id),
+
+  login: (email, password) => instance.post('/login', {email: email, password: password})
+
 }

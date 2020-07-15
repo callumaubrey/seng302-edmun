@@ -60,6 +60,7 @@
 <script>
   import NavBar from '@/components/NavBar.vue';
   import axios from 'axios'
+  import api from '@/Api';
 
   export default {
     components: {
@@ -106,11 +107,7 @@
         this.submitted = true;
         if (this.emailState != false && this.passwordState != false) {
           let currentObj = this;
-          axios.defaults.withCredentials = true;
-          axios.post('http://localhost:9499/login', {
-            email: this.email,
-            password: this.password
-          })
+          api.login(this.email, this.name)
                   .then(function () {
                     let adminPattern = new RegExp("Admin");
                     if (adminPattern.test(currentObj.output)) {
