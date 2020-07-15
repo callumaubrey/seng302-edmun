@@ -20,7 +20,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
 
   List<Activity> findByProfile_IdAndArchivedFalse(int id);
 
-  List<Activity> findByTags_NameOrderByCreationDateDesc(String name);
+  List<Activity> findByTags_NameOrderByCreationDateAsc(String name);
 
   List<Activity> findAll();
 

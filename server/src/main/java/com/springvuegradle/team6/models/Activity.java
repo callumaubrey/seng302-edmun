@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
@@ -78,12 +79,8 @@ public class Activity {
   @Column(columnDefinition = "datetime default NOW()")
   private LocalDateTime creationDate;
 
-  /**
-   * Map activity id to user id to create profile_subscriptions table in database
-   */
-  @ManyToMany(
-          mappedBy = "subscriptions",
-          fetch = FetchType.LAZY)
+  /** Map activity id to user id to create profile_subscriptions table in database */
+  @ManyToMany(mappedBy = "subscriptions", fetch = FetchType.LAZY)
   private Collection<Profile> subscribers;
 
   @Column(columnDefinition = "boolean default false")
@@ -207,5 +204,9 @@ public class Activity {
 
   public void setSubscribers(Collection<Profile> subscribers) {
     this.subscribers = subscribers;
+  }
+
+  public void setCreationDate(LocalDateTime creationDate) {
+    this.creationDate = creationDate;
   }
 }

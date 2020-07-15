@@ -29,8 +29,7 @@ import java.util.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
-        "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @DirtiesContext
 public class ActivityHashtagFeatureSteps {
   private String jsonString;
@@ -39,6 +38,7 @@ public class ActivityHashtagFeatureSteps {
   private String profileId;
   private String activityId;
   private List<String> autocompleteResult;
+  private List<String> activityNamesByHashtag;
 
   @Autowired private ActivityRepository activityRepository;
 
@@ -182,6 +182,35 @@ public class ActivityHashtagFeatureSteps {
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
   }
 
+  @When("I search for activity by hashtag {string}")
+  public void i_search_for_activity_by_hashtag(String hashtag) throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/hashtag/" + hashtag)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray arr = new JSONArray(response);
+    List<String> list = new ArrayList<String>();
+    for (int i = 0; i < arr.length(); i++) {
+      list.add(arr.getJSONObject(i).getString("activityName"));
+    }
+    activityNamesByHashtag = list;
+  }
+
+  @Then("I get the activities in order")
+  public void i_get_the_activities_in_order(io.cucumber.datatable.DataTable dataTable) {
+    List<String> activities = new ArrayList<>();
+    for (Map<String, String> activityMapping : dataTable.asMaps()) {
+      String activity = activityMapping.get("ActivityName");
+      activities.add(activity);
+    }
+    Assert.assertTrue(activityNamesByHashtag.containsAll(activities));
+  }
+
   @Then("I have an activity {string} with hashtags")
   public void i_have_an_activity_with_hashtags(
       String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
@@ -208,7 +237,7 @@ public class ActivityHashtagFeatureSteps {
   @Then("I do not have an activity {string} and receive {string} status code")
   public void i_do_not_have_an_activity_and_receive_status_code(
       String activityName, String statusCode) throws Exception {
-    Assert.assertTrue(activityRepository.findByActivityName(activityName) == null);
+    Assert.assertEquals(0, activityRepository.findByActivityName(activityName).size());
     mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
   }
 
@@ -223,14 +252,12 @@ public class ActivityHashtagFeatureSteps {
             .getResponse()
             .getContentAsString();
 
-    System.out.println(response);
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("results");
     List<String> list = new ArrayList<String>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getString(i));
     }
-    System.out.println(list);
     autocompleteResult = list;
   }
 
@@ -241,8 +268,6 @@ public class ActivityHashtagFeatureSteps {
       String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
       hashTags.add(hashTag);
     }
-    System.out.println(autocompleteResult);
-    System.out.println(hashTags);
     Assert.assertTrue(autocompleteResult.containsAll(hashTags));
   }
 
