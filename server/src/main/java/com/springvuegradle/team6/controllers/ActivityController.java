@@ -40,16 +40,19 @@ public class ActivityController {
   private final ActivityRepository activityRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
+  private final ActivityHistoryRepository activityHistoryRepository;
 
   ActivityController(
-      ProfileRepository profileRepository,
-      ActivityRepository activityRepository,
-      NamedLocationRepository locationRepository,
-      TagRepository tagRepository) {
+          ProfileRepository profileRepository,
+          ActivityRepository activityRepository,
+          NamedLocationRepository locationRepository,
+          TagRepository tagRepository,
+          ActivityHistoryRepository activityHistoryRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
+    this.activityHistoryRepository = activityHistoryRepository;
   }
 
   /**
@@ -501,10 +504,15 @@ public class ActivityController {
       Activity activity = optionalActivity.get();
       if (!activity.getProfile().getId().equals(profileId)) {
         return new ResponseEntity<>(
-            "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
       activity.setArchived(true);
       activityRepository.save(activity);
+
+      String activityArchivedMessage = "Activity '" + activity.getActivityName() + "' is archived";
+      ActivityHistory activityHistory = new ActivityHistory(activity, activityArchivedMessage);
+      activityHistoryRepository.save(activityHistory);
+
       return new ResponseEntity<>("Activity is now archived", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);

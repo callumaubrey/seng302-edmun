@@ -2,15 +2,17 @@ package com.springvuegradle.team6.models;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
 
 /**
  *
  */
 @Entity
 public class ActivityHistory {
+
+    public ActivityHistory(Activity activity, String message) {
+        this.activity = activity;
+        this.message = message;
+    }
 
     // For testing purposes only
     public ActivityHistory() {
