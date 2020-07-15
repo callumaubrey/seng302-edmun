@@ -208,7 +208,7 @@ public class ActivityHashtagFeatureSteps {
       String activity = activityMapping.get("ActivityName");
       activities.add(activity);
     }
-    Assert.assertTrue(activityNamesByHashtag.containsAll(activities));
+    Assert.assertEquals(activities, activityNamesByHashtag);
   }
 
   @Then("I have an activity {string} with hashtags")

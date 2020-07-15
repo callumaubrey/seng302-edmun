@@ -368,6 +368,9 @@ public class ActivityController {
     }
     activity.setTags(hashtags);
 
+    // Set creation date to now
+    activity.setCreationDate(LocalDateTime.now());
+
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
