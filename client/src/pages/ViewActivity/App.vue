@@ -200,6 +200,7 @@
                                 vueObj.hashtags.push("#" + res.data.tags[i].name);
                             }
                         }
+                        vueObj.hashtags.sort();
                         console.log(vueObj.hashtags);
                         if (!vueObj.continuous) {
                             this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
