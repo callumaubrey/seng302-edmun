@@ -374,6 +374,7 @@
                                 currentObj.hashtag.values.push("#" + response.data.tags[i].name);
                             }
                         }
+                        currentObj.hashtag.values.sort();
                     })
                     .catch(function (error) {
                         console.log(error.response);
