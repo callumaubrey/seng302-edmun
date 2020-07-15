@@ -2,6 +2,7 @@ package com.springvuegradle.team6.steps;
 
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.Tag;
 import com.springvuegradle.team6.models.TagRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -22,11 +23,14 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
+        "ADMIN_PASSWORD=test"})
 @DirtiesContext
 public class ActivityHashtagFeatureSteps {
   private String jsonString;
@@ -35,7 +39,6 @@ public class ActivityHashtagFeatureSteps {
   private String profileId;
   private String activityId;
   private List<String> autocompleteResult;
-  private List<String> activityNamesByHashtag;
 
   @Autowired private ActivityRepository activityRepository;
 
@@ -90,15 +93,38 @@ public class ActivityHashtagFeatureSteps {
     Assert.assertTrue(activities.size() == 0);
   }
 
-  @When("I create an activity {string} with hashtags")
-  public void i_create_an_activity_with_hashtags(
+  @Given("I create an activity {string} with no hashtags")
+  public void i_create_an_activity_with_no_hashtags(String activityName) throws Exception {
+    jsonString =
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityName
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true"
+            + "}";
+    String createActivityUrl = "/profiles/" + profileId + "/activities";
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.post(createActivityUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
+    activityId = mvcResponse.andReturn().getResponse().getContentAsString();
+  }
+
+  @When("I edit an activity {string} and add hashtags")
+  public void i_edit_an_activity_and_add_hashtags(
       String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
     List<String> hashTags = new ArrayList<>();
     for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
       String hashTag = '"' + hashTagMapping.get("Hashtag") + '"';
       hashTags.add(hashTag);
     }
-
     jsonString =
         "{\n"
             + "  \"activity_name\": \""
@@ -114,8 +140,38 @@ public class ActivityHashtagFeatureSteps {
             + hashTags
             + "\n"
             + "}";
+    String editActivityUrl = "/profiles/" + profileId + "/activities/" + activityId;
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.put(editActivityUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
+  }
 
-    System.out.println(hashTags);
+  @When("I create an activity {string} with hashtags")
+  public void i_create_an_activity_with_hashtags(
+      String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
+    List<String> hashTags = new ArrayList<>();
+    for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
+      String hashTag = '"' + hashTagMapping.get("Hashtag") + '"';
+      hashTags.add(hashTag);
+    }
+    jsonString =
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityName
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"hashtags\": "
+            + hashTags
+            + "\n"
+            + "}";
     String createActivityUrl = "/profiles/" + profileId + "/activities";
     mvcResponse =
         mvc.perform(
@@ -123,6 +179,7 @@ public class ActivityHashtagFeatureSteps {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
+    activityId = mvcResponse.andReturn().getResponse().getContentAsString();
   }
 
   @Then("I have an activity {string} with hashtags")
@@ -130,7 +187,6 @@ public class ActivityHashtagFeatureSteps {
       String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
     Assert.assertTrue(activityRepository.findByActivityName(activityName) != null);
 
-    activityId = mvcResponse.andReturn().getResponse().getContentAsString();
     String getActivityUrl = "/activities/" + activityId;
     String responseString =
         mvc.perform(
@@ -160,49 +216,56 @@ public class ActivityHashtagFeatureSteps {
   public void i_search_for_hashtag(String string) throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=number", profileId)
+                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=" + string, profileId)
                     .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
+    System.out.println(response);
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("results");
     List<String> list = new ArrayList<String>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getString(i));
     }
+    System.out.println(list);
     autocompleteResult = list;
   }
 
   @Then("I get hashtag search results containing")
   public void i_get_hashtag_search_results_containing(io.cucumber.datatable.DataTable dataTable) {
-    Assert.assertTrue(autocompleteResult.containsAll(dataTable.asList()));
+    List<String> hashTags = new ArrayList<>();
+    for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
+      String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
+      hashTags.add(hashTag);
+    }
+    System.out.println(autocompleteResult);
+    System.out.println(hashTags);
+    Assert.assertTrue(autocompleteResult.containsAll(hashTags));
   }
 
   @Then("I get hashtag search results in order")
   public void i_get_hashtag_search_results_in_order(io.cucumber.datatable.DataTable dataTable) {
-    Assert.assertTrue(autocompleteResult.equals(dataTable.asList()));
+    List<String> hashTags = new ArrayList<>();
+    for (Map<String, String> hashTagMapping : dataTable.asMaps()) {
+      String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
+      hashTags.add(hashTag);
+    }
+    Assert.assertTrue(autocompleteResult.equals(hashTags));
   }
 
-  @When("I search for activity by hashtag {string}")
-  public void i_search_for_activity_by_hashtag(String string) throws Exception {
-    String response =
-        mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/someHashTag")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is2xxSuccessful())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    JSONArray result = new JSONArray(response);
-    System.out.println(result.length());
+  @Then("I will receive {string} status code")
+  public void i_will_receive_status_code(String string) throws Exception {
+    mvcResponse.andExpect(status().isBadRequest());
   }
 
-  @Then("I get the activities in order")
-  public void i_get_the_activities_in_order(io.cucumber.datatable.DataTable dataTable) {
-    Assert.assertTrue(activityNamesByHashtag.equals(dataTable.asList()));
+  @Then("the activity {string} has no hashtags")
+  public void the_activity_has_no_hashtags(String string) {
+    Set<Tag> hashtags = activityRepository.getActivityTags(Integer.parseInt(activityId));
+    Set<Tag> expected = new HashSet<>();
+    expected.add(null);
+    Assert.assertTrue(hashtags.isEmpty() || hashtags.equals(expected));
   }
 }

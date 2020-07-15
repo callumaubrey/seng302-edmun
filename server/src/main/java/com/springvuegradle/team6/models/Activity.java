@@ -7,7 +7,6 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -92,6 +91,8 @@ public class Activity {
 
   @OneToMany(mappedBy = "activity")
   private List<ActivityRole> activityRole;
+
+  private VisibilityType visibilityType;
 
   public String getActivityName() {
     return activityName;
