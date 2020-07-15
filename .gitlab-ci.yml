@@ -68,25 +68,35 @@ deploy-test-client:
 
 
 
-release-build:
- stage: deploy
- script:
-    - fuser -k 8999/tcp 9000/tcp || true
-    - cd client
-    - npm install
-    - npm run build-prod
-    - cd ../server
+deploy-prod-server:
+  stage: deploy
+  script:
+    # Create artifact
+    - cd server
     - ./gradlew bootJar
-    - cd ..
-    - mkdir -p ../client-prod/
-    - mkdir -p ../server-prod/
-    - cp -r ./client/dist/ ../client-prod/
-    - cp -r ./server/build/libs ../server-prod/
-    - screen -d -m bash -c "java -jar ../server-prod/libs/server-0.0.1-SNAPSHOT.jar --server.port=8999 --spring.jpa.hibernate.ddl-auto='update' --spring.datasource.url='jdbc:mariadb://db2.csse.canterbury.ac.nz:3306/seng302-2020-team700-prod' --spring.datasource.driver-class-name='org.mariadb.jdbc.Driver'  --spring.datasource.username=$DB_USER --spring.datasource.password=$DB_PASSWORD --spring.jpa.properties.hibernate.search.default.directory_provider='local-heap'"
-    - screen -d -m bash -c "serve -s ../client-prod/dist -l 9000"
- artifacts:
-    paths:
-    - client/dist
-    - server/out
- only:
-    - tags
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/prod-server/
+    - mkdir -p /home/gitlab-runner/prod-server/
+    - cp -r ./build/libs /home/gitlab-runner/prod-server
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runProdServer.sh || true
+    - cp ../deployment-scripts/runProdServer.sh /home/gitlab-runner/runProdServer.sh
+    - sudo systemctl restart prodServer
+
+
+deploy-prod-client:
+  stage: deploy
+  script:
+    # Create artifact
+    - cd client
+    - npm run build
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/prod-client/
+    - mkdir -p /home/gitlab-runner/prod-client/
+    - cp -r ./dist /home/gitlab-runner/prod-client
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runProdClient.sh || true
+    - cp ../deployment-scripts/runProdClient.sh /home/gitlab-runner/runProdClient.sh
+    - sudo systemctl restart prodClient
+
+
