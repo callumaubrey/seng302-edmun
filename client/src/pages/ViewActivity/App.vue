@@ -48,6 +48,12 @@
                             <b-col><b>Description:</b></b-col>
                             <b-col><p>{{description}}</p></b-col>
                         </b-row>
+                        <b-row>
+                            <b-col><b>Hashtags:</b></b-col>
+                            <b-col v-for="hashtag in hashtags" v-bind:key = "hashtag">
+                                <b-link @click="clickHashtag(hashtag)">{{hashtag}}</b-link>
+                            </b-col>
+                        </b-row>
                     </div>
                 </b-card>
                 <b-card style="margin: 1em" title="Participants:">
@@ -99,6 +105,7 @@
                 startTime: "",
                 endTime: "",
                 location: null,
+                hashtags: [],
                 activityOwner: null,
                 locationString: "",
                 locationDataLoading: true
@@ -170,7 +177,6 @@
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
-                let profileId = this.$route.params.id;
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/activities/' + activityId)
                     .then((res) => {
@@ -189,9 +195,12 @@
                             }
                             vueObj.locationString += vueObj.location.country;
                         }
-                        if (vueObj.activityOwner.id != profileId) {
-                            vueObj.$router.push('/profiles/' + profileId);
+                        if (res.data.tags.length > 0) {
+                            for (var i = 0; i < res.data.tags.length; i++) {
+                                vueObj.hashtags.push("#" + res.data.tags[i].name);
+                            }
                         }
+                        console.log(vueObj.hashtags);
                         if (!vueObj.continuous) {
                             this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
                         }
@@ -217,6 +226,11 @@
                     }
                 }
                 currentObj.activityTypes = result;
+            },
+            clickHashtag(hashtag) {
+                hashtag = hashtag.substring(1);
+                this.$router.push('/hashtag/' + hashtag);
+
             }
         }
     };
