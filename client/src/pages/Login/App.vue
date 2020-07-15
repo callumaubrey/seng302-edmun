@@ -59,7 +59,6 @@
 
 <script>
   import NavBar from '@/components/NavBar.vue';
-  import axios from 'axios'
   import api from '@/Api';
 
   export default {
