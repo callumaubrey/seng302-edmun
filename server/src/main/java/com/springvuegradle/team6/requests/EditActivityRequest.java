@@ -71,5 +71,6 @@ public class EditActivityRequest {
       NamedLocation location =
               new NamedLocation(this.location.country, this.location.state, this.location.city);
       activity.setLocation(location);
-
+    }
+  }
 }
