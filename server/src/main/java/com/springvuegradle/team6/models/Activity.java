@@ -37,10 +37,16 @@ public class Activity {
     }
     if (request.location != null) {
       NamedLocation location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
+              new NamedLocation(
+                      request.location.country, request.location.state, request.location.city);
       this.location = location;
     }
+    if (request.visibility != null) {
+      setVisibilityType(request.visibility);
+    } else {
+      this.visibilityType = VisibilityType.Public;
+    }
+
   }
 
   @Id
@@ -92,6 +98,7 @@ public class Activity {
   @OneToMany(mappedBy = "activity")
   private List<ActivityRole> activityRole;
 
+  @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
 
   public String getActivityName() {
@@ -184,6 +191,15 @@ public class Activity {
 
   public void setArchived(boolean archived) {
     this.archived = archived;
+  }
+
+  public VisibilityType getVisibilityType() {
+    return this.visibilityType;
+  }
+
+  public void setVisibilityType(String type) {
+    String toCamelCase = type.substring(0, 1).toUpperCase() + type.substring(1);
+    this.visibilityType = VisibilityType.valueOf(toCamelCase);
   }
 
   @Override
