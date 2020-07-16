@@ -7,6 +7,7 @@ import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
+import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -574,24 +575,34 @@ public class ActivityController {
   public ResponseEntity changeVisibility(
           @PathVariable int profileId,
           @PathVariable int activityId,
+          @RequestBody @Valid EditActivityVisibilityRequest request,
           HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
-      ResponseEntity<String> checkAuthorisedResponse =
-              UserSecurityService.checkAuthorised(activity.getProfile().getId(), session, profileRepository);
-      if (checkAuthorisedResponse != null) {
-        return checkAuthorisedResponse;
+      if (!activity.getProfile().getId().equals(profileId)) {
+        return new ResponseEntity<>(
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-      Profile profile = profileRepository.findById(profileId);
-      if (profile == null) {
-        return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+
+      for (String email : request.getEmails()) {
+        Profile profile = profileRepository.findByEmails_address(email);
+        if (profile == null) {
+          return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+        }
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setActivity(activity);
+        activityRole.setProfile(profile);
+        activityRole.setActivityRoleType(ActivityRoleType.Access);
+        activityRoleRepository.save(activityRole);
       }
-      ActivityRole activityRole = new ActivityRole();
-      activityRole.setActivity(activity);
-      activityRole.setProfile(profile);
-      activityRole.setActivityRoleType(ActivityRoleType.Access);
-      activityRoleRepository.save(activityRole);
+
       return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
