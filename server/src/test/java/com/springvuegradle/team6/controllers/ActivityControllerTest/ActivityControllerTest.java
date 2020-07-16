@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,6 +36,9 @@ public class ActivityControllerTest {
   @Autowired private ActivityRepository activityRepository;
 
   @Autowired private ProfileRepository profileRepository;
+
+  @Autowired
+  private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -594,5 +598,126 @@ public class ActivityControllerTest {
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("Activity is archived"));
     ;
+  }
+
+  @Test
+  void putActivityVisibilityAdd() throws Exception {
+    Profile owner = profileRepository.findById(id);
+    Activity activity = new Activity();
+    activity.setActivityName("testing my run");
+    activity.setContinuous(true);
+    activity.setProfile(owner);
+    activity = activityRepository.save(activity);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("johnny@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    Profile profile3 = new Profile();
+    profile3.setFirstname("Martin");
+    profile3.setLastname("Johns");
+    Set<Email> email3 = new HashSet<Email>();
+    email3.add(new Email("martin@email.com"));
+    profile3.setEmails(email3);
+    profileRepository.save(profile3);
+
+    String jsonString =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"johnny@email.com\",\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+
+    List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(3, result.size());
+  }
+
+  @Test
+  void putActivityVisibilityDelete() throws Exception {
+    Profile owner = profileRepository.findById(id);
+    Activity activity = new Activity();
+    activity.setActivityName("testing my run");
+    activity.setContinuous(true);
+    activity.setProfile(owner);
+    activity = activityRepository.save(activity);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("johnny@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    Profile profile3 = new Profile();
+    profile3.setFirstname("Martin");
+    profile3.setLastname("Johns");
+    Set<Email> email3 = new HashSet<Email>();
+    email3.add(new Email("martin@email.com"));
+    profile3.setEmails(email3);
+    profileRepository.save(profile3);
+
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"johnny@email.com\",\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+    ResultActions responseString1 =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString1)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+
+    String jsonString2 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"johnny@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+    ResultActions responseString2 =
+            mvc.perform(
+                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                            .content(jsonString2)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+
+    List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.size());
   }
 }
