@@ -25,41 +25,6 @@ public class ActivitySharingFeatureSteps {
     @Autowired
     private MockMvc mvc;
 
-    @Given("I log in with email {string} and password {string}")
-    public void i_log_in_with_email_and_password(String email, String password) throws Exception {
-        String jsonString =
-                "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \"" + email + "\",\r\n  \"password\": \"" + password + "\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
-        String createProfileUrl = "/profiles";
-        profileId =
-                mvc.perform(
-                        MockMvcRequestBuilders.post(createProfileUrl)
-                                .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isCreated())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
-
-        session = new MockHttpSession();
-        jsonString =
-                "{\n"
-                        + "\t\"email\": \""
-                        + email
-                        + "\",\n"
-                        + "\t\"password\": \""
-                        + password
-                        + "\"\n"
-                        + "}";
-        String loginUrl = "/login";
-        mvc.perform(
-                MockMvcRequestBuilders.post(loginUrl)
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .session(session))
-                .andExpect(status().isOk());
-    }
-
-
     @Given("There is an activity {string} with {string} access")
     public void there_is_an_activity_with_access(String activityName, String visibilityType) throws Exception {
         // Create another user
