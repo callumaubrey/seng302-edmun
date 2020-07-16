@@ -177,6 +177,12 @@
                             </b-form-group>
                         </b-col>
                     </b-row>
+                    <b-row>
+                        <b-col >
+                            <ShareActivity v-on:emitInput = "onChildClick" :modal="false"></ShareActivity>
+                            <br>
+                        </b-col>
+                    </b-row>
                     <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
                     <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
                         {{activityUpdateMessage}}
@@ -192,6 +198,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import ShareActivity from "@/components/ShareActivity.vue";
     import SearchTag from "../../components/SearchTag";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
@@ -203,7 +210,8 @@
         mixins: [validationMixin, locationMixin],
         components: {
             SearchTag,
-            NavBar
+            NavBar,
+            ShareActivity
         },
         data() {
             return {
@@ -236,7 +244,8 @@
                 hashtag: {
                     options: [],
                     values: []
-                }
+                },
+                selectedVisibility: null
             }
         },
         validations: {
@@ -413,7 +422,8 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.locationData
+                        location: this.locationData,
+                        visibility: this.selectedVisibility
                     })
                         .then(function (response) {
                             console.log(response);
@@ -440,7 +450,8 @@
                         continuous: false,
                         start_time: isoDates[0],
                         end_time: isoDates[1],
-                        location: this.form.locationData
+                        location: this.form.locationData,
+                        visibility: this.selectedVisibility
                     })
                         .then(function (response) {
                             console.log(response);
@@ -524,7 +535,11 @@
             },
             goToActivity: function () {
                 this.$router.push('/profiles/' + this.profileId + '/activities/' + this.activityId);
+            },
+            onChildClick: function(val) {
+                this.selectedVisibility = val
             }
+
         },
         mounted: async function () {
             this.activityId = this.$route.params.activityId;

@@ -177,6 +177,13 @@
                             </b-form-group>
                         </b-col>
                     </b-row>
+                    <b-row>
+                        <b-col >
+                            <ShareActivity v-on:emitInput = "onChildClick" :modal="false"></ShareActivity>
+                            <br>
+                        </b-col>
+                    </b-row>
+
 
                     <b-row>
                         <b-col sm="10">
@@ -203,6 +210,7 @@
 <script>
     import NavBar from "@/components/NavBar.vue";
     import SearchTag from "../../components/SearchTag";
+    import ShareActivity from "../../components/ShareActivity";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
@@ -213,7 +221,8 @@
         mixins: [validationMixin, locationMixin],
         components: {
             NavBar,
-            SearchTag
+            SearchTag,
+            ShareActivity
         },
         data() {
             return {
@@ -244,7 +253,8 @@
                 hashtag: {
                     options: [],
                     values: [],
-                }
+                },
+                selectedVisibility: 'public',
             }
         },
         validations: {
@@ -430,7 +440,8 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.locationData
+                        location: this.locationData,
+                        visibility: this.selectedVisibility
                     })
                         .then(function () {
                             currentObj.activityErrorMessage = "";
@@ -454,6 +465,7 @@
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
+                        visibility: this.selectedVisibility,
                         end_time: isoDates[1]
                     })
                         .then(function (response) {
@@ -541,7 +553,13 @@
                     })
                     .catch(function () {
                     });
+            },
+            onChildClick: function(val) {
+               this.selectedVisibility = val
             }
+
+
+
         },
         mounted: async function () {
             await this.checkAuthorized();
