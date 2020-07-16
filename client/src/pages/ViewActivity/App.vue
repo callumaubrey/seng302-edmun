@@ -16,7 +16,9 @@
                         <b-dropdown-item  @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
-                <b-card style="margin: 1em" title="About:" >
+                <b-row align-h="center">
+                <b-col cols="9">
+                <b-card style="margin: 1em " title="About:" >
                     <div v-if="locationDataLoading">
                         <div class="text-center text-primary my-2">
                             <b-spinner class="align-middle"></b-spinner>
@@ -25,57 +27,67 @@
                     </div>
                     <div v-else>
                         <b-row>
-                            <b-col><b>Activity Type(s):</b></b-col>
+                            <b-col cols="3"><b>Activity Type(s):</b></b-col>
                             <b-col><p>{{activityTypes}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>Start:</b></b-col>
+                            <b-col cols="3"><b>Start:</b></b-col>
                             <b-col><p>{{startTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>End:</b></b-col>
+                            <b-col cols="3"><b>End:</b></b-col>
                             <b-col><p>{{endTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="location==null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>No location available</p></b-col>
                         </b-row>
                         <b-row v-if="location!=null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>{{locationString}}</p></b-col>
                         </b-row>
                         <b-row>
-                            <b-col><b>Description:</b></b-col>
+                            <b-col cols="3"><b>Description:</b></b-col>
                             <b-col><p>{{description}}</p></b-col>
                         </b-row>
                         <b-row>
-                            <b-col><b>Hashtags:</b></b-col>
-                            <b-col v-for="hashtag in hashtags" v-bind:key = "hashtag">
-                                <b-link @click="clickHashtag(hashtag)">{{hashtag}}</b-link>
-                            </b-col>
-                        </b-row>
-                    </div>
-                </b-card>
-                <b-card style="margin: 1em" title="Participants:">
-                    <div v-if="locationDataLoading">
-                        <div class="text-center text-primary my-2">
-                            <b-spinner class="align-middle"></b-spinner>
-                            <strong> Loading...</strong>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <b-row>
-                            <b-col><b>Creator:</b></b-col>
+                            <b-col cols="3"><b>Hashtags:</b></b-col>
                             <b-col>
-                                <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
+                            <p>
+                                <span v-for="hashtag in hashtags" v-bind:key = "hashtag">
+                                    <b-link @click="clickHashtag(hashtag)">{{hashtag}}&nbsp;</b-link>
+                                </span>
+                            </p>
                             </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col><b>Other Participants:</b></b-col>
-                            <b-col><p>List of other participants possibly with links to profiles</p></b-col>
                         </b-row>
                     </div>
                 </b-card>
+                </b-col>
+                </b-row>
+                <b-row align-h="center">
+                    <b-col cols="9">
+                        <b-card style="margin: 1em" title="Participants:">
+                            <div v-if="locationDataLoading">
+                                <div class="text-center text-primary my-2">
+                                    <b-spinner class="align-middle"></b-spinner>
+                                    <strong> Loading...</strong>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <b-row>
+                                    <b-col cols="3"><b>Creator:</b></b-col>
+                                    <b-col>
+                                        <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
+                                    </b-col>
+                                </b-row>
+                                <b-row>
+                                    <b-col cols="3"><b>Other Participants:</b></b-col>
+                                    <b-col><p>List of other participants possibly with links to profiles</p></b-col>
+                                </b-row>
+                            </div>
+                        </b-card>
+                    </b-col>
+                </b-row>
             </div>
         </div>
     </div>
