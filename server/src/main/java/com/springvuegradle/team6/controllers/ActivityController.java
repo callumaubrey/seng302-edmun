@@ -531,11 +531,7 @@ public class ActivityController {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
     Object profileId = session.getAttribute("id");
-    boolean isAuthor = true;
-    if (!activity.getProfile().getId().equals(profileId.toString())) {
-      isAuthor = false;
-    }
-    if (!isAuthor) {
+    if (!activity.getProfile().getId().equals(Integer.parseInt(profileId.toString()))) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
         return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
       }

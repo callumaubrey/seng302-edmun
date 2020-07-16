@@ -224,8 +224,4 @@ public class Activity {
   public void setSubscribers(Collection<Profile> subscribers) {
     this.subscribers = subscribers;
   }
-
-  public VisibilityType getVisibilityType() {
-    return visibilityType;
-  }
 }
