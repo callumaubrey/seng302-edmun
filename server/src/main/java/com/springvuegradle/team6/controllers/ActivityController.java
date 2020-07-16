@@ -7,7 +7,6 @@ import com.springvuegradle.team6.models.location.NamedLocationRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,16 +38,19 @@ import java.util.*;
 public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
+  private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
+      ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
       TagRepository tagRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
+    this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
   }
@@ -572,30 +574,55 @@ public class ActivityController {
   public ResponseEntity changeVisibility(
           @PathVariable int profileId,
           @PathVariable int activityId,
-          @RequestBody EditActivityVisibilityRequest request,
           HttpSession session) {
-    ResponseEntity<String> checkAuthorisedResponse =
-            UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-    if (checkAuthorisedResponse != null) {
-      return checkAuthorisedResponse;
-    }
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
-      if (!activity.getProfile().getId().equals(profileId)) {
-        return new ResponseEntity<>(
-                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+      ResponseEntity<String> checkAuthorisedResponse =
+              UserSecurityService.checkAuthorised(activity.getProfile().getId(), session, profileRepository);
+      if (checkAuthorisedResponse != null) {
+        return checkAuthorisedResponse;
       }
-      try {
-        activity.setVisibilityType(request.getVisibilityType());
-        activityRepository.save(activity);
-        return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
-      } catch (IllegalArgumentException e) {
-        return new ResponseEntity<>(
-                "Invalid visibility type", HttpStatus.BAD_REQUEST);
+      Profile profile = profileRepository.findById(profileId);
+      if (profile == null) {
+        return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
       }
+      ActivityRole activityRole = new ActivityRole();
+      activityRole.setActivity(activity);
+      activityRole.setProfile(profile);
+      activityRole.setActivityRoleType(ActivityRoleType.Access);
+      activityRoleRepository.save(activityRole);
+      return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/visibility")
+  public ResponseEntity deleteVisibility(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
+      ResponseEntity<String> checkAuthorisedResponse =
+          UserSecurityService.checkAuthorised(
+              activity.getProfile().getId(), session, profileRepository);
+      if (checkAuthorisedResponse != null) {
+        return checkAuthorisedResponse;
+      }
+      Profile profile = profileRepository.findById(profileId);
+      if (profile == null) {
+        return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+      }
+
+      ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+      if (activityRole == null) {
+        return new ResponseEntity("This user does not have access", HttpStatus.NOT_FOUND);
+      }
+
+      activityRoleRepository.delete(activityRole);
+      return new ResponseEntity("Activity role deleted", HttpStatus.OK);
+    }
+    return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
   }
 }
