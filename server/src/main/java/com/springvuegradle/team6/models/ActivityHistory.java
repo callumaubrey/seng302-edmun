@@ -12,6 +12,7 @@ public class ActivityHistory {
     public ActivityHistory(Activity activity, String message) {
         this.activity = activity;
         this.message = message;
+        this.timeDate = LocalDateTime.now();
     }
 
     // For testing purposes only
