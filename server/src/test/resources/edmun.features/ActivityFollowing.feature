@@ -47,5 +47,5 @@ Feature: Following an activity
     When the activity "My cool activity" has its name changed to "My coolest activity"
     Then User with email "poly@pocket.com" home feed shows
       | Activity Name       |
-      | My cool activity    |
+      | My coolest activity |
       | My coolest activity |
