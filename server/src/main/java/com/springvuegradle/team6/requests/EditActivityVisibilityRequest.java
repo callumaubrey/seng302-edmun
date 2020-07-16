@@ -13,8 +13,6 @@ public class EditActivityVisibilityRequest {
   @JsonProperty("visibility")
   private String visibility;
 
-  @NotNull
-  @NotEmpty
   @JsonProperty("accessors")
   private List<String> emails;
 

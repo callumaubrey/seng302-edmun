@@ -591,58 +591,38 @@ public class ActivityController {
                 "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
 
-      for (String email : request.getEmails()) {
-        Profile profile = profileRepository.findByEmails_address(email);
-        if (profile == null) {
-          return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+      activity.setVisibilityType(request.getVisibility());
+      activityRepository.save(activity);
+
+      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
+      if (activityRoles.size() > 0) {
+        for (var i = 0; i < activityRoles.size(); i++) {
+          Profile profile = activityRoles.get(i).getProfile();
+          if (!(request.getEmails().contains(profile.getPrimaryEmail().getAddress()))) {
+            activityRoleRepository.delete(activityRoles.get(i));
+          }
         }
-        ActivityRole activityRole = new ActivityRole();
-        activityRole.setActivity(activity);
-        activityRole.setProfile(profile);
-        activityRole.setActivityRoleType(ActivityRoleType.Access);
-        activityRoleRepository.save(activityRole);
+      }
+      if (request.getEmails().size() > 0) {
+        for (String email : request.getEmails()) {
+          Profile profile = profileRepository.findByEmails_address(email);
+          if (profile == null) {
+            return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+          }
+          ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+          if (role == null) {
+            ActivityRole activityRole = new ActivityRole();
+            activityRole.setActivity(activity);
+            activityRole.setProfile(profile);
+            activityRole.setActivityRoleType(ActivityRoleType.Access);
+            activityRoleRepository.save(activityRole);
+          }
+        }
       }
 
       return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
-  }
-
-  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/visibility")
-  public ResponseEntity deleteVisibility(
-          @PathVariable int profileId,
-          @PathVariable int activityId,
-          @RequestBody @Valid EditActivityVisibilityRequest request,
-          HttpSession session) {
-    Object id = session.getAttribute("id");
-
-    if (id == null) {
-      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-    }
-
-    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-    if (optionalActivity.isPresent()) {
-      Activity activity = optionalActivity.get();
-      if (!activity.getProfile().getId().equals(profileId)) {
-        return new ResponseEntity<>(
-                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-      }
-
-      for (String email : request.getEmails()) {
-        Profile profile = profileRepository.findByEmails_address(email);
-        if (profile == null) {
-          return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
-        }
-        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
-        if (activityRole == null) {
-          return new ResponseEntity("Activity role does not exist", HttpStatus.NOT_FOUND);
-        }
-        activityRoleRepository.delete(activityRole);
-      }
-
-      return new ResponseEntity<>("Activity visibility has been removed", HttpStatus.OK);
-    }
-    return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
   }
 }
