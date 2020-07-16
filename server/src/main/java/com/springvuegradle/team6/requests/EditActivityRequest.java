@@ -3,6 +3,7 @@ package com.springvuegradle.team6.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityType;
+import com.springvuegradle.team6.models.Tag;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.NamedLocationRepository;
 
@@ -38,16 +39,27 @@ public class EditActivityRequest {
   @JsonProperty("end_time")
   public String endTime;
 
+  @JsonProperty("hashtags")
+  @Size(max = 30)
+  public Set<Tag> hashTags;
+
   @JsonProperty("location")
   @Valid
   public LocationUpdateRequest location;
 
+  @JsonProperty("visibility")
+
+  public String visibility;
+
   public void editActivityFromRequest(
-      Activity activity, NamedLocationRepository locationRepository) {
+          Activity activity, NamedLocationRepository locationRepository) {
     activity.setActivityName(this.activityName);
     activity.setDescription(this.description);
     activity.setActivityTypes(this.activityTypes);
     activity.setContinuous(this.continuous);
+    if (this.visibility != null) {
+      activity.setVisibilityType(this.visibility);
+    }
     if (activity.isContinuous()) {
       activity.setStartTime(null);
       activity.setEndTime(null);
@@ -57,22 +69,8 @@ public class EditActivityRequest {
     }
     if (this.location != null) {
       NamedLocation location =
-          new NamedLocation(this.location.country, this.location.state, this.location.city);
+              new NamedLocation(this.location.country, this.location.state, this.location.city);
       activity.setLocation(location);
-
-      if (activity.getLocation() != null) {
-        Optional<NamedLocation> optionalNamedLocation =
-                locationRepository.findByCountryAndStateAndCity(
-                        activity.getLocation().getCountry(),
-                        activity.getLocation().getState(),
-                        activity.getLocation().getCity());
-        if (optionalNamedLocation.isPresent()) {
-          activity.setLocation(optionalNamedLocation.get());
-        } else {
-          locationRepository.save(location);
-          activity.setLocation(location);
-        }
-      }
     }
   }
 }

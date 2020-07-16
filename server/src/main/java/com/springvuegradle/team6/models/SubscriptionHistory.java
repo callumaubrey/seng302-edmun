@@ -20,6 +20,19 @@ public class SubscriptionHistory {
     this.endDateTime = null;
   }
 
+  /**
+   * Constructor taking the profile and activity involved in the subscription
+   * also sets start date to now
+   * @param profile the profile that is subscribing to an activity
+   * @param activity the activity being subscribed to
+   */
+  public SubscriptionHistory(Profile profile, Activity activity) {
+    this.profile = profile;
+    this.activity = activity;
+    this.startDateTime = LocalDateTime.now();
+    this.endDateTime = null;
+  }
+
   /** Each history item has its own id */
   @Id @GeneratedValue private Integer id;
 

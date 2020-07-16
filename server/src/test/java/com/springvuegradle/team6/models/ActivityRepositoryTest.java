@@ -31,6 +31,8 @@ public class ActivityRepositoryTest {
 
   @Autowired private ProfileRepository profileRepository;
 
+  @Autowired private TagRepository tagRepository;
+
   private Profile profile;
 
   @BeforeEach
@@ -91,5 +93,37 @@ public class ActivityRepositoryTest {
     expectedResult.add(activity1);
     expectedResult.add(activity2);
     org.junit.jupiter.api.Assertions.assertTrue(expectedResult.containsAll(result));
+  }
+
+  @Test
+  void testGetActivityTags() {
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Tag cold = new Tag();
+    cold.setName("cold");
+    cold = tagRepository.save(cold);
+
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cold);
+    tags.add(cool);
+    activity.setTags(tags);
+    activity = activityRepository.save(activity);
+
+    Set<String> expectedResult = new HashSet<>();
+
+    expectedResult.add("cold");
+    expectedResult.add("cool");
+    Set<Tag> result = activityRepository.getActivityTags(activity.getId());
+    Set<String> resultStrings = new HashSet<>();
+    for (Tag tag: result) {
+      resultStrings.add(tag.getName());
+    }
+    org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
   }
 }

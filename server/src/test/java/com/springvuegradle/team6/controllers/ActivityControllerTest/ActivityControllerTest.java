@@ -1,9 +1,6 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -29,13 +26,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class ActivityControllerTest {
+class ActivityControllerTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
   private int id;
 
@@ -407,7 +407,7 @@ public class ActivityControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString()
-            .contains("contains characters other than alphanumeric characters"));
+            .contains("contains characters other than alphanumeric characters and underscores"));
   }
 
   @Test
@@ -462,6 +462,54 @@ public class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
     responseString.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createActivityWithVisibilityTypePublicReturnStatusOk() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Tramping\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": \"true\",\n" +
+            "  \"visibility\": \"public\"\n" +
+            "}";
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityWithoutVisibilityTypeReturnStatusOkAndVisibilityTypeDefaultsToNone() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Running\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true,\n" +
+            "  \"hashtags\": [\n" +
+            "    \"#a1\"\n" +
+            "  ]\n" +
+            "}";
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().isCreated());
+    Assert.assertSame(VisibilityType.Public, activityRepository
+            .findById(Integer.parseInt(responseString.andReturn().getResponse().getContentAsString()))
+            .get().getVisibilityType());
+
   }
 
   @Test
@@ -592,6 +640,6 @@ public class ActivityControllerTest {
                 .session(session))
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("Activity is archived"));
-    ;
   }
+
 }

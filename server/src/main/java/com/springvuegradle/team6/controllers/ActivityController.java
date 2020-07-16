@@ -147,7 +147,7 @@ public class ActivityController {
    * @return null if there are no errors, otherwise return ResponseEntity with error message and
    *     status code
    */
-  public ResponseEntity<String> checkActivityDateTime(Activity activity) {
+  public ResponseEntity<String> checkCreateActivityDateTime(Activity activity) {
     if (!activity.isContinuous()) {
       if (activity.getStartTime() == null) {
         return new ResponseEntity<>(
@@ -200,6 +200,76 @@ public class ActivityController {
   }
 
   /**
+   * Helper function used by editActivity to check if the date/time provided for start and end date
+   * are valid
+   *
+   * @param activity The activity that the user wants to create or update
+   * @return null if there are no errors, otherwise return ResponseEntity with error message and
+   *     status code
+   */
+  public ResponseEntity<String> checkEditActivityDateTime(EditActivityRequest request, Activity activity) {
+    if (!request.continuous) {
+      if (request.startTime == null) {
+        return new ResponseEntity<>(
+            "Start date/time cannot be empty for a non continuous activity",
+            HttpStatus.BAD_REQUEST);
+      }
+      if (request.endTime == null) {
+        return new ResponseEntity<>(
+            "End date/time cannot be empty for a non continuous activity", HttpStatus.BAD_REQUEST);
+      }
+
+      // Start and End date/time validations
+      LocalDateTime newStartDateTime;
+      LocalDateTime oldStartDateTime;
+      LocalDateTime endDateTime;
+
+      // Checks if new start time is before now.
+      try {
+        newStartDateTime =
+            LocalDateTime.parse(
+                request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        oldStartDateTime =
+            LocalDateTime.parse(
+                activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        // If the activity has already begun but the author changes the activity name, then it
+        // needs to make sure the to accept the old start time which is before now
+        if (newStartDateTime.isBefore(LocalDateTime.now())
+            && !newStartDateTime.isEqual(oldStartDateTime)) {
+          return new ResponseEntity(
+              "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+        }
+      } catch (DateTimeParseException e) {
+        return new ResponseEntity(
+            "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+            HttpStatus.BAD_REQUEST);
+      }
+
+      // Checks if end time is before now.
+      try {
+        endDateTime =
+            LocalDateTime.parse(
+                request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        if (endDateTime.isBefore(LocalDateTime.now())) {
+          return new ResponseEntity(
+              "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+        }
+      } catch (DateTimeParseException e) {
+        return new ResponseEntity(
+            "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
+            HttpStatus.BAD_REQUEST);
+      }
+
+      if (!(newStartDateTime.isEqual(endDateTime)) && newStartDateTime.isAfter(endDateTime)) {
+        // Checks if start time is after end time.
+        return new ResponseEntity(
+            "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
+      }
+    }
+    return null;
+  }
+
+  /**
    * Helper function to check if tags associated to the activity is not more that 30 and check if
    * each tag only contains alphanumeric characters
    *
@@ -215,12 +285,12 @@ public class ActivityController {
       for (Tag tag : hashtags) {
         formatHashtagToStoreInDb(tag);
 
-        // check if tagname only contains alphanumeric characters
-        if (!tag.getName().matches("[A-Za-z0-9]+")) {
+        // check if tag name only contains alphanumeric characters and underscores
+        if (!tag.getName().matches("^[a-zA-Z0-9_]*$")) {
           return new ResponseEntity<>(
               "Tag name "
                   + tag.getName()
-                  + " contains characters other than alphanumeric characters",
+                  + " contains characters other than alphanumeric characters and underscores",
               HttpStatus.BAD_REQUEST);
         }
       }
@@ -279,20 +349,84 @@ public class ActivityController {
         locationRepository.save(activity.getLocation());
       }
     }
-    ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(activity);
+    ResponseEntity<String> checkActivityDateTimeResponse = checkCreateActivityDateTime(activity);
     if (checkActivityDateTimeResponse != null) {
       return checkActivityDateTimeResponse;
     }
 
-    Set<Tag> hashtags = activity.getTags();
-    if (hashtags != null) {
-      for (Tag tag : hashtags) {
-        tagRepository.save(tag);
+    Set<Tag> hashtags = new HashSet<>();
+    if (activity.getTags() != null) {
+      for (Tag tag : activity.getTags()) {
+        Tag dbTag = tagRepository.findByName(tag.getName());
+        if (dbTag == null) {
+          tag = tagRepository.save(tag);
+          hashtags.add(tag);
+        } else {
+          hashtags.add(dbTag);
+        }
       }
     }
+    activity.setTags(hashtags);
 
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
+  }
+
+  /**
+   * Given a HTTP request, change the values of activity to those that are in request
+   *
+   * @param request The request containing changes to activity
+   * @param activity The activity that is currently present in the database
+   */
+  public void editActivityFromRequest(EditActivityRequest request, Activity activity) {
+    activity.setActivityName(request.activityName);
+    activity.setDescription(request.description);
+    activity.setActivityTypes(request.activityTypes);
+    activity.setContinuous(request.continuous);
+    if (request.visibility != null) {
+      activity.setVisibilityType(request.visibility);
+    }
+    if (activity.isContinuous()) {
+      activity.setStartTime(null);
+      activity.setEndTime(null);
+    } else {
+      activity.setStartTime(request.startTime);
+      activity.setEndTime(request.endTime);
+    }
+    if (request.location != null) {
+      NamedLocation location =
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
+      activity.setLocation(location);
+
+      if (activity.getLocation() != null) {
+        Optional<NamedLocation> optionalNamedLocation =
+            locationRepository.findByCountryAndStateAndCity(
+                activity.getLocation().getCountry(),
+                activity.getLocation().getState(),
+                activity.getLocation().getCity());
+        if (optionalNamedLocation.isPresent()) {
+          activity.setLocation(optionalNamedLocation.get());
+        } else {
+          locationRepository.save(location);
+          activity.setLocation(location);
+        }
+      }
+    }
+
+    Set<Tag> hashtags = new HashSet<>();
+    if (request.hashTags != null) {
+      for (Tag tag : request.hashTags) {
+        Tag dbTag = tagRepository.findByName(tag.getName());
+        if (dbTag == null) {
+          tag = tagRepository.save(tag);
+          hashtags.add(tag);
+        } else {
+          hashtags.add(dbTag);
+        }
+      }
+      activity.setTags(hashtags);
+    }
   }
 
   /**
@@ -310,10 +444,10 @@ public class ActivityController {
       @Valid @RequestBody EditActivityRequest request,
       HttpSession session) {
 
-    Optional<Activity> activity = activityRepository.findById(activityId);
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
-    if (activity.isPresent()) {
-      Activity edit = activity.get();
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
 
       // Check if authorised
       ResponseEntity<String> authorisedResponse =
@@ -323,81 +457,27 @@ public class ActivityController {
       }
 
       ResponseEntity<String> activityAuthorizedResponse =
-          this.checkAuthorisedToEditActivity(edit, session);
+          this.checkAuthorisedToEditActivity(activity, session);
       if (activityAuthorizedResponse != null) {
         return activityAuthorizedResponse;
       }
 
-      request.editActivityFromRequest(edit, locationRepository);
+      // Check hashtags
+      ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.hashTags);
+      if (checkHashtagsValidityResponse != null) {
+        return checkHashtagsValidityResponse;
+      }
 
-      ResponseEntity<String> checkActivityDateTimeResponse = checkActivityDateTime(edit);
+      ResponseEntity<String> checkActivityDateTimeResponse = checkEditActivityDateTime(request, activity);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
       }
-      if (!edit.isContinuous()) {
-        if (edit.getStartTime() == null) {
-          return new ResponseEntity<>(
-              "Start date/time cannot be empty for a non continuous activity",
-              HttpStatus.BAD_REQUEST);
-        }
-        if (edit.getEndTime() == null) {
-          return new ResponseEntity<>(
-              "End date/time cannot be empty for a non continuous activity",
-              HttpStatus.BAD_REQUEST);
-        }
 
-        // Start and End date/time validations
-        LocalDateTime newStartDateTime;
-        LocalDateTime oldStartDateTime;
-        LocalDateTime endDateTime;
+      editActivityFromRequest(request, activity);
 
-        // Checks if new start time is before now.
-        try {
-          newStartDateTime =
-              LocalDateTime.parse(
-                  edit.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          oldStartDateTime =
-              LocalDateTime.parse(
-                  activity.get().getStartTime(),
-                  DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          // If the activity has already begun but the author changes the activity name, then it
-          // needs to make sure the to accept the old start time which is before now
-          if (newStartDateTime.isBefore(LocalDateTime.now())
-              && !newStartDateTime.isEqual(oldStartDateTime)) {
-            return new ResponseEntity(
-                "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
-          }
-        } catch (DateTimeParseException e) {
-          System.out.println(e);
-          return new ResponseEntity(
-              "Start date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-              HttpStatus.BAD_REQUEST);
-        }
+      activityRepository.save(activity);
 
-        // Checks if end time is before now.
-        try {
-          endDateTime =
-              LocalDateTime.parse(
-                  edit.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-          if (endDateTime.isBefore(LocalDateTime.now())) {
-            return new ResponseEntity(
-                "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
-          }
-        } catch (DateTimeParseException e) {
-          return new ResponseEntity(
-              "End date/time must be in correct format of yyyy-MM-dd'T'HH:mm:ssZ",
-              HttpStatus.BAD_REQUEST);
-        }
-
-        if (!(newStartDateTime.isEqual(endDateTime)) && newStartDateTime.isAfter(endDateTime)) {
-          // Checks if start time is after end time.
-          return new ResponseEntity(
-              "Start date/time cannot be after End date/time", HttpStatus.BAD_REQUEST);
-        }
-      }
-      activityRepository.save(edit);
-
-      return ResponseEntity.ok("Activity: " + edit.getActivityName() + " was updated.");
+      return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }

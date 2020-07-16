@@ -349,7 +349,6 @@
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/activities/' + this.activityId)
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.form.name = response.data.activityName;
                         currentObj.form.description = response.data.description;
                         currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -370,6 +369,12 @@
                             currentObj.form.location += currentObj.locationData.country;
 
                         }
+                        if (response.data.tags.length > 0) {
+                            for (var i = 0; i < response.data.tags.length; i++) {
+                                currentObj.hashtag.values.push("#" + response.data.tags[i].name);
+                            }
+                        }
+                        currentObj.hashtag.values.sort();
                     })
                     .catch(function (error) {
                         console.log(error.response);
@@ -395,6 +400,7 @@
                 this.form.selectedActivityTypes.splice(index, 1);
             },
             onSubmit() {
+                console.log(this.hashtag.values);
                 this.activityErrorMessage = "";
                 this.activityUpdateMessage = "";
                 this.$v.form.$touch();
@@ -413,7 +419,8 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.locationData
+                        location: this.locationData,
+                        hashtags: this.hashtag.values
                     })
                         .then(function (response) {
                             console.log(response);

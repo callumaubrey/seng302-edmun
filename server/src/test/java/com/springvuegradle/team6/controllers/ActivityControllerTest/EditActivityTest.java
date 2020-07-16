@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
+import com.springvuegradle.team6.models.*;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -20,9 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class EditActivityTest {
+class EditActivityTest {
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
+
+  @Autowired private ActivityRepository activityRepository;
+
+  @Autowired private ProfileRepository profileRepository;
 
   private int id;
 
@@ -54,28 +65,18 @@ public class EditActivityTest {
             .getContentAsString();
     id = Integer.parseInt(body);
 
-    String activityJson =
-        "{\n"
-            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Walk\"\n"
-            + "  ],\n"
-            + "  \"continuous\": false,\n"
-            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
-            + "}";
-    // Creates an activity
-    String activityBody =
-        mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    activityId = Integer.parseInt(activityBody);
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTime("2000-04-28T15:50:41+1300");
+    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity = activityRepository.save(activity);
+    activityId = activity.getId();
   }
 
   @Test
@@ -147,7 +148,7 @@ public class EditActivityTest {
   }
 
   @Test
-  void editActivityWithStartDateBeforeNowReturnStatusBadRequest() throws Exception {
+  void editActivityWithStartDateBeforeNowAndUnchangedReturnStatusOK() throws Exception {
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -157,6 +158,29 @@ public class EditActivityTest {
             + "  ],\n"
             + "  \"continuous\": false,\n"
             + "  \"start_time\": \"2000-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void editActivityWithStartDateBeforeNowChangedReturnStatusBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2000-04-28T15:51:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
             + "}";
 
@@ -311,18 +335,47 @@ public class EditActivityTest {
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
             + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                + "  \"activity_type\":[ \n"
+                + "    \"Walk\"\n"
+                + "  ],\n"
+                + "  \"continuous\": false,\n"
+                + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+                + " \"location\": {\n"
+                + " \t\"city\": \"Christchurch\",\n"
+                + " \t\"country\": \"New Zealand\"\n"
+                + "  }"
+                + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void editActivityWithHashtagReturnStatusOKAndActivityIsUpdated() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
             + "  \"activity_type\":[ \n"
             + "    \"Walk\"\n"
             + "  ],\n"
             + "  \"continuous\": false,\n"
             + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-            + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
-            + "  }"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\"\n"
+            + "  ]\n"
             + "}";
-
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
@@ -330,5 +383,141 @@ public class EditActivityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
+    Set<String> expectedResult = new HashSet<>();
+
+    expectedResult.add("a1");
+    expectedResult.add("a2");
+    expectedResult.add("a3");
+    expectedResult.add("a4");
+    expectedResult.add("a5");
+
+    Set<Tag> result = activityRepository.getActivityTags(activityId);
+    Set<String> resultStrings = new HashSet<>();
+    for (Tag tag : result) {
+      resultStrings.add(tag.getName());
+    }
+    System.out.println("Flag");
+    System.out.println(resultStrings);
+    System.out.println(expectedResult);
+    org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
+  }
+
+  @Test
+  void editActivityWithInvalidHashtagReturnStatusIsBadRequestAndErrorMessageIsReturned()
+      throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1 123\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\"\n"
+            + "  ]\n"
+            + "}";
+    ResultActions responseString =
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
+    responseString.andExpect(status().isBadRequest());
+    Assert.assertTrue(
+        responseString
+            .andReturn()
+            .getResponse()
+            .getContentAsString()
+            .contains("contains characters other than alphanumeric characters and underscores"));
+  }
+
+  @Test
+  void editActivityWithMoreThan30HashtagReturnStatusIsBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\",\n"
+            + "    \"#a6\",\n"
+            + "    \"#a7\",\n"
+            + "    \"#a8\",\n"
+            + "    \"#a9\",\n"
+            + "    \"#a10\",\n"
+            + "    \"#a11\",\n"
+            + "    \"#a12\",\n"
+            + "    \"#a13\",\n"
+            + "    \"#a14\",\n"
+            + "    \"#a15\",\n"
+            + "    \"#a16\",\n"
+            + "    \"#a17\",\n"
+            + "    \"#a18\",\n"
+            + "    \"#a19\",\n"
+            + "    \"#a20\",\n"
+            + "    \"#a21\",\n"
+            + "    \"#a22\",\n"
+            + "    \"#a23\",\n"
+            + "    \"#a24\",\n"
+            + "    \"#a25\",\n"
+            + "    \"#a26\",\n"
+            + "    \"#a27\",\n"
+            + "    \"#a28\",\n"
+            + "    \"#a29\",\n"
+            + "    \"#a30\",\n"
+            + "    \"#a31\"\n"
+            + "  ]\n"
+            + "}";
+    ResultActions responseString =
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
+    responseString.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged() throws Exception {
+    String jsonString =
+            "{\n" +
+                    "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                    "  \"activity_type\":[ \n" +
+                    "    \"Walk\"\n" +
+                    "  ],\n" +
+                    "  \"continuous\": false,\n" +
+                    "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
+                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
+                    "  \"visibility\": \"private\"\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Assert.assertSame(VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
 }
