@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.Activity;
+import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.ProfileRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -15,13 +17,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
@@ -193,7 +194,7 @@ public class ActivityFollowingFeatureSteps {
                             .session(session));
     String response =
             mvc.perform(MockMvcRequestBuilders
-                    .get("/profiles/"+ profileId + "/subscriptions/activities/" + activity.getId())
+                    .get("/profiles/" + profileId + "/subscriptions/activities/" + activity.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session)
             )
@@ -202,5 +203,27 @@ public class ActivityFollowingFeatureSteps {
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals(false, obj.get("subscribed"));
+  }
+
+  @When("the activity {string} has its name changed to {string}")
+  public void the_activity_has_its_name_changed_to(String activityNameBefore, String activityNameAfter) throws Exception {
+    String jsonString;
+    jsonString = "{\n" +
+            "  \"activity_name\": \"" + activityNameAfter + "\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true\n" +
+            "}";
+
+    String editActivityUrl = "/profiles/" + profileId + "/activities/" + activityId;
+    mvc.perform(
+            MockMvcRequestBuilders.put(editActivityUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
   }
 }
