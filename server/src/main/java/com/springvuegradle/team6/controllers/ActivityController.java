@@ -611,28 +611,37 @@ public class ActivityController {
 
   @DeleteMapping("/profiles/{profileId}/activities/{activityId}/visibility")
   public ResponseEntity deleteVisibility(
-      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestBody @Valid EditActivityVisibilityRequest request,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
-      ResponseEntity<String> checkAuthorisedResponse =
-          UserSecurityService.checkAuthorised(
-              activity.getProfile().getId(), session, profileRepository);
-      if (checkAuthorisedResponse != null) {
-        return checkAuthorisedResponse;
-      }
-      Profile profile = profileRepository.findById(profileId);
-      if (profile == null) {
-        return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+      if (!activity.getProfile().getId().equals(profileId)) {
+        return new ResponseEntity<>(
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
 
-      ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
-      if (activityRole == null) {
-        return new ResponseEntity("This user does not have access", HttpStatus.NOT_FOUND);
+      for (String email : request.getEmails()) {
+        Profile profile = profileRepository.findByEmails_address(email);
+        if (profile == null) {
+          return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+        }
+        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+        if (activityRole == null) {
+          return new ResponseEntity("Activity role does not exist", HttpStatus.NOT_FOUND);
+        }
+        activityRoleRepository.delete(activityRole);
       }
 
-      activityRoleRepository.delete(activityRole);
-      return new ResponseEntity("Activity role deleted", HttpStatus.OK);
+      return new ResponseEntity<>("Activity visibility has been removed", HttpStatus.OK);
     }
     return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
   }
