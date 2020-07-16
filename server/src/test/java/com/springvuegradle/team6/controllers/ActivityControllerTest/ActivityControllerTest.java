@@ -642,4 +642,72 @@ class ActivityControllerTest {
         .andExpect(content().string("Activity is archived"));
   }
 
+  @Test
+  void getActivityPrivateAccessAnotherUserTriesToView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"john@pockets.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError())
+            .andExpect(content().string("Activity is private"));
+  }
+
+  @Test
+  void getPrivateActivityOwnerCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void getPublicActivityAnyoneCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("public");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
 }
