@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
@@ -433,16 +434,16 @@ public class ActivityController {
    * Put Request to update an activity for the given profile based on the request
    *
    * @param profileId The id of the author of the activity
-   * @param request The request with values to update the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to update the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}")
   public ResponseEntity<String> editActivity(
-      @PathVariable Integer profileId,
-      @PathVariable Integer activityId,
-      @Valid @RequestBody EditActivityRequest request,
-      HttpSession session) {
+          @PathVariable Integer profileId,
+          @PathVariable Integer activityId,
+          @Valid @RequestBody EditActivityRequest request,
+          HttpSession session) throws JsonProcessingException {
 
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
@@ -451,7 +452,7 @@ public class ActivityController {
 
       // Check if authorised
       ResponseEntity<String> authorisedResponse =
-          UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
@@ -473,9 +474,21 @@ public class ActivityController {
         return checkActivityDateTimeResponse;
       }
 
-      editActivityFromRequest(request, activity);
 
+      ObjectMapper mapper = new ObjectMapper();
+      String preJson = mapper.writeValueAsString(activity);
+
+      editActivityFromRequest(request, activity);
       activityRepository.save(activity);
+
+      String postJson = mapper.writeValueAsString(activity);
+      if (!preJson.equals(postJson)) {
+        String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
+        ActivityHistory activityHistory = new ActivityHistory(activity,
+                "Activity '" + activity.getActivityName() + "' was updated by " + editorName);
+        activityHistoryRepository.save(activityHistory);
+      }
+
 
       return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
@@ -509,7 +522,8 @@ public class ActivityController {
       activity.setArchived(true);
       activityRepository.save(activity);
 
-      String activityArchivedMessage = "Activity '" + activity.getActivityName() + "' is archived";
+      String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
+      String activityArchivedMessage = "Activity '" + activity.getActivityName() + "' was archived by " + editorName;
       ActivityHistory activityHistory = new ActivityHistory(activity, activityArchivedMessage);
       activityHistoryRepository.save(activityHistory);
 

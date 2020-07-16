@@ -44,8 +44,8 @@ Feature: Following an activity
   Scenario: Home feed changes
     Given I create an activity "My cool activity"
     And User follows the activity "My cool activity"
-    When the activity "My cool activity" has its description changed to "My coolest activity"
+    When the activity "My cool activity" has its name changed to "My coolest activity"
     Then User with email "poly@pocket.com" home feed shows
-      | Activity Name |
-      | My cool activity |
-      | My cool activity |
+      | Activity Name       |
+      | My cool activity    |
+      | My coolest activity |
