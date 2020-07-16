@@ -1,6 +1,6 @@
 package com.springvuegradle.team6.models;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,16 +8,20 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class SubscriptionHistoryRepositoryTest {
+class SubscriptionHistoryRepositoryTest {
 
-  @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
-  @Autowired private ActivityRepository activityRepository;
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private SubscriptionHistoryRepository subscriptionHistoryRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
   @Test
   void testSingleSubscriptionFindByProfile() {
@@ -51,7 +55,7 @@ public class SubscriptionHistoryRepositoryTest {
     org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
   }
 
-  @Ignore
+  @Disabled
   @Test
   void testSingleSubscriptionFindByActivity() {
     Set<Email> emails = new HashSet<>();
