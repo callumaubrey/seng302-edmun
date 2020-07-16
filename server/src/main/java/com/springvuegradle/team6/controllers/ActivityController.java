@@ -383,6 +383,9 @@ public class ActivityController {
     activity.setDescription(request.description);
     activity.setActivityTypes(request.activityTypes);
     activity.setContinuous(request.continuous);
+    if (request.visibility != null) {
+      activity.setVisibilityType(request.visibility);
+    }
     if (activity.isContinuous()) {
       activity.setStartTime(null);
       activity.setEndTime(null);
