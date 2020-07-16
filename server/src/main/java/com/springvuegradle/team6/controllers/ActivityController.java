@@ -390,18 +390,22 @@ public class ActivityController {
       activity.setStartTime(request.startTime);
       activity.setEndTime(request.endTime);
     }
+    if (request.visibility != null) {
+      activity.setVisibilityType(request.visibility);
+    }
+
     if (request.location != null) {
       NamedLocation location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
+              new NamedLocation(
+                      request.location.country, request.location.state, request.location.city);
       activity.setLocation(location);
 
       if (activity.getLocation() != null) {
         Optional<NamedLocation> optionalNamedLocation =
-            locationRepository.findByCountryAndStateAndCity(
-                activity.getLocation().getCountry(),
-                activity.getLocation().getState(),
-                activity.getLocation().getCity());
+                locationRepository.findByCountryAndStateAndCity(
+                        activity.getLocation().getCountry(),
+                        activity.getLocation().getState(),
+                        activity.getLocation().getCity());
         if (optionalNamedLocation.isPresent()) {
           activity.setLocation(optionalNamedLocation.get());
         } else {
