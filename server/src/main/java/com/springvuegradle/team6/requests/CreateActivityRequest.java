@@ -3,6 +3,7 @@ package com.springvuegradle.team6.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.Tag;
+import com.springvuegradle.team6.models.VisibilityType;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -41,6 +42,9 @@ public class CreateActivityRequest {
   @JsonProperty("location")
   @Valid
   public LocationUpdateRequest location;
+
+  @JsonProperty("visibility")
+  public String visibility;
 
   public LocationUpdateRequest getLocation() {
     return location;
