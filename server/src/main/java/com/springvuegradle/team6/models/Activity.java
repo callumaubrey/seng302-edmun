@@ -1,6 +1,5 @@
 package com.springvuegradle.team6.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
