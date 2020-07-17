@@ -16,4 +16,6 @@ public interface ProfileRepository
   boolean existsByEmailsContaining(Email email);
 
   Integer removeById(int id);
+
+  Profile findByEmail_Address(String address);
 }
