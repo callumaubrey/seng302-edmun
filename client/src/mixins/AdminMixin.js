@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from '../Api'
 
 
 export default {
@@ -7,13 +7,13 @@ export default {
     },
     methods: {
         getUserRoles: function () {
-            return axios.get("http://localhost:9499/profiles/role")
+            api.getProfileRoles()
                 .then(function (response) {
                     return response.data;
                 })
         },
         checkUserIsAdmin: function () {
-            return this.getUserRoles()
+            return api.getProfileRoles()
                 .then((roles) => {
                     if (roles) {
                         for (let i = 0; i < roles.length; i++) {
