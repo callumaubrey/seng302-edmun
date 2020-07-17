@@ -1,7 +1,13 @@
 <template>
     <div id = 'app' v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
-        <div class="container">
+        <div v-if="archived">
+            <h1 align="center">This activity has been deleted</h1>
+        </div>
+        <div v-else-if="notFound">
+            <h1 align="center">This activity does not exist</h1>
+        </div>
+        <div v-else-if="!locationDataLoading" class="container" >
             <div>
                 <b-row>
                     <b-img center rounded= "circle" width ="150px" height="150px" src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg" alt="Center image"></b-img>
@@ -101,7 +107,9 @@
                 location: null,
                 activityOwner: null,
                 locationString: "",
-                locationDataLoading: true
+                locationDataLoading: true,
+                archived: false,
+                notFound: false
             }
         },
         mounted() {
@@ -174,32 +182,40 @@
                 axios.defaults.withCredentials = true;
                 axios.get('http://localhost:9499/activities/' + activityId)
                     .then((res) => {
-                        vueObj.activityOwner = res.data.profile;
-                        vueObj.activityName = res.data.activityName;
-                        vueObj.description = res.data.description;
-                        vueObj.activityTypes = res.data.activityTypes;
-                        vueObj.continuous = res.data.continuous;
-                        vueObj.startTime = res.data.startTime;
-                        vueObj.endTime = res.data.endTime;
-                        vueObj.location = res.data.location;
-                        if (vueObj.location != null) {
-                            vueObj.locationString = vueObj.location.city + ", ";
-                            if (vueObj.location.state) {
-                                vueObj.locationString += vueObj.location.state + ", ";
+                        if (res.data =="Activity is archived") {
+                            this.archived = true;
+                        } else {
+                            vueObj.activityOwner = res.data.profile;
+                            vueObj.activityName = res.data.activityName;
+                            vueObj.description = res.data.description;
+                            vueObj.activityTypes = res.data.activityTypes;
+                            vueObj.continuous = res.data.continuous;
+                            vueObj.startTime = res.data.startTime;
+                            vueObj.endTime = res.data.endTime;
+                            vueObj.location = res.data.location;
+                            if (vueObj.location != null) {
+                                vueObj.locationString = vueObj.location.city + ", ";
+                                if (vueObj.location.state) {
+                                    vueObj.locationString += vueObj.location.state + ", ";
+                                }
+                                vueObj.locationString += vueObj.location.country;
                             }
-                            vueObj.locationString += vueObj.location.country;
+                            if (vueObj.activityOwner.id != profileId) {
+                                vueObj.$router.push('/profiles/' + profileId);
+                            }
+                            if (!vueObj.continuous) {
+                                this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
+                            }
+                            this.getActivityTypeDisplay(vueObj);
                         }
-                        if (vueObj.activityOwner.id != profileId) {
+                        vueObj.locationDataLoading = false;
+                    }).catch((err) => {
+                        if (err.response && err.response.status == 404) {
+                            this.notFound = true;
+                        } else {
+                            let profileId = this.loggedInId;
                             vueObj.$router.push('/profiles/' + profileId);
                         }
-                        if (!vueObj.continuous) {
-                            this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
-                        }
-                        this.getActivityTypeDisplay(vueObj);
-                        vueObj.locationDataLoading = false;
-                    }).catch(() => {
-                    let profileId = this.$route.params.id;
-                    vueObj.$router.push('/profiles/' + profileId);
                 });
             },
             getCorrectDateFormat: function (start, end, currentObj) {

@@ -543,6 +543,30 @@ public class ActivityController {
   }
 
   /**
+   * Given the activity id, find the creator of the activity and return the id of the creator
+   * @param activityId id of the activity
+   * @return the id of the creator of the activity
+   */
+  @GetMapping("/activities/{activityId}/creatorId")
+  public ResponseEntity<String> getActivityCreator(@PathVariable int activityId) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activity.getProfile().getId());
+      return ResponseEntity.ok(postJson);
+    } catch (Exception e) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
    * Get all activity that a user has created by their userID that is not archived
    *
    * @param profileId The id of the user profile

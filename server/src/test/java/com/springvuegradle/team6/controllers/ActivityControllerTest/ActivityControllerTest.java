@@ -513,6 +513,33 @@ class ActivityControllerTest {
   }
 
   @Test
+  void getActivityCreatorReturnStatusOk() throws Exception {
+    Profile profile1 = profileRepository.findById(id);
+    Activity testActivity1 = new Activity();
+    testActivity1.setActivityName("Test");
+    testActivity1.setProfile(profile1);
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setProfile(profile1);
+    activityRepository.save(testActivity2);
+
+    // ID to check for
+    String activity1Id = testActivity1.getId().toString();
+
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/activities/" + activity1Id + "/creatorId")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    org.junit.jupiter.api.Assertions.assertEquals(((Integer) id).toString(), response);
+  }
+
+  @Test
   void getActivityById() throws Exception {
     Profile profile1 = profileRepository.findById(id);
     Activity testActivity1 = new Activity();
