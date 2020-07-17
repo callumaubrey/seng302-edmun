@@ -3,7 +3,6 @@ package com.springvuegradle.team6.steps;
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.Tag;
-import com.springvuegradle.team6.models.TagRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -13,17 +12,12 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,8 +38,6 @@ public class ActivityHashtagFeatureSteps {
 
   @Autowired private MockMvc mvc;
 
-  @Autowired
-  private LoginSteps loginSteps;
 
   @Given("there are no activities in the database")
   public void there_are_no_activities_in_the_database() {

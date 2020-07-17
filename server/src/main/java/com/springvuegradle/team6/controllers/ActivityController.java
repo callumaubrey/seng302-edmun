@@ -381,6 +381,12 @@ public class ActivityController {
     activity.setCreationDate(LocalDateTime.now());
 
     activityRepository.save(activity);
+
+    ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
+    if (editActivityRolesResponse != null) {
+      return editActivityRolesResponse;
+    }
+
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
 
@@ -486,8 +492,12 @@ public class ActivityController {
       }
 
       editActivityFromRequest(request, activity);
-
       activityRepository.save(activity);
+
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activityId);
+      if (editActivityRolesResponse != null) {
+        return editActivityRolesResponse;
+      }
 
       return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
@@ -598,12 +608,56 @@ public class ActivityController {
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
 
+
+  /**
+   * Increases the activity role of each accessor to Access, and decreases the activity role of standard user if
+   * they no longer belongs to the list of accessor
+   *
+   * @param emails     list of accessor emails
+   * @param activity   the activity to be edited
+   * @param activityId the activity id to be edited
+   * @return a NOT FOUND response entity is accessor is not found, otherwise return null
+   */
+  private ResponseEntity<String> editActivityRoles(List<String> emails, Activity activity, int activityId) {
+    // Returns if list of accessor is not passed
+    // or visibility type of activity is public (everyone can access) or private (no one can access)
+    if (emails == null || activity.getVisibilityType() == VisibilityType.Public || activity.getVisibilityType() == VisibilityType.Private) {
+      return null;
+    }
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
+    if (activityRoles.size() > 0) {
+      for (var i = 0; i < activityRoles.size(); i++) {
+        Profile profile = activityRoles.get(i).getProfile();
+        if (!(emails.contains(profile.getPrimaryEmail().getAddress()))) {
+          activityRoleRepository.delete(activityRoles.get(i));
+        }
+      }
+    }
+    if (emails.size() > 0) {
+      for (String email : emails) {
+        Profile profile = profileRepository.findByEmails_address(email);
+        if (profile == null) {
+          return new ResponseEntity("User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
+        }
+        ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+        if (role == null) {
+          ActivityRole activityRole = new ActivityRole();
+          activityRole.setActivity(activity);
+          activityRole.setProfile(profile);
+          activityRole.setActivityRoleType(ActivityRoleType.Access);
+          activityRoleRepository.save(activityRole);
+        }
+      }
+    }
+    return null;
+  }
+
   /**
    * Changes the visibility of a users activity
    *
-   * @param profileId The id of the user profile
+   * @param profileId  The id of the user profile
    * @param activityId The id of the activity
-   * @param session The current session of the logged in user
+   * @param session    The current session of the logged in user
    * @return
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}/visibility")
@@ -629,30 +683,9 @@ public class ActivityController {
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
 
-      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
-      if (activityRoles.size() > 0) {
-        for (var i = 0; i < activityRoles.size(); i++) {
-          Profile profile = activityRoles.get(i).getProfile();
-          if (!(request.getEmails().contains(profile.getPrimaryEmail().getAddress()))) {
-            activityRoleRepository.delete(activityRoles.get(i));
-          }
-        }
-      }
-      if (request.getEmails().size() > 0) {
-        for (String email : request.getEmails()) {
-          Profile profile = profileRepository.findByEmails_address(email);
-          if (profile == null) {
-            return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
-          }
-          ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
-          if (role == null) {
-            ActivityRole activityRole = new ActivityRole();
-            activityRole.setActivity(activity);
-            activityRole.setProfile(profile);
-            activityRole.setActivityRoleType(ActivityRoleType.Access);
-            activityRoleRepository.save(activityRole);
-          }
-        }
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
+      if (editActivityRolesResponse != null) {
+        return editActivityRolesResponse;
       }
 
       return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);

@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.Activity;
+import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.ProfileRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -9,40 +11,40 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @DirtiesContext
 public class ActivityFollowingFeatureSteps {
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @Autowired private LoginSteps loginSteps;
+  @Autowired
+  private LoginSteps loginSteps;
 
   private ResultActions mvcResponse;
 
   private String jsonString;
 
   private String activityId;
-
-  @Autowired
-  private LoginSteps loginSteps;
 
   @Given("I create an activity {string}")
   public void i_create_an_activity(String activityName) throws Exception {

@@ -1,37 +1,30 @@
 package com.springvuegradle.team6.models;
 
-import io.cucumber.java.en_old.Ac;
-import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class ActivityRepositoryTest {
+class ActivityRepositoryTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private TagRepository tagRepository;
+  @Autowired
+  private TagRepository tagRepository;
 
   private Profile profile;
 
@@ -92,18 +85,6 @@ public class ActivityRepositoryTest {
     expectedResult.add(activity);
     expectedResult.add(activity1);
     expectedResult.add(activity2);
-    org.junit.jupiter.api.Assertions.assertTrue(expectedResult.containsAll(result));
-  }
-
-  @Test
-  void testFindByActivityNameReturnOneResult() {
-    Activity activity = new Activity();
-    activity.setActivityName("Running");
-    activity.setProfile(profile);
-    activity = activityRepository.save(activity);
-    List<Activity> result = activityRepository.findByActivityName("Running");
-    List<Activity> expectedResult = new ArrayList<>();
-    expectedResult.add(activity);
     org.junit.jupiter.api.Assertions.assertTrue(expectedResult.containsAll(result));
   }
 
