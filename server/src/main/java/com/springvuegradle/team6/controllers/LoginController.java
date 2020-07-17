@@ -15,22 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(
-    origins = {
-      "http://localhost:9000",
-      "http://localhost:9500",
-      "https://csse-s302g7.canterbury.ac.nz/test",
-      "https://csse-s302g7.canterbury.ac.nz/prod"
-    },
-    allowCredentials = "true",
-    allowedHeaders = "*",
-    methods = {
-      RequestMethod.GET,
-      RequestMethod.POST,
-      RequestMethod.DELETE,
-      RequestMethod.PUT,
-      RequestMethod.PATCH
-    })
 @RestController
 @RequestMapping("")
 public class LoginController {
