@@ -1,8 +1,5 @@
 <template>
     <div>
-        <!-- Header -->
-        <FollowerSummary :activity-id="activityId"></FollowerSummary>
-
         <!-- Search Bar -->
         <b-input-group class="mt-2 mb-4">
             <template v-slot:prepend>
@@ -10,14 +7,25 @@
                     <b-icon-search></b-icon-search>
                 </b-input-group-text>
             </template>
-            <b-input id="search" v-model="search_query" @change="runSearchQuery"></b-input>
+            <b-input @change="runSearchQuery" id="search" v-model="searchQuery"></b-input>
         </b-input-group>
+
 
         <!-- Grouped Tabs -->
         <b-card no-body>
             <b-tabs card>
-                <b-tab v-for="group in user_groups" :title="group.name" :key="group.name">
-                    <b-table :items="group.users"></b-table>
+                <b-tab :key="group.name" :title="group.name" v-for="group in userGroups">
+                    <b-table :fields="fields" :items="group.users">
+                        <template v-slot:cell(name)="row">
+                            {{ row.item.name }}
+                        </template>
+
+                        <template v-slot:cell(action)="">
+                            <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
+                                <b-dropdown-item>Organiser</b-dropdown-item>
+                            </b-dropdown>
+                        </template>
+                    </b-table>
                 </b-tab>
             </b-tabs>
         </b-card>
@@ -26,11 +34,9 @@
 </template>
 
 <script>
-    import FollowerSummary from './FollowerSummary'
 
     export default {
         name: "FollowerUserList",
-        components: {FollowerSummary},
 
         // Component Properties
         props: {
@@ -43,11 +49,12 @@
         // Component Members
         data() {
             return {
-                search_query: '',
-                user_groups: []
+                fields: ["Name", "Action"],
+                searchQuery: '',
+                userGroups: [],
+                activityRoles: ["Participant", "Organizer"]
             }
         },
-
         mounted() {
             this.loadData()
         },
@@ -57,32 +64,32 @@
             loadData: function() {
                 // TODO(Connor): Replace with API queries
 
-                this.user_groups = [];
+                this.userGroups = [];
                 this.loadDummyData()
             },
 
             runSearchQuery: function() {
-                if (this.search_query.length > 0) {
+                if (this.searchQuery.length > 0) {
                     // TODO(Connor): Run axios query and fill user_groups
-                    this.user_groups = [];
-                    this.user_groups.push({name: 'Search Results', users: []});
+                    this.userGroups = [];
+                    this.userGroups.push({name: 'Search Results', users: []});
                 } else {
                     this.loadData();
                 }
             },
 
             loadDummyData: function () {
-                this.user_groups.push({
+                this.userGroups.push({
                     name: 'Participants',
                     users: [
-                            {name: 'Connor Macdonald'},
-                            {name: 'John Johnson'},
-                            {name: 'Terry Tabla'},
-                            {name: 'Mark Jeremy'},
-                            {name: 'Tom Thompson'}
-                        ]
+                        {name: 'Connor Macdonald'},
+                        {name: 'John Johnson'},
+                        {name: 'Terry Tabla'},
+                        {name: 'Mark Jeremy'},
+                        {name: 'Tom Thompson'}
+                    ]
                 });
-                this.user_groups.push({
+                this.userGroups.push({
                     name: 'Organisers',
                     users: [
                         {name: 'Jimmy Jeffery'}
