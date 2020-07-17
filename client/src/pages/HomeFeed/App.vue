@@ -77,13 +77,10 @@
                         console.log(err)
                     });
             },
-            getActivityOwner: async function(activityId) {
-                console.log(activityId)
-                axios.defaults.withCredentials = true;
-                let url = "http://localhost:9499/activities/" + activityId + "/creatorId";
-                await axios.get(url)
+            getActivityOwner: async function (activityId) {
+                api.getActivityCreatorId(activityId)
                     .then((res) => {
-                        this.creatorId= res.data;
+                        this.creatorId = res.data;
                     })
                     .catch(err => {
                         console.log(err)

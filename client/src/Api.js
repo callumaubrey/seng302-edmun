@@ -48,6 +48,8 @@ export default {
 
     getActivitiesByHashtag: (hashtag) => instance.get('/hashtag/' +hashtag),
 
+    getActivityCreatorId: (activityId) => instance.get('/activities/' + activityId + '/creatorId'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
