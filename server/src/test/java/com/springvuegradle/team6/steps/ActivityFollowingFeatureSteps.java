@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +32,8 @@ public class ActivityFollowingFeatureSteps {
   @Autowired private ActivityRepository activityRepository;
 
   @Autowired private MockMvc mvc;
+
+  @Autowired private LoginSteps loginSteps;
 
   private ResultActions mvcResponse;
 
@@ -110,6 +111,7 @@ public class ActivityFollowingFeatureSteps {
                             .contentType(MediaType.APPLICATION_JSON)
                             .session(loginSteps.session));
   }
+
   @Then("User is a follower of {string}")
   public void user_is_a_follower_of(String activityName) throws Exception{
     Activity activity = activityRepository.findByActivityName(activityName);

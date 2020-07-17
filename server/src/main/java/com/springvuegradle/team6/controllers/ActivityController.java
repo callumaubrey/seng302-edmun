@@ -24,7 +24,12 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
@@ -372,6 +377,9 @@ public class ActivityController {
     }
     activity.setTags(hashtags);
 
+    // Set creation date to now
+    activity.setCreationDate(LocalDateTime.now());
+
     activityRepository.save(activity);
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
@@ -387,6 +395,9 @@ public class ActivityController {
     activity.setDescription(request.description);
     activity.setActivityTypes(request.activityTypes);
     activity.setContinuous(request.continuous);
+    if (request.visibility != null) {
+      activity.setVisibilityType(request.visibility);
+    }
     if (activity.isContinuous()) {
       activity.setStartTime(null);
       activity.setEndTime(null);
@@ -534,6 +545,30 @@ public class ActivityController {
     try {
       ObjectMapper mapper = new ObjectMapper();
       String postJson = mapper.writeValueAsString(activity);
+      return ResponseEntity.ok(postJson);
+    } catch (Exception e) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * Given the activity id, find the creator of the activity and return the id of the creator
+   * @param activityId id of the activity
+   * @return the id of the creator of the activity
+   */
+  @GetMapping("/activities/{activityId}/creatorId")
+  public ResponseEntity<String> getActivityCreator(@PathVariable int activityId) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activity.getProfile().getId());
       return ResponseEntity.ok(postJson);
     } catch (Exception e) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);

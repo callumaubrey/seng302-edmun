@@ -20,6 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -33,8 +36,11 @@ public class ActivityHashtagFeatureSteps {
   private ResultActions mvcResponse;
   private String activityId;
   private List<String> autocompleteResult;
+  private List<String> activityNamesByHashtag;
 
   @Autowired private ActivityRepository activityRepository;
+
+  @Autowired private LoginSteps loginSteps;
 
   @Autowired private MockMvc mvc;
 
@@ -49,6 +55,7 @@ public class ActivityHashtagFeatureSteps {
 
   @Given("I create an activity {string} with no hashtags")
   public void i_create_an_activity_with_no_hashtags(String activityName) throws Exception {
+    System.out.println(loginSteps.session);
     jsonString =
         "{\n"
             + "  \"activity_name\": \""
@@ -69,6 +76,7 @@ public class ActivityHashtagFeatureSteps {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
+    System.out.println(activityId);
   }
 
   @When("I edit an activity {string} and add hashtags")
@@ -134,6 +142,37 @@ public class ActivityHashtagFeatureSteps {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
+    System.out.println(activityId);
+
+  }
+
+  @When("I search for activity by hashtag {string}")
+  public void i_search_for_activity_by_hashtag(String hashtag) throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/hashtag/" + hashtag)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray arr = new JSONArray(response);
+    List<String> list = new ArrayList<String>();
+    for (int i = 0; i < arr.length(); i++) {
+      list.add(arr.getJSONObject(i).getString("activityName"));
+    }
+    activityNamesByHashtag = list;
+  }
+
+  @Then("I get the activities in order")
+  public void i_get_the_activities_in_order(io.cucumber.datatable.DataTable dataTable) {
+    List<String> activities = new ArrayList<>();
+    for (Map<String, String> activityMapping : dataTable.asMaps()) {
+      String activity = activityMapping.get("ActivityName");
+      activities.add(activity);
+    }
+    Assert.assertEquals(activities, activityNamesByHashtag);
   }
 
   @Then("I have an activity {string} with hashtags")
@@ -177,14 +216,12 @@ public class ActivityHashtagFeatureSteps {
             .getResponse()
             .getContentAsString();
 
-    System.out.println(response);
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("results");
     List<String> list = new ArrayList<String>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getString(i));
     }
-    System.out.println(list);
     autocompleteResult = list;
   }
 
@@ -195,8 +232,6 @@ public class ActivityHashtagFeatureSteps {
       String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
       hashTags.add(hashTag);
     }
-    System.out.println(autocompleteResult);
-    System.out.println(hashTags);
     Assert.assertTrue(autocompleteResult.containsAll(hashTags));
   }
 

@@ -31,11 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class ActivityControllerTest {
+class ActivityControllerTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
   @Autowired
   private ActivityRoleRepository activityRoleRepository;
@@ -467,6 +469,81 @@ public class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
     responseString.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createActivityWithVisibilityTypePublicReturnStatusOk() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Tramping\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": \"true\",\n" +
+            "  \"visibility\": \"public\"\n" +
+            "}";
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityWithoutVisibilityTypeReturnStatusOkAndVisibilityTypeDefaultsToNone() throws Exception {
+    String jsonString = "{\n" +
+            "  \"activity_name\": \"Running\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true,\n" +
+            "  \"hashtags\": [\n" +
+            "    \"#a1\"\n" +
+            "  ]\n" +
+            "}";
+    ResultActions responseString =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+    responseString.andExpect(status().isCreated());
+    Assert.assertSame(VisibilityType.Public, activityRepository
+            .findById(Integer.parseInt(responseString.andReturn().getResponse().getContentAsString()))
+            .get().getVisibilityType());
+
+  }
+
+  @Test
+  void getActivityCreatorReturnStatusOk() throws Exception {
+    Profile profile1 = profileRepository.findById(id);
+    Activity testActivity1 = new Activity();
+    testActivity1.setActivityName("Test");
+    testActivity1.setProfile(profile1);
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setProfile(profile1);
+    activityRepository.save(testActivity2);
+
+    // ID to check for
+    String activity1Id = testActivity1.getId().toString();
+
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/activities/" + activity1Id + "/creatorId")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    org.junit.jupiter.api.Assertions.assertEquals(((Integer) id).toString(), response);
   }
 
   @Test
