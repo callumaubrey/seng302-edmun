@@ -8,12 +8,14 @@ import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DirtiesContext
 public class ActivitySharingFeatureSteps {
 
   @Autowired
@@ -32,6 +34,35 @@ public class ActivitySharingFeatureSteps {
 
   private String activityId;
 
+  @Given("There is an activity {string} with {string} access")
+  public void there_is_an_activity_with_access(String activityName, String visibility) throws Exception {
+    jsonString =
+            "{\n"
+                    + "  \"activity_name\": \""
+                    + activityName
+                    + "\",\n"
+                    + "  \"description\": \"tramping iz fun\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Hike\",\n"
+                    + "    \"Bike\"\n"
+                    + "  ],\n"
+                    + "  \"visibility\": \""
+                    + visibility
+                    + "\",\n"
+                    + "  \"continuous\": true"
+                    + "}";
+    String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
+    activityId =
+            mvc.perform(
+                    MockMvcRequestBuilders.post(createActivityUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(loginSteps.session))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+  }
 
   @Given("user {string} creates activity {string} with {string} access")
   public void user_creates_activity_with_access(String email, String activityName, String visibility) throws Exception {
