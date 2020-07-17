@@ -5,7 +5,9 @@
         <div class="container">
             <div>
                 <b-row>
-                    <b-img center v-bind="mainProps" rounded= "circle" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.f4t8FtSbfNUs94KKgMhhBAHaHr%26pid%3DApi%26h%3D160&f=1" alt="Center image"></b-img>
+                    <b-img center v-bind="mainProps" rounded="circle"
+                           src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.f4t8FtSbfNUs94KKgMhhBAHaHr%26pid%3DApi%26h%3D160&f=1"
+                           alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -38,18 +40,16 @@
 </template>
 
 
-
 <script>
-    // import api from '../Api';
+    import api from '@/Api';
     import NavBar from "@/components/NavBar.vue"
-    import axios from 'axios'
 
     const App = {
         name: 'App',
         components: {
             NavBar
         },
-        data: function() {
+        data: function () {
             return {
                 userData: '',
                 isLoggedIn: false,
@@ -61,8 +61,7 @@
         methods: {
             getUserSession: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/user')
+                api.getLoggedInProfile()
                     .then(function (response) {
                         currentObj.userData = response.data;
                         currentObj.isLoggedIn = true;
