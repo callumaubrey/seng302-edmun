@@ -24,7 +24,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
 
   List<Activity> findAll();
 
-  Activity findByActivityName(String activityName);
+  List<Activity> findByActivityName(String activityName);
 
   @Query(value = "select t from Activity a left join a.tags t WHERE a.id = :activityId")
   Set<Tag> getActivityTags(int activityId);

@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
@@ -37,10 +38,16 @@ public class Activity {
     }
     if (request.location != null) {
       NamedLocation location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
+              new NamedLocation(
+                      request.location.country, request.location.state, request.location.city);
       this.location = location;
     }
+    if (request.visibility != null) {
+      setVisibilityType(request.visibility);
+    } else {
+      this.visibilityType = VisibilityType.Public;
+    }
+
   }
 
   @Id
@@ -78,12 +85,8 @@ public class Activity {
   @Column(columnDefinition = "datetime default NOW()")
   private LocalDateTime creationDate;
 
-  /**
-   * Map activity id to user id to create profile_subscriptions table in database
-   */
-  @ManyToMany(
-          mappedBy = "subscriptions",
-          fetch = FetchType.LAZY)
+  /** Map activity id to user id to create profile_subscriptions table in database */
+  @ManyToMany(mappedBy = "subscriptions", fetch = FetchType.LAZY)
   private Collection<Profile> subscribers;
 
   @Column(columnDefinition = "boolean default false")
@@ -92,6 +95,7 @@ public class Activity {
   @OneToMany(mappedBy = "activity")
   private List<ActivityRole> activityRole;
 
+  @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
 
   public String getActivityName() {
@@ -186,6 +190,15 @@ public class Activity {
     this.archived = archived;
   }
 
+  public VisibilityType getVisibilityType() {
+    return this.visibilityType;
+  }
+
+  public void setVisibilityType(String type) {
+    String toCamelCase = type.substring(0, 1).toUpperCase() + type.substring(1);
+    this.visibilityType = VisibilityType.valueOf(toCamelCase);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -207,5 +220,9 @@ public class Activity {
 
   public void setSubscribers(Collection<Profile> subscribers) {
     this.subscribers = subscribers;
+  }
+
+  public void setCreationDate(LocalDateTime creationDate) {
+    this.creationDate = creationDate;
   }
 }
