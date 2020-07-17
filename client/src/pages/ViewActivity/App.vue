@@ -9,6 +9,7 @@
         </div>
         <div v-else-if="!locationDataLoading" class="container" >
             <div>
+                <!-- Image and Name -->
                 <b-row>
                     <b-img center rounded="circle" width="150px" height="150px"
                            src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
@@ -18,13 +19,20 @@
                 <b-row align-h="center">
                     <h3>{{activityName}}</h3>
                 </b-row>
+
+                <!-- Summary -->
+                <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
+
+                <!-- Actions -->
                 <b-row align-h="center">
                     <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
                         <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
-                <b-card style="margin: 1em" title="About:">
+
+                <!-- Content -->
+                <b-card style="margin: 1em" title="About:" >
                     <div v-if="locationDataLoading">
                         <div class="text-center text-primary my-2">
                             <b-spinner class="align-middle"></b-spinner>
@@ -58,25 +66,10 @@
                         </b-row>
                     </div>
                 </b-card>
+
+                <!-- Participants -->
                 <b-card style="margin: 1em" title="Participants:">
-                    <div v-if="locationDataLoading">
-                        <div class="text-center text-primary my-2">
-                            <b-spinner class="align-middle"></b-spinner>
-                            <strong> Loading...</strong>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <b-row>
-                            <b-col><b>Creator:</b></b-col>
-                            <b-col>
-                                <p v-if="activityOwner">{{activityOwner.firstname}} {{activityOwner.lastname}}</p>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col><b>Other Participants:</b></b-col>
-                            <b-col><p>List of other participants possibly with links to profiles</p></b-col>
-                        </b-row>
-                    </div>
+                    <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
                 </b-card>
             </div>
         </div>
@@ -85,11 +78,16 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
+    import FollowerUserList from "../../components/Activity/FollowerUserList";
     import api from '@/Api'
+
 
     const App = {
         name: 'App',
         components: {
+            FollowerUserList,
+            FollowerSummary,
             NavBar
         },
         data: function () {
