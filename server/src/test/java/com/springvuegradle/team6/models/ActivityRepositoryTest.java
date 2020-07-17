@@ -96,6 +96,18 @@ public class ActivityRepositoryTest {
   }
 
   @Test
+  void testFindByActivityNameReturnOneResult() {
+    Activity activity = new Activity();
+    activity.setActivityName("Running");
+    activity.setProfile(profile);
+    activity = activityRepository.save(activity);
+    List<Activity> result = activityRepository.findByActivityName("Running");
+    List<Activity> expectedResult = new ArrayList<>();
+    expectedResult.add(activity);
+    org.junit.jupiter.api.Assertions.assertTrue(expectedResult.containsAll(result));
+  }
+
+  @Test
   void testGetActivityTags() {
     Tag cool = new Tag();
     cool.setName("cool");

@@ -427,7 +427,8 @@
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.locationData
+                        location: this.locationData,
+                        hashtags: this.hashtag.values
                     }
                     api.createActivity(userId, data)
                         .then(function () {
