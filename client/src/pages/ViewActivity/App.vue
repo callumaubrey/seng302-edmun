@@ -1,10 +1,12 @@
 <template>
-    <div id = 'app' v-if="isLoggedIn">
+    <div id='app' v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div class="container">
             <div>
                 <b-row>
-                    <b-img center rounded= "circle" width ="150px" height="150px" src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg" alt="Center image"></b-img>
+                    <b-img center rounded="circle" width="150px" height="150px"
+                           src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
+                           alt="Center image"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -12,11 +14,11 @@
                 </b-row>
                 <b-row align-h="center">
                     <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
-                        <b-dropdown-item  @click="editActivity()">Edit</b-dropdown-item>
-                        <b-dropdown-item  @click="deleteActivity()">Delete</b-dropdown-item>
+                        <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
+                        <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
-                <b-card style="margin: 1em" title="About:" >
+                <b-card style="margin: 1em" title="About:">
                     <div v-if="locationDataLoading">
                         <div class="text-center text-primary my-2">
                             <b-spinner class="align-middle"></b-spinner>
@@ -77,14 +79,14 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
-    import axios from 'axios'
+    import api from '@/Api'
 
     const App = {
         name: 'App',
         components: {
             NavBar
         },
-        data: function() {
+        data: function () {
             return {
                 //isActivityOwner: false,
                 userData: '',
@@ -113,20 +115,20 @@
         methods: {
             getUserName: function () {
                 let vueObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/firstname')
-                .then((res) => {
-                    vueObj.userName = res.data;
-                })
-                .catch(() => {
-                    vueObj.isLoggedIn = false;
-                    vueObj.$router.push('/login');
-                });
+
+                api.getFirstName()
+                    .then((res) => {
+                        vueObj.userName = res.data;
+                    })
+                    .catch(() => {
+                        vueObj.isLoggedIn = false;
+                        vueObj.$router.push('/login');
+                    });
             },
             getLoggedInId: function () {
                 let vueObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+
+                api.getProfileId()
                     .then((res) => {
                         vueObj.loggedInId = res.data;
                         vueObj.isLoggedIn = true;
@@ -148,8 +150,7 @@
 
                     let profileId = this.$route.params.id;
                     let activityId = this.$route.params.activityId;
-                    // alert('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId);
-                    axios.delete('http://localhost:9499/profiles/' + profileId + '/activities/' + activityId)
+                    api.deleteActivity(profileId, activityId)
                         .then(() => {
                             this.$router.push('/profiles/' + profileId + '/activities/');
                         })
@@ -171,8 +172,9 @@
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
                 let profileId = this.$route.params.id;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/activities/' + activityId)
+
+
+                api.getActivity(activityId)
                     .then((res) => {
                         vueObj.activityOwner = res.data.profile;
                         vueObj.activityName = res.data.activityName;
@@ -208,7 +210,7 @@
                 currentObj.startTime = startDate.toString();
                 currentObj.endTime = endDate.toString();
             },
-            getActivityTypeDisplay: function(currentObj) {
+            getActivityTypeDisplay: function (currentObj) {
                 let result = "";
                 for (let i = 0; i < currentObj.activityTypes.length; i++) {
                     result += currentObj.activityTypes[i];

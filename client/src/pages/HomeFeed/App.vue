@@ -35,7 +35,7 @@
 
 <script>
     import NavBar from '@/components/NavBar.vue';
-    import axios from 'axios';
+    import api from '@/Api';
 
     export default {
         components: {
@@ -55,8 +55,7 @@
         },
         methods: {
             getUser: async function () {
-                axios.defaults.withCredentials = true;
-                await axios.get('http://localhost:9499/profiles/user')
+                await api.getLoggedInProfile()
                     .then((res) => {
                         this.userName = res.data.firstname;
                         this.fullName = res.data.firstname + ' ' + res.data.lastname;
@@ -66,9 +65,7 @@
                     .catch(err => console.log(err));
             },
             getHomeFeed: async function () {
-                axios.defaults.withCredentials = true;
-                let url = 'http://localhost:9499/feed/homefeed/' + this.userId + "?offset=" + this.offset + "&limit=" + this.limit;
-                await axios.get(url)
+                await api.getHomeFeed(this.userId, this.offset, this.limit)
                     .then((res) => {
                         if (res.data.feeds.length > 0) {
                             this.items.push(...res.data.feeds);

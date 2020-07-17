@@ -207,7 +207,7 @@
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
-    import axios from 'axios'
+    import api from '@/Api'
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -227,7 +227,6 @@
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
-                    // These values will need to be converted to uppercase before axios request is sent
                     date: null,
                     location: null
                 },
@@ -336,7 +335,7 @@
                 }
                 if (value.length > 2) {
                     let vue = this;
-                    axios.get('http://localhost:9499/hashtag/autocomplete?hashtag=' + value)
+                    api.getHashtagAutocomplete(value)
                         .then(function (response) {
                             let results = response.data.results;
                             for (let i = 0; i < results.length; i++) {
@@ -353,8 +352,7 @@
             },
             getActivities: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/activity-types')
+                api.getProfileActivityTypes()
                     .then(function (response) {
                         currentObj.activityTypes = response.data;
                     })
@@ -416,7 +414,6 @@
             onSubmit() {
                 this.$v.form.$touch();
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
                 let userId = this.profileId;
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
@@ -425,13 +422,14 @@
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
                         location: this.locationData
-                    })
+                    }
+                    api.createActivity(userId, data)
                         .then(function () {
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
@@ -450,12 +448,13 @@
                         return;
                     }
                     const isoDates = this.getDates();
-                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
                         end_time: isoDates[1]
-                    })
+                    }
+                    api.createActivity(userId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityErrorMessage = "";
@@ -506,8 +505,7 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -516,8 +514,7 @@
             },
             getUserName: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -531,8 +528,7 @@
             checkAuthorized: async function () {
                 let currentObj = this;
                 this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/id')
+                return api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
