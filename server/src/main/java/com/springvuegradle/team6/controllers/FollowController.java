@@ -33,6 +33,7 @@ public class FollowController {
     private ActivityRepository activityRepository;
     private ActivityRoleRepository activityRoleRepository;
     private SubscriptionHistoryRepository subscriptionHistoryRepository;
+    private EmailRepository emailRepository;
 
     /**
      * Constructor for FollowController class which gets the profile, email and role repository
@@ -44,11 +45,13 @@ public class FollowController {
     FollowController(ProfileRepository profileRepository,
                      ActivityRepository activityRepository,
                      ActivityRoleRepository activityRoleRepository,
-                     SubscriptionHistoryRepository subscriptionHistoryRepository) {
+                     SubscriptionHistoryRepository subscriptionHistoryRepository,
+                     EmailRepository emailRepository) {
         this.profileRepository = profileRepository;
         this.activityRepository = activityRepository;
         this.activityRoleRepository = activityRoleRepository;
         this.subscriptionHistoryRepository = subscriptionHistoryRepository;
+        this.emailRepository = emailRepository;
     }
 
     /**
@@ -189,8 +192,12 @@ public class FollowController {
             return new ResponseEntity<>(
                     "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
         }
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
 
-        Profile roleProfile = profileRepository.findByEmail_Address(request.getEmail());
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
         if (roleProfile == null) {
             return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
         }
@@ -199,12 +206,18 @@ public class FollowController {
         String toCamelCase = request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
         ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
         if (activityRoleFound == null) {
+            // Create activity role
             ActivityRole activityRole = new ActivityRole();
             activityRole.setProfile(roleProfile);
             activityRole.setActivity(activity);
             activityRole.setActivityRoleType(activityRoleType);
             activityRoleRepository.save(activityRole);
-            // Need to add subscription_history row
+            // Create Subscription history row
+            List<SubscriptionHistory> optionalSubscription = subscriptionHistoryRepository.findActive(activityId, profileId);
+             if (optionalSubscription.isEmpty()) {
+                 SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+                 subscriptionHistoryRepository.save(subscriptionHistory);
+             }
         } else {
             activityRoleFound.setActivityRoleType(activityRoleType);
             activityRoleRepository.save(activityRoleFound);
