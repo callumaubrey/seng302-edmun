@@ -50,6 +50,8 @@ export default {
 
     getActivityCreatorId: (activityId) => instance.get('/activities/' + activityId + '/creatorId'),
 
+    getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
