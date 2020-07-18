@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.models;
 
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,7 +52,7 @@ public class SubscriptionHistoryRepositoryTest {
     org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
   }
 
-  @Ignore
+  @Disabled
   @Test
   void testSingleSubscriptionFindByActivity() {
     Set<Email> emails = new HashSet<>();
