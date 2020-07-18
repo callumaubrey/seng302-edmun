@@ -2,6 +2,7 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
 import com.springvuegradle.team6.requests.EditSubscriptionRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
@@ -217,12 +218,74 @@ public class FollowController {
              if (optionalSubscription.isEmpty()) {
                  SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
                  subscriptionHistoryRepository.save(subscriptionHistory);
+                 return new ResponseEntity("Activity role created and user is now subscribed", HttpStatus.OK);
+             } else {
+                 return new ResponseEntity("Activity role created", HttpStatus.OK);
              }
         } else {
             activityRoleFound.setActivityRoleType(activityRoleType);
             activityRoleRepository.save(activityRoleFound);
         }
 
-        return new ResponseEntity("Activity role saved", HttpStatus.OK);
+        return new ResponseEntity("Activity role updated", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+    public ResponseEntity deleteSubscription(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            @RequestBody @Valid DeleteSubscriptionRequest request,
+            HttpSession session) {
+        ResponseEntity<String> authorisedResponse =
+                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
+        }
+
+        Profile creatorProfile = profileRepository.findById(profileId);
+        if (creatorProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+        Optional<Activity> activityOptional = activityRepository.findById(activityId);
+        if (activityOptional.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        Activity activity = activityOptional.get();
+        if (!activity.getProfile().getId().equals(profileId)) {
+            return new ResponseEntity<>(
+                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
+
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+        if (roleProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+
+        ActivityRole activityRoleFound = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+
+        if (activityRoleFound == null) {
+            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+        } else {
+            activityRoleRepository.delete(activityRoleFound);
+
+            List<SubscriptionHistory> activeSubscriptions = subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+
+            // Check if already subbed
+            if (activeSubscriptions.isEmpty()) {
+                return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
+            }
+
+            SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
+            activeSubscription.setEndDateTime(LocalDateTime.now());
+
+            subscriptionHistoryRepository.save(activeSubscription);
+        }
+
+        return new ResponseEntity("Activity role deleted", HttpStatus.OK);
     }
 }
