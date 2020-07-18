@@ -883,4 +883,43 @@ class ActivityControllerTest {
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(0, result.size());
   }
+
+  @Test
+  void testUserIsAFollowerUponCreatingActivity() throws Exception {
+    String activityJson =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    // Creates an activity
+    String activityBody =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(activityJson)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    int activityId = Integer.parseInt(activityBody);
+
+    String response =
+            mvc.perform(MockMvcRequestBuilders
+                    .get("/profiles/"+ id + "/subscriptions/activities/" + activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session)
+            )
+                    .andExpect(status().is2xxSuccessful())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
+  }
 }

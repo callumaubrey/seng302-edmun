@@ -93,6 +93,35 @@ public class FollowControllerTest {
                         .getResponse()
                         .getContentAsString();
         activityId = Integer.parseInt(activityBody);
+
+        // Creates the user to be used in the tests
+        profileJson =
+                "{\n" +
+                        "  \"lastname\": \"Pockey\",\n" +
+                        "  \"firstname\": \"Pols\",\n" +
+                        "  \"middlename\": \"Mish\",\n" +
+                        "  \"nickname\": \"Pinot\",\n" +
+                        "  \"primary_email\": \"poly@pockey.com\",\n" +
+                        "  \"password\": \"Password1\",\n" +
+                        "  \"bio\": \"Poly Pocket is so tiny 2.\",\n" +
+                        "  \"date_of_birth\": \"2000-11-11\",\n" +
+                        "  \"gender\": \"female\"\n}";
+
+        // Logs in and get profile Id
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles")
+                        .content(profileJson)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().isCreated())
+                .andDo(print());
+
+        body =
+                mvc.perform(get("/profiles/id").session(session))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        id = Integer.parseInt(body);
     }
 
     @Test
