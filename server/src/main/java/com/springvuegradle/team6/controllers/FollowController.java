@@ -52,9 +52,10 @@ public class FollowController {
 
     /**
      * Creates new subscriptionHistory between user and activity
-     * @param profileId id of the user subscribing
+     *
+     * @param profileId  id of the user subscribing
      * @param activityId id of the activity being subscribed to
-     * @param session current http session
+     * @param session    current http session
      * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
      */
     @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
@@ -94,15 +95,16 @@ public class FollowController {
 
     /**
      * Checks if the user is subscribed to the activity
-     * @param profileId id of the user that is unsubscribing
+     *
+     * @param profileId  id of the user that is unsubscribing
      * @param activityId id of the activity being unsubscribed from
-     * @param session current http session
+     * @param session    current http session
      * @return Boolean true if user is subscribed, false if the user is unsubscribed
      */
     @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
     public ResponseEntity<String> getFollowingActivity(@PathVariable int profileId,
-                                                 @PathVariable int activityId,
-                                                 HttpSession session) {
+                                                       @PathVariable int activityId,
+                                                       HttpSession session) {
         Profile profile = profileRepository.findById(profileId);
         if (profile == null) {
             return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
@@ -121,15 +123,16 @@ public class FollowController {
 
     /**
      * Unsubscribes user from activity
-     * @param profileId id of the user that is unsubscribing
+     *
+     * @param profileId  id of the user that is unsubscribing
      * @param activityId id of the activity being unsubscribed from
-     * @param session current http session
+     * @param session    current http session
      * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
      */
     @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
     public ResponseEntity<String> unfollowActivity(@PathVariable int profileId,
-                                                       @PathVariable int activityId,
-                                                       HttpSession session) {
+                                                   @PathVariable int activityId,
+                                                   HttpSession session) {
         // Check Authorisation
         ResponseEntity<String> authorisedResponse =
                 UserSecurityService.checkAuthorised(profileId, session, profileRepository);
@@ -161,28 +164,17 @@ public class FollowController {
 
         return ResponseEntity.ok("User unsubscribed from activity");
     }
+
     /**
      * Retrieves all users accosiated with the activity and their role
-     * @param profileId id of the user that is unsubscribing
-     * @param activityId id of the activity being unsubscribed from
-     * @param session current http session
+     *
+     * @param activityId id of the activity
+     * @param session    current http session
      * @return Lists with users associated to a specific role
      */
-    @GetMapping("profiles/{profileId}/users/activities/{activityId}")
-    public ResponseEntity<String> getConnectedUsers(@PathVariable int profileId,
-                                                       @PathVariable int activityId,
-                                                       HttpSession session) {
-        // Check Authorisation
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
-
-        Profile profile = profileRepository.findById(profileId);
-        if (profile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("activities/{activityId}/members")
+    public ResponseEntity<String> getConnectedUsers(@PathVariable int activityId,
+                                                    HttpSession session) {
         Optional<Activity> activity = activityRepository.findById(activityId);
         if (activity.isEmpty()) {
             return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
@@ -195,5 +187,29 @@ public class FollowController {
         List<JSONObject> accessors = activityRoleRepository.findMembers(activityId, ActivityRoleType.Access.ordinal());
         activityMemberRoleResponse.setFields(participants, organisers, creators, followers, accessors);
         return new ResponseEntity(activityMemberRoleResponse, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves count of all types of members accociated with an activity
+     *
+     * @param activityId id of the activity
+     * @param session    current http session
+     * @return Count of users accociated with on an activity
+     */
+    @GetMapping("activities/{activityId}/membercount")
+    public ResponseEntity<String> getConnectedUsersCount(@PathVariable int activityId,
+                                                    HttpSession session) {
+
+        Optional<Activity> activity = activityRepository.findById(activityId);
+        if (activity.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+        JSONObject response = new JSONObject();
+        response.appendField("participants", activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Participant.ordinal()));
+        response.appendField("creators", activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Creator.ordinal()));
+        response.appendField("organisers", activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Organiser.ordinal()));
+        response.appendField("followers", activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Follower.ordinal()));
+        response.appendField("accessors", activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Access.ordinal()));
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 }

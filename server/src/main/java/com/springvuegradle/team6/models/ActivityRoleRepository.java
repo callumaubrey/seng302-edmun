@@ -16,9 +16,15 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
   List<Profile> findByActivity_IdAndActivityRoleType(int activityId, ActivityRoleType type);
   @Query(
           value =
-                  "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id, profile.primary_email from activity_role JOIN profile on " +
-                          "activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type",
+                  "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on " +
+                          "activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type " +
+                          "LIMIT 50",
           nativeQuery = true)
   List<JSONObject> findMembers(int activityId, int type);
 
+  @Query(
+          value =
+                  "select COUNT(*) as Count from activity_role where activity_id = :activityId and activity_role_type = :type",
+          nativeQuery = true)
+  int findMembersCount(int activityId, int type);
 }
