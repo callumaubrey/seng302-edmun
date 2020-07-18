@@ -20,6 +20,7 @@ public class SubscriptionHistoryRepositoryTest {
   @Autowired private ActivityRepository activityRepository;
   @Autowired private ProfileRepository profileRepository;
 
+  @Disabled
   @Test
   void testSingleSubscriptionFindByProfile() {
     Set<Email> emails = new HashSet<>();
