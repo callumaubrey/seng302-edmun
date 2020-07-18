@@ -798,7 +798,6 @@ class ActivityControllerTest {
             .andExpect(status().isOk());
   }
 
-  /*
   @Test
   void getRestrictedActivityWithAccess() throws Exception {
     Activity activity = new Activity();
@@ -808,15 +807,6 @@ class ActivityControllerTest {
     activity.setContinuous(true);
     activity.setVisibilityType("restricted");
     activity = activityRepository.save(activity);
-
-    Profile profile1 = new Profile();
-    profile1.setFirstname("Johnny");
-    profile1.setLastname("Dong");
-    profile1.setPassword("Password1");
-    Set<Email> email1 = new HashSet<Email>();
-    email1.add(new Email("johnny@email.com"));
-    profile1.setEmails(email1);
-    profileRepository.save(profile1);
 
     Profile profile2 = new Profile();
     profile2.setFirstname("Doe");
@@ -834,6 +824,23 @@ class ActivityControllerTest {
     profile3.setEmails(email3);
     profileRepository.save(profile3);
 
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
     String jsonString1 =
             "{\n"
                     + "  \"visibility\": \"restricted\",\n"
@@ -843,29 +850,14 @@ class ActivityControllerTest {
                     + "    \"martin@email.com\"\n"
                     + "  ]\n"
                     + "}";
-    ResultActions responseString1 =
-            mvc.perform(
-                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                            .content(jsonString1)
-                            .contentType(MediaType.APPLICATION_JSON));
-
 
     mvc.perform(
-            MockMvcRequestBuilders.get("/logout/")
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
-
-    String jsonStringLogin =
-            "{\n"
-                    + "  \"email\": \"johnny@email.com\",\n"
-                    + "  \"password\": \"Password1\"\n"
-                    + "}";
-    mvc.perform(
-            post("/login/")
-                    .content(jsonStringLogin)
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
                     .contentType(MediaType.APPLICATION_JSON)
-    ).andExpect(status().isOk());
+                    .session(session));
+
+    System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
@@ -884,15 +876,6 @@ class ActivityControllerTest {
     activity.setVisibilityType("restricted");
     activity = activityRepository.save(activity);
 
-    Profile profile1 = new Profile();
-    profile1.setFirstname("Johnny");
-    profile1.setLastname("Dong");
-    profile1.setPassword("Password1");
-    Set<Email> email1 = new HashSet<Email>();
-    email1.add(new Email("johnny@email.com"));
-    profile1.setEmails(email1);
-    profileRepository.save(profile1);
-
     Profile profile2 = new Profile();
     profile2.setFirstname("Doe");
     profile2.setLastname("John");
@@ -909,6 +892,23 @@ class ActivityControllerTest {
     profile3.setEmails(email3);
     profileRepository.save(profile3);
 
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
     String jsonString1 =
             "{\n"
                     + "  \"visibility\": \"restricted\",\n"
@@ -917,36 +917,22 @@ class ActivityControllerTest {
                     + "    \"martin@email.com\"\n"
                     + "  ]\n"
                     + "}";
-    ResultActions responseString1 =
-            mvc.perform(
-                    MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                            .content(jsonString1)
-                            .contentType(MediaType.APPLICATION_JSON));
-
 
     mvc.perform(
-            MockMvcRequestBuilders.get("/logout/")
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
-
-    String jsonStringLogin =
-            "{\n"
-                    + "  \"email\": \"johnny@email.com\",\n"
-                    + "  \"password\": \"Password1\"\n"
-                    + "}";
-    mvc.perform(
-            post("/login/")
-                    .content(jsonStringLogin)
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
                     .contentType(MediaType.APPLICATION_JSON)
-    ).andExpect(status().isOk());
+                    .session(session));
+
+    System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is4xxClientError());
-  };*/
+  };
+
   @Test
   void putActivityVisibilityAdd() throws Exception {
     Profile owner = profileRepository.findById(id);

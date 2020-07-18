@@ -553,14 +553,14 @@ public class ActivityController {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
     Object profileId = session.getAttribute("id");
-    if (!activity.getProfile().getId().equals(Integer.parseInt(profileId.toString()))) {
+    if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
         return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
       }
 
       if (activity.getVisibilityType() == VisibilityType.Restricted) {
-        List<ActivityRole> activityRoles = activityRoleRepository.findByProfileIdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
-        if (activityRoles.size() == 0) {
+        ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
+        if (activityRoles == null) {
           return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
         }
       }
