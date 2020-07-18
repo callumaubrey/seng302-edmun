@@ -888,7 +888,7 @@ class ActivityControllerTest {
   void testUserIsAFollowerUponCreatingActivity() throws Exception {
     String activityJson =
             "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track racey\",\n"
                     + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
                     + "  \"activity_type\":[ \n"
                     + "    \"Walk\"\n"
