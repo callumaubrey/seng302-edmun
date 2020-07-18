@@ -294,5 +294,4 @@ public class FollowControllerTest {
         )
                 .andExpect(status().is4xxClientError());
     }
-
 }
