@@ -34,9 +34,6 @@ public class ActivityRole {
   public void setProfile(Profile profile) {
     this.profile = profile;
   }
-  public Profile getProfile() {
-    return profile;
-  }
   public ActivityRoleType getActivityRoleType() {
     return activityRoleType;
   }
