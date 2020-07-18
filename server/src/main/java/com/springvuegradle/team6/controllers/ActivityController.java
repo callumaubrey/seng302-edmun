@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.NamedLocationRepository;
-import com.springvuegradle.team6.requests.CreateActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -317,12 +314,74 @@ public class ActivityController {
     hashtag.setName(hashtag.getName().toLowerCase().substring(1));
   }
 
+
+  /**
+   * Put request to edit the hashtags associated to the activity specified in the path
+   *
+   * @param profileId  author of the activity
+   * @param activityId activity id
+   * @param request    EditActivityHashtagRequest
+   * @param session    HttpSession
+   * @return The response code and message
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/hashtags")
+  public ResponseEntity<String> editActivityHashTag(@PathVariable Integer profileId,
+                                                    @PathVariable Integer activityId,
+                                                    @Valid @RequestBody EditActivityHashtagRequest request,
+                                                    HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
+
+
+      // Check if authorised
+      ResponseEntity<String> authorisedResponse =
+              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+      if (authorisedResponse != null) {
+        return authorisedResponse;
+      }
+
+      ResponseEntity<String> activityAuthorizedResponse =
+              this.checkAuthorisedToEditActivity(activity, session);
+      if (activityAuthorizedResponse != null) {
+        return activityAuthorizedResponse;
+      }
+
+      // Check hashtags
+      ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.getHashtags());
+      if (checkHashtagsValidityResponse != null) {
+        return checkHashtagsValidityResponse;
+      }
+
+      Set<Tag> hashtags = new HashSet<>();
+      if (request.getHashtags() != null) {
+        for (Tag tag : request.getHashtags()) {
+          Tag dbTag = tagRepository.findByName(tag.getName());
+          if (dbTag == null) {
+            tag = tagRepository.save(tag);
+            hashtags.add(tag);
+          } else {
+            hashtags.add(dbTag);
+          }
+        }
+        activity.setTags(hashtags);
+      }
+      activityRepository.save(activity);
+
+      return ResponseEntity.ok("Hashtags of Activity '" + activity.getActivityName() + "' were updated.");
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+
   /**
    * Post Request to create an activity for the given profile based on the request
    *
    * @param profileId The id of the profile where the activity is created for
-   * @param request The request with values to create the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to create the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PostMapping("/profiles/{profileId}/activities")
@@ -610,13 +669,13 @@ public class ActivityController {
 
 
   /**
-   * Increases the activity role of each accessor to Access, and decreases the activity role of standard user if
+   * Increases the activity role of each accessor to Access, and decreases the activity role to standard user if
    * they no longer belongs to the list of accessor
    *
    * @param emails     list of accessor emails
    * @param activity   the activity to be edited
    * @param activityId the activity id to be edited
-   * @return a NOT FOUND response entity is accessor is not found, otherwise return null
+   * @return a NOT FOUND response entity if accessor is not found, otherwise return null
    */
   private ResponseEntity<String> editActivityRoles(List<String> emails, Activity activity, int activityId) {
     // Returns if list of accessor is not passed
