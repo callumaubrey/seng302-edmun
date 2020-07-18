@@ -20,7 +20,6 @@ public class SubscriptionHistoryRepositoryTest {
   @Autowired private ActivityRepository activityRepository;
   @Autowired private ProfileRepository profileRepository;
 
-  @Disabled
   @Test
   void testSingleSubscriptionFindByProfile() {
     Set<Email> emails = new HashSet<>();
@@ -53,7 +52,6 @@ public class SubscriptionHistoryRepositoryTest {
     org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
   }
 
-  @Disabled
   @Test
   void testSingleSubscriptionFindByActivity() {
     Set<Email> emails = new HashSet<>();
