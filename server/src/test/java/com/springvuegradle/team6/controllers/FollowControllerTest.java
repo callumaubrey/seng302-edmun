@@ -36,6 +36,8 @@ public class FollowControllerTest {
 
     private int id;
 
+    private int otherId;
+
     private int activityId;
 
     private MockHttpSession session;
@@ -121,6 +123,7 @@ public class FollowControllerTest {
                         .andReturn()
                         .getResponse()
                         .getContentAsString();
+        otherId = id;
         id = Integer.parseInt(body);
     }
 
@@ -280,6 +283,16 @@ public class FollowControllerTest {
                         .getContentAsString();
         JSONObject obj = new JSONObject(response);
         org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
+    }
+
+    @Test
+    void tryUnfollowOwnActivity() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/"+ otherId + "/subscriptions/activities/" + activityId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        )
+                .andExpect(status().is4xxClientError());
     }
 
 }
