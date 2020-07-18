@@ -543,7 +543,7 @@ public class ActivityController {
    * @return 200 response with headers
    */
   @GetMapping("/activities/{activityId}")
-  public ResponseEntity<String> getActivity(@PathVariable int activityId) {
+  public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
@@ -551,6 +551,19 @@ public class ActivityController {
     Activity activity = optionalActivity.get();
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+    Object profileId = session.getAttribute("id");
+    if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+      }
+
+      if (activity.getVisibilityType() == VisibilityType.Restricted) {
+        ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
+        if (activityRoles == null) {
+          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+        }
+      }
     }
     try {
       ObjectMapper mapper = new ObjectMapper();

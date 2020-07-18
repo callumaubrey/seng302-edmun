@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -727,6 +728,210 @@ class ActivityControllerTest {
         .andExpect(status().is2xxSuccessful())
         .andExpect(content().string("Activity is archived"));
   }
+
+  @Test
+  void getActivityPrivateAccessAnotherUserTriesToView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"john@pockets.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError())
+            .andExpect(content().string("Activity is private"));
+  }
+
+  @Test
+  void getPrivateActivityOwnerCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void getPublicActivityAnyoneCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("public");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void getRestrictedActivityWithAccess() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("restricted");
+    activity = activityRepository.save(activity);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    Profile profile3 = new Profile();
+    profile3.setFirstname("Martin");
+    profile3.setLastname("Johns");
+    Set<Email> email3 = new HashSet<Email>();
+    email3.add(new Email("martin@email.com"));
+    profile3.setEmails(email3);
+    profileRepository.save(profile3);
+
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"johnny@email.com\",\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+
+    System.out.println(session.getAttribute("id"));
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  };
+
+  @Test
+  void getRestrictedActivityWithoutAccess() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("restricted");
+    activity = activityRepository.save(activity);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    Profile profile3 = new Profile();
+    profile3.setFirstname("Martin");
+    profile3.setLastname("Johns");
+    Set<Email> email3 = new HashSet<Email>();
+    email3.add(new Email("martin@email.com"));
+    profile3.setEmails(email3);
+    profileRepository.save(profile3);
+
+    String jsonString =
+            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/logout/")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+
+    System.out.println(session.getAttribute("id"));
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  };
 
   @Test
   void putActivityVisibilityAdd() throws Exception {
