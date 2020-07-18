@@ -42,7 +42,11 @@ class ActivityControllerTest {
   @Autowired
   private ActivityRoleRepository activityRoleRepository;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private TagRepository tagRepository;
+
+  @Autowired
+  private MockMvc mvc;
 
   private int id;
 
@@ -1088,4 +1092,72 @@ class ActivityControllerTest {
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(0, result.size());
   }
+
+  @Test
+  void addActivityHashtagsReturnStatusOkAndHashtagSetSizeIsIncreased() throws Exception {
+    Profile owner = profileRepository.findById(id);
+    Activity activity = new Activity();
+    activity.setActivityName("testing my run");
+    activity.setContinuous(true);
+    activity.setProfile(owner);
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\n" +
+                    "  \"hashtags\": [\n" +
+                    "    \"#nosweatnoglory\",\n" +
+                    "    \"#whalewatching\"\n" +
+                    "  ]\n" +
+                    "}";
+
+    Set<Tag> hashtagSetBefore = activityRepository.findById(activity.getId()).get().getTags();
+    mvc.perform(
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Set<Tag> hashtagSetAfter = activityRepository.findById(activity.getId()).get().getTags();
+    org.junit.jupiter.api.Assertions.assertEquals(hashtagSetBefore.size() + 2, hashtagSetAfter.size());
+  }
+
+  @Test
+  void removeActivityHashtagsReturnStatusOkAndHashtagSetSizeIsDecreased() throws Exception {
+    Tag tag1 = new Tag("#nosweatnoglory");
+    tagRepository.save(tag1);
+    Tag tag2 = new Tag("#whalewatching");
+    tagRepository.save(tag2);
+    Set<Tag> tagSet = new HashSet<>();
+    tagSet.add(tag1);
+    tagSet.add(tag2);
+
+    Profile owner = profileRepository.findById(id);
+    Activity activity = new Activity();
+    activity.setActivityName("testing my run");
+    activity.setContinuous(true);
+    activity.setTags(tagSet);
+    activity.setProfile(owner);
+    activity = activityRepository.save(activity);
+
+    String jsonString =
+            "{\n" +
+                    "  \"hashtags\": [\n" +
+                    "    \"#nosweatnoglory\"\n" +
+                    "  ]\n" +
+                    "}";
+
+    Set<Tag> hashtagSetBefore = activityRepository.findById(activity.getId()).get().getTags();
+    mvc.perform(
+            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Set<Tag> hashtagSetAfter = activityRepository.findById(activity.getId()).get().getTags();
+    org.junit.jupiter.api.Assertions.assertEquals(hashtagSetBefore.size() - 1, hashtagSetAfter.size());
+  }
+
+
 }

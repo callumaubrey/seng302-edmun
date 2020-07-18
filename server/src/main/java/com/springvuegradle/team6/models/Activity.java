@@ -66,11 +66,11 @@ public class Activity {
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      name = "activity_tags",
-      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+          name = "activity_tags",
+          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
