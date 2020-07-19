@@ -1,5 +1,5 @@
 <template>
-    <div id='app' v-if="isLoggedIn">
+    <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div v-if="archived">
             <h1 align="center">This activity has been deleted</h1>
@@ -7,7 +7,7 @@
         <div v-else-if="notFound">
             <h1 align="center">This activity does not exist</h1>
         </div>
-        <div v-else-if="!locationDataLoading" class="container" >
+        <div v-else-if="!locationDataLoading" class="container">
             <div>
                 <!-- Image and Name -->
                 <b-row>
@@ -15,9 +15,8 @@
                            src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
                            alt="Center image"></b-img>
                 </b-row>
-                <b-row><h3></h3></b-row>
                 <b-row align-h="center">
-                    <h3>{{activityName}}</h3>
+                    <h3>{{ activityName }}</h3>
                 </b-row>
 
                 <!-- Summary -->
@@ -25,6 +24,9 @@
 
                 <!-- Actions -->
                 <b-row align-h="center">
+                    <FollowUnfollow v-bind:activityId="this.$route.params.activityId"
+                                    v-bind:activityOwnerId="this.$route.params.id"
+                                    v-bind:loggedInId="loggedInId"></FollowUnfollow>
                     <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
                         <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
@@ -32,7 +34,9 @@
                 </b-row>
 
                 <!-- Content -->
-                <b-card style="margin: 1em" title="About:" >
+                <b-row align-h="center">
+                    <b-col cols="9">
+                <b-card style="margin: 1em" title="About:">
                     <div v-if="locationDataLoading">
                         <div class="text-center text-primary my-2">
                             <b-spinner class="align-middle"></b-spinner>
@@ -41,36 +45,55 @@
                     </div>
                     <div v-else>
                         <b-row>
-                            <b-col><b>Activity Type(s):</b></b-col>
+                            <b-col cols="3"><b>Activity Type(s):</b></b-col>
                             <b-col><p>{{activityTypes}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>Start:</b></b-col>
+                            <b-col cols="3"><b>Start:</b></b-col>
                             <b-col><p>{{startTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>End:</b></b-col>
+                            <b-col cols="3"><b>End:</b></b-col>
                             <b-col><p>{{endTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="location==null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>No location available</p></b-col>
                         </b-row>
                         <b-row v-if="location!=null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>{{locationString}}</p></b-col>
                         </b-row>
                         <b-row>
-                            <b-col><b>Description:</b></b-col>
+                            <b-col cols="3"><b>Description:</b></b-col>
                             <b-col><p>{{description}}</p></b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="3"><b>Hashtags:</b></b-col>
+                            <b-col>
+                                <p>
+                      <span v-for="hashtag in hashtags" v-bind:key="hashtag">
+                        <b-link @click="clickHashtag(hashtag)"
+                        >{{ hashtag }}&nbsp;</b-link
+                        >
+                      </span>
+                                </p>
+                            </b-col>
                         </b-row>
                     </div>
                 </b-card>
+                    </b-col>
+                </b-row>
 
                 <!-- Participants -->
-                <b-card style="margin: 1em" title="Participants:">
-                    <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
-                </b-card>
+                <b-row align-h="center">
+                    <b-col cols="9">
+                        <b-card style="margin: 1em" title="Participants:">
+                            <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
+                        </b-card>
+                    </b-col>
+                </b-row>
+
             </div>
         </div>
     </div>
@@ -78,22 +101,23 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
-    import api from '@/Api'
-
+    import api from '@/Api';
 
     const App = {
-        name: 'App',
+        name: "App",
         components: {
+            NavBar,
+            FollowUnfollow,
             FollowerUserList,
-            FollowerSummary,
-            NavBar
+            FollowerSummary
         },
         data: function () {
             return {
                 //isActivityOwner: false,
-                userData: '',
+                userData: "",
                 isLoggedIn: false,
                 userName: "",
                 loggedInId: null,
@@ -105,6 +129,7 @@
                 startTime: "",
                 endTime: "",
                 location: null,
+                hashtags: [],
                 activityOwner: null,
                 locationString: "",
                 locationDataLoading: true,
@@ -158,7 +183,7 @@
                     let activityId = this.$route.params.activityId;
                     api.deleteActivity(profileId, activityId)
                         .then(() => {
-                            this.$router.push('/profiles/' + profileId + '/activities/');
+                            this.$router.push("/profiles/" + profileId + "/activities/");
                         })
                         .catch(err => alert(err));
                 }
@@ -171,18 +196,17 @@
                 console.log("loggedin Id: " + this.loggedInId);
 
                 if (parseInt(this.profileId) === parseInt(this.loggedInId)) {
-                    this.$router.push('/profiles/' + profileId + '/activities/' + activityId + '/edit');
+                    this.$router.push(
+                        "/profiles/" + profileId + "/activities/" + activityId + "/edit"
+                    );
                 }
             },
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
-                let profileId = this.$route.params.id;
-
-
                 api.getActivity(activityId)
                     .then((res) => {
-                        if (res.data =="Activity is archived") {
+                        if (res.data == "Activity is archived") {
                             this.archived = true;
                         } else {
                             vueObj.activityOwner = res.data.profile;
@@ -200,9 +224,12 @@
                                 }
                                 vueObj.locationString += vueObj.location.country;
                             }
-                            if (vueObj.activityOwner.id != profileId) {
-                                vueObj.$router.push('/profiles/' + profileId);
+                            if (res.data.tags.length > 0) {
+                                for (var i = 0; i < res.data.tags.length; i++) {
+                                    vueObj.hashtags.push("#" + res.data.tags[i].name);
+                                }
                             }
+                            vueObj.hashtags.sort();
                             if (!vueObj.continuous) {
                                 this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
                             }
@@ -210,12 +237,12 @@
                         }
                         vueObj.locationDataLoading = false;
                     }).catch((err) => {
-                        if (err.response && err.response.status == 404) {
-                            this.notFound = true;
-                        } else {
-                            let profileId = this.loggedInId;
-                            vueObj.$router.push('/profiles/' + profileId);
-                        }
+                    if (err.response && err.response.status == 404) {
+                        this.notFound = true;
+                    } else {
+                        let profileId = this.$route.params.id;
+                        vueObj.$router.push("/profiles/" + profileId);
+                    }
                 });
             },
             getCorrectDateFormat: function (start, end, currentObj) {
@@ -233,9 +260,12 @@
                     }
                 }
                 currentObj.activityTypes = result;
+            },
+            clickHashtag(hashtag) {
+                hashtag = hashtag.substring(1);
+                this.$router.push("/hashtag/" + hashtag);
             }
         }
     };
     export default App;
 </script>
-

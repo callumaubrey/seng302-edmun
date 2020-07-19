@@ -1,7 +1,7 @@
 Feature: Create an admin account that can do any functionality available within the system
 
   Background:
-    Given There is a normal user with email "cucumber@test.com" registered in the database.
+    Given There is a normal user with email "cucumber@test.com" registered in the database
     And I log in as the default admin with email "test@test.com" and password "test"
     And I receive response status code 200
 
@@ -23,13 +23,13 @@ Feature: Create an admin account that can do any functionality available within 
 
   @13
   Scenario: Admin can give another user admin rights
-    When I give "adminwashere2@test.com" admin rights
-    Then "adminwashere2@test.com" has user admin role
+    When I give "cucumber@test.com" admin rights
+    Then "cucumber@test.com" has user admin role
 
   @13
   Scenario: Admin can remove user admin rights
     Given "adminwashere2@test.com" has admin rights
-    When I remove admin rights from "adminwashere2@test.com"
+    When I remove user admin rights from "adminwashere2@test.com"
     Then "adminwashere2@test.com" is a normal user
 
   @13

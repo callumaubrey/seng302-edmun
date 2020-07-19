@@ -10,7 +10,9 @@
                 <b-nav-item v-if="isLoggedIn" to="/home">Home</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
-                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && isAdminAccess">Admin Dashboard</b-nav-item>
+                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && loggedInIsAdmin && isAdminAccess">Admin
+                    Dashboard
+                </b-nav-item>
                 <b-collapse id="my-collapse" v-if="isLoggedIn">
                     <b-form inline>
                         <b-input-group>
@@ -42,7 +44,7 @@
                 </b-button>
                 <div v-else>
                     <b-button-group class="access-control-button" title="Toggle to switch role access"
-                                    v-b-popover.hover.bottom="">
+                                    v-b-popover.hover.bottom="" v-if="loggedInIsUserAdmin">
                         <b-button @click="switchAccessControl(false)" pill v-if="isAdminAccess" variant="success">Admin
                         </b-button>
                         <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">Standard User
@@ -68,11 +70,12 @@
     import 'bootstrap-vue/dist/bootstrap-vue.css'
     import {mutations, store} from "../store";
     import api from '@/Api';
+    import AdminMixin from "../mixins/AdminMixin";
 
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'hideElements', 'loggedInId', 'loggedInIsAdmin'],
+        props: ['isLoggedIn', 'hideElements', 'loggedInId'],
         data: function () {
             return {
                 userName: "",
@@ -82,7 +85,9 @@
                 searchOptions: [
                     {value: 1, text: 'Users'}
                 ],
-                profileId: ""
+                profileId: "",
+                loggedInIsAdmin: null,
+                loggedInIsUserAdmin: null
             }
         },
         computed: {
@@ -103,6 +108,8 @@
                     });
             },
             getUserId: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+                this.loggedInIsUserAdmin = await AdminMixin.methods.checkUserIsUserAdmin();
                 let currentObj = this;
                 api.getProfileId()
                     .then(function (response) {
@@ -136,7 +143,6 @@
             },
             search() {
                 if (this.searchQuery === '') return;
-
                 this.$router.push('/profiles?fullname=' + this.searchQuery);
             },
             switchAccessControl(value) {
