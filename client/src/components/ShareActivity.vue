@@ -20,12 +20,10 @@
                                 :show="showWarning"
                                 dismissible
                                 variant="danger"
-                        > You are changing visibility type, are you sure?
+                        >You have {{organiserCount}} organisers, {{followerCount}} followers and {{partCount}} participants. You are changing visibility type to be more restrictive, are you sure?
                         </b-alert>
-<!--                        <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue-->
-<!--                            This will effect:</label>-->
                         <b-form-group v-if="selected =='Restricted'" style="color: white" for="emailInput">
-                            <p style="font-size: small">Maximum of 5 emails allowed. Add multiple members by separating emails by space or semi-colon</p>
+                            <p style="font-size: small">Add multiple members by separating emails by space or semi-colon</p>
                             <label>Input member emails</label>
                             <b-input
                                      name="email"
@@ -33,7 +31,7 @@
                                      placeholder="john@example.com kevin@example.com"
                                      v-model="emailInput"
                                      ></b-input>
-                            <p style="color: #cc9a9a">{{followers.length}} Followers {{participants.length}} Participants {{organisers.length}} Organisers</p>
+                            <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants {{organiserCount}} Organisers</p>
                         </b-form-group>
                         <b-button style="margin: 15px" @click="submit()">Ok</b-button>
                     </b-col>
@@ -76,7 +74,11 @@
                 participants: [],
                 accessors: [],
                 followers: [],
-                showWarning:false
+                showWarning:false,
+                partCount:null,
+                organiserCount:null,
+                followerCount:null
+
             }
         },
         methods: {
@@ -84,6 +86,8 @@
                 this.$emit('emitInput', this.selected);
             },
             async updateSelectedValue() {
+                this.emailInput = "";
+                this.getCount();
                 this.selected = this.visibility
                 await api.getActivityMembers(this.activityId, 0, 10)
                     .then((res) => {
@@ -96,6 +100,7 @@
                     .catch(err => {
                         console.log(err)
                     });
+                this.showWarning = false
             },
             deleteUser(id) {
                 alert(id)
@@ -137,14 +142,27 @@
             },
             beforeMount() {
                 this.updateSelectedValue()
+            },
+            getCount() {
+                const currentObj = this;
+                api.getActivityMemberCounts(this.activityId)
+                    .then(function (response) {
+                        currentObj.partCount = response.data.participants
+                        currentObj.followerCount = response.data.followers
+                        currentObj.organiserCount = response.data.organisers
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    });
             }
-        },
+
+    },
         computed:{
 
         },
         watch: {
             selected: function(){
-                if(this.selected != this.visibility){
+                if(this.visibility == "Restricted" && this.selected == "Private" || (this.visibility == "Public" && this.selected != "Public")){
                     this.showWarning = true
                 }else {
                     this.showWarning = false
