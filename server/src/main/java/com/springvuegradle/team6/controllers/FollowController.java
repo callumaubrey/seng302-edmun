@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
@@ -179,7 +180,7 @@ public class FollowController {
         if (limit == null) {
             limit = 10;
         }
-        List<String> acceptedTypes = Arrays.asList("organiser", "participant", "accessor", "follower", "creator");
+        List<String> acceptedTypes = Arrays.asList("organiser", "participant", "accessor", "follower", "creator", "accessoremail");
         if (type != null && !acceptedTypes.contains(type)) {
             return new ResponseEntity("Invalid member type", HttpStatus.BAD_REQUEST);
         }
@@ -204,6 +205,19 @@ public class FollowController {
         }
         if (type == null || type.equals("creator")) {
             response.appendField("Creator",activityRoleRepository.findMembers(activityId, ActivityRoleType.Creator.ordinal(), limit, offset));
+        }
+        if (type != null && type.equals("accessoremail")) {
+            List<Integer> test = activityRoleRepository.findRestrictedEmails(activityId, ActivityRoleType.Access.ordinal());
+            List<JSONObject> emailResponse = new ArrayList<>();
+            JSONObject emails = new JSONObject();
+            for (Integer id : test) {
+                Profile profile = profileRepository.findById(id).get();
+                emails.appendField("full_name", profile.getFullname());
+                emails.appendField("profile_id", id);
+                emails.appendField("email", profile.getPrimaryEmail().getAddress());
+                emailResponse.add(emails);
+            }
+            response.appendField("RestrictedUsers",emailResponse);
         }
         return new ResponseEntity(response, HttpStatus.OK);
     }

@@ -25,6 +25,12 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
 
   @Query(
           value =
+                  "select profile_id from activity_role JOIN profile on activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type",
+          nativeQuery = true)
+  List<Integer> findRestrictedEmails(int activityId, int type);
+
+  @Query(
+          value =
                   "select COUNT(*) as Count from activity_role where activity_id = :activityId and activity_role_type = :type",
           nativeQuery = true)
   int findMembersCount(int activityId, int type);
