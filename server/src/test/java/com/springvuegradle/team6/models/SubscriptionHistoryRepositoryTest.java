@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @SpringBootTest
+@Disabled
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class SubscriptionHistoryRepositoryTest {
