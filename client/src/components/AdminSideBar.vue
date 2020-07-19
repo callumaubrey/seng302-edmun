@@ -62,8 +62,8 @@
 </template>
 
 <script>
-    import axios from 'axios'
     import {helpers, sameAs} from 'vuelidate/lib/validators'
+    import api from '@/Api'
 
     const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
@@ -112,7 +112,7 @@
             },
             getOtherUserRole: function () {
                 const currentObj = this;
-                return axios.get('http://localhost:9499/admin/role/' + this.$route.params.id)
+                return api.getAdminRole(this.$route.params.id)
                     .then(function (response) {
                         currentObj.profileIsAdmin = false
                         response.data.forEach(function (item) {
@@ -127,9 +127,10 @@
             },
             toggleAdminRights: function () {
                 let vue = this;
-                axios.put('http://localhost:9499/admin/profiles/' + this.$route.params.id + '/role', {
+                let data = {
                     role: "ROLE_USER_ADMIN"
-                })
+                }
+                api.updateAdminRights(this.$route.params.id, data)
                     .then(function () {
                         vue.roleEditedErrorMsg = null;
                         vue.getOtherUserRole();
@@ -144,10 +145,11 @@
                 if (this.$v.form.$anyError || this.form.newUserPassword == null || this.form.repeatNewUserPassword == null) {
                     return;
                 }
-                axios.put("http://localhost:9499/admin/profiles/" + this.$route.params.id + "/password", {
+                let data = {
                     new_password: vue.form.newUserPassword,
                     repeat_password: vue.form.repeatNewUserPassword
-                }).then(function (response) {
+                }
+                api.updatePasswordWithAdmin(this.$route.params.id, data).then(function (response) {
                     vue.form.passwordEditSuccessMsg = response.data;
                     vue.form.newUserPassword = null;
                     vue.form.repeatNewUserPassword = null;

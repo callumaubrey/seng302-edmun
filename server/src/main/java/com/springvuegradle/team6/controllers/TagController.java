@@ -2,12 +2,9 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.TagRepository;
-import com.springvuegradle.team6.requests.LoginRequest;
 import net.minidev.json.JSONObject;
-import org.apache.coyote.Response;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
@@ -81,12 +83,20 @@ public class TagController {
     return new ResponseEntity(obj, HttpStatus.OK);
   }
 
+  /**
+   * Find all activities that contain the given hashtag
+   *
+   * @param hashTag the given hashtag
+   * @param session the current session
+   * @return activities that contain the hashtag
+   */
   @GetMapping("/{hashTag}")
-  public ResponseEntity getActivities(@PathVariable String hashTag, HttpSession session) {
+  public ResponseEntity getActivitiesByHashtag(@PathVariable String hashTag, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
+    hashTag = hashTag.toLowerCase();
     return new ResponseEntity(
         activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
   }

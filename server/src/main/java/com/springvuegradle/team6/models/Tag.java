@@ -14,14 +14,12 @@ public class Tag {
   @Column(name = "name", unique = true)
   private String name;
 
-  @ManyToMany(mappedBy = "tags", cascade = {
-          CascadeType.PERSIST,
-          CascadeType.MERGE
-  })
+  @ManyToMany(
+      mappedBy = "tags",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   private Collection<Activity> activities;
 
-  public Tag() {
-  }
+  public Tag() {}
 
   public Tag(String name) {
     this.name = name;
@@ -33,5 +31,10 @@ public class Tag {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

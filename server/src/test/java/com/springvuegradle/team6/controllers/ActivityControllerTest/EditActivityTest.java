@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,13 +27,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class EditActivityTest {
+class EditActivityTest {
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
+
+  @Autowired
+  private ActivityRoleRepository activityRoleRepository;
 
   private int id;
 
@@ -334,25 +341,25 @@ public class EditActivityTest {
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
             + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Walk\"\n"
-            + "  ],\n"
-            + "  \"continuous\": false,\n"
-            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-            + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
-            + "  }"
-            + "}";
+                + "  \"activity_type\":[ \n"
+                + "    \"Walk\"\n"
+                + "  ],\n"
+                + "  \"continuous\": false,\n"
+                + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+                + " \"location\": {\n"
+                + " \t\"city\": \"Christchurch\",\n"
+                + " \t\"country\": \"New Zealand\"\n"
+                + "  }"
+                + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isOk());
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
   }
 
   @Test
@@ -492,5 +499,82 @@ public class EditActivityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
     responseString.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged() throws Exception {
+    String jsonString =
+            "{\n" +
+                    "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
+                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                    "  \"activity_type\":[ \n" +
+                    "    \"Walk\"\n" +
+                    "  ],\n" +
+                    "  \"continuous\": false,\n" +
+                    "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
+                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
+                    "  \"visibility\": \"private\"\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Assert.assertSame(VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
+  }
+
+  @Test
+  void editActivityVisbilityTypeFromPublicToRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors() throws Exception {
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("johnny@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    String jsonString =
+            "{\n" +
+                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
+                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                    "  \"activity_type\":[ \n" +
+                    "    \"Walk\"\n" +
+                    "  ],\n" +
+                    "  \"continuous\": true,\n" +
+                    "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n" +
+                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
+                    "  \"visibility\": \"restricted\",\n" +
+                    "  \"accessors\": [\n" +
+                    "    \"johnny@email.com\",\n" +
+                    "    \"doe@email.com\",\n" +
+                    "    \"poly@pocket.com\"\n" +
+                    "  ]\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Assert.assertSame(VisibilityType.Restricted, activityRepository.findById(activityId).get().getVisibilityType());
+
+    List<ActivityRole> activityRoleList = activityRoleRepository.findByActivity_Id(activityId);
+    org.junit.jupiter.api.Assertions.assertEquals(3, activityRoleList.size());
+
   }
 }

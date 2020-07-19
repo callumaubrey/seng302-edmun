@@ -9,7 +9,7 @@
     import NavBar from '@/components/NavBar.vue';
     import Search from '@/components/Search.vue';
 
-    import axios from 'axios'
+    import api from '@/Api'
 
     const App = {
         name: 'App',
@@ -25,8 +25,7 @@
         },
         methods: {
             getUserId: function () {
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then((res) => {
                         this.profileId = res.data;
                         this.isLoggedIn = true;
@@ -34,8 +33,7 @@
                     .catch((err) => console.log(err));
             },
             getUserName: function () {
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then((res) => {
                         this.userName = res.data;
                     })
@@ -71,7 +69,7 @@
         padding-right: 7px;
     }
 
-    .cursor-pointer{
+    .cursor-pointer {
         cursor: pointer;
     }
 </style>
