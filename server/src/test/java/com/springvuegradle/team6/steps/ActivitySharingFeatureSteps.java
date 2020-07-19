@@ -1,148 +1,164 @@
 package com.springvuegradle.team6.steps;
 
+import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.ProfileRepository;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
-        "ADMIN_PASSWORD=test"})
 @DirtiesContext
 public class ActivitySharingFeatureSteps {
-    private String activityId;
-    private String profileId;
-    private MockHttpSession session;
 
-    @Autowired
-    private MockMvc mvc;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-    @Given("I log in with email {string} and password {string}")
-    public void i_log_in_with_email_and_password(String email, String password) throws Exception {
-        String jsonString =
-                "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \"" + email + "\",\r\n  \"password\": \"" + password + "\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
-        String createProfileUrl = "/profiles";
-        profileId =
-                mvc.perform(
-                        MockMvcRequestBuilders.post(createProfileUrl)
-                                .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isCreated())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+  @Autowired private ActivityRepository activityRepository;
 
-        session = new MockHttpSession();
-        jsonString =
-                "{\n"
-                        + "\t\"email\": \""
-                        + email
-                        + "\",\n"
-                        + "\t\"password\": \""
-                        + password
-                        + "\"\n"
-                        + "}";
-        String loginUrl = "/login";
-        mvc.perform(
-                MockMvcRequestBuilders.post(loginUrl)
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .session(session))
-                .andExpect(status().isOk());
-    }
+  @Autowired private MockMvc mvc;
 
+  @Autowired
+  private LoginSteps loginSteps;
 
-    @Given("There is an activity {string} with {string} access")
-    public void there_is_an_activity_with_access(String activityName, String visibilityType) throws Exception {
-        // Create another user
-        String jsonString =
-                "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \"creator@email.com\",\r\n  \"password\": \"SomePassword1\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
-        String createProfileUrl = "/profiles";
-        String creatorId =
-                mvc.perform(
-                        MockMvcRequestBuilders.post(createProfileUrl)
-                                .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isCreated())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+  private ResultActions mvcResponse;
 
-        // Log in as the other user
-        MockHttpSession creatorSession = new MockHttpSession();
-        jsonString =
-                "{\n"
-                        + "\t\"email\": \""
-                        + "creator@email.com"
-                        + "\",\n"
-                        + "\t\"password\": \""
-                        + "SomePassword1"
-                        + "\"\n"
-                        + "}";
-        String loginUrl = "/login";
-        mvc.perform(
-                MockMvcRequestBuilders.post(loginUrl)
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .session(creatorSession))
-                .andExpect(status().isOk());
+  private String jsonString;
 
-        // Create activity as the other user
-        jsonString =
-                "{\n" +
-                        "  \"activity_name\": \"" + activityName + "\",\n" +
-                        "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                        "  \"activity_type\":[ \n" +
-                        "    \"Walk\"\n" +
-                        "  ],\n" +
-                        "  \"continuous\": false,\n" +
-                        "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
-                        "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
-                        "  \"visibility\": \"" + visibilityType + "\"\n" +
-                        "}";
+  private String activityId;
 
-        ResultActions responseString =
-                mvc.perform(
-                        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", creatorId)
-                                .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .session(creatorSession));
-        responseString.andExpect(status().isCreated());
-        activityId = responseString.andReturn().getResponse().getContentAsString();
-    }
+  @Given("There is an activity {string} with {string} access")
+  public void there_is_an_activity_with_access(String activityName, String visibility) throws Exception {
+    jsonString =
+            "{\n"
+                    + "  \"activity_name\": \""
+                    + activityName
+                    + "\",\n"
+                    + "  \"description\": \"tramping iz fun\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Hike\",\n"
+                    + "    \"Bike\"\n"
+                    + "  ],\n"
+                    + "  \"visibility\": \""
+                    + visibility
+                    + "\",\n"
+                    + "  \"continuous\": true"
+                    + "}";
+    String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
+    activityId =
+            mvc.perform(
+                    MockMvcRequestBuilders.post(createActivityUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(loginSteps.session))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+  }
 
-    @Given("user {string} creates activity {string} with {string} access")
-    public void user_creates_activity_with_access(String email, String activityName, String visibilityType) throws Exception {
-        String jsonString =
-                "{\n" +
-                        "  \"activity_name\": \"" + activityName + "\",\n" +
-                        "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                        "  \"activity_type\":[ \n" +
-                        "    \"Walk\"\n" +
-                        "  ],\n" +
-                        "  \"continuous\": false,\n" +
-                        "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
-                        "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
-                        "  \"visibility\": \"" + visibilityType + "\"\n" +
-                        "}";
+  @Given("user {string} creates activity {string} with {string} access")
+  public void user_creates_activity_with_access(String email, String activityName, String visibility) throws Exception {
+    jsonString =
+            "{\n"
+                    + "  \"activity_name\": \""
+                    + activityName
+                    + "\",\n"
+                    + "  \"description\": \"tramping iz fun\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Hike\",\n"
+                    + "    \"Bike\"\n"
+                    + "  ],\n"
+                    + "  \"visibility\": \""
+                    + visibility
+                    + "\",\n"
+                    + "  \"continuous\": true"
+                    + "}";
+    String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
+    activityId =
+            mvc.perform(
+                    MockMvcRequestBuilders.post(createActivityUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(loginSteps.session))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+  }
 
-        ResultActions responseString =
-                mvc.perform(
-                        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", profileId)
-                                .content(jsonString)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .session(session));
-        responseString.andExpect(status().isCreated());
-        activityId = responseString.andReturn().getResponse().getContentAsString();
-    }
+  @When("user {string} sets activity {string} to {string} access")
+  public void user_sets_activity_to_access(String email, String activityName, String visibility) throws Exception {
+    jsonString =
+            "{\n"
+                    + "  \"visibility\": \""
+                    + visibility
+                    + "\""
+                    + "}";
+    String changeVisibilityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId + "/visibility";
+    mvcResponse =
+            mvc.perform(
+                    MockMvcRequestBuilders.put(changeVisibilityUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(loginSteps.session));
+  }
 
+  @When("user {string} views {string}")
+  public void user_views(String email, String activityName) throws Exception {
+    String password = "Johnnypwd1";
+    jsonString =
+            "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \""
+                    + email
+                    + "\",\r\n  \"password\": \""
+                    + password
+                    + "\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
+    String createProfileUrl = "/profiles";
+    String profileId =
+            mvc.perform(
+                    MockMvcRequestBuilders.post(createProfileUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
 
+    MockHttpSession session = new MockHttpSession();
+    jsonString =
+            "{\n"
+                    + "\t\"email\": \""
+                    + email
+                    + "\",\n"
+                    + "\t\"password\": \""
+                    + password
+                    + "\"\n"
+                    + "}";
+    String loginUrl = "/login";
+    mvcResponse =
+            mvc.perform(
+                    MockMvcRequestBuilders.post(loginUrl)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+
+    mvcResponse =
+            mvc.perform(
+                    MockMvcRequestBuilders.get("/activities/" + activityId)
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session));
+  }
+
+  @Then("I have response status {string} on activity {string}")
+  public void i_have_response_status_on_activity(String statusCode, String activityName) throws Exception {
+    mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
+  }
 }

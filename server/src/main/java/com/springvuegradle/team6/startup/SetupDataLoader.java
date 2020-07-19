@@ -44,7 +44,6 @@ public class SetupDataLoader implements
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
-
         if (isAlreadySetup())
             return;
         createRoleIfNotFound("ROLE_ADMIN");
