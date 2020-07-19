@@ -1,10 +1,12 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import io.cucumber.core.internal.gherkin.deps.com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,6 +36,9 @@ public class FollowControllerTest {
     @Autowired private ActivityRoleRepository activityRoleRepository;
 
     @Autowired private MockMvc mvc;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     private int id;
 
@@ -493,5 +498,202 @@ public class FollowControllerTest {
         JSONObject obj = new JSONObject(response);
         JSONObject answer = new JSONObject("{\"Organiser\":[],\"Participant\":[],\"Access\":[],\"Follower\":[],\"Creator\":[]}");
         org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+
+    @Test
+    void checkIncorrectTypeValue() throws Exception {
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=thisIsAnIncorrectValue")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is4xxClientError());
+    }
+    @Test
+    void getJustParticipants() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Participant);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Participant\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+    @Test
+    void getJustAccessors() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Access);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=accessor")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Access\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+
+    @Test
+    void getJustFollowers() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Follower);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=follower")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Follower\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+
+    @Test
+    void getJustCreators() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Creator);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=creator")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Creator\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+
+    @Test
+    void getJustOrganisers() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Organiser);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=organiser")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Organiser\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
+    public void createData() throws Exception {
+        int profile2Id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+        for (int i = 0 ; i < 5 ; i++) {
+            ActivityRole activityRole = TestDataGenerator.createActivityMemberType(mvc, mapper, session,
+                    ActivityRoleType.Participant, activityRepository.getOne(activityId), profileRepository.getOne(id));
+            activityRoleRepository.save(activityRole);
+
+            ActivityRole activityRole2 = TestDataGenerator.createActivityMemberType(mvc, mapper, session,
+                    ActivityRoleType.Participant, activityRepository.getOne(activityId), profileRepository.getOne(profile2Id));
+            activityRoleRepository.save(activityRole2);
+
+            ActivityRole activityRole3 = TestDataGenerator.createActivityMemberType(mvc, mapper, session,
+                    ActivityRoleType.Participant, activityRepository.getOne(activityId), profileRepository.getOne(profile2Id));
+            activityRoleRepository.save(activityRole3);
+        }
+    }
+    @Test
+    void testPaginationThreeElements() throws Exception {
+        createData();
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=participant&offset=4&limit=3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Participant\":[{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+    }
+    @Test
+    void testPaginationNoValuesShouldDefaultToFirstTen() throws Exception {
+        createData();
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+
+        JSONObject answer = new JSONObject("{\"Participant\":[{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}," +
+                "{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"}," +
+                "{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"},{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"}," +
+                "{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}," +
+                "{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"}," +
+                "{\"PROFILE_ID\":6,\"FULL_NAME\":\"Poly Pocket\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+    }
+    @Test
+    void testPaginationPastMaxValue() throws Exception {
+        createData();
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?type=participant&limit=200&offset=13")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Participant\":[{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"}," +
+                "{\"PROFILE_ID\":9,\"FULL_NAME\":\"John Doe\"}]}");
+        org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
     }
 }

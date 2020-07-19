@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,17 @@ public class TestDataGenerator {
         ).andReturn().getResponse().getContentAsString();
 
         return Integer.parseInt(body);
+    }
+
+    public static ActivityRole createActivityMemberType(MockMvc mvc, ObjectMapper mapper, MockHttpSession session,
+                                               ActivityRoleType activityRoleType, Activity activity, Profile profile) throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profile);
+        activityRole.setActivity(activity);
+        activityRole.setActivityRoleType(activityRoleType);
+        return activityRole;
+
+
     }
 
 }
