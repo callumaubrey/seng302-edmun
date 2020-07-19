@@ -1,8 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.responses.ActivityMemberRoleResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -11,10 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(
         origins = "http://localhost:9500",
@@ -176,26 +171,41 @@ public class FollowController {
     public ResponseEntity<String> getConnectedUsers(@PathVariable int activityId,
                                                     @RequestParam(name = "offset", required = false) Integer offset,
                                                     @RequestParam(name = "limit", required = false) Integer limit,
+                                                    @RequestParam(name = "type", required = false) String type,
                                                     HttpSession session) {
         if (offset == null) {
-            offset = -1;
+            offset = 0;
         }
         if (limit == null) {
-            limit = -1;
+            limit = 10;
+        }
+        List<String> acceptedTypes = Arrays.asList("organiser", "participant", "accessor", "follower", "creator");
+        if (type != null && !acceptedTypes.contains(type)) {
+            return new ResponseEntity("Invalid member type", HttpStatus.BAD_REQUEST);
         }
 
         Optional<Activity> activity = activityRepository.findById(activityId);
         if (activity.isEmpty()) {
             return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
         }
-        ActivityMemberRoleResponse activityMemberRoleResponse = new ActivityMemberRoleResponse();
-        List<JSONObject> participants = activityRoleRepository.findMembers(activityId, ActivityRoleType.Participant.ordinal(), limit, offset);
-        List<JSONObject> creators = activityRoleRepository.findMembers(activityId, ActivityRoleType.Creator.ordinal(), limit, offset);
-        List<JSONObject> organisers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Organiser.ordinal(), limit, offset);
-        List<JSONObject> followers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Follower.ordinal(), limit, offset);
-        List<JSONObject> accessors = activityRoleRepository.findMembers(activityId, ActivityRoleType.Access.ordinal(), limit, offset);
-        activityMemberRoleResponse.setFields(participants, organisers, creators, followers, accessors);
-        return new ResponseEntity(activityMemberRoleResponse, HttpStatus.OK);
+        JSONObject response = new JSONObject();
+
+        if (type == null || type.equals("organiser")) {
+            response.appendField("Organiser",activityRoleRepository.findMembers(activityId, ActivityRoleType.Organiser.ordinal(), limit, offset));
+        }
+        if (type == null || type.equals("participant")) {
+            response.appendField("Participant",activityRoleRepository.findMembers(activityId, ActivityRoleType.Participant.ordinal(), limit, offset));
+        }
+        if (type == null || type.equals("accessor")) {
+            response.appendField("Access",activityRoleRepository.findMembers(activityId, ActivityRoleType.Access.ordinal(), limit, offset));
+        }
+        if (type == null || type.equals("follower")) {
+            response.appendField("Follower",activityRoleRepository.findMembers(activityId, ActivityRoleType.Follower.ordinal(), limit, offset));
+        }
+        if (type == null || type.equals("creator")) {
+            response.appendField("Creator",activityRoleRepository.findMembers(activityId, ActivityRoleType.Creator.ordinal(), limit, offset));
+        }
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 
     /**
