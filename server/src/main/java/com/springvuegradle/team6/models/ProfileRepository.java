@@ -17,4 +17,5 @@ public interface ProfileRepository
 
   Integer removeById(int id);
 
+  Profile findByEmails_address(String email);
 }

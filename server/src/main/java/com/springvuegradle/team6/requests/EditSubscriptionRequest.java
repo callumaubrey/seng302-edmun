@@ -7,21 +7,10 @@ import javax.validation.constraints.NotNull;
 
 public class EditSubscriptionRequest {
 
-  @NotNull
-  @NotEmpty
-  @JsonProperty("email")
-  private String email;
+  @JsonProperty("subscriber")
+  private SubscriptionRequest subscription;
 
-  @NotNull
-  @NotEmpty
-  @JsonProperty("role")
-  private String role;
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getRole() {
-    return role;
+  public SubscriptionRequest getSubscription() {
+    return subscription;
   }
 }

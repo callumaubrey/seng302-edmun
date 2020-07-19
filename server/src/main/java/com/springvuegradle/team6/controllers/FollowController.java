@@ -3,6 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
 import com.springvuegradle.team6.requests.EditSubscriptionRequest;
+import com.springvuegradle.team6.requests.SubscriptionRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -174,7 +175,7 @@ public class FollowController {
      * Endpoint for creator of the activity to set activity roles for users.
      * @param profileId id of creator of activity
      * @param activityId if of activity
-     * @param request information to edit subscription
+     * @param editSubscriptionRequest information to edit subscription
      * @param session the session of the active user
      * @return response entity, 200 if successful.
      */
@@ -182,8 +183,10 @@ public class FollowController {
     public ResponseEntity editSubscription(
             @PathVariable int profileId,
             @PathVariable int activityId,
-            @RequestBody @Valid EditSubscriptionRequest request,
+            @RequestBody @Valid EditSubscriptionRequest editSubscriptionRequest,
             HttpSession session) {
+        SubscriptionRequest request = editSubscriptionRequest.getSubscription();
+
         ResponseEntity<String> authorisedResponse =
                 UserSecurityService.checkAuthorised(profileId, session, profileRepository);
         if (authorisedResponse != null) {
@@ -312,6 +315,7 @@ public class FollowController {
     public ResponseEntity getSubscription(
             @PathVariable int profileId,
             @PathVariable int activityId,
+            @RequestBody @Valid DeleteSubscriptionRequest request,
             HttpSession session) {
         ResponseEntity<String> authorisedResponse =
                 UserSecurityService.checkAuthorised(profileId, session, profileRepository);
@@ -334,7 +338,17 @@ public class FollowController {
                     "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
         }
 
-        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
+
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+        if (roleProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+
+        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
 
         JSONObject obj = new JSONObject();
         obj.appendField("role", activityRole.getRole());

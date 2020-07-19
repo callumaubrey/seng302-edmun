@@ -14,7 +14,6 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
 
   List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
 
-  ActivityRole findByProfile_IdAndActivity_Id(int profileId, int activityId);
   @Query(
           value =
                   "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on " +
