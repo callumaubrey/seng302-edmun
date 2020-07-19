@@ -14,6 +14,15 @@ Custom activity types can also be created and assainged to users.
 - server/gradle Backend gradle source code
 
 ### How to run
+##### Setup Environment Variables
+`cd server/src/main/resources`
+
+1. ###### Default Admin Credentials
+    - Insert the following variables into the application.properties file and fill in the default admin credentials  
+    `ADMIN_EMAIL=`  
+    `ADMIN_PASSWORD=`
+
+
 ##### Client (Frotnend/GUI)
 `cd client`
 `npm install`
