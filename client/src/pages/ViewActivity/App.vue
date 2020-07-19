@@ -22,6 +22,7 @@
 
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
+                <ShareActivity :modal="true" :visibility="visibility"></ShareActivity>
 
                 <!-- Actions -->
                 <b-row align-h="center">
@@ -80,6 +81,7 @@
     import NavBar from "@/components/NavBar.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
+    import ShareActivity from "@/components/ShareActivity.vue";
     import api from '@/Api'
 
 
@@ -88,6 +90,7 @@
         components: {
             FollowerUserList,
             FollowerSummary,
+            ShareActivity,
             NavBar
         },
         data: function () {
@@ -109,7 +112,8 @@
                 locationString: "",
                 locationDataLoading: true,
                 archived: false,
-                notFound: false
+                notFound: false,
+                visibility: null
             }
         },
         mounted() {
@@ -193,6 +197,10 @@
                             vueObj.startTime = res.data.startTime;
                             vueObj.endTime = res.data.endTime;
                             vueObj.location = res.data.location;
+                            vueObj.visibility = res.data.visibilityType;
+                            if(res.data.visibilityType == null) {
+                                this.visibility = "public"
+                            }
                             if (vueObj.location != null) {
                                 vueObj.locationString = vueObj.location.city + ", ";
                                 if (vueObj.location.state) {
