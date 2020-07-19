@@ -5,7 +5,7 @@
             <b-button v-b-modal.modal-1 v-if="visibility == 'Restricted'" variant="warning">{{visibility}}</b-button>
             <b-button v-b-modal.modal-1 v-if="visibility == 'Private'" variant="danger">{{visibility}}</b-button>
 
-            <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header @show="updateSelectedValue" @ok="changeVisibilityType" body-class="p-0" >
+            <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header @show="updateSelectedValue" body-class="p-0" >
                 <b-button-close style="padding: 10px" @click="$bvModal.hide('modal-1')"></b-button-close>
                 <b-row>
                     <b-col style="color: white; background: #4d4d4d; max-width: 40%; horiz-align: center">
@@ -16,20 +16,26 @@
                             <p v-if="selected == 'Restricted'">Only people you allow will be able to view this activity.</p>
                         </div>
                         <b-form-select style="margin-bottom: 40%;" v-model="selected" :options="options" size="sm"></b-form-select>
+                        <b-alert
+                                :show="showWarning"
+                                dismissible
+                                variant="danger"
+                        > You are changing visibility type, are you sure?
+                        </b-alert>
+<!--                        <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue-->
+<!--                            This will effect:</label>-->
                         <b-form-group v-if="selected =='Restricted'" style="color: white" for="emailInput">
                             <p style="font-size: small">Maximum of 5 emails allowed. Add multiple members by separating emails by space or semi-colon</p>
                             <label>Input member emails</label>
-                            <b-input type="email"
+                            <b-input
                                      name="email"
                                      id="emailInput"
                                      placeholder="john@example.com kevin@example.com"
                                      v-model="emailInput"
                                      ></b-input>
-                            <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue
-                                This will effect:</label>
                             <p style="color: #cc9a9a">{{followers.length}} Followers {{participants.length}} Participants {{organisers.length}} Organisers</p>
                         </b-form-group>
-                        <b-button style="margin: 15px" @click="submit(), $bvModal.hide('modal-1')">Save</b-button>
+                        <b-button style="margin: 15px" @click="submit()">Ok</b-button>
                     </b-col>
 
                     <b-col style="size: auto">
@@ -37,51 +43,6 @@
                         <follower-user-list :activity-id=activityId :logged-in-id=profileId :activity-creator-id="profileId" style="size: auto"></follower-user-list>
                     </b-col>
                 </b-row>
-
-
-
-
-
-
-                    <!--                    <b-card no-body>-->
-<!--                        <b-tabs card>-->
-<!--                            <b-tab key="Participants" title="Participants" @click="currentGroup='Participants'">-->
-<!--                                <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in participants">-->
-<!--                                    <b-row class="text-center" align-v="center">-->
-<!--                                        <b-col class="text-center">-->
-<!--                                            {{ user.full_name }}-->
-<!--                                        </b-col>-->
-<!--                                    </b-row>-->
-<!--                                </b-card>-->
-<!--                            </b-tab>-->
-<!--                            <b-tab key="Organisers" title="Organisers" @click="currentGroup='Organisers'">-->
-<!--                                <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in organisers">-->
-<!--                                    <b-row class="text-center" align-v="center">-->
-<!--                                        <b-col class="text-center">-->
-<!--                                            {{ user.full_name }}-->
-<!--                                        </b-col>-->
-<!--                                    </b-row>-->
-<!--                                </b-card>-->
-<!--                            </b-tab>-->
-<!--                            <b-tab key="Participants" title="Accessors" @click="currentGroup='Participants'">-->
-<!--                                <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in accessors">-->
-<!--                                    <b-row class="text-center" align-v="center">-->
-<!--                                        <b-col class="text-center">-->
-<!--                                            {{ user.full_name }}-->
-<!--                                        </b-col>-->
-<!--                                        <b-col class="text-center">-->
-<!--                                            <b-button variant="danger" @click="deleteUser(user.profile_id)">Delete</b-button>-->
-
-<!--                                        </b-col>-->
-<!--                                    </b-row>-->
-<!--                                </b-card>-->
-<!--                            </b-tab>-->
-<!--                        </b-tabs>-->
-<!--                    </b-card>-->
-
-
-
-
             </b-modal>
         </div>
     </div>
@@ -115,6 +76,7 @@
                 participants: [],
                 accessors: [],
                 followers: [],
+                showWarning:false
             }
         },
         methods: {
@@ -135,25 +97,33 @@
                         console.log(err)
                     });
             },
+            deleteUser(id) {
+                alert(id)
+
+            },
+
             changeVisibilityType() {
 
                 let data = {
                     visibility: this.selected.toLowerCase(),
                 }
+                if (this.selected == "Restricted" && this.email != "") {
+                    data["accessors"] = this.email;
+                }
                 const currentObj = this;
                 api.updateActivityVisibility(this.profileId, this.activityId, data)
                     .then(function () {
                         currentObj.visibility = currentObj.selected
+                        currentObj.$bvModal.hide('modal-1')
                     })
                     .catch(function (error) {
-                        alert(error)
-                        // console.log(error);
+                        alert(error.response.data)
                     });
 
             },
             submit() {
                 this.parseEmailInput();
-                this.changeVisibilityType()
+                this.changeVisibilityType();
             },
             parseEmailInput() {
                 var entryArray
@@ -164,9 +134,6 @@
                     entryArray = data.split(' ')
                 }
                 this.email = entryArray
-                // for (const address of this.email){
-                //     api.ShareActivity()
-                // }
             },
             beforeMount() {
                 this.updateSelectedValue()
@@ -174,6 +141,15 @@
         },
         computed:{
 
+        },
+        watch: {
+            selected: function(){
+                if(this.selected != this.visibility){
+                    this.showWarning = true
+                }else {
+                    this.showWarning = false
+                }
+            }
         }
     }
 </script>
