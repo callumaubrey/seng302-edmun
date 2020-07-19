@@ -168,4 +168,26 @@ public class ActivityFollowingFeatureSteps {
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals(false, obj.get("subscribed"));
   }
+
+  @When("the activity {string} has its name changed to {string}")
+  public void the_activity_has_its_name_changed_to(String activityNameBefore, String activityNameAfter) throws Exception {
+    String jsonString;
+    jsonString = "{\n" +
+            "  \"activity_name\": \"" + activityNameAfter + "\",\n" +
+            "  \"description\": \"tramping iz fun\",\n" +
+            "  \"activity_type\":[ \n" +
+            "    \"Hike\",\n" +
+            "    \"Bike\"\n" +
+            "  ],\n" +
+            "  \"continuous\": true\n" +
+            "}";
+
+    String editActivityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId;
+    mvc.perform(
+            MockMvcRequestBuilders.put(editActivityUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().isOk());
+  }
 }
