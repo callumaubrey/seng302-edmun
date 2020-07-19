@@ -3,12 +3,12 @@ package com.springvuegradle.team6.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.Tag;
-import com.springvuegradle.team6.models.VisibilityType;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 
 public class CreateActivityRequest {
@@ -45,6 +45,9 @@ public class CreateActivityRequest {
 
   @JsonProperty("visibility")
   public String visibility;
+
+  @JsonProperty("accessors")
+  public List<String> emails;
 
   public LocationUpdateRequest getLocation() {
     return location;

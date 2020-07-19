@@ -204,7 +204,7 @@
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
-    import axios from 'axios'
+    import api from '@/Api'
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -228,7 +228,6 @@
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
-                    // These values will need to be converted to uppercase before axios request is sent
                     date: null,
                     location: ""
                 },
@@ -338,7 +337,7 @@
                 }
                 if (value.length > 2) {
                     let vue = this;
-                    axios.get('http://localhost:9499/hashtag/autocomplete?hashtag=' + value)
+                    api.getHashtagAutocomplete(value)
                         .then(function (response) {
                             let results = response.data.results;
                             for (let i = 0; i < results.length; i++) {
@@ -355,10 +354,8 @@
             },
             getActivity: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/activities/' + this.activityId)
+                api.getActivity(this.activityId)
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.form.name = response.data.activityName;
                         currentObj.form.description = response.data.description;
                         currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -379,6 +376,12 @@
                             currentObj.form.location += currentObj.locationData.country;
 
                         }
+                        if (response.data.tags.length > 0) {
+                            for (var i = 0; i < response.data.tags.length; i++) {
+                                currentObj.hashtag.values.push("#" + response.data.tags[i].name);
+                            }
+                        }
+                        currentObj.hashtag.values.sort();
                     })
                     .catch(function (error) {
                         console.log(error.response);
@@ -415,16 +418,17 @@
                     return;
                 }
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
+                let data = {
+                    activity_name: this.form.name,
+                    description: this.form.description,
+                    activity_type: this.form.selectedActivityTypes,
+                    continuous: true,
+                    location: this.locationData,
+                    hashtags: this.hashtag.values,
+                    visibility: this.selectedVisibility
+                }
                 if (this.isContinuous == '0') {
-                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
-                        activity_name: this.form.name,
-                        description: this.form.description,
-                        activity_type: this.form.selectedActivityTypes,
-                        continuous: true,
-                        location: this.locationData,
-                        visibility: this.selectedVisibility
-                    })
+                    api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
@@ -442,8 +446,7 @@
                         return;
                     }
                     const isoDates = this.getISODates();
-                    console.log(isoDates);
-                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -452,7 +455,8 @@
                         end_time: isoDates[1],
                         location: this.form.locationData,
                         visibility: this.selectedVisibility
-                    })
+                    }
+                    api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
@@ -510,8 +514,7 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;
@@ -522,8 +525,7 @@
             checkAuthorized: async function () {
                 let currentObj = this;
                 this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/id')
+                return api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
