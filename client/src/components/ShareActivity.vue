@@ -2,6 +2,7 @@
     <div>
         <div v-if="modal == true">
             <b-button v-b-modal.modal-1 v-if="visibility == 'Public'" variant="success">{{visibility}}</b-button>
+            <b-button v-b-modal.modal-1 v-if="visibility == 'Restricted'" variant="warning">{{visibility}}</b-button>
             <b-button v-b-modal.modal-1 v-if="visibility == 'Private'" variant="danger">{{visibility}}</b-button>
 
             <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header @show="updateSelectedValue" @ok="changeVisibilityType" body-class="p-0" >
@@ -20,13 +21,15 @@
                             <label>Input member emails</label>
                             <b-input type="email"
                                      name="email"
+                                     id="emailInput"
                                      placeholder="john@example.com kevin@example.com"
-                                     v-model="email"></b-input>
+                                     v-model="emailInput"
+                                     ></b-input>
                             <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue
                                 This will effect:</label>
                             <p style="color: #cc9a9a">{{followers.length}} Followers {{participants.length}} Participants {{organisers.length}} Organisers</p>
                         </b-form-group>
-                        <b-button style="margin: 15px" @click="$event.create">Ok</b-button>
+                        <b-button style="margin: 15px" @click="submit(), $bvModal.hide('modal-1')">Ok</b-button>
                     </b-col>
 
                     <b-col>
@@ -107,6 +110,7 @@
                 // selectedVisibility: null,
                 selected: 'public',
                 description: 'Reeee',
+                emailInput: '',
                 options: [
                     { value: 'Private', text: 'Private' },
                      { value: 'Restricted', text: 'Restricted' },
@@ -156,6 +160,23 @@
                         // console.log(error);
                     });
 
+            },
+            submit() {
+                this.parseEmailInput();
+                this.changeVisibilityType()
+            },
+            parseEmailInput() {
+                var entryArray
+                let data = this.emailInput
+                if (data.includes(";")){
+                    entryArray = data.split(';')
+                } else {
+                    entryArray = data.split(' ')
+                }
+                this.email = entryArray
+                // for (const address of this.email){
+                //     api.ShareActivity()
+                // }
             },
             beforeMount() {
                 this.updateSelectedValue()
