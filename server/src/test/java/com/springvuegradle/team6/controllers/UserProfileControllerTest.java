@@ -288,7 +288,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordFailCases() throws Exception {
+    void editPasswordUserDoesNotExistReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -304,6 +304,13 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordPasswordsDontMatchReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
 
         int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
@@ -318,7 +325,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
 
+    @Test
+    void editPasswordOldPasswordIncorrectReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
         // Old password isn't correct
         request.oldpassword = "SuperSecurePassword12";
         request.newpassword = "SuperSecurePassword1234";
@@ -330,6 +347,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordNoUppercaseReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
 
         // Password dosent have uppercase
         request.oldpassword = "SuperSecurePassword123";
@@ -342,6 +370,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordNoNumberReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
 
         // Password dosent have number
         request.oldpassword = "SuperSecurePassword123";
@@ -354,8 +393,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
 
-        // Everything is correct
+    @Test
+    void editPasswordSuccessCaseReturn2xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
+
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1234";
