@@ -226,7 +226,7 @@ public class FollowController {
      * Retrieves count of all types of members accociated with an activity
      *
      * @param activityId id of the activity
-     * @param session    current http session
+     * @param session current http session
      * @return Count of users accociated with on an activity
      */
     @GetMapping("activities/{activityId}/membercount")
