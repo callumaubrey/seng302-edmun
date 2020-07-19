@@ -66,11 +66,11 @@ public class Activity {
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      name = "activity_tags",
-      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+          name = "activity_tags",
+          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
@@ -84,12 +84,8 @@ public class Activity {
   @Column(columnDefinition = "datetime default NOW()")
   private LocalDateTime creationDate;
 
-  /**
-   * Map activity id to user id to create profile_subscriptions table in database
-   */
-  @ManyToMany(
-          mappedBy = "subscriptions",
-          fetch = FetchType.LAZY)
+  /** Map activity id to user id to create profile_subscriptions table in database */
+  @ManyToMany(mappedBy = "subscriptions", fetch = FetchType.LAZY)
   private Collection<Profile> subscribers;
 
   @Column(columnDefinition = "boolean default false")
@@ -223,5 +219,9 @@ public class Activity {
 
   public void setSubscribers(Collection<Profile> subscribers) {
     this.subscribers = subscribers;
+  }
+
+  public void setCreationDate(LocalDateTime creationDate) {
+    this.creationDate = creationDate;
   }
 }

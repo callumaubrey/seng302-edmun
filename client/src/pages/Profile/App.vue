@@ -17,10 +17,10 @@
                 </b-row>
                 <b-tabs content-class="mt-3" align="center">
                     <b-tab title="About" active>
-                        <b-card style="margin: 1em" title="About:" >
+                        <b-card style="margin: 1em" title="About:">
                             <b-row>
                                 <b-col><b>Nickname:</b></b-col>
-                                <b-col v-if="userData.nickname != null"><p >{{userData.nickname}}</p></b-col>
+                                <b-col v-if="userData.nickname != null"><p>{{userData.nickname}}</p></b-col>
                                 <b-col v-else><p>No nickname</p></b-col>
                             </b-row>
                             <b-row>
@@ -81,12 +81,13 @@
                                 <b-col v-if="userData.fitness == 2"><p>Average fitness level</p></b-col>
                                 <b-col v-if="userData.fitness == 3"><p>Above average fitness</p></b-col>
                                 <b-col v-if="userData.fitness == 4"><p>Serious athlete</p></b-col>
-                                <b-col v-if="userData.fitness == null"><p>Edit your profile to add a fitness level!</p></b-col>
+                                <b-col v-if="userData.fitness == null"><p>Edit your profile to add a fitness level!</p>
+                                </b-col>
                             </b-row>
                         </b-card>
                     </b-tab>
 
-                    <b-tab title="Location Info" >
+                    <b-tab title="Location Info">
                         <b-card style="margin: 1em;" title="Location Info:">
                             <b-col v-if="userData.location">
                                 <b-row>
@@ -101,7 +102,7 @@
                             </b-col>
                         </b-card>
                     </b-tab>
-                    <b-tab title="Activity Info" >
+                    <b-tab title="Activity Info">
                         <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
                                 <b-col><b>Activity Types</b></b-col>
@@ -117,7 +118,9 @@
                             </b-row>
                             <b-row>
                                 <b-col>
-                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s Activities</b-link>
+                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s
+                                        Activities
+                                    </b-link>
                                 </b-col>
                             </b-row>
                         </b-card>
@@ -131,14 +134,12 @@
 </template>
 
 
-
 <script>
-    // import api from '../Api';
+    import api from '@/Api';
     import NavBar from "@/components/NavBar.vue"
     import AdminSideBar from "@/components/AdminSideBar.vue"
     import AdminMixin from "../../mixins/AdminMixin";
     import {store} from "../../store";
-    import axios from 'axios'
 
     const App = {
         name: 'App',
@@ -146,7 +147,7 @@
             NavBar,
             AdminSideBar
         },
-        data: function() {
+        data: function () {
             return {
                 loggedInUser: '',
                 loggedInId: '',
@@ -173,8 +174,7 @@
         methods: {
             getLoggedInUserData: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/user')
+                return api.getLoggedInProfile()
                     .then(function (response) {
                         currentObj.loggedInUser = response.data;
                         currentObj.loggedInId = response.data.id;
@@ -188,10 +188,8 @@
             },
             getProfileData: async function () {
                 this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
-                console.log(this.loggedInIsAdmin);
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
+                api.getProfile(this.$route.params.id)
                     .then(function (response) {
                         currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
@@ -241,8 +239,7 @@
 
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;

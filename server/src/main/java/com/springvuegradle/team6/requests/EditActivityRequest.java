@@ -11,7 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 public class EditActivityRequest {
@@ -48,8 +48,10 @@ public class EditActivityRequest {
   public LocationUpdateRequest location;
 
   @JsonProperty("visibility")
-
   public String visibility;
+
+  @JsonProperty("accessors")
+  public List<String> emails;
 
   public void editActivityFromRequest(
           Activity activity, NamedLocationRepository locationRepository) {

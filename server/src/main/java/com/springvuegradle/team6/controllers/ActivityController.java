@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.models.location.NamedLocationRepository;
-import com.springvuegradle.team6.requests.CreateActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityTypeRequest;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +21,12 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
@@ -38,16 +41,19 @@ import java.util.*;
 public class ActivityController {
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
+  private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
+      ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
       TagRepository tagRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
+    this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
   }
@@ -308,12 +314,74 @@ public class ActivityController {
     hashtag.setName(hashtag.getName().toLowerCase().substring(1));
   }
 
+
+  /**
+   * Put request to edit the hashtags associated to the activity specified in the path
+   *
+   * @param profileId  author of the activity
+   * @param activityId activity id
+   * @param request    EditActivityHashtagRequest
+   * @param session    HttpSession
+   * @return The response code and message
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/hashtags")
+  public ResponseEntity<String> editActivityHashTag(@PathVariable Integer profileId,
+                                                    @PathVariable Integer activityId,
+                                                    @Valid @RequestBody EditActivityHashtagRequest request,
+                                                    HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
+
+
+      // Check if authorised
+      ResponseEntity<String> authorisedResponse =
+              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+      if (authorisedResponse != null) {
+        return authorisedResponse;
+      }
+
+      ResponseEntity<String> activityAuthorizedResponse =
+              this.checkAuthorisedToEditActivity(activity, session);
+      if (activityAuthorizedResponse != null) {
+        return activityAuthorizedResponse;
+      }
+
+      // Check hashtags
+      ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.getHashtags());
+      if (checkHashtagsValidityResponse != null) {
+        return checkHashtagsValidityResponse;
+      }
+
+      Set<Tag> hashtags = new HashSet<>();
+      if (request.getHashtags() != null) {
+        for (Tag tag : request.getHashtags()) {
+          Tag dbTag = tagRepository.findByName(tag.getName());
+          if (dbTag == null) {
+            tag = tagRepository.save(tag);
+            hashtags.add(tag);
+          } else {
+            hashtags.add(dbTag);
+          }
+        }
+        activity.setTags(hashtags);
+      }
+      activityRepository.save(activity);
+
+      return ResponseEntity.ok("Hashtags of Activity '" + activity.getActivityName() + "' were updated.");
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+
   /**
    * Post Request to create an activity for the given profile based on the request
    *
    * @param profileId The id of the profile where the activity is created for
-   * @param request The request with values to create the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to create the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PostMapping("/profiles/{profileId}/activities")
@@ -368,7 +436,16 @@ public class ActivityController {
     }
     activity.setTags(hashtags);
 
+    // Set creation date to now
+    activity.setCreationDate(LocalDateTime.now());
+
     activityRepository.save(activity);
+
+    ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
+    if (editActivityRolesResponse != null) {
+      return editActivityRolesResponse;
+    }
+
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
 
@@ -474,8 +551,12 @@ public class ActivityController {
       }
 
       editActivityFromRequest(request, activity);
-
       activityRepository.save(activity);
+
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activityId);
+      if (editActivityRolesResponse != null) {
+        return editActivityRolesResponse;
+      }
 
       return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
@@ -521,7 +602,44 @@ public class ActivityController {
    * @return 200 response with headers
    */
   @GetMapping("/activities/{activityId}")
-  public ResponseEntity<String> getActivity(@PathVariable int activityId) {
+  public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+    Object profileId = session.getAttribute("id");
+    if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+      }
+
+      if (activity.getVisibilityType() == VisibilityType.Restricted) {
+        ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
+        if (activityRoles == null) {
+          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+        }
+      }
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activity);
+      return ResponseEntity.ok(postJson);
+    } catch (Exception e) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * Given the activity id, find the creator of the activity and return the id of the creator
+   * @param activityId id of the activity
+   * @return the id of the creator of the activity
+   */
+  @GetMapping("/activities/{activityId}/creatorId")
+  public ResponseEntity<String> getActivityCreator(@PathVariable int activityId) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
@@ -532,7 +650,7 @@ public class ActivityController {
     }
     try {
       ObjectMapper mapper = new ObjectMapper();
-      String postJson = mapper.writeValueAsString(activity);
+      String postJson = mapper.writeValueAsString(activity.getProfile().getId());
       return ResponseEntity.ok(postJson);
     } catch (Exception e) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
@@ -560,5 +678,91 @@ public class ActivityController {
     }
 
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
+  }
+
+
+  /**
+   * Increases the activity role of each accessor to Access, and decreases the activity role to standard user if
+   * they no longer belongs to the list of accessor
+   *
+   * @param emails     list of accessor emails
+   * @param activity   the activity to be edited
+   * @param activityId the activity id to be edited
+   * @return a NOT FOUND response entity if accessor is not found, otherwise return null
+   */
+  private ResponseEntity<String> editActivityRoles(List<String> emails, Activity activity, int activityId) {
+    // Returns if list of accessor is not passed
+    // or visibility type of activity is public (everyone can access) or private (no one can access)
+    if (emails == null || activity.getVisibilityType() == VisibilityType.Public || activity.getVisibilityType() == VisibilityType.Private) {
+      return null;
+    }
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
+    if (activityRoles.size() > 0) {
+      for (var i = 0; i < activityRoles.size(); i++) {
+        Profile profile = activityRoles.get(i).getProfile();
+        if (!(emails.contains(profile.getPrimaryEmail().getAddress()))) {
+          activityRoleRepository.delete(activityRoles.get(i));
+        }
+      }
+    }
+    if (emails.size() > 0) {
+      for (String email : emails) {
+        Profile profile = profileRepository.findByEmails_address(email);
+        if (profile == null) {
+          return new ResponseEntity("User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
+        }
+        ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+        if (role == null) {
+          ActivityRole activityRole = new ActivityRole();
+          activityRole.setActivity(activity);
+          activityRole.setProfile(profile);
+          activityRole.setActivityRoleType(ActivityRoleType.Access);
+          activityRoleRepository.save(activityRole);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Changes the visibility of a users activity
+   *
+   * @param profileId  The id of the user profile
+   * @param activityId The id of the activity
+   * @param session    The current session of the logged in user
+   * @return
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/visibility")
+  public ResponseEntity changeVisibility(
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestBody @Valid EditActivityVisibilityRequest request,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isPresent()) {
+      Activity activity = optionalActivity.get();
+      if (!activity.getProfile().getId().equals(profileId)) {
+        return new ResponseEntity<>(
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+      }
+
+      activity.setVisibilityType(request.getVisibility());
+      activityRepository.save(activity);
+
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
+      if (editActivityRolesResponse != null) {
+        return editActivityRolesResponse;
+      }
+
+      return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
   }
 }
