@@ -608,7 +608,6 @@ public class ActivityController {
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
 
-
   /**
    * Increases the activity role of each accessor to Access, and decreases the activity role of standard user if
    * they no longer belongs to the list of accessor
