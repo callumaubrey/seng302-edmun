@@ -84,13 +84,13 @@
     import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
-    import api from '@/Api'
+    import api from '@/Api';
 
     const App = {
         name: 'App',
         components: {
             NavBar,
-            FollowUnfollow
+            FollowUnfollow,
             FollowerUserList,
             FollowerSummary
         },
