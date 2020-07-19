@@ -69,7 +69,7 @@
 
                 <!-- Participants -->
                 <b-card style="margin: 1em" title="Participants:">
-                    <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
+                    <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="profileId" :logged-in-id="loggedInId"></FollowerUserList>
                 </b-card>
             </div>
         </div>
