@@ -47,18 +47,21 @@ public class ActivityController {
   private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
+  private final SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
       ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
-      TagRepository tagRepository) {
+      TagRepository tagRepository,
+      SubscriptionHistoryRepository subscriptionHistoryRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
+    this.subscriptionHistoryRepository = subscriptionHistoryRepository;
   }
 
   /**
@@ -381,6 +384,10 @@ public class ActivityController {
     activity.setCreationDate(LocalDateTime.now());
 
     activityRepository.save(activity);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile.get(), activity);
+
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
     if (editActivityRolesResponse != null) {

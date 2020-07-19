@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @SpringBootTest
-@Disabled
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 class SubscriptionHistoryRepositoryTest {
