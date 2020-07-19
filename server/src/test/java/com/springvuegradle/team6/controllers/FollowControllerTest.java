@@ -472,4 +472,26 @@ public class FollowControllerTest {
         JSONObject answer = new JSONObject("{\"organisers\":0,\"followers\":1,\"accessors\":1,\"creators\":1,\"participants\":0}");
         org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
     }
+    @Test
+    void getActivityRolesWithOneOrganiserWithPagination() throws Exception {
+        ActivityRole activityRole = new ActivityRole();
+        activityRole.setProfile(profileRepository.getOne(id));
+        activityRole.setActivity(activityRepository.getOne(activityId));
+        activityRole.setActivityRoleType(ActivityRoleType.Organiser);
+        activityRoleRepository.save(activityRole);
+
+        String response =
+                mvc.perform(MockMvcRequestBuilders
+                        .get("/activities/" + activityId + "/members?limit=0")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                )
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        JSONObject obj = new JSONObject(response);
+        JSONObject answer = new JSONObject("{\"Organiser\":[],\"Participant\":[],\"Access\":[],\"Follower\":[],\"Creator\":[]}");
+        org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    }
 }
