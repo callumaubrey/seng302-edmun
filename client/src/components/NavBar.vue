@@ -23,14 +23,17 @@
                             <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
-                                <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
+                                <b-button @click="search()">
+                                    <b-icon-search></b-icon-search>
+                                </b-button>
                             </b-input-group-append>
                         </b-input-group>
                     </b-form>
                 </b-collapse>
                 <b-nav-item v-if="isLoggedIn">
                     <span v-b-toggle.my-collapse>
-                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
+                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search
+                            class="when-closed">Open</b-icon-search>
                     </span>
                 </b-nav-item>
             </b-navbar-nav>
@@ -65,8 +68,8 @@
 <script>
     import 'bootstrap/dist/css/bootstrap.css'
     import 'bootstrap-vue/dist/bootstrap-vue.css'
-    import axios from 'axios'
     import {mutations, store} from "../store";
+    import api from '@/Api';
     import AdminMixin from "../mixins/AdminMixin";
 
     const NavBar = {
@@ -94,7 +97,7 @@
         methods: {
             logout() {
                 const vueObj = this;
-                axios.get('http://localhost:9499/logout/')
+                api.logout()
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
@@ -106,8 +109,7 @@
             getUserId: async function () {
                 this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -130,7 +132,7 @@
             },
             getUserName() {
                 let currentObj = this;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })

@@ -3,7 +3,6 @@ package com.springvuegradle.team6.steps;
 import com.springvuegradle.team6.models.Activity;
 import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.Tag;
-import com.springvuegradle.team6.models.TagRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -13,17 +12,12 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext
 public class ActivityHashtagFeatureSteps {
   private String jsonString;
-  private MockHttpSession session;
   private ResultActions mvcResponse;
   private String activityId;
   private List<String> autocompleteResult;
@@ -44,6 +37,7 @@ public class ActivityHashtagFeatureSteps {
   @Autowired private LoginSteps loginSteps;
 
   @Autowired private MockMvc mvc;
+
 
   @Given("there are no activities in the database")
   public void there_are_no_activities_in_the_database() {
@@ -132,7 +126,6 @@ public class ActivityHashtagFeatureSteps {
             + hashTags
             + "\n"
             + "}";
-
     String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     mvcResponse =
         mvc.perform(
@@ -177,7 +170,7 @@ public class ActivityHashtagFeatureSteps {
   @Then("I have an activity {string} with hashtags")
   public void i_have_an_activity_with_hashtags(
       String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
-    Assert.assertTrue(activityRepository.findByActivityName(activityName).size() > 0);
+    Assert.assertTrue(activityRepository.findByActivityName(activityName) != null);
 
     String getActivityUrl = "/activities/" + activityId;
     String responseString =
@@ -200,7 +193,7 @@ public class ActivityHashtagFeatureSteps {
   @Then("I do not have an activity {string} and receive {string} status code")
   public void i_do_not_have_an_activity_and_receive_status_code(
       String activityName, String statusCode) throws Exception {
-    Assert.assertEquals(0, activityRepository.findByActivityName(activityName).size());
+    Assert.assertTrue(activityRepository.findByActivityName(activityName) == null);
     mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
   }
 
