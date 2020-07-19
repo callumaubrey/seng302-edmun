@@ -1,6 +1,5 @@
 package com.springvuegradle.team6.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
@@ -67,11 +66,11 @@ public class Activity {
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      name = "activity_tags",
-      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+          name = "activity_tags",
+          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
