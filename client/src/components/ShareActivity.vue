@@ -140,11 +140,6 @@
                         console.log(err)
                     });
             },
-            deleteUser(id) {
-                alert(id)
-
-            },
-
             changeVisibilityType() {
 
                 let data = {

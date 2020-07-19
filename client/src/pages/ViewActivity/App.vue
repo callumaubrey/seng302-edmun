@@ -205,7 +205,7 @@
                             vueObj.location = res.data.location;
                             vueObj.visibility = res.data.visibilityType;
                             if(res.data.visibilityType == null) {
-                                this.visibility = "public"
+                                vueObj.visibility = "Public"
                             }
                             if (vueObj.location != null) {
                                 vueObj.locationString = vueObj.location.city + ", ";
@@ -214,7 +214,7 @@
                                 }
                                 vueObj.locationString += vueObj.location.country;
                             }
-                            if (vueObj.activityOwner.id != profileId) {
+                            if (vueObj.activityOwner.id != profileId && vueObj.visibility != 'Public') {
                                 vueObj.$router.push('/profiles/' + profileId);
                             }
                             if (!vueObj.continuous) {
