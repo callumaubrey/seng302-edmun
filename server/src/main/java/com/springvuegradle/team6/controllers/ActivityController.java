@@ -394,17 +394,19 @@ public class ActivityController {
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
-    Optional<Profile> profile = profileRepository.findById(profileId);
-    if (profile.isEmpty()) {
+    Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+    if (optionalProfile.isEmpty()) {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
     }
+
+    Profile profile = optionalProfile.get();
 
     ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.hashTags);
     if (checkHashtagsValidityResponse != null) {
       return checkHashtagsValidityResponse;
     }
 
-    Activity activity = new Activity(request, profile.get());
+    Activity activity = new Activity(request, profile);
     if (activity.getLocation() != null) {
       Optional<NamedLocation> optionalNamedLocation =
           locationRepository.findByCountryAndStateAndCity(
@@ -439,7 +441,16 @@ public class ActivityController {
     // Set creation date to now
     activity.setCreationDate(LocalDateTime.now());
 
+
+
     activityRepository.save(activity);
+
+    //Set creator of activity in ActivityRoleRepository
+    ActivityRole creator = new ActivityRole();
+    creator.setActivity(activity);
+    creator.setProfile(profile);
+    creator.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(creator);
 
     ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
     if (editActivityRolesResponse != null) {
