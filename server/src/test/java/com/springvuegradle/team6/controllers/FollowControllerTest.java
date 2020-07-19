@@ -1,10 +1,10 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.*;
 import io.cucumber.core.internal.gherkin.deps.com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -31,6 +35,9 @@ public class FollowControllerTest {
     private ActivityRepository activityRepository;
 
     @Autowired private ProfileRepository profileRepository;
+
+    @Autowired
+    private ActivityRoleRepository activityRoleRepository;
 
     @Autowired private MockMvc mvc;
 
@@ -164,7 +171,7 @@ public class FollowControllerTest {
     }
 
   @Test
-  void deleteSubsriptionThatDosentExist() throws Exception {
+  void deleteSubscriptionThatDoesntExist() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.delete(
                     "/profiles/" + id + "/subscriptions/activities/" + activityId)
@@ -217,6 +224,7 @@ public class FollowControllerTest {
         )
                 .andExpect(status().is4xxClientError());
     }
+
     @Test
     void addSubsciptionAfterDeletingSameSubscription() throws Exception {
         mvc.perform(MockMvcRequestBuilders
@@ -251,6 +259,88 @@ public class FollowControllerTest {
                         .getContentAsString();
         JSONObject obj = new JSONObject(response);
         org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
+    }
+
+    @Test
+    void addActivityRoleAccess() throws Exception {
+        Profile profile1 = new Profile();
+        profile1.setFirstname("Johnny");
+        profile1.setLastname("Dong");
+        Set<Email> email1 = new HashSet<Email>();
+        email1.add(new Email("example@email.com"));
+        profile1.setEmails(email1);
+        profileRepository.save(profile1);
+
+        String jsonString = "{\n" +
+                "  \"subscriber\": { \n" +
+                "  \"email\": \"example@email.com\"\n" +
+                "  \"role\": \"access\"\n" +
+                "  }\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/"+ id + "/activities/" + activityId + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        )
+                .andExpect(status().is2xxSuccessful());
+
+        String jsonString2 = "{\n" +
+                "  \"email\": example@email.com\n" +
+                "}";
+
+        String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/"+ id + "/activities/" + activityId + "/subscriber")
+                        .content(jsonString2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JSONObject result = new JSONObject(response);
+        Assert.assertSame("access", result.getString("role"));
+    }
+
+    @Test
+    void deleteActivityRole() throws Exception {
+        Profile profile1 = new Profile();
+        profile1.setFirstname("Johnny");
+        profile1.setLastname("Dong");
+        Set<Email> email1 = new HashSet<Email>();
+        email1.add(new Email("example@email.com"));
+        profile1.setEmails(email1);
+        profileRepository.save(profile1);
+
+        String jsonString = "{\n" +
+                "  \"subscriber\": { \n" +
+                "  \"email\": \"example@email.com\"\n" +
+                "  \"role\": \"access\"\n" +
+                "  }\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/"+ id + "/activities/" + activityId + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        )
+                .andExpect(status().is2xxSuccessful());
+
+        String jsonString2 = "{\n" +
+                "  \"email\": example@email.com\n" +
+                "}";
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/"+ id + "/activities/" + activityId + "/subscriber")
+                .content(jsonString2)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session)
+        )
+                .andExpect(status().is2xxSuccessful());
     }
 
 }

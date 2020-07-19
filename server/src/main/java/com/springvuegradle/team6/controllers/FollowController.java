@@ -167,6 +167,14 @@ public class FollowController {
         return ResponseEntity.ok("User unsubscribed from activity");
     }
 
+    /**
+     * Endpoint for creator of the activity to set activity roles for users.
+     * @param profileId id of creator of activity
+     * @param activityId if of activity
+     * @param request information to edit subscription
+     * @param session the session of the active user
+     * @return response entity, 200 if successful.
+     */
     @PutMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
     public ResponseEntity editSubscription(
             @PathVariable int profileId,
@@ -230,6 +238,14 @@ public class FollowController {
         return new ResponseEntity("Activity role updated", HttpStatus.OK);
     }
 
+    /**
+     * To delete the activity role of the email in the request from the activity
+     * @param profileId the creator of the activity
+     * @param activityId the id of the activity
+     * @param request the request with the email to delete
+     * @param session the session of the active user
+     * @return the response, 200 if successfully deleted.
+     */
     @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
     public ResponseEntity deleteSubscription(
             @PathVariable int profileId,
@@ -288,4 +304,38 @@ public class FollowController {
 
         return new ResponseEntity("Activity role deleted", HttpStatus.OK);
     }
+
+    @GetMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+    public ResponseEntity getSubscription(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            HttpSession session) {
+        ResponseEntity<String> authorisedResponse =
+                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
+        }
+
+        Profile creatorProfile = profileRepository.findById(profileId);
+        if (creatorProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+        Optional<Activity> activityOptional = activityRepository.findById(activityId);
+        if (activityOptional.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        Activity activity = activityOptional.get();
+        if (!activity.getProfile().getId().equals(profileId)) {
+            return new ResponseEntity<>(
+                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+        }
+
+        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+
+        JSONObject obj = new JSONObject();
+        obj.appendField("role", activityRole.getRole());
+        return new ResponseEntity(obj, HttpStatus.OK);
+    }
+
 }
