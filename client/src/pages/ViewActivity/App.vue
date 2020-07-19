@@ -7,7 +7,7 @@
         <div v-else-if="notFound">
             <h1 align="center">This activity does not exist</h1>
         </div>
-        <div v-else-if="!locationDataLoading" class="container" >
+        <div v-else-if="!locationDataLoading" class="container">
             <div>
                 <!-- Image and Name -->
                 <b-row>
@@ -15,7 +15,6 @@
                            src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
                            alt="Center image"></b-img>
                 </b-row>
-                <b-row><h3></h3></b-row>
                 <b-row align-h="center">
                     <h3>{{ activityName }}</h3>
                 </b-row>
@@ -29,13 +28,15 @@
                                     v-bind:activityOwnerId="this.$route.params.id"
                                     v-bind:loggedInId="loggedInId"></FollowUnfollow>
                     <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
-                        <b-dropdown-item  @click="editActivity()">Edit</b-dropdown-item>
-                        <b-dropdown-item  @click="deleteActivity()">Delete</b-dropdown-item>
+                        <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
+                        <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
                 </b-row>
 
                 <!-- Content -->
-                <b-card style="margin: 1em" title="About:" >
+                <b-row align-h="center">
+                    <b-col cols="9">
+                <b-card style="margin: 1em" title="About:">
                     <div v-if="locationDataLoading">
                         <div class="text-center text-primary my-2">
                             <b-spinner class="align-middle"></b-spinner>
@@ -44,27 +45,27 @@
                     </div>
                     <div v-else>
                         <b-row>
-                            <b-col><b>Activity Type(s):</b></b-col>
+                            <b-col cols="3"><b>Activity Type(s):</b></b-col>
                             <b-col><p>{{activityTypes}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>Start:</b></b-col>
+                            <b-col cols="3"><b>Start:</b></b-col>
                             <b-col><p>{{startTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
-                            <b-col><b>End:</b></b-col>
+                            <b-col cols="3"><b>End:</b></b-col>
                             <b-col><p>{{endTime}}</p></b-col>
                         </b-row>
                         <b-row v-if="location==null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>No location available</p></b-col>
                         </b-row>
                         <b-row v-if="location!=null">
-                            <b-col><b>Location:</b></b-col>
+                            <b-col cols="3"><b>Location:</b></b-col>
                             <b-col><p>{{locationString}}</p></b-col>
                         </b-row>
                         <b-row>
-                            <b-col><b>Description:</b></b-col>
+                            <b-col cols="3"><b>Description:</b></b-col>
                             <b-col><p>{{description}}</p></b-col>
                         </b-row>
                         <b-row>
@@ -81,11 +82,18 @@
                         </b-row>
                     </div>
                 </b-card>
+                    </b-col>
+                </b-row>
 
                 <!-- Participants -->
-                <b-card style="margin: 1em" title="Participants:">
-                    <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
-                </b-card>
+                <b-row align-h="center">
+                    <b-col cols="9">
+                        <b-card style="margin: 1em" title="Participants:">
+                            <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
+                        </b-card>
+                    </b-col>
+                </b-row>
+
             </div>
         </div>
     </div>
@@ -198,7 +206,7 @@
                 let activityId = this.$route.params.activityId;
                 api.getActivity(activityId)
                     .then((res) => {
-                        if (res.data =="Activity is archived") {
+                        if (res.data == "Activity is archived") {
                             this.archived = true;
                         } else {
                             vueObj.activityOwner = res.data.profile;
@@ -229,12 +237,12 @@
                         }
                         vueObj.locationDataLoading = false;
                     }).catch((err) => {
-                        if (err.response && err.response.status == 404) {
-                            this.notFound = true;
-                        } else {
-                            let profileId = this.$route.params.id;
-                            vueObj.$router.push("/profiles/" + profileId);
-                        }
+                    if (err.response && err.response.status == 404) {
+                        this.notFound = true;
+                    } else {
+                        let profileId = this.$route.params.id;
+                        vueObj.$router.push("/profiles/" + profileId);
+                    }
                 });
             },
             getCorrectDateFormat: function (start, end, currentObj) {
