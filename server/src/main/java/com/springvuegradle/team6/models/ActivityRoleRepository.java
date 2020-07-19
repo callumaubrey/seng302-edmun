@@ -18,9 +18,9 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
           value =
                   "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on " +
                           "activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type " +
-                          "LIMIT 50",
+                          "LIMIT :limit OFFSET :offset",
           nativeQuery = true)
-  List<JSONObject> findMembers(int activityId, int type);
+  List<JSONObject> findMembers(int activityId, int type, int limit, int offset);
 
   @Query(
           value =

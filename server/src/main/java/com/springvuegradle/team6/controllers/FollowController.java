@@ -174,17 +174,26 @@ public class FollowController {
      */
     @GetMapping("activities/{activityId}/members")
     public ResponseEntity<String> getConnectedUsers(@PathVariable int activityId,
+                                                    @RequestParam(name = "offset", required = false) Integer offset,
+                                                    @RequestParam(name = "limit", required = false) Integer limit,
                                                     HttpSession session) {
+        if (offset == null) {
+            offset = -1;
+        }
+        if (limit == null) {
+            limit = -1;
+        }
+
         Optional<Activity> activity = activityRepository.findById(activityId);
         if (activity.isEmpty()) {
             return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
         }
         ActivityMemberRoleResponse activityMemberRoleResponse = new ActivityMemberRoleResponse();
-        List<JSONObject> participants = activityRoleRepository.findMembers(activityId, ActivityRoleType.Participant.ordinal());
-        List<JSONObject> creators = activityRoleRepository.findMembers(activityId, ActivityRoleType.Creator.ordinal());
-        List<JSONObject> organisers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Organiser.ordinal());
-        List<JSONObject> followers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Follower.ordinal());
-        List<JSONObject> accessors = activityRoleRepository.findMembers(activityId, ActivityRoleType.Access.ordinal());
+        List<JSONObject> participants = activityRoleRepository.findMembers(activityId, ActivityRoleType.Participant.ordinal(), limit, offset);
+        List<JSONObject> creators = activityRoleRepository.findMembers(activityId, ActivityRoleType.Creator.ordinal(), limit, offset);
+        List<JSONObject> organisers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Organiser.ordinal(), limit, offset);
+        List<JSONObject> followers = activityRoleRepository.findMembers(activityId, ActivityRoleType.Follower.ordinal(), limit, offset);
+        List<JSONObject> accessors = activityRoleRepository.findMembers(activityId, ActivityRoleType.Access.ordinal(), limit, offset);
         activityMemberRoleResponse.setFields(participants, organisers, creators, followers, accessors);
         return new ResponseEntity(activityMemberRoleResponse, HttpStatus.OK);
     }
