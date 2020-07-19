@@ -10,6 +10,8 @@ const instance = axios.create({
 
 export default {
 
+    instance: instance,
+
     // Other
     login: (email, password) => instance.post('/login', {email: email, password: password}),
 
