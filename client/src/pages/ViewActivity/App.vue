@@ -23,7 +23,7 @@
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
                 <b-row align-h="center">
-                    <ShareActivity :modal="true" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
+                    <ShareActivity :modal="profileId == activityOwner" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
                 </b-row>
 
                 <!-- Actions -->
@@ -75,7 +75,7 @@
 
                 <!-- Participants -->
                 <b-card style="margin: 1em" title="Participants:">
-                    <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="profileId" :logged-in-id="loggedInId"></FollowerUserList>
+                    <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="activityOwner" :logged-in-id="loggedInId"></FollowerUserList>
                 </b-card>
             </div>
         </div>
@@ -195,7 +195,8 @@
                         if (res.data =="Activity is archived") {
                             this.archived = true;
                         } else {
-                            vueObj.activityOwner = res.data.profile;
+                            console.log(res.data)
+                            vueObj.activityOwner = res.data.profile.id;
                             vueObj.activityName = res.data.activityName;
                             vueObj.description = res.data.description;
                             vueObj.activityTypes = res.data.activityTypes;
@@ -214,7 +215,9 @@
                                 }
                                 vueObj.locationString += vueObj.location.country;
                             }
-                            if (vueObj.activityOwner.id != profileId && vueObj.visibility != 'Public') {
+                            //Check to see if the user is authorized to see the activity
+                            //Need to add in support for restricted users
+                            if (vueObj.activityOwner != profileId && vueObj.visibility == 'Private') {
                                 vueObj.$router.push('/profiles/' + profileId);
                             }
                             if (!vueObj.continuous) {

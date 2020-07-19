@@ -84,11 +84,6 @@
 
             </b-modal>
         </div>
-
-        <div v-else>
-            <label>Select sharing</label>
-            <b-form-select v-model=selected :options="options" size="sm" @change="emitInputToParent"/>
-        </div>
     </div>
 </template>
 
