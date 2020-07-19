@@ -349,6 +349,9 @@ public class FollowController {
         }
 
         ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+        if (activityRole == null) {
+            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+        }
 
         JSONObject obj = new JSONObject();
         obj.appendField("role", activityRole.getRole());
