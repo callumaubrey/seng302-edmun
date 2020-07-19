@@ -18,7 +18,7 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import ActivityList from '@/components/ActivityList.vue';
-    import axios from "axios";
+    import api from '@/Api'
 
     export default {
         components: {
@@ -36,8 +36,7 @@
         },
         methods: {
             getUserId: function () {
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then((res) => {
                         this.profileId = res.data;
                         this.isLoggedIn = true;
@@ -45,8 +44,7 @@
                     .catch((err) => console.log(err));
             },
             getUserName: function () {
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then((res) => {
                         this.userName = res.data;
                     })
@@ -58,12 +56,16 @@
                     return;
                 }
 
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/hashtag/' + hashTag)
+                api.getActivitiesByHashtag(hashTag)
                     .then((res) => {
                         this.items = res.data;
                         for (let i = 0; i < res.data.length; i++) {
-                            this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
+                            if (this.items[i].activityTypes !== null) {
+                                this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
+                            }
+                            if (this.items[i].location !== null) {
+                                this.items[i].location = this.items[i].location.city + " " + this.items[i].location.state + ", " + this.items[i].location.country;
+                            }
                         }
                     })
                     .catch(err => console.log(err));

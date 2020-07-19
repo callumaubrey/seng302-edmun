@@ -3,7 +3,7 @@ import Vue from 'vue';
 // Global store for variables that are needed across multiple components
 
 export const store = Vue.observable({
-    adminAccess: false
+    adminAccess: true
 })
 
 export const mutations = {

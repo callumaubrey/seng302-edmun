@@ -169,7 +169,7 @@
 </template>
 
 <script>
-    import axios from 'axios'
+    import api from '@/Api'
 
     export default {
         name: 'AdminUserSearch',
@@ -240,7 +240,7 @@
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
                 // Full name by default
-                let query = 'http://localhost:9499/profiles';
+                let query = '/profiles';
                 if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
@@ -265,7 +265,7 @@
                 this.routeQuery.page = this.currentPage;
                 this.routeQuery.offset = this.offset;
                 this.routeQuery.limit = this.limit;
-                axios.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
+                api.instance.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
                         currentObj.data = res.data.results;
                         console.log("data");
@@ -318,7 +318,7 @@
                 this.tableIsLoading = true;
                 // this.currentPage = 1;
                 if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length === 0) return;
-                let query = 'http://localhost:9499/profiles/count';
+                let query = '/profiles/count';
                 if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
@@ -336,7 +336,7 @@
                 const currentObj = this;
                 // this.count = 10;
                 console.log(query);
-                axios.get(query)
+                api.instance.get(query)
                     .then((res) => {
                         currentObj.count = res.data;
                         console.log("count" + res.data);
@@ -347,8 +347,7 @@
             },
             getActivities: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/activity-types')
+                api.instance.get('/profiles/activity-types')
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.activityTypesForm.options = response.data;
@@ -365,11 +364,12 @@
             },
             deleteUserClicked: function () {
                 console.log(this.selectedRow.primary_email);
-                axios.defaults.withCredentials = true;
-                axios.delete('http://localhost:9499/admin/profiles', {
+                api.instance.delete('/admin/profiles', {
                     data: {
                         primary_email: this.selectedRow.primary_email
                     }
+                }).catch(function (err) {
+                    console.log(err);
                 });
                 this.selectedRow = null;
             },
