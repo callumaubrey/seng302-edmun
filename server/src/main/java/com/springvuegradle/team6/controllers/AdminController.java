@@ -1,26 +1,28 @@
 package com.springvuegradle.team6.controllers;
 
-
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.AddRoleRequest;
+import com.springvuegradle.team6.requests.AdminEditPasswordRequest;
 import com.springvuegradle.team6.requests.DeleteProfileRequest;
 import com.springvuegradle.team6.requests.DeleteRoleRequest;
+import com.springvuegradle.team6.requests.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.DocFlavor;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.Optional;
 
 /**
  * Controller for "/admin" endpoints
  */
 
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('USER_ADMIN')")
 @RequestMapping("/admin")
 @RestController
 public class AdminController {
@@ -32,9 +34,9 @@ public class AdminController {
     /**
      * Constructor for AdminController class which gets the profile, email and role repository
      *
-     * @param profileRep
-     * @param emailRep
-     * @param roleRep
+     * @param profileRep the profile repository
+     * @param emailRep   the email repository
+     * @param roleRep    the role repository
      */
     AdminController(ProfileRepository profileRep, EmailRepository emailRep, RoleRepository roleRep) {
         this.profileRepository = profileRep;
@@ -58,7 +60,8 @@ public class AdminController {
 
             return ResponseEntity.ok("User account with email: " + request.getEmail() + " is terminated");
         } else {
-            return new ResponseEntity("No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(
+                    "No user associated with " + request.getEmail(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -116,6 +119,88 @@ public class AdminController {
             return new ResponseEntity("User does not exist", HttpStatus.BAD_REQUEST);
         }
     }
+    /**
+     * Get request to return particular users id
+     *
+     * @return response entity with the  user's role can be success(200) or profile not found(404)
+     */
+    @GetMapping("/role/{profileId}")
+    public ResponseEntity getRole(@PathVariable int profileId) {
+        Profile profile = profileRepository.findById(profileId);
+        if (profile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }else {
+            return ResponseEntity.ok(profile.getRoles());
+        }
+    }
 
 
+  /**
+   * The admin may edit another user's password without providing the user's current password
+   *
+   * @param profileId  id of the user to be edited
+   * @param request the edit password request containing the new password
+   * @return ResponseEntity which can be success(2xx) or error(4xx)
+   */
+  @PutMapping("/profiles/{profileId}/password")
+  public ResponseEntity<String> adminEditPassword(
+      @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
+
+    if (profileRepository.findById(profileId).isPresent()) {
+      Profile profile = profileRepository.findById(profileId).get();
+      if (!request.newPassword.equals(request.repeatPassword)) {
+        return new ResponseEntity<>("Passwords don't match", HttpStatus.BAD_REQUEST);
+      }
+      profile.setPassword(request.newPassword);
+      profileRepository.save(profile);
+      return ResponseEntity.ok("Password Edited Successfully");
+    } else {
+      return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * The admin may assign another user's role in a toggle format. So if a user already has the requested role
+   * then it will be removed (except for ROLE_ADMIN which can not be deleted and is the global admin).
+   * @param profileId id of the user to be edited
+   * @param request the edit role request containing the new role as a string
+   * @return ResponseEntity which can be success(2xx) or error(4xx)
+   */
+  @PutMapping("/profiles/{profileId}/role")
+  public ResponseEntity<String> adminEditRole(
+          @PathVariable Integer profileId, @Valid @RequestBody AdminEditRoleRequest request) {
+    //Check to see if profile is valid
+    if (!profileRepository.findById(profileId).isPresent()) {
+      return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
+    }
+    Profile profile = profileRepository.findById(profileId).get();
+    String requestedRole = request.getRole();
+
+    //Check if requested role is valid
+    if (!roleRepository.existsByName(requestedRole)){
+      return new ResponseEntity<>("This role does not exist", HttpStatus.BAD_REQUEST);
+    }
+    Role role = roleRepository.findByName(requestedRole);
+    //Remove role if user already has it and is not ROLE_ADMIN
+    if (profile.getRoles().contains(role)) {
+      if (role.getRoleName() == "ROLE_ADMIN"){
+        return new ResponseEntity<>("ROLE_ADMIN can not be removed", HttpStatus.FORBIDDEN);
+      }
+      try {
+        profile.removeRole(role.getRoleName());
+        profileRepository.save(profile);
+        return new ResponseEntity<>("Role removed from user", HttpStatus.OK);
+      } catch (Exception e){
+        return new ResponseEntity<>("The user does not have this role", HttpStatus.BAD_REQUEST);
+      }
+    }
+    //Add the new role to the user
+    try {
+      profile.addRole(role);
+      profileRepository.save(profile);
+    } catch (Exception e){
+      return new ResponseEntity<>("This role does not exist", HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>("Role added to user", HttpStatus.OK);
+  }
 }

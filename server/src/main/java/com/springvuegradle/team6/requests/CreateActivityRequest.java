@@ -1,16 +1,14 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
 import com.springvuegradle.team6.models.ActivityType;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.OSMElementID;
+import com.springvuegradle.team6.models.Tag;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 
 public class CreateActivityRequest {
@@ -37,9 +35,19 @@ public class CreateActivityRequest {
   @JsonProperty("end_time")
   public String endTime;
 
+  @JsonProperty("hashtags")
+  @Size(max = 30)
+  public Set<Tag> hashTags;
+
   @JsonProperty("location")
   @Valid
   public LocationUpdateRequest location;
+
+  @JsonProperty("visibility")
+  public String visibility;
+
+  @JsonProperty("accessors")
+  public List<String> emails;
 
   public LocationUpdateRequest getLocation() {
     return location;

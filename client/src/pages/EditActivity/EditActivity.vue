@@ -111,6 +111,18 @@
 
                     <b-row>
                         <b-col>
+                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                       :values="hashtag.values"
+                                       :help-text="'Max 30 hashtags'"
+                                       :input-character-limit="140"
+                                       v-on:emitInput="autocompleteInput"
+                                       v-on:emitTags="manageTags"></SearchTag>
+                        </b-col>
+                    </b-row>
+                    <hr>
+
+                    <b-row>
+                        <b-col>
                             <b-form-group id="name-input-group" label="Name" label-for="name-input">
                                 <b-form-input
                                         :state="validateState('name')"
@@ -180,14 +192,17 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import SearchTag from "../../components/SearchTag";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
-    import axios from 'axios'
+    import AdminMixin from "../../mixins/AdminMixin";
+    import api from '@/Api'
 
     export default {
         mixins: [validationMixin, locationMixin],
         components: {
+            SearchTag,
             NavBar
         },
         data() {
@@ -205,7 +220,6 @@
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
-                    // These values will need to be converted to uppercase before axios request is sent
                     date: null,
                     location: ""
                 },
@@ -218,7 +232,10 @@
                 dbStartDate: null,
                 locationData: null,
                 loggedInIsAdmin: false,
-                loggedInUserRoles: []
+                hashtag: {
+                    options: [],
+                    values: []
+                }
             }
         },
         validations: {
@@ -296,12 +313,40 @@
             }
         },
         methods: {
+            manageTags: function (value) {
+                this.hashtag.values = value;
+                this.hashtag.options = [];
+            },
+            autocompleteInput: function (value) {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(value)) {
+                    this.hashtag.options = [];
+                    return;
+                }
+                if (value[0] == "#") {
+                    value = value.substr(1);
+                }
+                if (value.length > 2) {
+                    let vue = this;
+                    api.getHashtagAutocomplete(value)
+                        .then(function (response) {
+                            let results = response.data.results;
+                            for (let i = 0; i < results.length; i++) {
+                                results[i] = "#" + results[i];
+                            }
+                            vue.hashtag.options = results;
+                        })
+                        .catch(function () {
+
+                        });
+                } else {
+                    this.hashtag.options = [];
+                }
+            },
             getActivity: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/activities/' + this.activityId)
+                api.getActivity(this.activityId)
                     .then(function (response) {
-                        console.log(response.data);
                         currentObj.form.name = response.data.activityName;
                         currentObj.form.description = response.data.description;
                         currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -322,6 +367,12 @@
                             currentObj.form.location += currentObj.locationData.country;
 
                         }
+                        if (response.data.tags.length > 0) {
+                            for (var i = 0; i < response.data.tags.length; i++) {
+                                currentObj.hashtag.values.push("#" + response.data.tags[i].name);
+                            }
+                        }
+                        currentObj.hashtag.values.sort();
                     })
                     .catch(function (error) {
                         console.log(error.response);
@@ -358,15 +409,16 @@
                     return;
                 }
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
+                let data = {
+                    activity_name: this.form.name,
+                    description: this.form.description,
+                    activity_type: this.form.selectedActivityTypes,
+                    continuous: true,
+                    location: this.locationData,
+                    hashtags: this.hashtag.values
+                }
                 if (this.isContinuous == '0') {
-                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
-                        activity_name: this.form.name,
-                        description: this.form.description,
-                        activity_type: this.form.selectedActivityTypes,
-                        continuous: true,
-                        location: this.locationData
-                    })
+                    api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
@@ -384,8 +436,7 @@
                         return;
                     }
                     const isoDates = this.getISODates();
-                    console.log(isoDates);
-                    axios.put("http://localhost:9499/profiles/" + userId + "/activities/" + this.activityId, {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
@@ -393,7 +444,8 @@
                         start_time: isoDates[0],
                         end_time: isoDates[1],
                         location: this.form.locationData
-                    })
+                    }
+                    api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityUpdateMessage = "Successfully updated activity: " + currentObj.form.name;
@@ -451,8 +503,7 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;
@@ -460,29 +511,10 @@
                     .catch(function () {
                     });
             },
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/id')
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+                return api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {

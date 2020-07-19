@@ -17,7 +17,12 @@ import java.util.Optional;
 
 @RestController
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {

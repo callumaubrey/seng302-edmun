@@ -75,7 +75,9 @@
                                         v-model="$v.durationForm.endTime.$model"
                                         aria-describedby="end-time-feedback"
                                 ></b-form-input>
-                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as start time.</b-form-invalid-feedback>
+                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as
+                                    start time.
+                                </b-form-invalid-feedback>
                             </b-form-group>
                         </b-col>
                     </b-row>
@@ -112,6 +114,17 @@
 
                     <b-row>
                         <b-col>
+                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                       :values="hashtag.values"
+                                       :help-text="'Max 30 hashtags'"
+                                       :input-character-limit="140"
+                                       v-on:emitInput="autocompleteInput"
+                                       v-on:emitTags="manageTags"></SearchTag>
+                        </b-col>
+                    </b-row>
+                    <hr>
+                    <b-row>
+                        <b-col>
                             <b-form-group id="name-input-group" label="Name" label-for="name-input">
                                 <b-form-input
                                         id="name-input"
@@ -145,7 +158,7 @@
                         <b-col>
                             <b-form-group id="location-input-group" label="Location" label-for="location-input"
                                           description="Please enter the location you want to search for and select from the dropdown"
-                                            invalid-feedback="The location of the activity must be chosen from the drop down">
+                                          invalid-feedback="The location of the activity must be chosen from the drop down">
                                 <b-form-input id="location-input"
                                               name="location-input"
                                               placeholder="Search for a city/county"
@@ -189,15 +202,18 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import SearchTag from "../../components/SearchTag";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
-    import axios from 'axios'
+    import AdminMixin from "../../mixins/AdminMixin";
+    import api from '@/Api'
 
     export default {
         mixins: [validationMixin, locationMixin],
         components: {
-            NavBar
+            NavBar,
+            SearchTag
         },
         data() {
             return {
@@ -211,7 +227,6 @@
                     description: null,
                     selectedActivityType: 0,
                     selectedActivityTypes: [],
-                    // These values will need to be converted to uppercase before axios request is sent
                     date: null,
                     location: null
                 },
@@ -225,7 +240,10 @@
                 activityErrorMessage: "",
                 locationData: null,
                 loggedInIsAdmin: false,
-                loggedInUserRoles: []
+                hashtag: {
+                    options: [],
+                    values: [],
+                }
             }
         },
         validations: {
@@ -298,14 +316,43 @@
                         }
                         return true;
                     }
-                }
-            }
+                },
+            },
         },
         methods: {
+            manageTags: function (value) {
+                this.hashtag.values = value;
+                this.hashtag.options = [];
+            },
+            autocompleteInput: function (value) {
+                let pattern = /^#?[a-zA-Z0-9_]*$/;
+                if (!pattern.test(value)) {
+                    this.hashtag.options = [];
+                    return;
+                }
+                if (value[0] == "#") {
+                    value = value.substr(1);
+                }
+                if (value.length > 2) {
+                    let vue = this;
+                    api.getHashtagAutocomplete(value)
+                        .then(function (response) {
+                            let results = response.data.results;
+                            for (let i = 0; i < results.length; i++) {
+                                results[i] = "#" + results[i];
+                            }
+                            vue.hashtag.options = results;
+                        })
+                        .catch(function () {
+
+                        });
+                } else {
+                    this.hashtag.options = [];
+                }
+            },
             getActivities: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/activity-types')
+                api.getProfileActivityTypes()
                     .then(function (response) {
                         currentObj.activityTypes = response.data;
                     })
@@ -367,7 +414,6 @@
             onSubmit() {
                 this.$v.form.$touch();
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
                 let userId = this.profileId;
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
@@ -376,13 +422,15 @@
                     if (this.$v.form.$anyError) {
                         return;
                     }
-                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
-                        location: this.locationData
-                    })
+                        location: this.locationData,
+                        hashtags: this.hashtag.values
+                    }
+                    api.createActivity(userId, data)
                         .then(function () {
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
@@ -401,12 +449,13 @@
                         return;
                     }
                     const isoDates = this.getDates();
-                    axios.post("http://localhost:9499/profiles/" + userId + "/activities", {
+                    let data = {
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
                         end_time: isoDates[1]
-                    })
+                    }
+                    api.createActivity(userId, data)
                         .then(function (response) {
                             console.log(response);
                             currentObj.activityErrorMessage = "";
@@ -420,6 +469,7 @@
                         });
                 }
             },
+
             getDates: function () {
                 let startDate = new Date(this.durationForm.startDate);
                 let endDate = new Date(this.durationForm.endDate);
@@ -456,8 +506,7 @@
             },
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -466,8 +515,7 @@
             },
             getUserName: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -478,29 +526,10 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/id')
+                this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
+                return api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {

@@ -1,10 +1,15 @@
 <template>
     <div id="app" v-if="isLoggedIn">
-        <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInId"></NavBar>
+        <NavBar :loggedInIsAdmin="loggedInIsAdmin" v-bind:hideElements="hidden" v-bind:isLoggedIn="isLoggedIn"
+                v-bind:loggedInId="loggedInId"></NavBar>
         <div class="container">
+            <AdminSideBar :loggedInId="loggedInId" :loggedInIsAdmin="loggedInIsAdmin"
+                          :userData="userData" v-if="adminAccess"></AdminSideBar>
             <div>
                 <b-row>
-                <b-img center rounded= "circle" width ="150px" height="150px" src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg" alt="Center image"></b-img>
+                    <b-img alt="Center image" center height="150px" rounded="circle"
+                           src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+                           width="150px"></b-img>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -12,10 +17,10 @@
                 </b-row>
                 <b-tabs content-class="mt-3" align="center">
                     <b-tab title="About" active>
-                        <b-card style="margin: 1em" title="About:" >
+                        <b-card style="margin: 1em" title="About:">
                             <b-row>
                                 <b-col><b>Nickname:</b></b-col>
-                                <b-col v-if="userData.nickname != null"><p >{{userData.nickname}}</p></b-col>
+                                <b-col v-if="userData.nickname != null"><p>{{userData.nickname}}</p></b-col>
                                 <b-col v-else><p>No nickname</p></b-col>
                             </b-row>
                             <b-row>
@@ -76,12 +81,13 @@
                                 <b-col v-if="userData.fitness == 2"><p>Average fitness level</p></b-col>
                                 <b-col v-if="userData.fitness == 3"><p>Above average fitness</p></b-col>
                                 <b-col v-if="userData.fitness == 4"><p>Serious athlete</p></b-col>
-                                <b-col v-if="userData.fitness == null"><p>Edit your profile to add a fitness level!</p></b-col>
+                                <b-col v-if="userData.fitness == null"><p>Edit your profile to add a fitness level!</p>
+                                </b-col>
                             </b-row>
                         </b-card>
                     </b-tab>
 
-                    <b-tab title="Location Info" >
+                    <b-tab title="Location Info">
                         <b-card style="margin: 1em;" title="Location Info:">
                             <b-col v-if="userData.location">
                                 <b-row>
@@ -96,7 +102,7 @@
                             </b-col>
                         </b-card>
                     </b-tab>
-                    <b-tab title="Activity Info" >
+                    <b-tab title="Activity Info">
                         <b-card style="margin: 1em" title="Activity Info:">
                             <b-row>
                                 <b-col><b>Activity Types</b></b-col>
@@ -112,7 +118,9 @@
                             </b-row>
                             <b-row>
                                 <b-col>
-                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s Activities</b-link>
+                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s
+                                        Activities
+                                    </b-link>
                                 </b-col>
                             </b-row>
                         </b-card>
@@ -126,18 +134,20 @@
 </template>
 
 
-
 <script>
-    // import api from '../Api';
+    import api from '@/Api';
     import NavBar from "@/components/NavBar.vue"
-    import axios from 'axios'
+    import AdminSideBar from "@/components/AdminSideBar.vue"
+    import AdminMixin from "../../mixins/AdminMixin";
+    import {store} from "../../store";
 
     const App = {
         name: 'App',
         components: {
-            NavBar
+            NavBar,
+            AdminSideBar
         },
-        data: function() {
+        data: function () {
             return {
                 loggedInUser: '',
                 loggedInId: '',
@@ -153,15 +163,18 @@
                 location: '',
                 dob: '',
                 loggedInIsAdmin: false,
-                loggedInUserRoles: [],
-                hidden: null
+                hidden: null,
+            }
+        },
+        computed: {
+            adminAccess() {
+                return store.adminAccess;
             }
         },
         methods: {
             getLoggedInUserData: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/user')
+                return api.getLoggedInProfile()
                     .then(function (response) {
                         currentObj.loggedInUser = response.data;
                         currentObj.loggedInId = response.data.id;
@@ -173,10 +186,10 @@
                         currentObj.$router.push('/login');
                     });
             },
-            getProfileData: function () {
+            getProfileData: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/' + this.$route.params.id)
+                api.getProfile(this.$route.params.id)
                     .then(function (response) {
                         currentObj.profileId = response.data.id;
                         currentObj.userData = response.data;
@@ -217,18 +230,16 @@
             },
             checkHideElements: function () {
                 let currentObj = this;
-                if (currentObj.loggedInId === currentObj.profileId || currentObj.loggedInIsAdmin){
+                if (currentObj.loggedInId === currentObj.profileId || store.adminAccess) {
                     currentObj.hidden = false;
-                }
-                else{
+                } else {
                     currentObj.hidden = true;
                 }
             },
 
             getUserId: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         currentObj.isLoggedIn = true;
@@ -240,33 +251,16 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
-
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this;
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            }
         },
         watch: {
             $route: function () {
                 this.getProfileData();
+            },
+            adminAccess: function () {
+                this.checkHideElements();
             }
         },
         mounted: function () {
-            this.checkUserIsAdmin();
             this.getProfileData();
         },
         beforeMount: async function () {
@@ -276,3 +270,6 @@
 
     export default App;
 </script>
+
+<style>
+</style>

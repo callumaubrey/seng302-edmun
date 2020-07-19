@@ -50,7 +50,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void createProfileEmptyFailCases() throws Exception {
+    void createProfileWithEmptyRequest() throws Exception {
         String createProfileUrl = "/profiles";
         CreateProfileRequest validRequest = getDummyProfile();
 
@@ -59,14 +59,27 @@ class UserProfileControllerTest {
                 post(createProfileUrl)
                         .content("{}")
                         .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().is4xxClientError());
+        ).andExpect(status().is4xxClientError());
+    }
+    @Test
+    void createProfileWithValidRequest() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Success Case
         mvc.perform(
                 post(createProfileUrl)
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isCreated());
+        ).andExpect(status().isCreated());
+    }
+
+    @Test
+    void createProfileWithEmptyLastName() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Empty lastname
         validRequest.lastname = "";
@@ -75,6 +88,13 @@ class UserProfileControllerTest {
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileWithEmptyFirstName() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Empty firstname
         validRequest.lastname = "Doe";
@@ -85,6 +105,13 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
 
+    }
+
+    @Test
+    void createProfileWithEmptyPrimaryEmail() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
         // Empty primary email
         validRequest.lastname = "Doe";
         validRequest.firstname = "John";
@@ -94,6 +121,13 @@ class UserProfileControllerTest {
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileWithEmptyPassword() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Empty password
         validRequest.lastname = "Doe";
@@ -105,6 +139,13 @@ class UserProfileControllerTest {
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileWithEmptyDateOfBirth() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Empty date of birth
         validRequest.lastname = "Doe";
@@ -117,6 +158,13 @@ class UserProfileControllerTest {
                         .content(mapper.writeValueAsString(validRequest))
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProfileWithEmptyGender() throws Exception {
+        String createProfileUrl = "/profiles";
+        CreateProfileRequest validRequest = getDummyProfile();
+
 
         // Empty Gender
         validRequest.lastname = "Doe";
@@ -240,7 +288,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordFailCases() throws Exception {
+    void editPasswordUserDoesNotExistReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -256,6 +304,13 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordPasswordsDontMatchReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
 
         int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
@@ -270,7 +325,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
 
+    @Test
+    void editPasswordOldPasswordIncorrectReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
         // Old password isn't correct
         request.oldpassword = "SuperSecurePassword12";
         request.newpassword = "SuperSecurePassword1234";
@@ -282,6 +347,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordNoUppercaseReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
 
         // Password dosent have uppercase
         request.oldpassword = "SuperSecurePassword123";
@@ -294,6 +370,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void editPasswordNoNumberReturn4xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        // Passwords don't match
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
 
         // Password dosent have number
         request.oldpassword = "SuperSecurePassword123";
@@ -306,8 +393,17 @@ class UserProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
         ).andExpect(status().is4xxClientError());
+    }
 
-        // Everything is correct
+    @Test
+    void editPasswordSuccessCaseReturn2xxStatusCode() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        EditPasswordRequest request = new EditPasswordRequest();
+
+        int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+        String editPassUrl = "/profiles/" + id + "/password";
+
         request.oldpassword = "SuperSecurePassword123";
         request.newpassword = "SuperSecurePassword1234";
         request.repeatedpassword = "SuperSecurePassword1234";

@@ -385,6 +385,8 @@
     import NavBar from "@/components/NavBar.vue"
     import {email, helpers, maxLength, required, sameAs} from 'vuelidate/lib/validators'
     import locationMixin from "../../mixins/locationMixin";
+    import AdminMixin from "../../mixins/AdminMixin";
+    import api from '@/Api'
 
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -464,8 +466,7 @@
                 locationUpdateMessage: "",
                 locationErrorMessage: "",
                 locationDisplayText: "",
-                loggedInIsAdmin: false,
-                loggedInUserRoles: []
+                loggedInIsAdmin: false
             }
         },
         validations: {
@@ -558,9 +559,7 @@
                     return;
                 }
                 const vueObj = this;
-                axios.defaults.withCredentials = true;
-                console.log(this.profileForm.fitness);
-                axios.put("http://localhost:9499/profiles/" + userId, {
+                let updateData = {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -573,7 +572,8 @@
                     bio: this.profileForm.bio,
                     activities: this.yourActivites,
                     passports: this.passportsCode
-                }).then(function (response) {
+                }
+                api.updateProfile(userId, updateData).then(function (response) {
                     vueObj.emailErrorMessage = "";
                     vueObj.profileUpdateMessage = response.data;
                 }).catch(function (error) {
@@ -602,7 +602,7 @@
                     tempPassports.push(this.selectedCountry);
                     const addedPassport = this.selectedCountry;
                     tempCodes.push(this.selectedCountry[1]);
-                    axios.put("http://localhost:9499/profiles/" + userId, {
+                    let updateData = {
                         firstname: this.profileForm.firstname,
                         middlename: this.profileForm.middlename,
                         lastname: this.profileForm.lastname,
@@ -615,7 +615,8 @@
                         bio: this.profileForm.bio,
                         activities: this.yourActivites,
                         passports: tempCodes
-                    }).then(function (response) {
+                    }
+                    api.updateProfile(userId, updateData).then(function (response) {
                         if (response.status == 200) {
                             vueObj.passportsErrorMessage = "";
                             vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports";
@@ -644,10 +645,10 @@
                     this.yourActivites.push(this.selectedActivity);
                     const vueObj = this;
                     const addedActivity = this.selectedActivity;
-                    axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
+                    let data = {
                         activities: this.yourActivites
-                    }).then(function (response) {
-                        console.log(vueObj.yourActivites);
+                    }
+                    api.updateActivityTypes(userId, data).then(function (response) {
                         if (response.status == 200) {
                             vueObj.activityErrorMessage = null;
                             vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's";
@@ -666,8 +667,7 @@
             },
             getActivityTypes() {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/activity-types')
+                api.getProfileActivityTypes()
                     .then(function (response) {
                         currentObj.availActivitys = response.data;
                     })
@@ -685,7 +685,7 @@
                 const tempCodes = this.passportsCode.slice();
                 const removedPassport = (tempPassports.splice(index, 1))[0];
                 tempCodes.splice(index, 1);
-                axios.put("http://localhost:9499/profiles/" + userId, {
+                let updateData = {
                     firstname: this.profileForm.firstname,
                     middlename: this.profileForm.middlename,
                     lastname: this.profileForm.lastname,
@@ -698,7 +698,8 @@
                     bio: this.profileForm.bio,
                     activities: this.yourActivites,
                     passports: tempCodes
-                }).then(function (response) {
+                }
+                api.updateProfile(userId, updateData).then(function (response) {
                     if (response.status == 200) {
                         vueObj.passportsUpdateMessage = removedPassport[0] + " has been successfully removed from passports";
                         vueObj.yourCountries = tempPassports;
@@ -719,10 +720,11 @@
                 }
                 const vueObj = this;
                 const deletedActivity = (this.yourActivites.splice(index, 1));
-                // Need to change to the new activities api
-                axios.put("http://localhost:9499/profiles/" + userId + "/activity-types", {
+                let data = {
                     activities: this.yourActivites
-                }).then(function (response) {
+                }
+
+                api.updateProfileLocation(userId, data).then(function (response) {
                     if (response.status == 200) {
                         vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
                     }
@@ -734,8 +736,6 @@
                 });
             },
             setLocationInput: function (location) {
-                //document.getElementById("locationInput").value = location.display_name;
-                this.locationText = location.display_name;
                 const vueObj = this;
                 vueObj.locations = [];
                 vueObj.location = location;
@@ -760,9 +760,8 @@
                     if (location.address.country) {
                         data.country = location.address.country;
                     }
-                    console.log(data);
-                    axios.put("http://localhost:9499/profiles/" + userId + "/location", data).then(function (response) {
-                        console.log(response);
+
+                    api.updateProfileLocation(userId, data).then(function () {
                         vueObj.locationDisplayText = vueObj.location.display_name;
                         vueObj.locationUpdateMessage = "Location successfully updated";
                         vueObj.locationErrorMessage = "";
@@ -772,7 +771,8 @@
                         vueObj.locationErrorMessage = "Location failed to update";
                     });
                 } else {
-                    axios.put("http://localhost:9499/profiles/" + userId + "/location", {}).then(function (response) {
+                    let data = {};
+                    api.updateProfileLocation(userId, data).then(function (response) {
                         console.log(response)
                     }).catch(function (error) {
                         console.log(error)
@@ -803,10 +803,11 @@
                 tempEmails.splice(index, 1);
                 tempEmails.push(oldPrimary);
                 const vueObj = this;
-                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                let data = {
                     primary_email: tempPrimary[0],
                     additional_email: tempEmails
-                }).then(function (response) {
+                }
+                api.updateProfileEmails(userId, data).then(function (response) {
                     if (response.status == 200) {
                         vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = newPrimary + " was successfully updated as primary";
@@ -829,10 +830,11 @@
                 const tempEmails = this.emails.slice();
                 const removedEmail = tempEmails.splice(index, 1)[0];
                 const vueObj = this;
-                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                let data = {
                     primary_email: this.primaryEmail[0],
                     additional_email: tempEmails
-                }).then(function (response) {
+                }
+               api.updateProfileEmails(userId, data).then(function (response) {
                     if (response.status == "200") {
                         vueObj.emailErrorMessage = "";
                         vueObj.emailUpdateMessage = removedEmail + " was successfully removed from your emails";
@@ -861,10 +863,12 @@
                 let newEmails = this.emails.slice();
                 newEmails.push(newEmail);
                 const vueObj = this;
-                axios.put("http://localhost:9499/profiles/" + userId + "/emails", {
+                let data = {
                     primary_email: this.primaryEmail[0],
                     additional_email: newEmails
-                }).then(function (response) {
+                }
+
+                api.updateProfileEmails(userId, data).then(function (response) {
                     if (response.status == "200") {
                         console.log("hello");
                         vueObj.emailErrorMessage = "";
@@ -889,13 +893,12 @@
             }),
             getProfileData: async function () {
                 let vueObj = this;
-                axios.defaults.withCredentials = true;
                 let userId = this.profileId;
                 console.log(this.profileId, this.$route.params.id);
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
-                axios.get('http://localhost:9499/profiles/' + userId)
+                api.getProfile(userId)
                     .then(function (response) {
                         console.log(response.data);
                         for (let i = 0; i < response.data.passports.length; i++) {
@@ -933,24 +936,9 @@
                     })
                     .catch(function (e) {
                         console.log(e)
-                        // vueObj.isLoggedIn = false;
-                        // vueObj.$router.push('/login');
                     });
             },
-            // getUserId: async function () {
-            //     let currentObj = this;
-            //     axios.defaults.withCredentials = true;
-            //     axios.get('http://localhost:9499/profiles/id')
-            //         .then(function (response) {
-            //             currentObj.profileId = response.data;
-            //         })
-            //         .catch(function () {
-            //         });
-            // },
             savePassword: function () {
-                console.log(this.passwordForm.oldPassword);
-                console.log(this.passwordForm.password);
-                console.log(this.passwordForm.passwordRepeat);
                 let currentObj = this;
                 this.$v.passwordForm.$touch();
                 if (this.$v.passwordForm.$anyError) {
@@ -961,12 +949,12 @@
                     console.log("I was here");
                     userId = this.$route.params.id;
                 }
-                axios.defaults.withCredentials = true;
-                axios.put("http://localhost:9499/profiles/" + userId + "/password", {
+                let data = {
                     old_password: this.passwordForm.oldPassword,
                     new_password: this.passwordForm.password,
                     repeat_password: this.passwordForm.passwordRepeat
-                }).then(function (response) {
+                }
+                api.updatePassword(userId, data).then(function (response) {
                     if (response.status == 200) {
                         console.log("anything");
                         currentObj.output = response.data;
@@ -987,32 +975,10 @@
                     document.getElementById("passwordMessage").style.color = "red";
                 })
             },
-
-            getUserRoles: function () {
-                let currentObj = this;
-                return axios.get("http://localhost:9499/profiles/role")
-                    .then(function (response) {
-                        console.log(response);
-                        currentObj.loggedInUserRoles = response.data;
-                    })
-            },
-            checkUserIsAdmin: async function () {
-                await this.getUserRoles();
-                let currentObj = this
-                console.log(this.loggedInUserRoles);
-                if (this.loggedInUserRoles) {
-                    for (let i = 0; i < this.loggedInUserRoles.length; i++) {
-                        if (this.loggedInUserRoles[i].roleName === "ROLE_ADMIN") {
-                            currentObj.loggedInIsAdmin = true;
-                        }
-                    }
-                }
-            },
             checkAuthorized: async function () {
                 let currentObj = this;
-                await this.checkUserIsAdmin();
-                axios.defaults.withCredentials = true;
-                return axios.get('http://localhost:9499/profiles/id')
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+                return api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         console.log("profileId yeet" + currentObj.profileId);
@@ -1027,8 +993,7 @@
             },
             getLoggedInUserData: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/user')
+                api.getLoggedInProfile()
                     .then(function (response) {
                         console.log("Logged in as:", response.data);
                         currentObj.loggedInUser = response.data;

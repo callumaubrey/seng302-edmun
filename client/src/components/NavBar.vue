@@ -7,8 +7,12 @@
         <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>
                 <b-nav-item v-if="!isLoggedIn" to='/register'>Register</b-nav-item>
+                <b-nav-item v-if="isLoggedIn" to="/home">Home</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
+                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && loggedInIsAdmin && isAdminAccess">Admin
+                    Dashboard
+                </b-nav-item>
                 <b-collapse id="my-collapse" v-if="isLoggedIn">
                     <b-form inline>
                         <b-input-group>
@@ -19,37 +23,41 @@
                             <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
-                                <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
+                                <b-button @click="search()">
+                                    <b-icon-search></b-icon-search>
+                                </b-button>
                             </b-input-group-append>
                         </b-input-group>
                     </b-form>
                 </b-collapse>
                 <b-nav-item v-if="isLoggedIn">
                     <span v-b-toggle.my-collapse>
-                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
+                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search
+                            class="when-closed">Open</b-icon-search>
                     </span>
                 </b-nav-item>
             </b-navbar-nav>
-
-            <!--            &lt;!&ndash; Right aligned nav items &ndash;&gt;-->
-            <!--            <b-navbar-nav class="ml-auto">-->
-            <!--                <b-nav-form>-->
-            <!--                    <b-form-input class="mr-sm-2" placeholder="Search" size="sm"></b-form-input>-->
-            <!--                    <b-button class="searchbtn" size="sm" type="submit" variant="primary">Search</b-button>-->
-            <!--                </b-nav-form>-->
-            <!--            </b-navbar-nav>-->
 
             <b-navbar-nav class="ml-auto">
                 <b-button class="loginbtn" to="/login" size="sm" type="button" v-if="!isLoggedIn" variant="primary">
                     Log in
                 </b-button>
-                <b-nav-item-dropdown right v-else>
-                    <template v-slot:button-content>
-                        <em>{{ userName }}</em>
-                    </template>
-                    <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
-                    <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
-                </b-nav-item-dropdown>
+                <div v-else>
+                    <b-button-group class="access-control-button" title="Toggle to switch role access"
+                                    v-b-popover.hover.bottom="" v-if="loggedInIsUserAdmin">
+                        <b-button @click="switchAccessControl(false)" pill v-if="isAdminAccess" variant="success">Admin
+                        </b-button>
+                        <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">Standard User
+                        </b-button>
+                    </b-button-group>
+                    <b-nav-item-dropdown right>
+                        <template v-slot:button-content>
+                            <em>{{ userName }}</em>
+                        </template>
+                        <b-dropdown-item @click="goToEdit" v-if="!hideElements">Edit Profile</b-dropdown-item>
+                        <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
+                    </b-nav-item-dropdown>
+                </div>
             </b-navbar-nav>
 
 
@@ -60,12 +68,14 @@
 <script>
     import 'bootstrap/dist/css/bootstrap.css'
     import 'bootstrap-vue/dist/bootstrap-vue.css'
-    import axios from 'axios'
+    import {mutations, store} from "../store";
+    import api from '@/Api';
+    import AdminMixin from "../mixins/AdminMixin";
 
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn','hideElements', 'loggedInId'],
+        props: ['isLoggedIn', 'hideElements', 'loggedInId'],
         data: function () {
             return {
                 userName: "",
@@ -73,17 +83,22 @@
                 searchBy: 1,
                 searchQuery: "",
                 searchOptions: [
-                    { value: 1, text: 'Users' }
+                    {value: 1, text: 'Users'}
                 ],
                 profileId: "",
+                loggedInIsAdmin: null,
+                loggedInIsUserAdmin: null
             }
         },
-        watch: {
+        computed: {
+            isAdminAccess() {
+                return store.adminAccess
+            }
         },
         methods: {
             logout() {
                 const vueObj = this;
-                axios.get('http://localhost:9499/logout/')
+                api.logout()
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
@@ -93,9 +108,10 @@
                     });
             },
             getUserId: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+                this.loggedInIsUserAdmin = await AdminMixin.methods.checkUserIsUserAdmin();
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -113,9 +129,12 @@
             goToActivities() {
                 this.$router.push('/profiles/' + this.profileId + '/activities');
             },
+            goToAdminDashBoard() {
+                this.$router.push('/admin/dashboard');
+            },
             getUserName() {
                 let currentObj = this;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -124,8 +143,10 @@
             },
             search() {
                 if (this.searchQuery === '') return;
-
                 this.$router.push('/profiles?fullname=' + this.searchQuery);
+            },
+            switchAccessControl(value) {
+                mutations.switchAccessControl(value);
             }
         },
         beforeMount: function () {
@@ -141,10 +162,7 @@
         display: none;
     }
 
-    .searchbtn {
-        margin-right: 10px;
-    }
-    .nav-bar{
+    .nav-bar {
         margin-bottom: 50px;
         margin-right: 0px;
     }
@@ -153,4 +171,10 @@
     :not(.collapsed) > .when-closed {
         display: none;
     }
+
+    .access-control-button {
+        position: absolute;
+        right: 150px;
+    }
+
 </style>
