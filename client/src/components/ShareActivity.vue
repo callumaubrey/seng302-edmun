@@ -29,12 +29,12 @@
                                 This will effect:</label>
                             <p style="color: #cc9a9a">{{followers.length}} Followers {{participants.length}} Participants {{organisers.length}} Organisers</p>
                         </b-form-group>
-                        <b-button style="margin: 15px" @click="submit(), $bvModal.hide('modal-1')">Ok</b-button>
+                        <b-button style="margin: 15px" @click="submit(), $bvModal.hide('modal-1')">Save</b-button>
                     </b-col>
 
-                    <b-col>
+                    <b-col style="size: auto">
                         <br>
-                        <follower-user-list></follower-user-list>
+                        <follower-user-list :activity-id=activityId :logged-in-id=profileId :activity-creator-id="profileId" style="size: auto"></follower-user-list>
                     </b-col>
                 </b-row>
 
