@@ -59,5 +59,18 @@ https://csse-s302g7.canterbury.ac.nz/test/
 https://csse-s302g7.canterbury.ac.nz/prod/
 
 ### Quality Assurance
-##### Sonnarqube instance 
-https://csse-s302g7.canterbury.ac.nz/sonarqube/
+##### SonarQube
+
+For Client:
+`cd client`
+`npm run test`
+`npm run sonarqube`
+
+For Server:
+`cd server`
+`./gradlew bootRun`
+`gradle sonarqube`
+
+To view sonarqube analysis on a browser use: https://csse-s302g7.canterbury.ac.nz/sonarqube/account/security/
+- use VM credentials for login.
+
