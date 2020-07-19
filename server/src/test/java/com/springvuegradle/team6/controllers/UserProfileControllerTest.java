@@ -288,7 +288,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordUserDoesNotExist() throws Exception {
+    void editPasswordUserDoesNotExistReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -307,7 +307,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordPasswordsDontMatch() throws Exception {
+    void editPasswordPasswordsDontMatchReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -328,7 +328,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordOldPasswordIncorrect() throws Exception {
+    void editPasswordOldPasswordIncorrectReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -350,7 +350,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordNoUppercase() throws Exception {
+    void editPasswordNoUppercaseReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -373,7 +373,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordNoNumber() throws Exception {
+    void editPasswordNoNumberReturn4xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         // Passwords don't match
         EditPasswordRequest request = new EditPasswordRequest();
@@ -396,7 +396,7 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void editPasswordSuccessCase() throws Exception {
+    void editPasswordSuccessCaseReturn2xxStatusCode() throws Exception {
         MockHttpSession session = new MockHttpSession();
         EditPasswordRequest request = new EditPasswordRequest();
 
