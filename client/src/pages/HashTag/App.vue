@@ -63,8 +63,12 @@
                     .then((res) => {
                         this.items = res.data;
                         for (let i = 0; i < res.data.length; i++) {
-                            this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
-                            this.items[i].location = this.items[i].location.city + " " + this.items[i].location.state + ", " + this.items[i].location.country;
+                            if (this.items[i].activityTypes !== null) {
+                                this.items[i].activityTypes = this.items[i].activityTypes.join(", ");
+                            }
+                            if (this.items[i].location !== null) {
+                                this.items[i].location = this.items[i].location.city + " " + this.items[i].location.state + ", " + this.items[i].location.country;
+                            }
                         }
                     })
                     .catch(err => console.log(err));
