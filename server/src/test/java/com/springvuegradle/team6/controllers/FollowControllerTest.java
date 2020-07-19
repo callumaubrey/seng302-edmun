@@ -41,6 +41,8 @@ public class FollowControllerTest {
 
   private int id;
 
+  private int otherId;
+
   private int profile2Id;
 
   private int activityId;
@@ -100,6 +102,34 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     activityId = Integer.parseInt(activityBody);
+
+    profileJson =
+            "{\n"
+                    + "  \"lastname\": \"Pocko\",\n"
+                    + "  \"firstname\": \"Pols\",\n"
+                    + "  \"middlename\": \"Michelle\",\n"
+                    + "  \"nickname\": \"Pino\",\n"
+                    + "  \"primary_email\": \"poly2@pocket.com\",\n"
+                    + "  \"password\": \"Password1\",\n"
+                    + "  \"bio\": \"Poly Pocket is so tiny.\",\n"
+                    + "  \"date_of_birth\": \"2000-11-11\",\n"
+                    + "  \"gender\": \"female\"\n}";
+
+    // Logs in and get profile Id
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                    .content(profileJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
+
+    body =
+            mvc.perform(get("/profiles/id").session(session))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    otherId = Integer.parseInt(body);
   }
 
   @Test
@@ -107,7 +137,7 @@ public class FollowControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                        "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -122,7 +152,7 @@ public class FollowControllerTest {
   void subscribeThenGetIsSubscribed() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
@@ -130,7 +160,7 @@ public class FollowControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                        "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -145,13 +175,13 @@ public class FollowControllerTest {
   void deleteSubsriptionFromActivity() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
@@ -159,7 +189,7 @@ public class FollowControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                        "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -174,7 +204,7 @@ public class FollowControllerTest {
   void deleteSubsriptionThatDosentExist() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
@@ -184,13 +214,13 @@ public class FollowControllerTest {
   void subscribeToSameActivityTwice() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
@@ -220,7 +250,7 @@ public class FollowControllerTest {
   void deleteSubscriptionOnNonExistingActivity() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                    "/profiles/" + id + "/subscriptions/activities/" + 123498763)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + 123498763)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
@@ -230,20 +260,20 @@ public class FollowControllerTest {
   void addSubsciptionAfterDeletingSameSubscription() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
 
     mvc.perform(
             MockMvcRequestBuilders.post(
-                    "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is2xxSuccessful());
@@ -251,7 +281,7 @@ public class FollowControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                        "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -788,5 +818,21 @@ public class FollowControllerTest {
                 + profile2Id
                 + ",\"FULL_NAME\":\"John Doe\"}]}");
     org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+  }
+
+  @Test
+  void checkCreatorIsSubscribed() throws Exception {
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get(
+                            "/profiles/" + id + "/subscriptions/activities/" + activityId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().is2xxSuccessful())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
   }
 }

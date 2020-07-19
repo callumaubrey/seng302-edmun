@@ -84,8 +84,8 @@ class SubscriptionHistoryRepositoryTest {
 
     Profile profile1 = profileRepository.findByEmailsContains(email);
     Set<SubscriptionHistory> subscriptionHistories =
-        subscriptionHistoryRepository.findByActivity_id(
-            activityRepository.findByProfile_IdAndArchivedFalse(profile1.getId()).get(0).getId());
+            subscriptionHistoryRepository.findByActivity_id(
+                    activityRepository.findByProfile_IdAndArchivedFalse(profile1.getId()).get(0).getId());
     org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
   }
 }
