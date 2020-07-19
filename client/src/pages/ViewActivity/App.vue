@@ -22,7 +22,7 @@
 
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
-                <ShareActivity :modal="true" :visibility="visibility"></ShareActivity>
+                <ShareActivity :modal="true" :visibility="visibility.toLowerCase()" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
 
                 <!-- Actions -->
                 <b-row align-h="center">
@@ -96,7 +96,6 @@
             FollowerUserList,
             FollowerSummary,
             ShareActivity,
-            NavBar
         },
         data: function () {
             return {
