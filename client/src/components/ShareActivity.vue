@@ -4,20 +4,41 @@
             <b-button v-b-modal.modal-1 v-if="visibility == 'Public'" variant="success">{{visibility}}</b-button>
             <b-button v-b-modal.modal-1 v-if="visibility == 'Private'" variant="danger">{{visibility}}</b-button>
 
-            <b-modal id="modal-1" title="Share" @show="updateSelectedValue" @ok="changeVisibilityType" >
-                <label>Select Sharing Option</label>
-                <b-form-select v-model="selected" :options="options" size="sm"></b-form-select>
-                <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue</label>
-                <div v-if="selected =='restricted1'">
-                    <br>
-                    <label>Add Email</label>
-                    <b-form-group style="font-weight: bold" for="emailInput"
-                                  description="Maximum of 5 emails allowed">
-                        <b-input type="email"
-                                 name="email"
-                                 placeholder="john@example.com"
-                                 v-model="email"></b-input>
-                    </b-form-group>
+            <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header @show="updateSelectedValue" @ok="changeVisibilityType" body-class="p-0" >
+                <b-button-close style="padding: 10px" @click="$bvModal.hide('modal-1')"></b-button-close>
+                <b-row>
+                    <b-col style="color: white; background: #4d4d4d; max-width: 40%; horiz-align: center">
+                        <h4>Select Sharing Option</h4>
+                        <div style="margin-top: 30%; font-size: small">
+                            <p v-if="selected == 'Public'">Anyone will be able to view this activity.</p>
+                            <p v-if="selected == 'Private'">Only you will be able to view this activity.</p>
+                            <p v-if="selected == 'Restricted'">Only people you allow will be able to view this activity.</p>
+                        </div>
+                        <b-form-select style="margin-bottom: 40%;" v-model="selected" :options="options" size="sm"></b-form-select>
+                        <b-form-group v-if="selected =='Restricted'" style="color: white" for="emailInput">
+                            <p style="font-size: small">Maximum of 5 emails allowed. Add multiple members by separating emails by space or semi-colon</p>
+                            <label>Input member emails</label>
+                            <b-input type="email"
+                                     name="email"
+                                     placeholder="john@example.com kevin@example.com"
+                                     v-model="email"></b-input>
+                            <label v-if="visibility != selected">Are you sure you want to change visibility, press OK to continue
+                                This will effect:</label>
+                            <p style="color: #cc9a9a">{{followers.length}} Followers {{participants.length}} Participants {{organisers.length}} Organisers</p>
+                        </b-form-group>
+                        <b-button style="margin: 15px" @click="$event.create">Ok</b-button>
+                    </b-col>
+
+                    <b-col>
+                        <br>
+                        <follower-user-list></follower-user-list>
+                    </b-col>
+                </b-row>
+
+
+
+
+
 
                     <!--                    <b-card no-body>-->
 <!--                        <b-tabs card>-->
@@ -56,7 +77,7 @@
 <!--                    </b-card>-->
 
 
-                </div>
+
 
             </b-modal>
         </div>
@@ -70,9 +91,11 @@
 
 <script>
     import api from '@/Api'
+    import FollowerUserList from "./Activity/FollowerUserList";
     export default {
 
         name: "ShareActivity",
+        components: {FollowerUserList},
         props: {
             profileId: String,
             activityId: String,
@@ -83,9 +106,10 @@
             return {
                 // selectedVisibility: null,
                 selected: 'public',
+                description: 'Reeee',
                 options: [
                     { value: 'Private', text: 'Private' },
-                    // { value: 'restricted', text: 'Restricted' },
+                     { value: 'Restricted', text: 'Restricted' },
                     { value: 'Public', text: 'Public' }
                 ],
                 organisers: [],
@@ -100,12 +124,13 @@
             },
             async updateSelectedValue() {
                 this.selected = this.visibility
-                await api.getActivityMembers(this.activityId)
+                await api.getActivityMembers(this.activityId, 0, 10)
                     .then((res) => {
                         this.organisers = res.data.Organiser;
                         this.participants = res.data.Participant;
                         this.accessors = res.data.Access;
                         this.followers = res.data.Follower;
+                        console.log(this.organisers.length)
                     })
                     .catch(err => {
                         console.log(err)
@@ -131,10 +156,12 @@
                         // console.log(error);
                     });
 
+            },
+            beforeMount() {
+                this.updateSelectedValue()
             }
         },
         computed:{
-
 
         }
     }
