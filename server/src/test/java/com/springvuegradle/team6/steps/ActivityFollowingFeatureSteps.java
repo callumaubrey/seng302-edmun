@@ -182,12 +182,12 @@ public class ActivityFollowingFeatureSteps {
             "  \"continuous\": true\n" +
             "}";
 
-    String editActivityUrl = "/profiles/" + profileId + "/activities/" + activityId;
+    String editActivityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId;
     mvc.perform(
             MockMvcRequestBuilders.put(editActivityUrl)
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+                    .session(loginSteps.session))
             .andExpect(status().isOk());
   }
 }
