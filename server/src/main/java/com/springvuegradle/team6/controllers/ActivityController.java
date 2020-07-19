@@ -448,7 +448,7 @@ public class ActivityController {
 
     activityRepository.save(activity);
 
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile.get(), activity);
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
 
     subscriptionHistoryRepository.save(subscriptionHistory);
 
