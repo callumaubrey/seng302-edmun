@@ -92,7 +92,8 @@ export default {
 
     removeForId: (id) => instance.delete('students/' + id),
 
-    deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId)
+    deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId),
 
+    removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
 
 }
