@@ -179,8 +179,9 @@
                     </b-row>
                     <b-row>
                         <b-col >
-                            <ShareActivity v-on:emitInput = "onChildClick" :modal="false"></ShareActivity>
-                            <br>
+                            <label>Select sharing</label>
+                            <b-form-select v-model=selectedVisibility :options="options" size="sm"/>
+                            <br><br>
                         </b-col>
                     </b-row>
 
@@ -210,7 +211,6 @@
 <script>
     import NavBar from "@/components/NavBar.vue";
     import SearchTag from "../../components/SearchTag";
-    import ShareActivity from "../../components/ShareActivity";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
@@ -222,7 +222,6 @@
         components: {
             NavBar,
             SearchTag,
-            ShareActivity
         },
         data() {
             return {
@@ -253,7 +252,13 @@
                     options: [],
                     values: [],
                 },
-                selectedVisibility: 'public',
+                selectedVisibility: 'Public',
+                options: [
+                    { value: 'Private', text: 'Private' },
+                    { value: 'Restricted', text: 'Restricted' },
+                    { value: 'Public', text: 'Public' }
+                ],
+
             }
         },
         validations: {

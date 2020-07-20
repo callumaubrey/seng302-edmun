@@ -177,12 +177,6 @@
                             </b-form-group>
                         </b-col>
                     </b-row>
-                    <b-row>
-                        <b-col >
-                            <ShareActivity v-on:emitInput = "onChildClick" :modal="false"></ShareActivity>
-                            <br>
-                        </b-col>
-                    </b-row>
                     <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
                     <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
                         {{activityUpdateMessage}}
@@ -198,7 +192,6 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
-    import ShareActivity from "@/components/ShareActivity.vue";
     import SearchTag from "../../components/SearchTag";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
@@ -210,8 +203,7 @@
         mixins: [validationMixin, locationMixin],
         components: {
             SearchTag,
-            NavBar,
-            ShareActivity
+            NavBar
         },
         data() {
             return {
@@ -244,7 +236,6 @@
                     options: [],
                     values: []
                 },
-                selectedVisibility: null
             }
         },
         validations: {
@@ -425,7 +416,6 @@
                     continuous: true,
                     location: this.locationData,
                     hashtags: this.hashtag.values,
-                    visibility: this.selectedVisibility
                 }
                 if (this.isContinuous == '0') {
                     api.updateActivity(userId, this.activityId, data)
@@ -454,7 +444,6 @@
                         start_time: isoDates[0],
                         end_time: isoDates[1],
                         location: this.form.locationData,
-                        visibility: this.selectedVisibility
                     }
                     api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {

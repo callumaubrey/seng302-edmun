@@ -43,6 +43,7 @@
                 </b-row>
             </b-modal>
         </div>
+
     </div>
 </template>
 
@@ -57,12 +58,12 @@
             profileId: String,
             activityId: String,
             modal: Boolean,
-            visibility: String
+            visibility: String,
         },
         data() {
             return {
                 // selectedVisibility: null,
-                selected: 'public',
+                selected: 'Public',
                 description: 'Reeee',
                 emailInput: '',
                 options: [
@@ -77,7 +78,7 @@
                 showWarning:false,
                 partCount:null,
                 organiserCount:null,
-                followerCount:null
+                followerCount:null,
 
             }
         },
