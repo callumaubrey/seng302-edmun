@@ -213,7 +213,7 @@
                 const currentObj = this;
                 this.offset = (this.currentPage - 1) * this.limit;
                 // Full name by default
-                let query = 'http://localhost:9499/profiles';
+                let query = '/profiles';
                 console.log(this.activityTypesForm.selectedOptions.length === 0);
                 if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
@@ -293,7 +293,7 @@
                 this.tableIsLoading = true;
                 // this.currentPage = 1;
                 if (this.searchQuery.trim() === '' && this.activityTypesForm.selectedOptions.length === 0) return;
-                let query = 'http://localhost:9499/profiles/count';
+                let query = '/profiles/count';
                 if (this.searchBy !== 'email' && this.searchQuery.trim() !== "" && this.activityTypesForm.selectedOptions.length !== 0) {
                     query = this.searchNames(query);
                     query += "&activity=" + this.activityTypesForm.selectedOptions.join(' ');
@@ -320,7 +320,7 @@
             },
             getActivities: function () {
                 let currentObj = this;
-                api.instance.get('http://localhost:9499/profiles/activity-types')
+                api.instance.get('/profiles/activity-types')
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.activityTypesForm.options = response.data;

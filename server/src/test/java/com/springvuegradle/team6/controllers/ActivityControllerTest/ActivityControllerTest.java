@@ -33,20 +33,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 class ActivityControllerTest {
 
-  @Autowired
-  private ActivityRepository activityRepository;
+  @Autowired private ActivityRepository activityRepository;
 
-  @Autowired
-  private ProfileRepository profileRepository;
+  @Autowired private ProfileRepository profileRepository;
 
-  @Autowired
-  private ActivityRoleRepository activityRoleRepository;
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
-  @Autowired
-  private TagRepository tagRepository;
+  @Autowired private TagRepository tagRepository;
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
   private int id;
 
@@ -477,54 +472,61 @@ class ActivityControllerTest {
 
   @Test
   void createActivityWithVisibilityTypePublicReturnStatusOk() throws Exception {
-    String jsonString = "{\n" +
-            "  \"activity_name\": \"Tramping\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": \"true\",\n" +
-            "  \"visibility\": \"public\"\n" +
-            "}";
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Tramping\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": \"true\",\n"
+            + "  \"visibility\": \"public\"\n"
+            + "}";
     ResultActions responseString =
-            mvc.perform(
-                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session));
+        mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isCreated());
   }
 
   @Test
-  void createActivityWithoutVisibilityTypeReturnStatusOkAndVisibilityTypeDefaultsToPublic() throws Exception {
-    String jsonString = "{\n" +
-            "  \"activity_name\": \"Running\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true,\n" +
-            "  \"hashtags\": [\n" +
-            "    \"#a1\"\n" +
-            "  ]\n" +
-            "}";
+  void createActivityWithoutVisibilityTypeReturnStatusOkAndVisibilityTypeDefaultsToPublic()
+      throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Running\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\"\n"
+            + "  ]\n"
+            + "}";
     ResultActions responseString =
-            mvc.perform(
-                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session));
+        mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isCreated());
-    Assert.assertSame(VisibilityType.Public, activityRepository
-            .findById(Integer.parseInt(responseString.andReturn().getResponse().getContentAsString()))
-            .get().getVisibilityType());
-
+    Assert.assertSame(
+        VisibilityType.Public,
+        activityRepository
+            .findById(
+                Integer.parseInt(responseString.andReturn().getResponse().getContentAsString()))
+            .get()
+            .getVisibilityType());
   }
 
   @Test
-  void createActivityWithVisibilityTypeRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors() throws Exception {
+  void createActivityWithVisibilityTypeRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors()
+      throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -542,38 +544,68 @@ class ActivityControllerTest {
     profileRepository.save(profile2);
 
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n" +
-                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
-                    "  \"visibility\": \"restricted\",\n" +
-                    "  \"accessors\": [\n" +
-                    "    \"johnny@email.com\",\n" +
-                    "    \"doe@email.com\",\n" +
-                    "    \"poly@pocket.com\"\n" +
-                    "  ]\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"poly@pocket.com\"\n"
+            + "  ]\n"
+            + "}";
 
     ResultActions responseString =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(
-                            "/profiles/{profileId}/activities", id)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-                    .andExpect(status().isCreated());
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated());
 
-    Integer activityId = Integer.parseInt(responseString.andReturn().getResponse().getContentAsString());
+    Integer activityId =
+        Integer.parseInt(responseString.andReturn().getResponse().getContentAsString());
 
-    Assert.assertSame(VisibilityType.Restricted, activityRepository.findById(activityId).get().getVisibilityType());
+    Assert.assertSame(
+        VisibilityType.Restricted,
+        activityRepository.findById(activityId).get().getVisibilityType());
 
     List<ActivityRole> activityRoleList = activityRoleRepository.findByActivity_Id(activityId);
     org.junit.jupiter.api.Assertions.assertEquals(3, activityRoleList.size());
+  }
+
+  @Test
+  void createActivityReturnStatusIsCreatedCreatorRoleCreated() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
+    String activityId =
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(Integer.parseInt(activityId));
+    ActivityRole creator = activityRoles.get(0);
+    org.junit.jupiter.api.Assertions.assertEquals(ActivityRoleType.Creator, creator.getActivityRoleType());
+    org.junit.jupiter.api.Assertions.assertEquals(id, creator.getProfile().getId());
+
   }
 
   @Test
@@ -592,14 +624,14 @@ class ActivityControllerTest {
     String activity1Id = testActivity1.getId().toString();
 
     String response =
-            mvc.perform(
-                    MockMvcRequestBuilders.get("/activities/" + activity1Id + "/creatorId")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities/" + activity1Id + "/creatorId")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
     org.junit.jupiter.api.Assertions.assertEquals(((Integer) id).toString(), response);
   }
 
@@ -744,28 +776,26 @@ class ActivityControllerTest {
     activity = activityRepository.save(activity);
 
     String jsonString =
-            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"john@pockets.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+        "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"john@pockets.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
-    mvc.perform(
-            MockMvcRequestBuilders.get("/logout/")
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated())
-            .andDo(print());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError())
-            .andExpect(content().string("Activity is private"));
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError())
+        .andExpect(content().string("Activity is private"));
   }
 
   @Test
@@ -780,9 +810,9 @@ class ActivityControllerTest {
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -797,9 +827,9 @@ class ActivityControllerTest {
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -829,46 +859,46 @@ class ActivityControllerTest {
     profileRepository.save(profile3);
 
     String jsonString =
-            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+        "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
-    mvc.perform(
-            MockMvcRequestBuilders.get("/logout/")
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated())
-            .andDo(print());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated())
+        .andDo(print());
 
     String jsonString1 =
-            "{\n"
-                    + "  \"visibility\": \"restricted\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"johnny@email.com\",\n"
-                    + "    \"doe@email.com\",\n"
-                    + "    \"martin@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"martin@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString1)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString1)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
-  };
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
+  }
+  ;
 
   @Test
   void getRestrictedActivityWithoutAccess() throws Exception {
@@ -897,45 +927,45 @@ class ActivityControllerTest {
     profileRepository.save(profile3);
 
     String jsonString =
-            "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+        "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
-    mvc.perform(
-            MockMvcRequestBuilders.get("/logout/")
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated())
-            .andDo(print());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated())
+        .andDo(print());
 
     String jsonString1 =
-            "{\n"
-                    + "  \"visibility\": \"restricted\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"doe@email.com\",\n"
-                    + "    \"martin@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"martin@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString1)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString1)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError());
-  };
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+  ;
 
   @Test
   void putActivityVisibilityAdd() throws Exception {
@@ -971,20 +1001,21 @@ class ActivityControllerTest {
     profileRepository.save(profile3);
 
     String jsonString =
-            "{\n"
-                    + "  \"visibility\": \"restricted\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"johnny@email.com\",\n"
-                    + "    \"doe@email.com\",\n"
-                    + "    \"martin@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"martin@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(3, result.size());
@@ -1024,35 +1055,37 @@ class ActivityControllerTest {
     profileRepository.save(profile3);
 
     String jsonString1 =
-            "{\n"
-                    + "  \"visibility\": \"restricted\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"johnny@email.com\",\n"
-                    + "    \"doe@email.com\",\n"
-                    + "    \"martin@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"martin@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString1)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString1)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     String jsonString2 =
-            "{\n"
-                    + "  \"visibility\": \"restricted\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"johnny@email.com\",\n"
-                    + "    \"martin@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"martin@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString2)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(2, result.size());
@@ -1076,23 +1109,63 @@ class ActivityControllerTest {
     profileRepository.save(profile1);
 
     String jsonString =
-            "{\n"
-                    + "  \"visibility\": \"public\",\n"
-                    + "  \"accessors\": [\n"
-                    + "    \"johnny@email.com\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"visibility\": \"public\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session));
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
 
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(0, result.size());
   }
 
+  @Test
+  void testUserIsAFollowerUponCreatingActivity() throws Exception {
+    String activityJson =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track racey\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    // Creates an activity
+    String activityBody =
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                            .content(activityJson)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    int activityId = Integer.parseInt(activityBody);
+
+    String response =
+            mvc.perform(MockMvcRequestBuilders
+                    .get("/profiles/"+ id + "/subscriptions/activities/" + activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session)
+            )
+                    .andExpect(status().is2xxSuccessful())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
+  }
+  
   @Test
   void addActivityHashtagsReturnStatusOkAndHashtagSetSizeIsIncreased() throws Exception {
     Profile owner = profileRepository.findById(id);
@@ -1103,23 +1176,25 @@ class ActivityControllerTest {
     activity = activityRepository.save(activity);
 
     String jsonString =
-            "{\n" +
-                    "  \"hashtags\": [\n" +
-                    "    \"#nosweatnoglory\",\n" +
-                    "    \"#whalewatching\"\n" +
-                    "  ]\n" +
-                    "}";
+        "{\n"
+            + "  \"hashtags\": [\n"
+            + "    \"#nosweatnoglory\",\n"
+            + "    \"#whalewatching\"\n"
+            + "  ]\n"
+            + "}";
 
     Set<Tag> hashtagSetBefore = activityRepository.findById(activity.getId()).get().getTags();
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     Set<Tag> hashtagSetAfter = activityRepository.findById(activity.getId()).get().getTags();
-    org.junit.jupiter.api.Assertions.assertEquals(hashtagSetBefore.size() + 2, hashtagSetAfter.size());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        hashtagSetBefore.size() + 2, hashtagSetAfter.size());
   }
 
   @Test
@@ -1140,24 +1215,19 @@ class ActivityControllerTest {
     activity.setProfile(owner);
     activity = activityRepository.save(activity);
 
-    String jsonString =
-            "{\n" +
-                    "  \"hashtags\": [\n" +
-                    "    \"#nosweatnoglory\"\n" +
-                    "  ]\n" +
-                    "}";
+    String jsonString = "{\n" + "  \"hashtags\": [\n" + "    \"#nosweatnoglory\"\n" + "  ]\n" + "}";
 
     Set<Tag> hashtagSetBefore = activityRepository.findById(activity.getId()).get().getTags();
     mvc.perform(
-            MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/hashtags", id, activity.getId())
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     Set<Tag> hashtagSetAfter = activityRepository.findById(activity.getId()).get().getTags();
-    org.junit.jupiter.api.Assertions.assertEquals(hashtagSetBefore.size() - 1, hashtagSetAfter.size());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        hashtagSetBefore.size() - 1, hashtagSetAfter.size());
   }
-
-
 }
