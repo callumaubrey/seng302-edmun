@@ -240,8 +240,8 @@
                                     vueObj.hashtags.push("#" + res.data.tags[i].name);
                                 }
                             }
-                            if (vueObj.activityOwner.id != profileId && vueObj.visibility == 'Private') {
-                                vueObj.$router.push('/profiles/' + profileId);
+                            if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
+                                vueObj.$router.push('/profiles/' + this.profileId);
                             }
                             vueObj.hashtags.sort();
                             if (!vueObj.continuous) {
