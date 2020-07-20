@@ -34,11 +34,24 @@ public class ActivityRole {
   public void setProfile(Profile profile) {
     this.profile = profile;
   }
-  public ActivityRoleType getActivityRoleType() {
-    return activityRoleType;
-  }
 
   public Profile getProfile() {return profile;};
+
+  public ActivityRoleType getActivityRoleType() {return activityRoleType;};
+
+  public String getRole() {
+    if (activityRoleType == ActivityRoleType.Creator) {
+      return "creator";
+    } else if(activityRoleType == ActivityRoleType.Organiser) {
+      return "organiser";
+    } else if (activityRoleType == ActivityRoleType.Participant) {
+      return "participant";
+    } else if (activityRoleType == ActivityRoleType.Follower) {
+      return "follower";
+    } else {
+      return "access";
+    }
+  }
 
   public void setActivityRoleType(ActivityRoleType activityRoleType) {
     this.activityRoleType = activityRoleType;
