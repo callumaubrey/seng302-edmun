@@ -46,7 +46,7 @@
                         currentObj.userRoles = response.data.roles;
                         let isAdmin = false;
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
-                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN" || currentObj.userRoles[i].roleName === "ROLE_USER_ADMIN" ) {
                                 isAdmin = true;
                             }
                         }

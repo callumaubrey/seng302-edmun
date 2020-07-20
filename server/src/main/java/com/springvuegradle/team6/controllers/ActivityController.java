@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.models.location.NamedLocation;
@@ -44,18 +45,24 @@ public class ActivityController {
   private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
+  private final SubscriptionHistoryRepository subscriptionHistoryRepository;
+  private final ActivityHistoryRepository activityHistoryRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
       ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
-      TagRepository tagRepository) {
+      TagRepository tagRepository,
+      SubscriptionHistoryRepository subscriptionHistoryRepository,
+      ActivityHistoryRepository activityHistoryRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
+    this.subscriptionHistoryRepository = subscriptionHistoryRepository;
+    this.activityHistoryRepository = activityHistoryRepository;
   }
 
   /**
@@ -394,17 +401,19 @@ public class ActivityController {
     if (checkAuthorisedResponse != null) {
       return checkAuthorisedResponse;
     }
-    Optional<Profile> profile = profileRepository.findById(profileId);
-    if (profile.isEmpty()) {
+    Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+    if (optionalProfile.isEmpty()) {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.BAD_REQUEST);
     }
+
+    Profile profile = optionalProfile.get();
 
     ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.hashTags);
     if (checkHashtagsValidityResponse != null) {
       return checkHashtagsValidityResponse;
     }
 
-    Activity activity = new Activity(request, profile.get());
+    Activity activity = new Activity(request, profile);
     if (activity.getLocation() != null) {
       Optional<NamedLocation> optionalNamedLocation =
           locationRepository.findByCountryAndStateAndCity(
@@ -439,7 +448,20 @@ public class ActivityController {
     // Set creation date to now
     activity.setCreationDate(LocalDateTime.now());
 
+
+
     activityRepository.save(activity);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    //Set creator of activity in ActivityRoleRepository
+    ActivityRole creator = new ActivityRole();
+    creator.setActivity(activity);
+    creator.setProfile(profile);
+    creator.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(creator);
 
     ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
     if (editActivityRolesResponse != null) {
@@ -514,16 +536,16 @@ public class ActivityController {
    * Put Request to update an activity for the given profile based on the request
    *
    * @param profileId The id of the author of the activity
-   * @param request The request with values to update the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to update the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}")
   public ResponseEntity<String> editActivity(
-      @PathVariable Integer profileId,
-      @PathVariable Integer activityId,
-      @Valid @RequestBody EditActivityRequest request,
-      HttpSession session) {
+          @PathVariable Integer profileId,
+          @PathVariable Integer activityId,
+          @Valid @RequestBody EditActivityRequest request,
+          HttpSession session) throws JsonProcessingException {
 
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
@@ -532,7 +554,7 @@ public class ActivityController {
 
       // Check if authorised
       ResponseEntity<String> authorisedResponse =
-          UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
@@ -554,6 +576,10 @@ public class ActivityController {
         return checkActivityDateTimeResponse;
       }
 
+
+      ObjectMapper mapper = new ObjectMapper();
+      String preJson = mapper.writeValueAsString(activity);
+
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
@@ -561,6 +587,15 @@ public class ActivityController {
       if (editActivityRolesResponse != null) {
         return editActivityRolesResponse;
       }
+
+      String postJson = mapper.writeValueAsString(activity);
+      if (!preJson.equals(postJson)) {
+        String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
+        ActivityHistory activityHistory = new ActivityHistory(activity,
+                "Activity '" + activity.getActivityName() + "' was updated by " + editorName);
+        activityHistoryRepository.save(activityHistory);
+      }
+
 
       return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
@@ -589,10 +624,16 @@ public class ActivityController {
       Activity activity = optionalActivity.get();
       if (!activity.getProfile().getId().equals(profileId)) {
         return new ResponseEntity<>(
-            "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
       activity.setArchived(true);
       activityRepository.save(activity);
+
+      String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
+      String activityArchivedMessage = "Activity '" + activity.getActivityName() + "' was archived by " + editorName;
+      ActivityHistory activityHistory = new ActivityHistory(activity, activityArchivedMessage);
+      activityHistoryRepository.save(activityHistory);
+
       return new ResponseEntity<>("Activity is now archived", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
@@ -683,7 +724,6 @@ public class ActivityController {
 
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
-
 
   /**
    * Increases the activity role of each accessor to Access, and decreases the activity role to standard user if

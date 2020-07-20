@@ -51,8 +51,8 @@ public class FollowController {
      *
      * @param profileId  id of the user subscribing
      * @param activityId id of the activity being subscribed to
-     * @param session    current http session
-     * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
+     * @param session current http session
+     * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
      */
     @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
     public ResponseEntity<String> followActivity(@PathVariable int profileId,
@@ -143,6 +143,10 @@ public class FollowController {
         Optional<Activity> activity = activityRepository.findById(activityId);
         if (activity.isEmpty()) {
             return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        if (activity.get().getProfile().getId() == profile.getId()) {
+            return new ResponseEntity("Cannot unfollow an activity you created", HttpStatus.BAD_REQUEST);
         }
 
         // Gets the active subscription history object for this user and activity if one exists
