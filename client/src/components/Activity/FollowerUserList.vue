@@ -105,6 +105,7 @@
                 participantOffset: 0,
                 accessorOffset: 0,
                 followerOffset: 0,
+                roleData: null,
             }
         },
         async mounted() {
@@ -182,7 +183,7 @@
             changeRole: async function (user, role) {
                 await api.getProfile(user.profile_id)
                     .then((res) => {
-                        let roleData = {
+                        this.roleData = {
                             subscriber: {
                                 email: res.data.primary_email.address,
                                 role: role
@@ -190,17 +191,27 @@
                         };
                         console.log(res.data.primary_email.address);
                         console.log(role);
-                        api.updateRole(this.activityCreatorId, this.activityId, roleData)
-                            .then(() => {
-                                this.participantOffset -= 1;
-                                this.participants.remove(user);
-                                this.organisers.push(user);
-                            })
-                            .catch(err => {
-                                console.log(err)
-                            });
                     }).catch(err => {
                         console.log(err)
+                        return;
+                    });
+                await api.updateRole(this.activityCreatorId, this.activityId, this.roleData)
+                    .then(() => {
+                        if (role == "organiser") {
+                            this.participantOffset -= 1;
+                            const index = this.participants.indexOf(user);
+                            this.participants.splice(index, 1);
+                            this.organisers.push(user);
+                        } else {
+                            this.organiserOffset -= 1;
+                            const index = this.participants.indexOf(user);
+                            this.organisers.splice(index, 1);
+                            this.participants.push(user);
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        return;
                     });
             },
             scroll() {
