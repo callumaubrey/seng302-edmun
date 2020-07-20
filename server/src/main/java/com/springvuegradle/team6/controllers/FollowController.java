@@ -1,6 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
+import com.springvuegradle.team6.requests.EditSubscriptionRequest;
+import com.springvuegradle.team6.requests.SubscriptionRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -8,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -25,8 +29,9 @@ import java.util.*;
 public class FollowController {
     private ProfileRepository profileRepository;
     private ActivityRepository activityRepository;
-    private SubscriptionHistoryRepository subscriptionHistoryRepository;
     private ActivityRoleRepository activityRoleRepository;
+    private SubscriptionHistoryRepository subscriptionHistoryRepository;
+    private EmailRepository emailRepository;
 
     /**
      * Constructor for FollowController class which gets the profile, email and role repository
@@ -37,12 +42,14 @@ public class FollowController {
      */
     FollowController(ProfileRepository profileRepository,
                      ActivityRepository activityRepository,
+                     ActivityRoleRepository activityRoleRepository,
                      SubscriptionHistoryRepository subscriptionHistoryRepository,
-                     ActivityRoleRepository activityRoleRepository) {
+                     EmailRepository emailRepository) {
         this.profileRepository = profileRepository;
         this.activityRepository = activityRepository;
-        this.subscriptionHistoryRepository = subscriptionHistoryRepository;
         this.activityRoleRepository = activityRoleRepository;
+        this.subscriptionHistoryRepository = subscriptionHistoryRepository;
+        this.emailRepository = emailRepository;
     }
 
     /**
@@ -50,8 +57,8 @@ public class FollowController {
      *
      * @param profileId  id of the user subscribing
      * @param activityId id of the activity being subscribed to
-     * @param session    current http session
-     * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
+     * @param session current http session
+     * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
      */
     @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
     public ResponseEntity<String> followActivity(@PathVariable int profileId,
@@ -144,6 +151,10 @@ public class FollowController {
             return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
         }
 
+        if (activity.get().getProfile().getId() == profile.getId()) {
+            return new ResponseEntity("Cannot unfollow an activity you created", HttpStatus.BAD_REQUEST);
+        }
+
         // Gets the active subscription history object for this user and activity if one exists
         List<SubscriptionHistory> activeSubscriptions = subscriptionHistoryRepository.findActive(activityId, profileId);
 
@@ -159,6 +170,194 @@ public class FollowController {
 
         return ResponseEntity.ok("User unsubscribed from activity");
     }
+
+    /**
+     * Endpoint for creator of the activity to set activity roles for users.
+     * @param profileId id of creator of activity
+     * @param activityId if of activity
+     * @param editSubscriptionRequest information to edit subscription
+     * @param session the session of the active user
+     * @return response entity, 200 if successful.
+     */
+    @PutMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+    public ResponseEntity editSubscription(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            @RequestBody @Valid EditSubscriptionRequest editSubscriptionRequest,
+            HttpSession session) {
+        SubscriptionRequest request = editSubscriptionRequest.getSubscription();
+
+        ResponseEntity<String> authorisedResponse =
+                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
+        }
+
+        Profile creatorProfile = profileRepository.findById(profileId);
+        if (creatorProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+        Optional<Activity> activityOptional = activityRepository.findById(activityId);
+        if (activityOptional.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        Activity activity = activityOptional.get();
+        if (!activity.getProfile().getId().equals(profileId)) {
+            return new ResponseEntity<>(
+                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
+
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+        if (roleProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+
+        ActivityRole activityRoleFound = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+        String toCamelCase = request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
+        ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
+        if (activityRoleFound == null) {
+            // Create activity role
+            ActivityRole activityRole = new ActivityRole();
+            activityRole.setProfile(roleProfile);
+            activityRole.setActivity(activity);
+            activityRole.setActivityRoleType(activityRoleType);
+            activityRoleRepository.save(activityRole);
+            // Create Subscription history row
+            List<SubscriptionHistory> optionalSubscription = subscriptionHistoryRepository.findActive(activityId, profileId);
+             if (optionalSubscription.isEmpty()) {
+                 SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+                 subscriptionHistoryRepository.save(subscriptionHistory);
+                 return new ResponseEntity("Activity role created and user is now subscribed", HttpStatus.OK);
+             } else {
+                 return new ResponseEntity("Activity role created", HttpStatus.OK);
+             }
+        } else {
+            activityRoleFound.setActivityRoleType(activityRoleType);
+            activityRoleRepository.save(activityRoleFound);
+        }
+
+        return new ResponseEntity("Activity role updated", HttpStatus.OK);
+    }
+
+    /**
+     * To delete the activity role of the email in the request from the activity
+     * @param profileId the creator of the activity
+     * @param activityId the id of the activity
+     * @param request the request with the email to delete
+     * @param session the session of the active user
+     * @return the response, 200 if successfully deleted.
+     */
+    @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+    public ResponseEntity deleteSubscription(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            @RequestBody @Valid DeleteSubscriptionRequest request,
+            HttpSession session) {
+        ResponseEntity<String> authorisedResponse =
+                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
+        }
+
+        Profile creatorProfile = profileRepository.findById(profileId);
+        if (creatorProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+        Optional<Activity> activityOptional = activityRepository.findById(activityId);
+        if (activityOptional.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        Activity activity = activityOptional.get();
+        if (!activity.getProfile().getId().equals(profileId)) {
+            return new ResponseEntity<>(
+                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
+
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+        if (roleProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+
+        ActivityRole activityRoleFound = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+
+        if (activityRoleFound == null) {
+            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+        } else {
+            activityRoleRepository.delete(activityRoleFound);
+
+            List<SubscriptionHistory> activeSubscriptions = subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+
+            // Check if already subbed
+            if (activeSubscriptions.isEmpty()) {
+                return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
+            }
+
+            SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
+            activeSubscription.setEndDateTime(LocalDateTime.now());
+
+            subscriptionHistoryRepository.save(activeSubscription);
+        }
+
+        return new ResponseEntity("Activity role deleted", HttpStatus.OK);
+    }
+
+    @GetMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+    public ResponseEntity getSubscription(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            @RequestBody @Valid DeleteSubscriptionRequest request,
+            HttpSession session) {
+        ResponseEntity<String> authorisedResponse =
+                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+        if (authorisedResponse != null) {
+            return authorisedResponse;
+        }
+
+        Profile creatorProfile = profileRepository.findById(profileId);
+        if (creatorProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+        Optional<Activity> activityOptional = activityRepository.findById(activityId);
+        if (activityOptional.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+
+        Activity activity = activityOptional.get();
+        if (!activity.getProfile().getId().equals(profileId)) {
+            return new ResponseEntity<>(
+                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+        if (optionalEmail.isEmpty()) {
+            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+        }
+
+        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+        if (roleProfile == null) {
+            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+        }
+
+        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+        if (activityRole == null) {
+            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.appendField("role", activityRole.getRole());
+        return new ResponseEntity(obj, HttpStatus.OK);
+    }
+
 
     /**
      * Retrieves all users accosiated with the activity and their role

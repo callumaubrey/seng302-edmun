@@ -52,10 +52,26 @@ Running on: http://localhost:9500/
 
 Running on: http://localhost:9499/
 
+### Dedicated Server Instances
+##### Staged test instance (dev branch)
+https://csse-s302g7.canterbury.ac.nz/test/
+##### Production server instance (master branch)
+https://csse-s302g7.canterbury.ac.nz/prod/
 
-### Todo
-- Set up Gitlab CI server (refer to the student guide on learn) 
+### Quality Assurance
+##### SonarQube
 
+For Client:
+`cd client`
+`npm run test`
+`npm run sonarqube`
 
+For Server:
+`cd server`
+`./gradlew bootRun`
+`gradle sonarqube`
+
+To view sonarqube analysis on a browser use: https://csse-s302g7.canterbury.ac.nz/sonarqube/account/security/
+- use VM credentials for login.
 
 

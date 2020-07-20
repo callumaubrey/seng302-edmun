@@ -45,6 +45,7 @@ public class ActivityController {
   private final ActivityRoleRepository activityRoleRepository;
   private final NamedLocationRepository locationRepository;
   private final TagRepository tagRepository;
+  private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
 
   ActivityController(
@@ -53,12 +54,14 @@ public class ActivityController {
       ActivityRoleRepository activityRoleRepository,
       NamedLocationRepository locationRepository,
       TagRepository tagRepository,
+      SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
     this.tagRepository = tagRepository;
+    this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
   }
 
@@ -449,6 +452,10 @@ public class ActivityController {
 
     activityRepository.save(activity);
 
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
     //Set creator of activity in ActivityRoleRepository
     ActivityRole creator = new ActivityRole();
     creator.setActivity(activity);
@@ -713,7 +720,6 @@ public class ActivityController {
 
     return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
   }
-
 
   /**
    * Increases the activity role of each accessor to Access, and decreases the activity role to standard user if

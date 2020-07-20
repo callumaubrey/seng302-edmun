@@ -13,6 +13,7 @@ import java.util.List;
 public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Integer> {
 
   List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
+
   @Query(
           value =
                   "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on " +
