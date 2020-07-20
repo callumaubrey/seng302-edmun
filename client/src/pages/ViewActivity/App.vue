@@ -92,11 +92,10 @@
                 <b-row align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em" title="Participants:">
-                            <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="activityOwner" :logged-in-id="loggedInId"></FollowerUserList>
+                            <FollowerUserList :activity-id="$route.params.activityId" :logged-in-id="loggedInId" :activity-creator-id="activityOwner.id"></FollowerUserList>
                         </b-card>
                     </b-col>
                 </b-row>
-
             </div>
         </div>
     </div>
@@ -210,7 +209,7 @@
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
-                let profileId = this.$route.params.id;
+
 
                 api.getActivity(activityId)
                     .then((res) => {
@@ -284,3 +283,4 @@
     };
     export default App;
 </script>
+

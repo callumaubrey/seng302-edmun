@@ -86,13 +86,16 @@ export default {
 
     updatePasswordWithAdmin: (profileId, data) => instance.put('/admin/profiles/' + profileId + '/password', data),
 
+    updateRole: (profileId, activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', data),
+
     updateActivityVisibility: (profileId,activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/visibility', data),
 
     // (D)elete
 
     removeForId: (id) => instance.delete('students/' + id),
 
-    deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId)
+    deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId),
 
+    removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
 
 }
