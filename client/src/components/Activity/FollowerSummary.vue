@@ -10,6 +10,8 @@
 </template>
 
 <script>
+    import api from '@/Api'
+
     export default {
         name: "FollowerSummary.vue",
 
@@ -35,28 +37,30 @@
         // Component Methods
         methods: {
             loadFollowerSummary: function () {
-                // TODO(Connor): Implement API call to get summary of followers
+                const currentObj = this;
+                api.getActivityMemberCounts(this.activityId)
+                    .then(function (response) {
+                        currentObj.user_groups.push({
+                            "name": "Participants",
+                            "count": response.data.participants
+                        });
+                        currentObj.user_groups.push({
+                            "name": "Followers",
+                            "count": response.data.followers
+                        });
+                        currentObj.user_groups.push({
+                            "name": "Organizers",
+                            "count": response.data.organisers
+                        });
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    });
+
+
                 // NOTE(Connor): This should have the limitation of not showing organisers for limited rights
-                // This should be implemented in the backend since it is a security issue
 
-                // Temporary replacement. Delete this function when replaced
-                this.loadDummyData()
             },
-
-            loadDummyData: function (){
-                this.user_groups.push({
-                    "name": "Participants",
-                    "count": 200
-                });
-                this.user_groups.push({
-                    "name": "Followers",
-                    "count": 115
-                });
-                this.user_groups.push({
-                    "name": "Organizers",
-                    "count": 10
-                });
-            }
         }
     }
 </script>

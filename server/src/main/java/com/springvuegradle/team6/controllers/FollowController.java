@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
 import com.springvuegradle.team6.requests.EditSubscriptionRequest;
@@ -411,7 +412,7 @@ public class FollowController {
      * Retrieves count of all types of members accociated with an activity
      *
      * @param activityId id of the activity
-     * @param session    current http session
+     * @param session current http session
      * @return Count of users accociated with on an activity
      */
     @GetMapping("activities/{activityId}/membercount")
