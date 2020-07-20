@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -906,13 +907,14 @@ public class FollowControllerTest {
         Assert.assertEquals("access", result.getString("role"));
     }
 
-    /*@Test
+    @Disabled
+    @Test
     void deleteActivityRole() throws Exception {
         Profile profile1 = new Profile();
         profile1.setFirstname("Johnny");
         profile1.setLastname("Dong");
         Set<Email> email1 = new HashSet<Email>();
-        email1.add(new Email("example@email.com"));
+        email1.add(new Email("example1@email.com"));
         profile1.setEmails(email1);
         profileRepository.save(profile1);
 
@@ -935,17 +937,17 @@ public class FollowControllerTest {
                       .andReturn()
                       .getResponse()
                       .getContentAsString();
-      int activityId = Integer.parseInt(activityBody);
+      int activityId2 = Integer.parseInt(activityBody);
 
       String jsonString = "{\n" +
               "  \"subscriber\": { \n" +
-              "  \"email\": \"example@email.com\",\n" +
+              "  \"email\": \"example1@email.com\",\n" +
               "  \"role\": \"access\"\n" +
               "  }\n" +
               "}";
 
       mvc.perform(MockMvcRequestBuilders
-              .put("/profiles/"+ otherId + "/activities/" + activityId + "/subscriber")
+              .put("/profiles/"+ otherId + "/activities/" + activityId2 + "/subscriber")
               .content(jsonString)
               .contentType(MediaType.APPLICATION_JSON)
               .session(session)
@@ -953,16 +955,17 @@ public class FollowControllerTest {
               .andExpect(status().isOk());
 
       String jsonString2 = "{\n" +
-              "\"email\": \"example@email.com\"\n" +
+              "\"email\": \"example1@email.com\"\n" +
               "}";
 
         mvc.perform(MockMvcRequestBuilders
-                .delete("/profiles/"+ otherId + "/activities/" + activityId + "/subscriber")
+                .delete("/profiles/"+ otherId + "/activities/" + activityId2 + "/subscriber")
                 .content(jsonString2)
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .session(session)
         )
-                .andExpect(status().isOk());
-    }*/
+                .andExpect(status().is2xxSuccessful());
+    }
 
 }
