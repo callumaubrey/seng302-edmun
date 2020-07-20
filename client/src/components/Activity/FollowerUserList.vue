@@ -190,7 +190,7 @@
                         };
                         console.log(res.data.primary_email.address);
                         console.log(role);
-                        api.updateRole(this.loggedInId, this.activityId, roleData)
+                        api.updateRole(this.activityCreatorId, this.activityId, roleData)
                             .then(() => {
                                 this.participantOffset -= 1;
                                 this.participants.remove(user);
