@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.springvuegradle.team6.models.*;
 import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
 import com.springvuegradle.team6.requests.EditSubscriptionRequest;

@@ -88,6 +88,8 @@ export default {
 
     updateRole: (profileId, activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', data),
 
+    updateActivityVisibility: (profileId,activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/visibility', data),
+
     // (D)elete
 
     removeForId: (id) => instance.delete('students/' + id),
