@@ -21,6 +21,9 @@
 
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
+                <b-row align-h="center">
+                    <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
+                </b-row>
 
                 <!-- Actions -->
                 <b-row align-h="center">
@@ -89,7 +92,7 @@
                 <b-row align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em" title="Participants:">
-                            <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
+                            <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="activityOwner" :logged-in-id="loggedInId"></FollowerUserList>
                         </b-card>
                     </b-col>
                 </b-row>
@@ -104,7 +107,8 @@
     import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
-    import api from '@/Api';
+    import ShareActivity from "@/components/ShareActivity.vue";
+    import api from '@/Api'
 
     const App = {
         name: "App",
@@ -112,7 +116,8 @@
             NavBar,
             FollowUnfollow,
             FollowerUserList,
-            FollowerSummary
+            FollowerSummary,
+            ShareActivity,
         },
         data: function () {
             return {
@@ -134,7 +139,8 @@
                 locationString: "",
                 locationDataLoading: true,
                 archived: false,
-                notFound: false
+                notFound: false,
+                visibility: null
             }
         },
         mounted() {
@@ -204,6 +210,8 @@
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
+                let profileId = this.$route.params.id;
+
                 api.getActivity(activityId)
                     .then((res) => {
                         if (res.data == "Activity is archived") {
@@ -217,6 +225,10 @@
                             vueObj.startTime = res.data.startTime;
                             vueObj.endTime = res.data.endTime;
                             vueObj.location = res.data.location;
+                            vueObj.visibility = res.data.visibilityType;
+                            if(res.data.visibilityType == null) {
+                                vueObj.visibility = "Public"
+                            }
                             if (vueObj.location != null) {
                                 vueObj.locationString = vueObj.location.city + ", ";
                                 if (vueObj.location.state) {
@@ -228,6 +240,9 @@
                                 for (var i = 0; i < res.data.tags.length; i++) {
                                     vueObj.hashtags.push("#" + res.data.tags[i].name);
                                 }
+                            }
+                            if (vueObj.activityOwner.id != profileId && vueObj.visibility == 'Private') {
+                                vueObj.$router.push('/profiles/' + profileId);
                             }
                             vueObj.hashtags.sort();
                             if (!vueObj.continuous) {

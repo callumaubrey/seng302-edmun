@@ -177,6 +177,14 @@
                             </b-form-group>
                         </b-col>
                     </b-row>
+                    <b-row>
+                        <b-col >
+                            <label>Select sharing</label>
+                            <b-form-select v-model=selectedVisibility :options="options" size="sm"/>
+                            <br><br>
+                        </b-col>
+                    </b-row>
+
 
                     <b-row>
                         <b-col sm="10">
@@ -213,7 +221,7 @@
         mixins: [validationMixin, locationMixin],
         components: {
             NavBar,
-            SearchTag
+            SearchTag,
         },
         data() {
             return {
@@ -243,7 +251,14 @@
                 hashtag: {
                     options: [],
                     values: [],
-                }
+                },
+                selectedVisibility: 'Public',
+                options: [
+                    { value: 'Private', text: 'Private' },
+                    { value: 'Restricted', text: 'Restricted' },
+                    { value: 'Public', text: 'Public' }
+                ],
+
             }
         },
         validations: {
@@ -428,7 +443,8 @@
                         activity_type: this.form.selectedActivityTypes,
                         continuous: true,
                         location: this.locationData,
-                        hashtags: this.hashtag.values
+                        hashtags: this.hashtag.values,
+                        visibility: this.selectedVisibility
                     }
                     api.createActivity(userId, data)
                         .then(function () {
@@ -453,6 +469,7 @@
                         activity_name: this.form.name,
                         description: this.form.description,
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
+                        visibility: this.selectedVisibility,
                         end_time: isoDates[1]
                     }
                     api.createActivity(userId, data)
@@ -538,7 +555,13 @@
                     })
                     .catch(function () {
                     });
+            },
+            onChildClick: function(val) {
+               this.selectedVisibility = val
             }
+
+
+
         },
         mounted: async function () {
             await this.checkAuthorized();

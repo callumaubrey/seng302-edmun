@@ -30,6 +30,18 @@ export default {
 
     getHomeFeed: (profileId, offset, limit) => instance.get('/feed/homefeed/' + profileId + "?offset=" + offset + "&limit=" + limit),
 
+    getActivityParticipants: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=participant&offset=" + offset + "&limit=" + limit),
+
+    getActivityOrganisers: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=organiser&offset=" + offset + "&limit=" + limit),
+
+    getActivityAccessors: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=accessor&offset=" + offset + "&limit=" + limit),
+
+    getActivityFollowers: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=follower&offset=" + offset + "&limit=" + limit),
+
+    getActivityCreators: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=creator&offset=" + offset + "&limit=" + limit),
+
+    getActivityMembers: (activityId) => instance.get('/activities/' + activityId + '/members'),
+
     getLoggedInProfile: () => instance.get('/profiles/user'),
 
     getProfileId: () => instance.get('/profiles/id'),
@@ -52,6 +64,8 @@ export default {
 
     getActivityCreatorId: (activityId) => instance.get('/activities/' + activityId + '/creatorId'),
 
+    getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
@@ -71,6 +85,8 @@ export default {
     updateAdminRights: (profileId, data) => instance.put('/admin/profiles/' + profileId + '/role', data),
 
     updatePasswordWithAdmin: (profileId, data) => instance.put('/admin/profiles/' + profileId + '/password', data),
+
+    updateActivityVisibility: (profileId,activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/visibility', data),
 
     // (D)elete
 

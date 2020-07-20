@@ -13,7 +13,6 @@ import java.util.List;
 public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Integer> {
 
   List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
-
   @Query(
           value =
                   "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on " +
@@ -21,6 +20,12 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
                           "LIMIT :limit OFFSET :offset",
           nativeQuery = true)
   List<JSONObject> findMembers(int activityId, int type, int limit, int offset);
+
+  @Query(
+          value =
+                  "select profile_id from activity_role JOIN profile on activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type",
+          nativeQuery = true)
+  List<Integer> findRestrictedEmails(int activityId, int type);
 
   @Query(
           value =
