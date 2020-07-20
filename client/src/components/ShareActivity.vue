@@ -163,7 +163,11 @@
         },
         watch: {
             selected: function(){
-                if(this.visibility == "Restricted" && this.selected == "Private" || (this.visibility == "Public" && this.selected != "Public")){
+                if (this.organiserCount === 0 && this.partCount === 0 && this.followerCount === 0) {
+                    this.showWarning = false
+                    return
+                }
+                if(this.visibility === "Restricted" && this.selected === "Private" || (this.visibility === "Public" && this.selected !== "Public")){
                     this.showWarning = true
                 }else {
                     this.showWarning = false
