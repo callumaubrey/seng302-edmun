@@ -131,7 +131,7 @@
                 await api.getActivityOrganisers(this.activityId, this.organiserOffset, this.limit)
                     .then((res) => {
                         for (let i = 0; i < res.data.Organiser.length; i++) {
-                            if (!this.organisers.contains(res.data.Organiser[i])) {
+                            if (!this.organisers.includes(res.data.Organiser[i])) {
                                 this.organisers.push(res.data.Organiser[i]);
                             }
                         }
@@ -145,7 +145,7 @@
                 await api.getActivityParticipants(this.activityId, this.participantOffset, this.limit)
                     .then((res) => {
                         for (let i = 0; i < res.data.Participant.length; i++) {
-                            if (!this.participants.contains(res.data.Participant[i])) {
+                            if (!this.participants.includes(res.data.Participant[i])) {
                                 this.participants.push(res.data.Participant[i]);
                             }
                         }
@@ -184,11 +184,13 @@
                     .then((res) => {
                         let roleData = {
                             subscriber: {
-                                email: res.data.email,
+                                email: res.data.primary_email.address,
                                 role: role
                             }
-                        }
-                        api.updateRole(user.profile_id, this.activityId, roleData)
+                        };
+                        console.log(res.data.primary_email.address);
+                        console.log(role);
+                        api.updateRole(this.loggedInId, this.activityId, roleData)
                             .then(() => {
                                 this.participantOffset -= 1;
                                 this.participants.remove(user);

@@ -89,7 +89,7 @@
                 <b-row align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em" title="Participants:">
-                            <FollowerUserList :activity-id="$route.params.activityId"></FollowerUserList>
+                            <FollowerUserList :activity-id="$route.params.activityId" :logged-in-id="loggedInId" :activity-creator-id="activityOwner.id"></FollowerUserList>
                         </b-card>
                     </b-col>
                 </b-row>
