@@ -93,10 +93,6 @@
                         </b-card>
                     </b-col>
                 </b-row>
-
-                <b-card style="margin: 1em" title="Participants:">
-                    <FollowerUserList :activity-id="$route.params.activityId" :activity-creator-id="profileId" :logged-in-id="loggedInId"></FollowerUserList>
-                </b-card>
             </div>
         </div>
     </div>
@@ -207,7 +203,6 @@
             getActivityData() {
                 let vueObj = this;
                 let activityId = this.$route.params.activityId;
-                let profileId = this.$route.params.id;
 
 
                 api.getActivity(activityId)

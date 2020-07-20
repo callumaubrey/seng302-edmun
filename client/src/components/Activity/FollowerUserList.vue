@@ -12,7 +12,9 @@
                         </b-col>
                         <b-col v-if="activityCreatorId==loggedInId" class="text-center">
                             <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                <b-dropdown-item>Organiser</b-dropdown-item>
+                                <b-dropdown-item @click="changeRole(user, 'organiser')">Organiser</b-dropdown-item>
+                                <b-dropdown-item>Remove</b-dropdown-item>
+
                             </b-dropdown>
                         </b-col>
                     </b-row>
@@ -25,8 +27,9 @@
                                 {{ user.full_name }}
                             </b-col>
                             <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                                <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                    <b-dropdown-item>Organiser</b-dropdown-item>
+                                <b-dropdown class="m-md-2" id="dropdown-1" text="Organiser">
+                                    <b-dropdown-item @click="changeRole(user, 'participant')">Participant</b-dropdown-item>
+                                    <b-dropdown-item>Remove</b-dropdown-item>
                                 </b-dropdown>
                             </b-col>
                         </b-row>
@@ -128,7 +131,9 @@
                 await api.getActivityOrganisers(this.activityId, this.organiserOffset, this.limit)
                     .then((res) => {
                         for (let i = 0; i < res.data.Organiser.length; i++) {
-                            this.organisers.push(res.data.Organiser[i]);
+                            if (!this.organisers.contains(res.data.Organiser[i])) {
+                                this.organisers.push(res.data.Organiser[i]);
+                            }
                         }
                     })
                     .catch(err => {
@@ -140,7 +145,9 @@
                 await api.getActivityParticipants(this.activityId, this.participantOffset, this.limit)
                     .then((res) => {
                         for (let i = 0; i < res.data.Participant.length; i++) {
-                            this.participants.push(res.data.Participant[i]);
+                            if (!this.participants.contains(res.data.Participant[i])) {
+                                this.participants.push(res.data.Participant[i]);
+                            }
                         }
                     })
                     .catch(err => {
@@ -172,6 +179,28 @@
                         console.log(err)
                     });
             },*/
+            changeRole: async function (user, role) {
+                await api.getProfile(user.profile_id)
+                    .then((res) => {
+                        let roleData = {
+                            subscriber: {
+                                email: res.data.email,
+                                role: role
+                            }
+                        }
+                        api.updateRole(user.profile_id, this.activityId, roleData)
+                            .then(() => {
+                                this.participantOffset -= 1;
+                                this.participants.remove(user);
+                                this.organisers.push(user);
+                            })
+                            .catch(err => {
+                                console.log(err)
+                            });
+                    }).catch(err => {
+                        console.log(err)
+                    });
+            },
             scroll() {
                 window.onscroll = async () => {
                     let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
