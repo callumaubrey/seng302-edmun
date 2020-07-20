@@ -22,7 +22,7 @@
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
                 <b-row align-h="center">
-                    <ShareActivity :modal="profileId == activityOwner" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
+                    <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
                 </b-row>
 
                 <!-- Actions -->
