@@ -30,8 +30,8 @@ Custom activity types can also be created and assainged to users.
 
 2. ###### Default Admin  
     - Insert the following variables and fill in the default admin credentials  
-    `ADMIN_EMAIL=`  
-    `ADMIN_PASSWORD=`
+    `ADMIN_EMAIL=admin@email.com`  
+    `ADMIN_PASSWORD=Password1`
 
 
 ##### Client (Frotnend/GUI)
