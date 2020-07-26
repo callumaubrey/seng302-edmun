@@ -5,20 +5,23 @@ import com.springvuegradle.team6.models.Profile;
 import com.springvuegradle.team6.models.ProfileRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
         "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -199,6 +201,14 @@ public class SearchProfileControllerTest {
                     .session(session))
             .andExpect(status().isOk());
   }
+
+  @AfterAll
+  void tearDown(@Autowired DataSource dataSource) throws SQLException {
+      try (Connection conn = dataSource.getConnection()) {
+        ScriptUtils.executeSqlScript(conn, new ClassPathResource("tearDown.sql"));
+    }
+  }
+
 
   @Test
   void searchProfileByFullnameReturnOneResult() throws Exception {

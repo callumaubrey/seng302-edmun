@@ -3,19 +3,24 @@ package com.springvuegradle.team6.models;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TagRepositoryTest {
@@ -85,6 +90,13 @@ public class TagRepositoryTest {
     tags2.add(cool);
     activity2.setTags(tags2);
     activity2 = activityRepository.save(activity2);
+  }
+
+  @AfterAll
+  void tearDown(@Autowired DataSource dataSource) throws SQLException {
+    try (Connection conn = dataSource.getConnection()) {
+      ScriptUtils.executeSqlScript(conn, new ClassPathResource("tearDown.sql"));
+    }
   }
 
   @Test

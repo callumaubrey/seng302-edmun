@@ -1,21 +1,24 @@
 package com.springvuegradle.team6.permission;
 
 import com.springvuegradle.team6.models.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
         "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -48,7 +50,20 @@ class UserAdminPermissionTest {
 
     private String activityId;
 
+
     @BeforeAll
+    void setup() throws Exception {
+        createDummyUser();
+        createUserAdminAndLogInAsUserAdmin();
+    }
+
+    @AfterAll
+    void tearDown(@Autowired DataSource dataSource) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            ScriptUtils.executeSqlScript(conn, new ClassPathResource("tearDown.sql"));
+        }
+    }
+
     void createDummyUser() throws Exception {
         String jsonString = "{\n"
                 + "  \"lastname\": \"Houston\",\n"
@@ -74,9 +89,7 @@ class UserAdminPermissionTest {
                 .andReturn().getResponse().getContentAsString();
     }
 
-    @BeforeAll
     void createUserAdminAndLogInAsUserAdmin() throws Exception {
-        profileRepository.deleteAll();
         session = new MockHttpSession();
         String jsonString = "{\n"
                 + "  \"lastname\": \"Dallas\",\n"
@@ -114,6 +127,8 @@ class UserAdminPermissionTest {
                 .session(session)
         ).andExpect(status().isOk());
     }
+
+
 
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
