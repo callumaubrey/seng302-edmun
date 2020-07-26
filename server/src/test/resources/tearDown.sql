@@ -14,6 +14,7 @@ These are the following:
 -- Disables foreign key checks
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- Please list tables in alphabetical order
 TRUNCATE TABLE `activity`;
 TRUNCATE TABLE `activity_activity_types`;
 TRUNCATE TABLE `activity_history`;

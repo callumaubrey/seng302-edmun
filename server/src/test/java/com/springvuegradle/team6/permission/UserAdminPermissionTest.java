@@ -1,6 +1,11 @@
 package com.springvuegradle.team6.permission;
 
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,9 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 

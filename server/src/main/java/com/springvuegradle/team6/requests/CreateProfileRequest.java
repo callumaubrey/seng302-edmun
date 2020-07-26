@@ -1,10 +1,14 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.Country;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.CountryRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 

@@ -1,8 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
@@ -13,9 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 

@@ -1,8 +1,8 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.Tag;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.entities.Tag;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;

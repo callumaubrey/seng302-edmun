@@ -1,8 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,11 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityType;
-import com.springvuegradle.team6.models.Tag;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;

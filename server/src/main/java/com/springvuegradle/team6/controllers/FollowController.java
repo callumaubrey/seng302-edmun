@@ -1,7 +1,11 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.requests.DeleteSubscriptionRequest;
 import com.springvuegradle.team6.requests.EditSubscriptionRequest;
 import com.springvuegradle.team6.requests.SubscriptionRequest;
