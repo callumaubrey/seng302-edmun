@@ -1,37 +1,38 @@
 package com.springvuegradle.team6.models;
 
-import io.cucumber.java.en_old.Ac;
-import org.junit.AfterClass;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DataJpaTest
+@Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class ActivityRepositoryTest {
+class ActivityRepositoryTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private TagRepository tagRepository;
+  @Autowired
+  private TagRepository tagRepository;
 
   private Profile profile;
 

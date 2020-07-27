@@ -10,7 +10,9 @@
                 <b-nav-item v-if="isLoggedIn" to="/home">Home</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToProfile">Profile</b-nav-item>
                 <b-nav-item v-if="isLoggedIn" @click="goToActivities">Activities</b-nav-item>
-                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && isAdminAccess">Admin Dashboard</b-nav-item>
+                <b-nav-item @click="goToAdminDashBoard" v-if="isLoggedIn && loggedInIsAdmin && isAdminAccess">Admin
+                    Dashboard
+                </b-nav-item>
                 <b-collapse id="my-collapse" v-if="isLoggedIn">
                     <b-form inline>
                         <b-input-group>
@@ -21,14 +23,17 @@
                             <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
-                                <b-button @click="search()"><b-icon-search></b-icon-search></b-button>
+                                <b-button @click="search()">
+                                    <b-icon-search></b-icon-search>
+                                </b-button>
                             </b-input-group-append>
                         </b-input-group>
                     </b-form>
                 </b-collapse>
                 <b-nav-item v-if="isLoggedIn">
                     <span v-b-toggle.my-collapse>
-                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search class="when-closed">Open</b-icon-search>
+                        <b-icon-x class="when-opened">Close</b-icon-x> <b-icon-search
+                            class="when-closed">Open</b-icon-search>
                     </span>
                 </b-nav-item>
             </b-navbar-nav>
@@ -39,7 +44,7 @@
                 </b-button>
                 <div v-else>
                     <b-button-group class="access-control-button" title="Toggle to switch role access"
-                                    v-b-popover.hover.bottom="">
+                                    v-b-popover.hover.bottom="" v-if="loggedInIsUserAdmin">
                         <b-button @click="switchAccessControl(false)" pill v-if="isAdminAccess" variant="success">Admin
                         </b-button>
                         <b-button @click="switchAccessControl(true)" pill v-else variant="outline-success">Standard User
@@ -63,13 +68,14 @@
 <script>
     import 'bootstrap/dist/css/bootstrap.css'
     import 'bootstrap-vue/dist/bootstrap-vue.css'
-    import axios from 'axios'
     import {mutations, store} from "../store";
+    import api from '@/Api';
+    import AdminMixin from "../mixins/AdminMixin";
 
     const NavBar = {
         name: 'NavBar',
         components: {},
-        props: ['isLoggedIn', 'hideElements', 'loggedInId', 'loggedInIsAdmin'],
+        props: ['isLoggedIn', 'hideElements', 'loggedInId'],
         data: function () {
             return {
                 userName: "",
@@ -79,7 +85,9 @@
                 searchOptions: [
                     {value: 1, text: 'Users'}
                 ],
-                profileId: ""
+                profileId: "",
+                loggedInIsAdmin: null,
+                loggedInIsUserAdmin: null
             }
         },
         computed: {
@@ -90,7 +98,7 @@
         methods: {
             logout() {
                 const vueObj = this;
-                axios.get('http://localhost:9499/logout/')
+                api.logout()
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
@@ -100,9 +108,10 @@
                     });
             },
             getUserId: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+                this.loggedInIsUserAdmin = await AdminMixin.methods.checkUserIsUserAdmin();
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/id')
+                api.getProfileId()
                     .then(function (response) {
                         currentObj.profileId = response.data;
                     })
@@ -125,7 +134,7 @@
             },
             getUserName() {
                 let currentObj = this;
-                axios.get('http://localhost:9499/profiles/firstname')
+                api.getFirstName()
                     .then(function (response) {
                         currentObj.userName = response.data;
                     })
@@ -134,7 +143,6 @@
             },
             search() {
                 if (this.searchQuery === '') return;
-
                 this.$router.push('/profiles?fullname=' + this.searchQuery);
             },
             switchAccessControl(value) {
