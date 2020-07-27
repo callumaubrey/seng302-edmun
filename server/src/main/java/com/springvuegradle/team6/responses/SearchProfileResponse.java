@@ -1,9 +1,6 @@
 package com.springvuegradle.team6.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.ActivityType;
-
-import java.util.Set;
 
 public class SearchProfileResponse {
 

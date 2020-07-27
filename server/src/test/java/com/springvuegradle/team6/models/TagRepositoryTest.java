@@ -1,21 +1,30 @@
 package com.springvuegradle.team6.models;
 
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlGroup;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DataJpaTest
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TagRepositoryTest {
@@ -39,19 +48,19 @@ public class TagRepositoryTest {
     profile.setGender("male");
     profile = profileRepository.save(profile);
 
-    Tag cool = new Tag();
+    com.springvuegradle.team6.models.entities.Tag cool = new com.springvuegradle.team6.models.entities.Tag();
     cool.setName("cool");
     cool = tagRepository.save(cool);
 
-    Tag cold = new Tag();
+    com.springvuegradle.team6.models.entities.Tag cold = new com.springvuegradle.team6.models.entities.Tag();
     cold.setName("cold");
     cold = tagRepository.save(cold);
 
-    Tag colour = new Tag();
+    com.springvuegradle.team6.models.entities.Tag colour = new com.springvuegradle.team6.models.entities.Tag();
     colour.setName("colour");
     colour = tagRepository.save(colour);
 
-    Tag awesome = new Tag();
+    com.springvuegradle.team6.models.entities.Tag awesome = new com.springvuegradle.team6.models.entities.Tag();
     awesome.setName("awesome");
     awesome = tagRepository.save(awesome);
 
@@ -59,7 +68,7 @@ public class TagRepositoryTest {
     activity.setProfile(profile);
     activity.setActivityName("Run at Hagley Park");
     activity.setContinuous(true);
-    Set<Tag> tags = new HashSet<>();
+    Set<com.springvuegradle.team6.models.entities.Tag> tags = new HashSet<>();
     tags.add(cold);
     tags.add(cool);
     activity.setTags(tags);
@@ -69,7 +78,7 @@ public class TagRepositoryTest {
     activity1.setProfile(profile);
     activity1.setActivityName("Avonhead Park Walk");
     activity1.setContinuous(true);
-    Set<Tag> tags1 = new HashSet<>();
+    Set<com.springvuegradle.team6.models.entities.Tag> tags1 = new HashSet<>();
     tags1.add(cold);
     tags1.add(colour);
     activity1.setTags(tags1);
@@ -85,6 +94,13 @@ public class TagRepositoryTest {
     tags2.add(cool);
     activity2.setTags(tags2);
     activity2 = activityRepository.save(activity2);
+  }
+
+  @AfterAll
+  void tearDown(@Autowired DataSource dataSource) throws SQLException {
+    try (Connection conn = dataSource.getConnection()) {
+      ScriptUtils.executeSqlScript(conn, new ClassPathResource("tearDown.sql"));
+    }
   }
 
   @Test

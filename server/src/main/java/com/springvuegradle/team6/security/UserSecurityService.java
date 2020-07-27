@@ -1,6 +1,6 @@
 package com.springvuegradle.team6.security;
 
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
