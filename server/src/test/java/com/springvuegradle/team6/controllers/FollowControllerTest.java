@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.requests.LoginRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -71,10 +72,10 @@ public class FollowControllerTest {
 
     // Logs in and get profile Id
     mvc.perform(
-            MockMvcRequestBuilders.post("/profiles")
-                .content(profileJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.post("/profiles")
+            .content(profileJson)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -99,10 +100,10 @@ public class FollowControllerTest {
     // Creates an activity
     String activityBody =
         mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(activityJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -122,10 +123,10 @@ public class FollowControllerTest {
 
     // Logs in and get profile Id
     mvc.perform(
-            MockMvcRequestBuilders.post("/profiles")
-                .content(profileJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.post("/profiles")
+            .content(profileJson)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -756,7 +757,7 @@ public class FollowControllerTest {
   void testUnauthorisedPrivate() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
     activity.setVisibilityType("private");
-    activity.setProfile(profileRepository.findById(otherId));
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     activityRepository.save(activity);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
@@ -768,6 +769,7 @@ public class FollowControllerTest {
   @Test
   void testAuthorisedPrivate() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
+    activity.setProfile(profileRepository.findById(otherId));
     activity.setVisibilityType("private");
     activityRepository.save(activity);
     mvc.perform(
@@ -780,9 +782,9 @@ public class FollowControllerTest {
   @Test
   void testUnauthorisedRestricted() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setProfile(profileRepository.findById(otherId));
     activity.setVisibilityType("restricted");
     activityRepository.save(activity);
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -793,7 +795,17 @@ public class FollowControllerTest {
   @Test
   void testAuthorisedRestrictedWhenCreator() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
+    activity.setProfile(profileRepository.findById(otherId));
     activity.setVisibilityType("restricted");
+    LoginRequest login_request = new LoginRequest();
+    login_request.email = "poly@pocket.com";
+    login_request.password = "Password1";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(mapper.writeValueAsString(login_request))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session)
+    ).andExpect(status().isOk());
     activityRepository.save(activity);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
@@ -803,14 +815,15 @@ public class FollowControllerTest {
   }
 
   @Test
-  void testAuthorisedRestrictedWhenAuthorised() throws Exception {
+  void testAuthorisedRestricted() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
     activity.setVisibilityType("restricted");
     activity.setProfile(profileRepository.findById(otherId));
     activityRepository.save(activity);
+    int authorisedId = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
     ActivityRole activityRole = new ActivityRole();
-    activityRole.setProfile(profileRepository.getOne(id));
+    activityRole.setProfile(profileRepository.getOne(authorisedId));
     activityRole.setActivity(activityRepository.getOne(activityId));
     activityRole.setActivityRoleType(ActivityRoleType.Organiser);
     activityRoleRepository.save(activityRole);

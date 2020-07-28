@@ -377,6 +377,22 @@ public class FollowController {
                                                     @RequestParam(name = "limit", required = false) Integer limit,
                                                     @RequestParam(name = "type", required = false) String type,
                                                     HttpSession session) {
+        Optional<Activity> activity = activityRepository.findById(activityId);
+        if (activity.isEmpty()) {
+            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+        }
+        Object id = session.getAttribute("id");
+        VisibilityType visibility = activity.get().getVisibilityType();
+        if (visibility.equals(VisibilityType.Private)){
+          if (id == null || !activity.get().getProfile().getId().toString().equals(id.toString())) {
+              return new ResponseEntity("Unauthorised user", HttpStatus.UNAUTHORIZED);
+          }
+        } else if(visibility.equals(VisibilityType.Restricted)) {
+            List<ActivityRole> member = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, (Integer) id);
+            if (member.size() == 0){
+                return new ResponseEntity("Unauthorised user", HttpStatus.UNAUTHORIZED);
+            }
+        }
         if (offset == null) {
             offset = 0;
         }
@@ -388,10 +404,6 @@ public class FollowController {
             return new ResponseEntity("Invalid member type", HttpStatus.BAD_REQUEST);
         }
 
-        Optional<Activity> activity = activityRepository.findById(activityId);
-        if (activity.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
         JSONObject response = new JSONObject();
 
         if (type == null || type.equals("organiser")) {

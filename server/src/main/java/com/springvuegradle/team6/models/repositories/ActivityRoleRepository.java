@@ -28,11 +28,7 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
           nativeQuery = true)
   List<JSONObject> findMembers(int activityId, int type, int limit, int offset);
 
-  @Query(
-          value =
-                  "select profile_id from activity_role JOIN profile on activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type",
-          nativeQuery = true)
-  List<Integer> findRestrictedEmails(int activityId, int type);
+  List<ActivityRole> findByActivity_IdAndProfile_Id(int activityId, int profileId);
 
   @Query(
           value =
