@@ -98,6 +98,6 @@ public class TagController {
     }
     hashTag = hashTag.toLowerCase();
     return new ResponseEntity(
-        activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+        activityRepository.findByTags_NameAndArchivedIsFalseOrderByCreationDateDesc(hashTag), HttpStatus.OK);
   }
 }
