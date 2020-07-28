@@ -98,4 +98,6 @@ export default {
 
     removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
 
+    removeLocation: (profileId) => instance.delete('/profiles/' + profileId + '/location'),
+
 }
