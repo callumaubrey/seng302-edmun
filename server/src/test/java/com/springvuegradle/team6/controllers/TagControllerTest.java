@@ -261,7 +261,8 @@ public class TagControllerTest {
     activity.setTags(tags);
     activity = activityRepository.save(activity);
 
-    // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier than the previous activity
+    // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier
+    // than the previous activity
     TimeUnit.SECONDS.sleep(1);
 
     Activity activity1 = new Activity();
@@ -293,5 +294,98 @@ public class TagControllerTest {
         LocalDateTime.parse(result.getJSONObject(1).getString("creationDate"));
     System.out.println(dateTime1);
     org.junit.jupiter.api.Assertions.assertTrue(dateTime.isAfter(dateTime1));
+  }
+
+  @Test
+  void getActivitiesByHashTagWhenActivityArchivedReturnNoResults() throws Exception {
+    // Set up data
+    Tag tag = new Tag();
+    tag.setName("myrun");
+
+    Activity activity = new Activity();
+    activity.setActivityName("Test");
+    Set<Tag> tags = new HashSet<Tag>();
+    tags.add(tag);
+    activity.setTags(tags);
+    activity.setContinuous(false);
+    activity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+
+    tagRepository.save(tag);
+    int activityId = activityRepository.save(activity).getId();
+
+    // Delete activity
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .session(session))
+        .andExpect(status().isOk());
+    activity = activityRepository.findById(activityId).get();
+    org.junit.jupiter.api.Assertions.assertTrue(activity.isArchived());
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/hashtag/myrun")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
+  }
+
+  @Test
+  void getActivitiesByHashTagWhenActivityArchivedReturnOneResult() throws Exception {
+    // Set up data
+    Tag tag = new Tag();
+    tag.setName("myrun");
+
+    Activity activity = new Activity();
+    activity.setActivityName("Test");
+    Set<Tag> tags = new HashSet<Tag>();
+    tags.add(tag);
+    activity.setTags(tags);
+    activity.setContinuous(false);
+    activity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    tagRepository.save(tag);
+    int activityId = activityRepository.save(activity).getId();
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setActivityName("Avonhead Park Walk");
+    activity1.setContinuous(true);
+    activity1.setCreationDate(LocalDateTime.now());
+    Set<Tag> tags1 = new HashSet<>();
+    tags1.add(tag);
+    activity1.setTags(tags1);
+    activity1 = activityRepository.save(activity1);
+
+    // Delete activity
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .session(session))
+        .andExpect(status().isOk());
+    activity = activityRepository.findById(activityId).get();
+    org.junit.jupiter.api.Assertions.assertTrue(activity.isArchived());
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/hashtag/myrun")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
   }
 }
