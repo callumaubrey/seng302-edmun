@@ -20,7 +20,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.json.JSONArray;
 
 
 import javax.sql.DataSource;
@@ -51,22 +50,17 @@ class UserAdminPermissionTest {
     @Autowired
     private ActivityRepository activityRepository;
 
-    @Autowired
-    private ObjectMapper mapper;
-
     private String anotherUserId;
 
     private MockHttpSession session;
 
     private String activityId;
 
-    private int testProfileId;
 
 
     @BeforeAll
     void setup() throws Exception {
         session = new MockHttpSession();
-        testProfileId = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
         createDummyUser();
         createUserAdminAndLogInAsUserAdmin();
     }
@@ -223,32 +217,5 @@ class UserAdminPermissionTest {
                 .andReturn().getResponse().getContentAsString();
         List<Activity> anotherUserActivities = activityRepository.findByProfile_IdAndArchivedFalse(Integer.parseInt(anotherUserId));
         Assertions.assertEquals(activityId, anotherUserActivities.get(0).getId().toString());
-    }
-
-    @Test
-    @WithMockUser(roles = {"USER", "USER_ADMIN"})
-    void testAdminCanViewPrivateActivities() throws Exception {
-      Activity testActivity1 = new Activity();
-      testActivity1.setVisibilityType("private");
-      testActivity1.setProfile(profileRepository.findById(testProfileId));
-      activityRepository.save(testActivity1);
-
-      Activity testActivity2 = new Activity();
-      testActivity2.setVisibilityType("public");
-      testActivity2.setProfile(profileRepository.findById(testProfileId));
-      activityRepository.save(testActivity2);
-
-        String response =
-            mvc.perform(
-                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", testProfileId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-        JSONArray result = new JSONArray(response);
-        org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
-
     }
 }

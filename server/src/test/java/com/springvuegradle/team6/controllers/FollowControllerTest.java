@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -72,10 +73,10 @@ public class FollowControllerTest {
 
     // Logs in and get profile Id
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles")
-            .content(profileJson)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles")
+                .content(profileJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -100,10 +101,10 @@ public class FollowControllerTest {
     // Creates an activity
     String activityBody =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                .content(activityJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(activityJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -123,10 +124,10 @@ public class FollowControllerTest {
 
     // Logs in and get profile Id
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles")
-            .content(profileJson)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles")
+                .content(profileJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -801,11 +802,11 @@ public class FollowControllerTest {
     login_request.email = "poly@pocket.com";
     login_request.password = "Password1";
     mvc.perform(
-        MockMvcRequestBuilders.post("/login")
-            .content(mapper.writeValueAsString(login_request))
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session)
-    ).andExpect(status().isOk());
+            MockMvcRequestBuilders.post("/login")
+                .content(mapper.writeValueAsString(login_request))
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
     activityRepository.save(activity);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
@@ -827,6 +828,36 @@ public class FollowControllerTest {
     activityRole.setActivity(activityRepository.getOne(activityId));
     activityRole.setActivityRoleType(ActivityRoleType.Organiser);
     activityRoleRepository.save(activityRole);
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithMockUser(roles = {"USER", "USER_ADMIN"})
+  void testAdminRestricted() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType("restricted");
+    activity.setProfile(profileRepository.findById(otherId));
+    activityRepository.save(activity);
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithMockUser(roles = {"USER", "USER_ADMIN"})
+  void testAdminCanGetPrivateActivityMemberData() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType("private");
+    activity.setProfile(profileRepository.findById(otherId));
+    activityRepository.save(activity);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
                 .contentType(MediaType.APPLICATION_JSON)

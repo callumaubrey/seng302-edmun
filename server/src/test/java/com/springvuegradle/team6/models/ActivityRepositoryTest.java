@@ -1,12 +1,17 @@
 package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +30,11 @@ import java.util.Set;
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 class ActivityRepositoryTest {
 
-  @Autowired
-  private ActivityRepository activityRepository;
+  @Autowired private ActivityRepository activityRepository;
 
-  @Autowired
-  private ProfileRepository profileRepository;
+  @Autowired private ProfileRepository profileRepository;
 
-  @Autowired
-  private TagRepository tagRepository;
+  @Autowired private TagRepository tagRepository;
 
   private Profile profile;
 
@@ -122,9 +124,83 @@ class ActivityRepositoryTest {
     expectedResult.add("cool");
     Set<Tag> result = activityRepository.getActivityTags(activity.getId());
     Set<String> resultStrings = new HashSet<>();
-    for (Tag tag: result) {
+    for (Tag tag : result) {
       resultStrings.add(tag.getName());
     }
     org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
+  }
+
+  @Test
+  void testFindActivitiesThatAreNotPrivate() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("private");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("public");
+    activityRepository.save(activity1);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("private");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+        activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+            profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testAllActivitiesPrivateNoActivitiesReturned() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("private");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("private");
+    activityRepository.save(activity1);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("private");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+        activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+            profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(0, result.size());
+  }
+
+  @Test
+  void testFindActivitiesMultipleActivitiesNotPrivate() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("public");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("public");
+    activityRepository.save(activity1);
+
+    Activity activity3 = new Activity();
+    activity3.setProfile(profile);
+    activity3.setVisibilityType("private");
+    activityRepository.save(activity3);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("public");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+        activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+            profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(3, result.size());
   }
 }

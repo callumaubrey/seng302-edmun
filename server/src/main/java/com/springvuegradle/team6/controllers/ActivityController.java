@@ -667,7 +667,7 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-    
+
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -675,9 +675,10 @@ public class ActivityController {
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
-    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either of these two, is a response if unauthorized.
+    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either
+    // of these two, is a response if unauthorized.
     ResponseEntity<String> activityAuthorizedResponse =
-            this.checkAuthorisedToEditActivity(activity, session);
+        this.checkAuthorisedToEditActivity(activity, session);
 
     Object profileId = session.getAttribute("id");
     if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
@@ -733,7 +734,9 @@ public class ActivityController {
   }
 
   /**
-   * Get all activity that a user has created by their userID that is not archived
+   * Get all activity that a user has created by their userID that is not archived. No activities
+   * that are private should be returned unless the user is either an admin or the creator of the
+   * activity
    *
    * @param profileId The id of the user profile
    * @param session The session of the current user logged in
