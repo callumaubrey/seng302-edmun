@@ -353,7 +353,7 @@
                             Current location: {{locationDisplayText}}
                         </b-col>
                         <b-col cols="2" class="text-right">
-                            <b-button @click="removeLocation()">Remove</b-button>
+                            <b-button @click="removeLocation()" variant="danger">Remove</b-button>
                         </b-col>
                     </b-row>
                     <b-row v-else>
