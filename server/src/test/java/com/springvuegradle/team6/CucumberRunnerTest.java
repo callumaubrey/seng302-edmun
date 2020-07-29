@@ -15,6 +15,5 @@ import org.springframework.test.context.web.WebAppConfiguration;
 )
 @ContextConfiguration(
         classes = Application.class)
-@WebAppConfiguration
 public class CucumberRunnerTest {
 }
