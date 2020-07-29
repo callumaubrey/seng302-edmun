@@ -2,24 +2,37 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.NamedLocation;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
-import com.springvuegradle.team6.requests.*;
+import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.EditEmailsRequest;
+import com.springvuegradle.team6.requests.EditPasswordRequest;
+import com.springvuegradle.team6.requests.EditProfileRequest;
+import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin(
@@ -73,7 +86,7 @@ public class UserProfileController {
   public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session)
       throws JsonProcessingException {
     ResponseEntity<String> canViewResponse =
-        UserSecurityService.canViewPermission(id, session, repository);
+        UserSecurityService.checkViewingPermission(id, session, repository);
     if (canViewResponse != null) {
       return canViewResponse;
     }
