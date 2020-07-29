@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -163,5 +164,24 @@ class DeleteActivityTest {
 
     Set<ActivityHistory> activityHistorySetAfter = activityHistoryRepository.findByActivity_id(activityId);
     org.junit.jupiter.api.Assertions.assertEquals(activityHistorySetBefore.size() + 1, activityHistorySetAfter.size());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void deleteActivityAsAdminReturnStatusIsOk() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void deleteActivityThatDoesNotExistAsAdminReturnStatus4xxError() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/45354435353353", id)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
   }
 }
