@@ -11,7 +11,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.List;
 import java.util.Set;
 
 public class EditActivityRequest {
@@ -57,7 +56,7 @@ public class EditActivityRequest {
     activity.setActivityTypes(this.activityTypes);
     activity.setContinuous(this.continuous);
     if (this.visibility != null) {
-      activity.setVisibilityType(this.visibility);
+      activity.setVisibilityTypeByString(this.visibility);
     }
     if (activity.isContinuous()) {
       activity.setStartTime(null);

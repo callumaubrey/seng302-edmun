@@ -12,7 +12,7 @@ import java.util.Set;
 @Entity
 public class Activity {
 
-  // For testing purposes only
+  /** This constructor is used for testing purposes only */
   public Activity() {
     Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
@@ -21,6 +21,8 @@ public class Activity {
     this.activityTypes = null;
     this.activityTypes = myEmptySet;
     this.continuous = true;
+    this.visibilityType = VisibilityType.Public;
+    this.creationDate = LocalDateTime.now();
   }
 
   public Activity(CreateActivityRequest request, Profile profile) {
@@ -35,17 +37,14 @@ public class Activity {
       this.endTime = request.endTime;
     }
     if (request.location != null) {
-      NamedLocation location =
-              new NamedLocation(
-                      request.location.country, request.location.state, request.location.city);
-      this.location = location;
+      this.location = new NamedLocation(
+          request.location.country, request.location.state, request.location.city);
     }
     if (request.visibility != null) {
-      setVisibilityType(request.visibility);
+      setVisibilityTypeByString(request.visibility);
     } else {
       this.visibilityType = VisibilityType.Public;
     }
-
   }
 
   @Id
@@ -67,9 +66,9 @@ public class Activity {
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-          name = "activity_tags",
-          joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
-          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+      name = "activity_tags",
+      joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
 
   private boolean continuous;
@@ -192,9 +191,13 @@ public class Activity {
     return this.visibilityType;
   }
 
-  public void setVisibilityType(String type) {
+  public void setVisibilityTypeByString(String type) {
     String toCamelCase = type.substring(0, 1).toUpperCase() + type.substring(1);
     this.visibilityType = VisibilityType.valueOf(toCamelCase);
+  }
+
+  public void setVisibilityType(VisibilityType visibilityType) {
+    this.visibilityType = visibilityType;
   }
 
   @Override

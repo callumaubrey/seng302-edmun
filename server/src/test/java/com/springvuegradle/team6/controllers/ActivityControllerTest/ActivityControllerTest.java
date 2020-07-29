@@ -784,7 +784,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity = activityRepository.save(activity);
 
     String jsonString =
@@ -817,7 +817,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -834,7 +834,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("public");
+    activity.setVisibilityTypeByString("public");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -851,7 +851,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
     Profile profile2 = new Profile();
@@ -919,7 +919,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
     Profile profile2 = new Profile();
