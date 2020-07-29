@@ -653,6 +653,8 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -660,16 +662,24 @@ public class ActivityController {
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
+    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either of these two, is a response if unauthorized.
+    ResponseEntity<String> activityAuthorizedResponse =
+            this.checkAuthorisedToEditActivity(activity, session);
+
     Object profileId = session.getAttribute("id");
     if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
-        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        if (activityAuthorizedResponse != null) {
+          return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        }
       }
 
       if (activity.getVisibilityType() == VisibilityType.Restricted) {
         ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
         if (activityRoles == null) {
-          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          if (activityAuthorizedResponse != null) {
+            return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          }
         }
       }
     }
