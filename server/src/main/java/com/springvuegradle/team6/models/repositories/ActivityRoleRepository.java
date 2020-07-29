@@ -39,4 +39,10 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
                   "select COUNT(*) as Count from activity_role where activity_id = :activityId and activity_role_type = :type",
           nativeQuery = true)
   int findMembersCount(int activityId, int type);
+
+  @Query(
+          value =
+                  "delete from activity_role where activity_id not in  (:activity_id) and profile_id not in (:profile_id)",
+          nativeQuery = true)
+  void deleteAllActivityRolesExceptOwner(int activity_id, int profile_id);
 }

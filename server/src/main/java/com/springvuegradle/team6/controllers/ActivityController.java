@@ -598,6 +598,12 @@ public class ActivityController {
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
+      // here chekc if edited activity is now private if so, delete all activity roles except owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+
+      }
+
+
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
         String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
@@ -814,7 +820,7 @@ public class ActivityController {
         return new ResponseEntity<>(
                 "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-
+      // Here it needs to check if it is going private to then delete all activity roles except owner?
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
 
