@@ -744,7 +744,7 @@ public class ActivityController {
     }
 
     List<Activity> response;
-    if ((int) id == profileId) {
+    if (UserSecurityService.checkIsAdminOrCreator((int) id, profileId)) {
       response = activityRepository.findByProfile_IdAndArchivedFalse(profileId);
     } else {
       response =

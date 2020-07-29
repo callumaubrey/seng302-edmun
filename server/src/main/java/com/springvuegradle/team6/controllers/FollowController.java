@@ -365,7 +365,7 @@ public class FollowController {
 
 
     /**
-     * Retrieves all users accosiated with the activity and their role
+     * Retrieves all users associated with the activity and their role
      *
      * @param activityId id of the activity
      * @param session    current http session
@@ -383,13 +383,13 @@ public class FollowController {
         }
         Object id = session.getAttribute("id");
         VisibilityType visibility = activity.get().getVisibilityType();
-        if (visibility.equals(VisibilityType.Private)){
+        if (visibility.equals(VisibilityType.Private)) {
           if (id == null || !activity.get().getProfile().getId().toString().equals(id.toString())) {
               return new ResponseEntity("Unauthorised user", HttpStatus.UNAUTHORIZED);
           }
         } else if(visibility.equals(VisibilityType.Restricted)) {
             List<ActivityRole> member = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, (Integer) id);
-            if (member.size() == 0){
+            if (member.size() == 0) {
                 return new ResponseEntity("Unauthorised user", HttpStatus.UNAUTHORIZED);
             }
         }

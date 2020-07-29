@@ -766,7 +766,7 @@ class ActivityControllerTest {
   }
 
   @Test
-  void authorisedUserViewsCorrectPrivateActivitiesAndPublicActivities() throws Exception {
+  void testAuthorisedUserViewsCorrectPrivateActivitiesAndPublicActivities() throws Exception {
     Activity testActivity1 = new Activity();
     testActivity1.setVisibilityType("private");
     testActivity1.setProfile(profileRepository.findById(id));
@@ -790,7 +790,7 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
   }
   @Test
-  void unAuthorisedUserViewsCanNotGetPrivateActivities() throws Exception {
+  void testUnauthorisedUserCanNotGetPrivateActivities() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper,session);
     Activity testActivity1 = new Activity();
     testActivity1.setVisibilityType("private");
@@ -809,7 +809,7 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
   }
   @Test
-  void unAuthorisedUserViewsCanNotGetPrivateActivitiesButCanViewPublic() throws Exception {
+  void testUnauthorisedUserCanNotGetPrivateActivitiesButCanViewPublic() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper,session);
     Activity testActivity1 = new Activity();
     testActivity1.setVisibilityType("private");
