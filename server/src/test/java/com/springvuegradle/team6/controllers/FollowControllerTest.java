@@ -177,6 +177,46 @@ public class FollowControllerTest {
   }
 
   @Test
+  void subscribeThenIsFollower() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    String loginJson = "{\n"
+            + "  \"email\": \"poly@pocket.com\",\n"
+            + "  \"password\": \"Password1\"\n"
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/login")
+                    .content(loginJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    String subscriberJson = "{\n"
+            + "  \"email\": \"poly2@pocket.com\"\n"
+            + "}";
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get(
+                            "/profiles/" + id + "/activities/" + activityId + "/subscriber")
+                            .content(subscriberJson)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().is2xxSuccessful())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    org.junit.jupiter.api.Assertions.assertEquals("follower", obj.get("role"));
+  }
+
+  @Test
   void deleteSubsriptionFromActivity() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(

@@ -235,12 +235,12 @@
             <div v-b-toggle="'collapse-4'" class="clickable">
                 <b-container>
                     <b-row>
-                        <b-col><h3 class=edit-title>Activities</h3></b-col>
+                        <b-col><h3 class=edit-title>Activity Types</h3></b-col>
                         <b-col><h5 align="right">Change</h5></b-col>
                     </b-row>
                     <b-row>
-                        <b-col>Add or remove activities from your account</b-col>
-                        <b-col><h6 align="right">{{totalActivitys()}} activity </h6></b-col>
+                        <b-col>Add or remove activity types from your account</b-col>
+                        <b-col><h6 align="right">{{totalActivitys()}} activity types</h6></b-col>
                     </b-row>
                 </b-container>
             </div>
@@ -263,7 +263,7 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <b-form-group description="Add a new activity">
+                            <b-form-group description="Add a new activity type">
                                 <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
                             </b-form-group>
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
@@ -348,9 +348,17 @@
             <b-collapse id="collapse-6">
                 <b-container>
                     <hr>
-                    <b-row>
-                        <b-col>
+                    <b-row v-if="locationDisplayText != ''" align-v="center">
+                        <b-col cols="10">
                             Current location: {{locationDisplayText}}
+                        </b-col>
+                        <b-col cols="2" class="text-right">
+                            <b-button @click="removeLocation()" variant="danger">Remove</b-button>
+                        </b-col>
+                    </b-row>
+                    <b-row v-else>
+                        <b-col>
+                            {{locationDeleteMessage}}
                         </b-col>
                     </b-row>
                     <hr>
@@ -465,6 +473,7 @@
                 activityErrorMessage: "",
                 locationUpdateMessage: "",
                 locationErrorMessage: "",
+                locationDeleteMessage: "No location is currently associated with this account",
                 locationDisplayText: "",
                 loggedInIsAdmin: false
             }
@@ -778,6 +787,18 @@
                         console.log(error)
                     });
                 }
+            },
+            removeLocation: async function () {
+                await api.removeLocation(this.profileId).then(() => {
+                    this.locationErrorMessage = "";
+                    this.locationUpdateMessage = "Location successfully removed";
+                    this.location = "";
+                    this.locationDisplayText = "";
+                    this.locationDeleteMessage = "Location successfully removed";
+                }).catch(() => {
+                    this.locationUpdateMessage = "";
+                    this.locationErrorMessage = "Location could not be removed";
+                });
             },
             getCountryData: async function () {
                 var data = await (countryData.get());
