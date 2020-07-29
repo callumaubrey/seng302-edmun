@@ -31,6 +31,14 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
   @Query(value = "select t from Activity a left join a.tags t WHERE a.id = :activityId")
   Set<Tag> getActivityTags(int activityId);
 
+  /**
+   * Returns all activities sorted in descending order by the activities creation date that contain
+   * the given hashtag and are public, or are private and the user is the author of the activity.
+   *
+   * @param hashtagName the name of the hashtag
+   * @param profileId the id of the user that is calling the query
+   * @return the activities
+   */
   @Query(
       value =
           "select * from ((activity a left join activity_tags b on a.id = b.activity_id)"
