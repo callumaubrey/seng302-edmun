@@ -598,9 +598,9 @@ public class ActivityController {
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
-      // here chekc if edited activity is now private if so, delete all activity roles except owner.
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
       if (activity.getVisibilityType() == VisibilityType.Private) {
-
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
       }
 
 
@@ -820,9 +820,13 @@ public class ActivityController {
         return new ResponseEntity<>(
                 "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-      // Here it needs to check if it is going private to then delete all activity roles except owner?
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
+
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      }
 
       ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
       if (editActivityRolesResponse != null) {

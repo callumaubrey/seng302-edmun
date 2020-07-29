@@ -645,4 +645,10 @@ class EditActivityTest {
     org.junit.jupiter.api.Assertions.assertEquals(3, activityRoleList.size());
 
   }
+
+  @Test
+  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndAllRolesDeletedExceptOwner() throws Exception {
+
+  }
 }
+
