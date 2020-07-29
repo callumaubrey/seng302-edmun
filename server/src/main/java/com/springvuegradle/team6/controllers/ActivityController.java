@@ -659,8 +659,7 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-
-
+    
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }

@@ -865,6 +865,24 @@ class ActivityControllerTest {
 
   @Test
   @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void getPublicActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("public");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
   void getRestrictedActivityAdminCanView() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
