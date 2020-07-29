@@ -1,15 +1,17 @@
 <template>
     <div>
-        <b-row>
-            <b-button v-if="displayButton && !isSubscribed" @click="followActivity" variant="success">Follow</b-button>
-            <b-button v-if="displayButton && isSubscribed" @click="unfollowActivity" variant="danger">Unfollow</b-button>
+        <b-row style="margin-top:0.5rem;">
+            <b-button v-if="displayButton && !isSubscribed" @click="followActivity" variant="success" style="margin: 10px">Follow</b-button>
+            <b-button v-if="displayButton && isSubscribed" @click="unfollowActivity" variant="danger" style="margin: 10px">Unfollow</b-button>
+            <b-button v-if="!isGoing" @click="setGoing" variant="success" style="margin: 10px">Going</b-button>
+            <b-button v-if="isGoing" @click="setNotGoing" variant="danger" style="margin: 10px">Not Going</b-button>
         </b-row>
     </div>
 
 </template>
 
 <script>
-    import axios from "axios";
+    import api from '@/Api';
 
     const FollowUnfollow = {
         name: "FollowUnfollow",
@@ -31,20 +33,18 @@
             return {
                 displayButton: true,
                 isSubscribed: false,
+                isGoing: false
             }
         },
-        mounted() {
-            this.getCanFollow();
+        async mounted() {
+            await this.getCanFollow();
         },
         methods: {
-            getCanFollow: function() {
+            getCanFollow: async function() {
                 if (this.loggedInId != this.activityOwnerId) {
-                    let vueObj = this;
-                    let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                    axios.defaults.withCredentials = true;
-                    axios.get(url)
+                    await api.getIsSubscribed(this.loggedInId, this.activityId)
                         .then((res) => {
-                            vueObj.isSubscribed = res.data.subscribed;
+                            this.isSubscribed = res.data.subscribed;
                         })
                         .catch(() => {
                             console.log('500 error')
@@ -53,29 +53,32 @@
                     this.displayButton = false;
                 }
             },
-            followActivity: function() {
-                let vueObj = this;
-                let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                axios.defaults.withCredentials = true;
-                axios.post(url)
+            getIsGoing: function() {
+                // TODO add api call to see if logged in user is going already
+            },
+            followActivity: async function() {
+                await api.subscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
-                        vueObj.getCanFollow();
+                        this.getCanFollow();
                     })
                     .catch((err) => {
                         alert(err.body)
                     });
             },
-            unfollowActivity: function() {
-                let vueObj = this;
-                let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                axios.defaults.withCredentials = true;
-                axios.delete(url)
+            unfollowActivity: async function() {
+                await api.unsubscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
-                        vueObj.getCanFollow();
+                        this.getCanFollow();
                     })
                     .catch((err) => {
                         alert(err.body)
                     });
+            },
+            setGoing: function() {
+                // TODO add api call to set user to going and also to follow if not already
+            },
+            setNotGoing: function() {
+                // TODO add api call to set user not going
             }
         }
     };
