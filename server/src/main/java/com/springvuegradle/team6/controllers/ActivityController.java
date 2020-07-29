@@ -477,11 +477,6 @@ public class ActivityController {
     creator.setActivityRoleType(ActivityRoleType.Creator);
     activityRoleRepository.save(creator);
 
-    ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
-    if (editActivityRolesResponse != null) {
-      return editActivityRolesResponse;
-    }
-
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
 
@@ -596,11 +591,6 @@ public class ActivityController {
 
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
-
-      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activityId);
-      if (editActivityRolesResponse != null) {
-        return editActivityRolesResponse;
-      }
 
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {

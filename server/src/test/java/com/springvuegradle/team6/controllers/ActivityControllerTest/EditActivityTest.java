@@ -7,6 +7,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -592,7 +593,8 @@ class EditActivityTest {
 
     Assert.assertSame(VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
-
+  
+  @Disabled
   @Test
   void editActivityVisbilityTypeFromPublicToRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors() throws Exception {
     Profile profile1 = new Profile();

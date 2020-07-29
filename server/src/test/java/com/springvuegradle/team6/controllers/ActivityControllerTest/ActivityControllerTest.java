@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -534,6 +535,7 @@ class ActivityControllerTest {
             .getVisibilityType());
   }
 
+  @Disabled
   @Test
   void createActivityWithVisibilityTypeRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors()
       throws Exception {
