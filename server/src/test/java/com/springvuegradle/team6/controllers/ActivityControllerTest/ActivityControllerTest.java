@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
@@ -53,6 +55,7 @@ class ActivityControllerTest {
   @Autowired private TagRepository tagRepository;
 
   @Autowired private MockMvc mvc;
+  @Autowired private ObjectMapper mapper;
 
   private int id;
 
@@ -760,6 +763,73 @@ class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void authorisedUserViewsCorrectPrivateActivitiesAndPublicActivities() throws Exception {
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityType("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity2);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+  @Test
+  void unAuthorisedUserViewsCanNotGetPrivateActivities() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper,session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
+  }
+  @Test
+  void unAuthorisedUserViewsCanNotGetPrivateActivitiesButCanViewPublic() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper,session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityType("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+    activityRepository.save(testActivity2);
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
   }
 
   @Test
