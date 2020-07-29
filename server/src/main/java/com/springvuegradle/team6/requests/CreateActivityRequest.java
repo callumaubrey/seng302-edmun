@@ -46,9 +46,6 @@ public class CreateActivityRequest {
   @JsonProperty("visibility")
   public String visibility;
 
-  @JsonProperty("accessors")
-  public List<String> emails;
-
   public LocationUpdateRequest getLocation() {
     return location;
   }

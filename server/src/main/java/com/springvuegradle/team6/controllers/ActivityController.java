@@ -7,33 +7,48 @@ import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.entities.NamedLocation;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
-import com.springvuegradle.team6.requests.*;
+import com.springvuegradle.team6.requests.CreateActivityRequest;
+import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
+import com.springvuegradle.team6.requests.EditActivityRequest;
+import com.springvuegradle.team6.requests.EditActivityTypeRequest;
+import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.DataBinder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(
     origins = {
@@ -105,16 +120,7 @@ public class ActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    Collection<SimpleGrantedAuthority> userRoles =
-        (Collection<SimpleGrantedAuthority>)
-            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-    boolean isAdmin =
-        userRoles.stream()
-            .anyMatch(
-                simpleGrantedAuthority ->
-                    (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
-                        || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
-    if (!(id.toString().equals(activity.getProfile().getId().toString())) && !isAdmin) {
+    if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
       return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
     }
 
@@ -477,11 +483,6 @@ public class ActivityController {
     creator.setActivityRoleType(ActivityRoleType.Creator);
     activityRoleRepository.save(creator);
 
-    ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
-    if (editActivityRolesResponse != null) {
-      return editActivityRolesResponse;
-    }
-
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
 
@@ -597,11 +598,6 @@ public class ActivityController {
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
-      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activityId);
-      if (editActivityRolesResponse != null) {
-        return editActivityRolesResponse;
-      }
-
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
         String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
@@ -663,6 +659,7 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -670,16 +667,24 @@ public class ActivityController {
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
+    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either of these two, is a response if unauthorized.
+    ResponseEntity<String> activityAuthorizedResponse =
+            this.checkAuthorisedToEditActivity(activity, session);
+
     Object profileId = session.getAttribute("id");
     if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
-        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        if (activityAuthorizedResponse != null) {
+          return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        }
       }
 
       if (activity.getVisibilityType() == VisibilityType.Restricted) {
         ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
         if (activityRoles == null) {
-          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          if (activityAuthorizedResponse != null) {
+            return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          }
         }
       }
     }
