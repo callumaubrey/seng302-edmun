@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.permission;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
@@ -49,15 +51,22 @@ class UserAdminPermissionTest {
     @Autowired
     private ActivityRepository activityRepository;
 
+    @Autowired
+    private ObjectMapper mapper;
+
     private String anotherUserId;
 
     private MockHttpSession session;
 
     private String activityId;
 
+    private int testProfileId;
+
 
     @BeforeAll
     void setup() throws Exception {
+        session = new MockHttpSession();
+        testProfileId = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
         createDummyUser();
         createUserAdminAndLogInAsUserAdmin();
     }
@@ -95,7 +104,6 @@ class UserAdminPermissionTest {
     }
 
     void createUserAdminAndLogInAsUserAdmin() throws Exception {
-        session = new MockHttpSession();
         String jsonString = "{\n"
                 + "  \"lastname\": \"Dallas\",\n"
                 + "  \"firstname\": \"Joe\",\n"
@@ -220,19 +228,19 @@ class UserAdminPermissionTest {
     @Test
     @WithMockUser(roles = {"USER", "USER_ADMIN"})
     void testAdminCanViewPrivateActivities() throws Exception {
-        Activity testActivity1 = new Activity();
-        testActivity1.setVisibilityType("private");
-        testActivity1.setProfile(profileRepository.findById(Integer.parseInt(anotherUserId)));
-        activityRepository.save(testActivity1);
+      Activity testActivity1 = new Activity();
+      testActivity1.setVisibilityType("private");
+      testActivity1.setProfile(profileRepository.findById(testProfileId));
+      activityRepository.save(testActivity1);
 
-        Activity testActivity2 = new Activity();
-        testActivity2.setVisibilityType("public");
-        testActivity2.setProfile(profileRepository.findById(Integer.parseInt(anotherUserId)));
-        activityRepository.save(testActivity2);
+      Activity testActivity2 = new Activity();
+      testActivity2.setVisibilityType("public");
+      testActivity2.setProfile(profileRepository.findById(testProfileId));
+      activityRepository.save(testActivity2);
 
         String response =
             mvc.perform(
-                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", anotherUserId)
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", testProfileId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
                 .andExpect(status().is2xxSuccessful())
@@ -243,6 +251,4 @@ class UserAdminPermissionTest {
         org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
 
     }
-
-
 }
