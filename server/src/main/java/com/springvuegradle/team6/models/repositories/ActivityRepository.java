@@ -22,17 +22,20 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
 
   /**
    * Used for searching for a profile's activities by hash-tag
+   * returning only activities which are not archived
    *
    * @param id profile id
-   * @return list of activities
+   * @return list of not archived activities
    */
   List<Activity> findByProfile_IdAndArchivedFalse(int id);
 
   /**
-   * Used for searching activities by hash-tag
+   * Used for searching activities by hash-tag returning
+   * only activities which are not archived. Results are ordered
+   * by creationDate.
    *
    * @param name tag name to search for
-   * @return list of activities
+   * @return list of not archived activities
    */
   List<Activity> findByTags_NameAndArchivedIsFalseOrderByCreationDateDesc(String name);
 
