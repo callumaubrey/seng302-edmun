@@ -235,12 +235,12 @@
             <div v-b-toggle="'collapse-4'" class="clickable">
                 <b-container>
                     <b-row>
-                        <b-col><h3 class=edit-title>Activities</h3></b-col>
+                        <b-col><h3 class=edit-title>Activity Types</h3></b-col>
                         <b-col><h5 align="right">Change</h5></b-col>
                     </b-row>
                     <b-row>
-                        <b-col>Add or remove activities from your account</b-col>
-                        <b-col><h6 align="right">{{totalActivitys()}} activity </h6></b-col>
+                        <b-col>Add or remove activity types from your account</b-col>
+                        <b-col><h6 align="right">{{totalActivitys()}} activity types</h6></b-col>
                     </b-row>
                 </b-container>
             </div>
@@ -263,7 +263,7 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <b-form-group description="Add a new activity">
+                            <b-form-group description="Add a new activity type">
                                 <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
                             </b-form-group>
                             <b-form-valid-feedback :state='activityUpdateMessage != ""'>
