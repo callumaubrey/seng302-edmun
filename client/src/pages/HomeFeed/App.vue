@@ -78,7 +78,7 @@
                     });
             },
             getActivityOwner: async function (activityId) {
-                api.getActivityCreatorId(activityId)
+                await api.getActivityCreatorId(activityId)
                     .then((res) => {
                         this.creatorId = res.data;
                     })
