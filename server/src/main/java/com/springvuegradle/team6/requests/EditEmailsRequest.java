@@ -1,9 +1,9 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

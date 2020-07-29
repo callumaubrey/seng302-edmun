@@ -1,7 +1,9 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +11,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -20,13 +24,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class DeleteActivityTest {
+class DeleteActivityTest {
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
+
+  @Autowired
+  private ActivityHistoryRepository activityHistoryRepository;
 
   private int id;
 
@@ -123,23 +132,36 @@ public class DeleteActivityTest {
         "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly2@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
-                .content(differentUser)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isCreated())
-        .andDo(print());
+                    .content(differentUser)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andDo(print());
     mvc.perform(
             MockMvcRequestBuilders.delete(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .session(session))
-        .andExpect(status().is4xxClientError());
+                    .session(session))
+            .andExpect(status().is4xxClientError());
   }
 
   @Test
   void deleteWithUnauthorisedUserReturnStatus4xxError() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                "/profiles/{profileId}/activities/{activityId}", id, activityId))
-        .andExpect(status().is4xxClientError());
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void deleteActivityReturnStatusOkAndCreatesNewEntryOfActivityHistory() throws Exception {
+    Set<ActivityHistory> activityHistorySetBefore = activityHistoryRepository.findByActivity_id(activityId);
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Set<ActivityHistory> activityHistorySetAfter = activityHistoryRepository.findByActivity_id(activityId);
+    org.junit.jupiter.api.Assertions.assertEquals(activityHistorySetBefore.size() + 1, activityHistorySetAfter.size());
   }
 }

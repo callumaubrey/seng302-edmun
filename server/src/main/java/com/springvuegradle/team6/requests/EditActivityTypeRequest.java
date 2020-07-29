@@ -1,6 +1,6 @@
 package com.springvuegradle.team6.requests;
 
-import com.springvuegradle.team6.models.ActivityType;
+import com.springvuegradle.team6.models.entities.ActivityType;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;

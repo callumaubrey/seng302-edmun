@@ -235,7 +235,7 @@
                 hashtag: {
                     options: [],
                     values: []
-                }
+                },
             }
         },
         validations: {
@@ -415,7 +415,7 @@
                     activity_type: this.form.selectedActivityTypes,
                     continuous: true,
                     location: this.locationData,
-                    hashtags: this.hashtag.values
+                    hashtags: this.hashtag.values,
                 }
                 if (this.isContinuous == '0') {
                     api.updateActivity(userId, this.activityId, data)
@@ -443,7 +443,7 @@
                         continuous: false,
                         start_time: isoDates[0],
                         end_time: isoDates[1],
-                        location: this.form.locationData
+                        location: this.form.locationData,
                     }
                     api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
@@ -526,7 +526,11 @@
             },
             goToActivity: function () {
                 this.$router.push('/profiles/' + this.profileId + '/activities/' + this.activityId);
+            },
+            onChildClick: function(val) {
+                this.selectedVisibility = val
             }
+
         },
         mounted: async function () {
             this.activityId = this.$route.params.activityId;

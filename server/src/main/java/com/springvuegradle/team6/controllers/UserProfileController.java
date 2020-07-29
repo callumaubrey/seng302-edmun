@@ -1,9 +1,14 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.CountryRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;

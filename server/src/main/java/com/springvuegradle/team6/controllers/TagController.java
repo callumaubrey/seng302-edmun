@@ -1,7 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.TagRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
 import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.PageRequest;

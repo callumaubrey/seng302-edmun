@@ -1,10 +1,12 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.LoginRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -61,7 +63,7 @@ public class TestDataGenerator {
     }
 
     public static ActivityRole createActivityMemberType(MockMvc mvc, ObjectMapper mapper, MockHttpSession session,
-                                               ActivityRoleType activityRoleType, Activity activity, Profile profile) throws Exception {
+                                                        ActivityRoleType activityRoleType, Activity activity, Profile profile) throws Exception {
         ActivityRole activityRole = new ActivityRole();
         activityRole.setProfile(profile);
         activityRole.setActivity(activity);

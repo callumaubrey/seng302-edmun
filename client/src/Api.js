@@ -32,6 +32,18 @@ export default {
 
     getHomeFeed: (profileId, offset, limit) => instance.get('/feed/homefeed/' + profileId + "?offset=" + offset + "&limit=" + limit),
 
+    getActivityParticipants: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=participant&offset=" + offset + "&limit=" + limit),
+
+    getActivityOrganisers: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=organiser&offset=" + offset + "&limit=" + limit),
+
+    getActivityAccessors: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=accessor&offset=" + offset + "&limit=" + limit),
+
+    getActivityFollowers: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=follower&offset=" + offset + "&limit=" + limit),
+
+    getActivityCreators: (activityId, offset, limit) => instance.get('/activities/' + activityId + '/members' + "?type=creator&offset=" + offset + "&limit=" + limit),
+
+    getActivityMembers: (activityId) => instance.get('/activities/' + activityId + '/members'),
+
     getLoggedInProfile: () => instance.get('/profiles/user'),
 
     getProfileId: () => instance.get('/profiles/id'),
@@ -56,6 +68,7 @@ export default {
 
     getIsSubscribed: (userId, activityId) => instance.get('/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
+        getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
@@ -76,11 +89,17 @@ export default {
 
     updatePasswordWithAdmin: (profileId, data) => instance.put('/admin/profiles/' + profileId + '/password', data),
 
+    updateRole: (profileId, activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', data),
+
+    updateActivityVisibility: (profileId,activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/visibility', data),
+
     // (D)elete
 
     removeForId: (id) => instance.delete('students/' + id),
 
     deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId),
+
+    removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
 
     unsubscribeToActivity: (userId, activityId) => instance.delete('/profiles/' + userId + '/subscriptions/activities/' + activityId)
 

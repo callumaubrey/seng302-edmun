@@ -1,17 +1,21 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -20,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -27,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class TagControllerTest {
 
@@ -46,7 +51,6 @@ public class TagControllerTest {
   @BeforeEach
   void setup() throws Exception {
     session = new MockHttpSession();
-    activityRepository.deleteAll();
 
     String jsonString =
         "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
@@ -257,6 +261,9 @@ public class TagControllerTest {
     activity.setTags(tags);
     activity = activityRepository.save(activity);
 
+    // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier than the previous activity
+    TimeUnit.SECONDS.sleep(1);
+
     Activity activity1 = new Activity();
     activity1.setProfile(profile);
     activity1.setActivityName("Avonhead Park Walk");
@@ -281,8 +288,10 @@ public class TagControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
 
     LocalDateTime dateTime = LocalDateTime.parse(result.getJSONObject(0).getString("creationDate"));
+    System.out.println(dateTime);
     LocalDateTime dateTime1 =
         LocalDateTime.parse(result.getJSONObject(1).getString("creationDate"));
+    System.out.println(dateTime1);
     org.junit.jupiter.api.Assertions.assertTrue(dateTime.isAfter(dateTime1));
   }
 }

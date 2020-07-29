@@ -1,6 +1,6 @@
 package com.springvuegradle.team6.security;
 
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

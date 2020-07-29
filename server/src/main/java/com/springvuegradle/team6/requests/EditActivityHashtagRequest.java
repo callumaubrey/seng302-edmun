@@ -1,7 +1,7 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.Tag;
+import com.springvuegradle.team6.models.entities.Tag;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;

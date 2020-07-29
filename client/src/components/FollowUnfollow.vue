@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-row>
+        <b-row style="margin-top:0.5rem;">
             <b-button v-if="displayButton && !isSubscribed" @click="followActivity" variant="success" style="margin: 10px">Follow</b-button>
             <b-button v-if="displayButton && isSubscribed" @click="unfollowActivity" variant="danger" style="margin: 10px">Unfollow</b-button>
             <b-button v-if="!isGoing" @click="setGoing" variant="success" style="margin: 10px">Going</b-button>
