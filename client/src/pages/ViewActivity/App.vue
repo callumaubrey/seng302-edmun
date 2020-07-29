@@ -30,7 +30,9 @@
                     <FollowUnfollow v-bind:activityId="this.$route.params.activityId"
                                     v-bind:activityOwnerId="this.$route.params.id"
                                     v-bind:loggedInId="loggedInId"></FollowUnfollow>
-                    <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
+                </b-row>
+                <b-row align-h="center">
+                    <b-dropdown v-if="profileId == loggedInId || loggedInIsAdmin" text="Actions" class="m-md-2">
                         <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
@@ -108,6 +110,7 @@
     import FollowerUserList from "../../components/Activity/FollowerUserList";
     import ShareActivity from "@/components/ShareActivity.vue";
     import api from '@/Api'
+    import AdminMixin from "../../mixins/AdminMixin";
 
     const App = {
         name: "App",
@@ -139,7 +142,8 @@
                 locationDataLoading: true,
                 archived: false,
                 notFound: false,
-                visibility: null
+                visibility: null,
+                loggedInIsAdmin: false
             }
         },
         mounted() {
@@ -147,6 +151,7 @@
             this.getActivityData();
             this.getLoggedInId();
             this.setProfileId();
+            this.checkIsAdmin();
         },
         methods: {
             getUserName: function () {
@@ -258,6 +263,9 @@
                         vueObj.$router.push("/profiles/" + profileId);
                     }
                 });
+            },
+            checkIsAdmin: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
             },
             getCorrectDateFormat: function (start, end, currentObj) {
                 const startDate = new Date(start);
