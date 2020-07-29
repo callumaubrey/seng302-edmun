@@ -45,7 +45,7 @@ public class UserSecurityService {
 
   /**
    * Check if user is authorised to access requested user information. User is authorised if they
-   * are the owner of the information or an admin The function also checks if the user is logged in
+   * are the owner of the information or an admin. The function also checks if the user is logged in
    * and whether the user is registered in the system
    *
    * @param requestId  user id under query
@@ -75,7 +75,7 @@ public class UserSecurityService {
 
   /**
    * Check if user is authorised to view requested user information. The user is authorised if the
-   * user is registered in the system and th user is logged in
+   * user is registered in the system and the user is logged in
    *
    * @param requestId  user id under query
    * @param session    Http session
