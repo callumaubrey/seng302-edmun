@@ -135,6 +135,7 @@
 </script>
 
 <style scoped>
+
     .feed {
         cursor: pointer;
     }
