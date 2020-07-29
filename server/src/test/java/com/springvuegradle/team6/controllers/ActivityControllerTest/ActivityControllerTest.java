@@ -15,12 +15,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -534,6 +536,7 @@ class ActivityControllerTest {
             .getVisibilityType());
   }
 
+  @Disabled
   @Test
   void createActivityWithVisibilityTypeRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors()
       throws Exception {
@@ -826,6 +829,24 @@ class ActivityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void getPrivateActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
   void getPublicActivityAnyoneCanView() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
@@ -840,6 +861,67 @@ class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void getPublicActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("public");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void getRestrictedActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("restricted");
+    activity = activityRepository.save(activity);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"doe@email.com\",\n"
+                    + "  ]\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+
+    System.out.println(session.getAttribute("id"));
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
   }
 
   @Test

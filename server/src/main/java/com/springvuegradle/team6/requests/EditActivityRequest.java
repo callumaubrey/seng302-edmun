@@ -48,11 +48,7 @@ public class EditActivityRequest {
   public LocationUpdateRequest location;
 
   @JsonProperty("visibility")
-
   public String visibility;
-
-  @JsonProperty("accessors")
-  public List<String> emails;
 
   public void editActivityFromRequest(
           Activity activity, NamedLocationRepository locationRepository) {

@@ -30,7 +30,9 @@
                     <FollowUnfollow v-bind:activityId="this.$route.params.activityId"
                                     v-bind:activityOwnerId="this.$route.params.id"
                                     v-bind:loggedInId="loggedInId"></FollowUnfollow>
-                    <b-dropdown v-if="profileId == loggedInId" text="Actions" class="m-md-2">
+                </b-row>
+                <b-row align-h="center">
+                    <b-dropdown v-if="profileId == loggedInId || loggedInIsAdmin" text="Actions" class="m-md-2">
                         <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
                         <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
                     </b-dropdown>
@@ -108,6 +110,7 @@
     import FollowerUserList from "../../components/Activity/FollowerUserList";
     import ShareActivity from "@/components/ShareActivity.vue";
     import api from '@/Api'
+    import AdminMixin from "../../mixins/AdminMixin";
 
     const App = {
         name: "App",
@@ -139,7 +142,8 @@
                 locationDataLoading: true,
                 archived: false,
                 notFound: false,
-                visibility: null
+                visibility: null,
+                loggedInIsAdmin: false
             }
         },
         mounted() {
@@ -147,6 +151,7 @@
             this.getActivityData();
             this.getLoggedInId();
             this.setProfileId();
+            this.checkIsAdmin();
         },
         methods: {
             getUserName: function () {
@@ -196,11 +201,8 @@
             editActivity() {
                 let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
-                // double check for it somehow user clicks edit button when hidden.
-                console.log("profile Id: " + this.profileId);
-                console.log("loggedin Id: " + this.loggedInId);
 
-                if (parseInt(this.profileId) === parseInt(this.loggedInId)) {
+                if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
                     this.$router.push(
                         "/profiles/" + profileId + "/activities/" + activityId + "/edit"
                     );
@@ -258,6 +260,9 @@
                         vueObj.$router.push("/profiles/" + profileId);
                     }
                 });
+            },
+            checkIsAdmin: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
             },
             getCorrectDateFormat: function (start, end, currentObj) {
                 const startDate = new Date(start);
