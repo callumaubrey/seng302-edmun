@@ -14,8 +14,9 @@ import com.springvuegradle.team6.security.UserSecurityService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,15 @@ class UserAuthorisationTest {
     profile2.setPassword("Password1");
     profileRepository.save(profile2);
 
+    Profile profile3 = new Profile();
+    profile3.setFirstname("Johnny");
+    profile3.setLastname("Dong");
+    Set<Email> email3 = new HashSet<Email>();
+    email3.add(new Email("unauthorised@email.com"));
+    profile3.setEmails(email3);
+    profile3.setPassword("Password1");
+    profileRepository.save(profile3);
+
     activity = new Activity();
     activity.setActivityName("testing my run");
     activity.setContinuous(true);
@@ -138,6 +148,58 @@ class UserAuthorisationTest {
   checkIsAdminOrCreatorFunctionReturnsFalseWhenSessionIdIsNotEqualToCreatorIdAndUserIsNotAdmin()
       throws Exception {
     LoginRequest loginRequestCorrectPass = new LoginRequest();
+    loginRequestCorrectPass.email = "unauthorised@email.com";
+    loginRequestCorrectPass.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequestCorrectPass))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+    mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
+
+    org.junit.jupiter.api.Assertions.assertFalse(
+        UserSecurityService.checkIsAdminOrCreator(
+            (Integer) session.getAttribute("id"), activity.getProfile().getId()));
+  }
+
+  @Test
+  void checkIsAuthorisedFunctionReturns401HttpStatusIfUserIsNotLoggedIn() {
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "401 UNAUTHORIZED",
+        Objects.requireNonNull(
+            UserSecurityService.checkAuthorised(
+                activity.getProfile().getId(), session, profileRepository))
+            .getStatusCode()
+            .toString());
+  }
+
+  @Test
+  void checkIsAuthorisedFunctionReturns401HttpStatusIfUserIsNotRegisteredInTheSystem()
+      throws Exception {
+    LoginRequest loginRequestCorrectPass = new LoginRequest();
+    loginRequestCorrectPass.email = "randomdude@email.com";
+    loginRequestCorrectPass.password = "Trespasser1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequestCorrectPass))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
+    mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
+
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "401 UNAUTHORIZED",
+        Objects.requireNonNull(
+            UserSecurityService.checkAuthorised(
+                activity.getProfile().getId(), session, profileRepository))
+            .getStatusCode()
+            .toString());
+  }
+
+  @Test
+  void checkIsAuthorisedFunctionReturnsNullIfUserIsAuthorisedToAccessRequestedInformation()
+      throws Exception {
+    LoginRequest loginRequestCorrectPass = new LoginRequest();
     loginRequestCorrectPass.email = "johnny@email.com";
     loginRequestCorrectPass.password = "Password1";
     mvc.perform(
@@ -148,9 +210,80 @@ class UserAuthorisationTest {
         .andExpect(status().isOk());
     mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
 
-    Random random = new Random();
-    int randomId = random.nextInt();
-    org.junit.jupiter.api.Assertions.assertFalse(
-        UserSecurityService.checkIsAdminOrCreator(randomId, activity.getProfile().getId()));
+    Assertions.assertNull(
+        UserSecurityService.checkAuthorised(
+            activity.getProfile().getId(), session, profileRepository));
+  }
+
+  @Test
+  void checkIsAuthorisedFunctionReturns401HttpStatusIfUserIsNotAuthorisedToAccessRequestedInformation()
+      throws Exception {
+    LoginRequest loginRequestCorrectPass = new LoginRequest();
+    loginRequestCorrectPass.email = "unauthorised@email.com";
+    loginRequestCorrectPass.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequestCorrectPass))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+    mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
+
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "401 UNAUTHORIZED",
+        Objects.requireNonNull(
+            UserSecurityService.checkAuthorised(
+                activity.getProfile().getId(), session, profileRepository))
+            .getStatusCode()
+            .toString());
+  }
+
+  @Test
+  void checkViewingPermissionReturns401HttpStatusIfUserIsNotLoggedIn() {
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "401 UNAUTHORIZED",
+        Objects.requireNonNull(
+            UserSecurityService.checkViewingPermission(
+                activity.getProfile().getId(), session, profileRepository))
+            .getStatusCode()
+            .toString());
+  }
+
+  @Test
+  void checkViewingPermissionReturns401HttpStatusIfUserIsRegisteredInTheSystem() throws Exception {
+    LoginRequest loginRequestCorrectPass = new LoginRequest();
+    loginRequestCorrectPass.email = "randomdude@email.com";
+    loginRequestCorrectPass.password = "Trespasser1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequestCorrectPass))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
+    mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
+
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "401 UNAUTHORIZED",
+        Objects.requireNonNull(
+            UserSecurityService.checkViewingPermission(
+                activity.getProfile().getId(), session, profileRepository))
+            .getStatusCode()
+            .toString());
+  }
+
+  @Test
+  void checkViewingPermissionReturnsNullIfUserCanViewRequestedInformation() throws Exception {
+    LoginRequest loginRequestCorrectPass = new LoginRequest();
+    loginRequestCorrectPass.email = "useradmin@email.com";
+    loginRequestCorrectPass.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequestCorrectPass))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
+    mockAuthority(loginRequestCorrectPass.email, loginRequestCorrectPass.password, "ROLE_USER");
+
+    Assertions.assertNull(
+        UserSecurityService.checkViewingPermission(
+            activity.getProfile().getId(), session, profileRepository));
   }
 }

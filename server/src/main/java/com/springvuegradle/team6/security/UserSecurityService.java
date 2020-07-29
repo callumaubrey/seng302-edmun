@@ -18,6 +18,11 @@ public class UserSecurityService {
    * Method to check if user is authorised. User is authorised if user is the creator of the
    * information or an admin
    *
+   * <p>Checks for admin are implemented through accessing the SecurityContextHolder (the store for
+   * Spring Security to hold principal information of authenticated user in the session) and getting
+   * the SimpleGrantedAuthority collection (Privileges of the authenticated user stored for Spring
+   * Security)
+   *
    * @param sessionId HttpSession id
    * @param creatorId Creator id
    * @return true if authorised, false otherwise
@@ -40,7 +45,8 @@ public class UserSecurityService {
 
   /**
    * Check if user is authorised to access requested user information. User is authorised if they
-   * are the owner of the information or an admin
+   * are the owner of the information or an admin The function also checks if the user is logged in
+   * and whether the user is registered in the system
    *
    * @param requestId  user id under query
    * @param session    Http session
@@ -68,7 +74,8 @@ public class UserSecurityService {
   }
 
   /**
-   * Check if user is authorised to view requested user information.
+   * Check if user is authorised to view requested user information. The user is authorised if the
+   * user is registered in the system and th user is logged in
    *
    * @param requestId  user id under query
    * @param session    Http session
@@ -76,7 +83,7 @@ public class UserSecurityService {
    * @return ResponseEntity will return 401 if user is not logged in or 404 if requested user's
    * profile is not found, else it will return null if user is authorized
    */
-  public static ResponseEntity<String> canViewPermission(
+  public static ResponseEntity<String> checkViewingPermission(
       Integer requestId, HttpSession session, ProfileRepository repository) {
     Object id = session.getAttribute("id");
     if (id == null) {
