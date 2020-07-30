@@ -4,9 +4,11 @@ import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.Profile;
 import net.minidev.json.JSONObject;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,9 +42,11 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
           nativeQuery = true)
   int findMembersCount(int activityId, int type);
 
+  @Modifying
+  @Transactional
   @Query(
           value =
-                  "delete from activity_role where activity_id = :activity_id and profile_id != :profile_id",
+                  "delete from activity_role where activity_id = :activityId and profile_id != :profileId",
           nativeQuery = true)
-  void deleteAllActivityRolesExceptOwner(int activity_id, int profile_id);
+  void deleteAllActivityRolesExceptOwner(int activityId, int profileId);
 }
