@@ -797,6 +797,7 @@
                         vueObj.locationDisplayText = vueObj.location.display_name;
                         vueObj.locationUpdateMessage = "Location successfully updated";
                         vueObj.locationErrorMessage = "";
+                        vueObj.locationText = "";
                     }).catch(function () {
                         vueObj.locationUpdateMessage = "";
                         vueObj.locationErrorMessage = "Location failed to update";
