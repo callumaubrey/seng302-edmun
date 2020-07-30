@@ -29,7 +29,9 @@ const options = {
     showConsoleColors: true
 };
 
-const router = new VueRouter({routes});
+const router = new VueRouter({
+    routes
+});
 
 Vue.use(VueLogger, options);
 Vue.use(NavbarPlugin);

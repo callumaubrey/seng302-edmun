@@ -1,9 +1,8 @@
 package com.springvuegradle.team6.steps;
 
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.Tag;
-import com.springvuegradle.team6.models.TagRepository;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.entities.Tag;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -13,14 +12,12 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,58 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext
 public class ActivityHashtagFeatureSteps {
   private String jsonString;
-  private MockHttpSession session;
   private ResultActions mvcResponse;
-  private String profileId;
   private String activityId;
   private List<String> autocompleteResult;
+  private List<String> activityNamesByHashtag;
 
   @Autowired private ActivityRepository activityRepository;
 
+  @Autowired private LoginSteps loginSteps;
+
   @Autowired private MockMvc mvc;
-
-  @Given("I registered a user with email {string} and password {string}")
-  public void i_registered_a_user_with_email_and_password(String email, String password)
-      throws Exception {
-    jsonString =
-        "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \""
-            + email
-            + "\",\r\n  \"password\": \""
-            + password
-            + "\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
-    String createProfileUrl = "/profiles";
-    profileId =
-        mvc.perform(
-                MockMvcRequestBuilders.post(createProfileUrl)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-  }
-
-  @Given("I log in as a user with email {string} and password {string}")
-  public void i_log_in_as_a_user_with_email_and_password(String email, String password)
-      throws Exception {
-    session = new MockHttpSession();
-    jsonString =
-        "{\n"
-            + "\t\"email\": \""
-            + email
-            + "\",\n"
-            + "\t\"password\": \""
-            + password
-            + "\"\n"
-            + "}";
-    String loginUrl = "/login";
-    mvcResponse =
-        mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session));
-  }
 
   @Given("there are no activities in the database")
   public void there_are_no_activities_in_the_database() {
@@ -91,6 +46,7 @@ public class ActivityHashtagFeatureSteps {
 
   @Given("I create an activity {string} with no hashtags")
   public void i_create_an_activity_with_no_hashtags(String activityName) throws Exception {
+    System.out.println(loginSteps.session);
     jsonString =
         "{\n"
             + "  \"activity_name\": \""
@@ -103,14 +59,15 @@ public class ActivityHashtagFeatureSteps {
             + "  ],\n"
             + "  \"continuous\": true"
             + "}";
-    String createActivityUrl = "/profiles/" + profileId + "/activities";
+    String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     mvcResponse =
         mvc.perform(
             MockMvcRequestBuilders.post(createActivityUrl)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
-                .session(session));
+                .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
+    System.out.println(activityId);
   }
 
   @When("I edit an activity {string} and add hashtags")
@@ -136,13 +93,13 @@ public class ActivityHashtagFeatureSteps {
             + hashTags
             + "\n"
             + "}";
-    String editActivityUrl = "/profiles/" + profileId + "/activities/" + activityId;
+    String editActivityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId;
     mvcResponse =
         mvc.perform(
             MockMvcRequestBuilders.put(editActivityUrl)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
-                .session(session));
+                .session(loginSteps.session));
   }
 
   @When("I create an activity {string} with hashtags")
@@ -168,14 +125,44 @@ public class ActivityHashtagFeatureSteps {
             + hashTags
             + "\n"
             + "}";
-    String createActivityUrl = "/profiles/" + profileId + "/activities";
+    String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     mvcResponse =
         mvc.perform(
             MockMvcRequestBuilders.post(createActivityUrl)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
-                .session(session));
+                .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
+    System.out.println(activityId);
+  }
+
+  @When("I search for activity by hashtag {string}")
+  public void i_search_for_activity_by_hashtag(String hashtag) throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities/hashtag/" + hashtag)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray arr = new JSONArray(response);
+    List<String> list = new ArrayList<String>();
+    for (int i = 0; i < arr.length(); i++) {
+      list.add(arr.getJSONObject(i).getString("activityName"));
+    }
+    activityNamesByHashtag = list;
+  }
+
+  @Then("I get the activities in order")
+  public void i_get_the_activities_in_order(io.cucumber.datatable.DataTable dataTable) {
+    List<String> activities = new ArrayList<>();
+    for (Map<String, String> activityMapping : dataTable.asMaps()) {
+      String activity = activityMapping.get("ActivityName");
+      activities.add(activity);
+    }
+    Assert.assertEquals(activities, activityNamesByHashtag);
   }
 
   @Then("I have an activity {string} with hashtags")
@@ -189,7 +176,7 @@ public class ActivityHashtagFeatureSteps {
                 MockMvcRequestBuilders.get(getActivityUrl)
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+                    .session(loginSteps.session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -212,21 +199,20 @@ public class ActivityHashtagFeatureSteps {
   public void i_search_for_hashtag(String string) throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=" + string, profileId)
-                    .session(session))
+                MockMvcRequestBuilders.get(
+                        "/hashtag/autocomplete?hashtag=" + string, loginSteps.profileId)
+                    .session(loginSteps.session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    System.out.println(response);
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("results");
     List<String> list = new ArrayList<String>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getString(i));
     }
-    System.out.println(list);
     autocompleteResult = list;
   }
 
@@ -237,8 +223,6 @@ public class ActivityHashtagFeatureSteps {
       String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
       hashTags.add(hashTag);
     }
-    System.out.println(autocompleteResult);
-    System.out.println(hashTags);
     Assert.assertTrue(autocompleteResult.containsAll(hashTags));
   }
 

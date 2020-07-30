@@ -20,8 +20,8 @@
 <script>
     import NavBar from "@/components/NavBar.vue";
     import Search from '@/components/Search.vue';
-    import axios from "axios";
     import AdminUserSearch from "../../components/AdminUserSearch";
+    import api from '@/Api'
 
     const App = {
         name: 'App',
@@ -39,15 +39,14 @@
         methods: {
             getUserSession: function () {
                 let currentObj = this;
-                axios.defaults.withCredentials = true;
-                axios.get('http://localhost:9499/profiles/user')
+                api.getLoggedInProfile()
                     .then(function (response) {
                         currentObj.isLoggedIn = true;
                         currentObj.userName = response.data.firstname;
                         currentObj.userRoles = response.data.roles;
                         let isAdmin = false;
                         for (let i = 0; i < currentObj.userRoles.length; i++) {
-                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN") {
+                            if (currentObj.userRoles[i].roleName === "ROLE_ADMIN" || currentObj.userRoles[i].roleName === "ROLE_USER_ADMIN" ) {
                                 isAdmin = true;
                             }
                         }

@@ -19,8 +19,9 @@
                         <h3>{{ userName }}'s Feed</h3>
                     </b-row>
                     <b-row style="margin-top:10px;">
-                        <div v-for="item in items" :key="item.activity_id" style="width:100%;margin-top:10px;">
-                            <b-card :sub-title="convertDateToReadableString(item.date_time).toString()">
+                        <div v-for="(item, index) in items" :key="index" style="width:100%;margin-top:10px;">
+                            <b-card class="feed" :sub-title="convertDateToReadableString(item.date_time).toString()"
+                                    v-on:click="goToActivity(item.activity_id)">
                                 <b-card-text>
                                     {{ item.message }}
                                 </b-card-text>
@@ -35,7 +36,7 @@
 
 <script>
     import NavBar from '@/components/NavBar.vue';
-    import axios from 'axios';
+    import api from '@/Api';
 
     export default {
         components: {
@@ -51,12 +52,12 @@
                 items: [],
                 limit: 20,
                 offset: 0,
+                creatorId: null
             }
         },
         methods: {
             getUser: async function () {
-                axios.defaults.withCredentials = true;
-                await axios.get('http://localhost:9499/profiles/user')
+                await api.getLoggedInProfile()
                     .then((res) => {
                         this.userName = res.data.firstname;
                         this.fullName = res.data.firstname + ' ' + res.data.lastname;
@@ -66,9 +67,7 @@
                     .catch(err => console.log(err));
             },
             getHomeFeed: async function () {
-                axios.defaults.withCredentials = true;
-                let url = 'http://localhost:9499/feed/homefeed/' + this.userId + "?offset=" + this.offset + "&limit=" + this.limit;
-                await axios.get(url)
+                await api.getHomeFeed(this.userId, this.offset, this.limit)
                     .then((res) => {
                         if (res.data.feeds.length > 0) {
                             this.items.push(...res.data.feeds);
@@ -77,6 +76,20 @@
                     .catch(err => {
                         console.log(err)
                     });
+            },
+            getActivityOwner: async function (activityId) {
+                await api.getActivityCreatorId(activityId)
+                    .then((res) => {
+                        this.creatorId = res.data;
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    });
+
+            },
+            goToActivity: async function (activityId) {
+                await this.getActivityOwner(activityId);
+                this.$router.push('/profiles/' + this.creatorId + '/activities/' + activityId);
             },
             convertDateToReadableString(dateTimeString) {
                 let dateTime = new Date(dateTimeString);
@@ -120,3 +133,16 @@
         }
     }
 </script>
+
+<style scoped>
+
+    .feed {
+        cursor: pointer;
+    }
+
+    .feed:hover {
+        cursor: pointer;
+        background-color: whitesmoke;
+    }
+
+</style>

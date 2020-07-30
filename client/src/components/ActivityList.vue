@@ -36,7 +36,7 @@
             goToActivity: function(items) {
                 this.selectedActivity = items;
                 let activityId = this.selectedActivity.id;
-                this.$router.push('/profiles/' + this.profileId + '/activities/' + activityId);
+                this.$router.push('/profiles/' + this.selectedActivity.profile.id + '/activities/' + activityId);
             }
         }
     }
