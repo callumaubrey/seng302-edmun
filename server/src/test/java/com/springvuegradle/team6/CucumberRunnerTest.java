@@ -13,8 +13,5 @@ import org.springframework.test.context.web.WebAppConfiguration;
         features = "src/test/resources/edmun.features/", // Where to look for your features
         strict = true // Causes cucumber to fail if any step definitions are still undefined
 )
-@ContextConfiguration(
-        classes = Application.class)
-@WebAppConfiguration
 public class CucumberRunnerTest {
 }

@@ -22,9 +22,9 @@ import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-@DirtiesContext
+
+
+
 public class ActivityHashtagFeatureSteps {
   private String jsonString;
   private ResultActions mvcResponse;

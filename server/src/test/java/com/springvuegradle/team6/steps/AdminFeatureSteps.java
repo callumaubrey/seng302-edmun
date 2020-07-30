@@ -25,10 +25,9 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
-@SpringBootTest
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-@DirtiesContext
+
+
+
 public class AdminFeatureSteps {
   public String normalUserId;
   public String userAdminId;
