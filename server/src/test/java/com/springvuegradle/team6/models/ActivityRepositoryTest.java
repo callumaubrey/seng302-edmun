@@ -6,6 +6,7 @@ import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
 import org.junit.jupiter.api.Assertions;
@@ -34,6 +35,8 @@ class ActivityRepositoryTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private TagRepository tagRepository;
+
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
   private Profile profile;
 
@@ -348,6 +351,22 @@ class ActivityRepositoryTest {
     activity1.setVisibilityType(VisibilityType.Private);
     activityRepository.save(activity1);
 
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setActivityName("Run at Avonhead Park");
+    activity2.setContinuous(true);
+    Set<Tag> tags2 = new HashSet<>();
+    tags2.add(cool);
+    activity2.setTags(tags);
+    activity2.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity2);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
     List<Activity> activities = activityRepository.getActivitiesByHashTag("hot", profile.getId());
     org.junit.jupiter.api.Assertions.assertEquals(0, activities.size());
   }
@@ -391,8 +410,30 @@ class ActivityRepositoryTest {
     activity1.setVisibilityType(VisibilityType.Private);
     activityRepository.save(activity1);
 
+    Activity activity2 = new Activity();
+    activity2.setProfile(otherProfile);
+    activity2.setActivityName("Run at Jelly Park");
+    activity2.setContinuous(true);
+    Set<Tag> tags2 = new HashSet<>();
+    tags2.add(cool);
+    activity2.setTags(tags);
+    activity2.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity2);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity2);
+    activityRole.setProfile(otherProfile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity2);
+    activityRole1.setProfile(profile);
+    activityRole1.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole1);
+
     List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
-    org.junit.jupiter.api.Assertions.assertEquals(2, activities.size());
+    org.junit.jupiter.api.Assertions.assertEquals(3, activities.size());
   }
 
   @Test
@@ -430,5 +471,205 @@ class ActivityRepositoryTest {
     Activity resultActivity1 = activities.get(1);
     org.junit.jupiter.api.Assertions.assertTrue(
         resultActivity0.getCreationDate().isAfter(resultActivity1.getCreationDate()));
+  }
+
+  @Test
+  void testGetActivitiesByHashTagReturnRestrictedActivityOwned() {
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cool);
+    activity.setTags(tags);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(1, activities.size());
+  }
+
+  @Test
+  void testGetActivitiesByHashTagDoesNotReturnRestrictedActivityNotOwnedAndNoAccess() {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("polypocket@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile otherProfile = new Profile();
+    otherProfile.setFirstname("Poly");
+    otherProfile.setLastname("Pocket");
+    otherProfile.setEmails(emails);
+    otherProfile.setDob("2010-10-10");
+    otherProfile.setPassword("Password1");
+    otherProfile.setGender("female");
+    otherProfile = profileRepository.save(otherProfile);
+
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Activity activity = new Activity();
+    activity.setProfile(otherProfile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cool);
+    activity.setTags(tags);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(otherProfile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(0, activities.size());
+  }
+
+  @Test
+  void testGetActivitiesByHashTagDoesReturnRestrictedActivityWithAccess() {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("polypocket@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile otherProfile = new Profile();
+    otherProfile.setFirstname("Poly");
+    otherProfile.setLastname("Pocket");
+    otherProfile.setEmails(emails);
+    otherProfile.setDob("2010-10-10");
+    otherProfile.setPassword("Password1");
+    otherProfile.setGender("female");
+    otherProfile = profileRepository.save(otherProfile);
+
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Activity activity = new Activity();
+    activity.setProfile(otherProfile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cool);
+    activity.setTags(tags);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(otherProfile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile);
+    activityRole1.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole1);
+
+    List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(1, activities.size());
+  }
+
+  @Test
+  void testGetActivitiesByHashTagDoesReturnRestrictedActivityWithFollower() {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("polypocket@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile otherProfile = new Profile();
+    otherProfile.setFirstname("Poly");
+    otherProfile.setLastname("Pocket");
+    otherProfile.setEmails(emails);
+    otherProfile.setDob("2010-10-10");
+    otherProfile.setPassword("Password1");
+    otherProfile.setGender("female");
+    otherProfile = profileRepository.save(otherProfile);
+
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Activity activity = new Activity();
+    activity.setProfile(otherProfile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cool);
+    activity.setTags(tags);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(otherProfile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile);
+    activityRole1.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole1);
+
+    List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(1, activities.size());
+  }
+
+  @Test
+  void testGetActivitiesByHashTagDoesReturnRestrictedActivityWithOrganiser() {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("polypocket@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile otherProfile = new Profile();
+    otherProfile.setFirstname("Poly");
+    otherProfile.setLastname("Pocket");
+    otherProfile.setEmails(emails);
+    otherProfile.setDob("2010-10-10");
+    otherProfile.setPassword("Password1");
+    otherProfile.setGender("female");
+    otherProfile = profileRepository.save(otherProfile);
+
+    Tag cool = new Tag();
+    cool.setName("cool");
+    cool = tagRepository.save(cool);
+
+    Activity activity = new Activity();
+    activity.setProfile(otherProfile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    Set<Tag> tags = new HashSet<>();
+    tags.add(cool);
+    activity.setTags(tags);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(otherProfile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile);
+    activityRole1.setActivityRoleType(ActivityRoleType.Organiser);
+    activityRoleRepository.save(activityRole1);
+
+    List<Activity> activities = activityRepository.getActivitiesByHashTag("cool", profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(1, activities.size());
   }
 }
