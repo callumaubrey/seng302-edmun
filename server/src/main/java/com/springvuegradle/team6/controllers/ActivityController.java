@@ -785,22 +785,33 @@ public class ActivityController {
         || activity.getVisibilityType() == VisibilityType.Private) {
       return null;
     }
+
+    // This loop is here to validate all emails first before we start adding them.
+    for (String email : emails) {
+      Profile profile = profileRepository.findByEmails_address(email);
+      if (profile == null) {
+        return new ResponseEntity(
+                "User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
+      }
+    }
+
     List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
     if (activityRoles.size() > 0) {
       for (var i = 0; i < activityRoles.size(); i++) {
         Profile profile = activityRoles.get(i).getProfile();
         if (!(emails.contains(profile.getPrimaryEmail().getAddress()))) {
           activityRoleRepository.delete(activityRoles.get(i));
+          List<SubscriptionHistory> subHistory = subscriptionHistoryRepository.findActive(activityId, profile.getId());
+          if (subHistory.size() > 0) {
+            subHistory.get(0).setEndDateTime(LocalDateTime.now());
+          }
         }
       }
     }
+
     if (emails.size() > 0) {
       for (String email : emails) {
         Profile profile = profileRepository.findByEmails_address(email);
-        if (profile == null) {
-          return new ResponseEntity(
-              "User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
-        }
         ActivityRole role =
             activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
         if (role == null) {
@@ -845,6 +856,7 @@ public class ActivityController {
 
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
+
 
       ResponseEntity<String> editActivityRolesResponse =
           editActivityRoles(request.getEmails(), activity, activityId);
