@@ -364,11 +364,6 @@
                         </b-col>
                     </b-row>
                     <hr>
-                    <b-row v-if="locationErrorFlag">
-                        <b-col>
-                            <p class="text-danger">Please select a location from the drop-down</p>
-                        </b-col>
-                    </b-row>
                     <b-row>
                         <b-col>
                             <p>Search for a location</p>
@@ -381,15 +376,15 @@
                             <div v-for="i in locations" :key="i.place_id">
                                 <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name></b-input>
                             </div>
-                            <b-form-text>Locations searched will only display if the search includes a city/county or is
-                                part of a city e.g suburb
-                            </b-form-text>
                             <b-form-valid-feedback :state='locationUpdateMessage != ""'>
-                                {{locationErrorMessage}}
+                                {{locationUpdateMessage}}
                             </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='locationUpdateMessage == ""'>
+                            <b-form-invalid-feedback :state='!locationErrorFlag'>
                                 {{locationErrorMessage}}
                             </b-form-invalid-feedback>
+                            <b-form-text>Locations searched will only display if the search includes a city/county or is
+                              part of a city e.g suburb
+                            </b-form-text>
                         </b-col>
                         <b-col cols="3">
                             <b-button class="invisible-btn" style="float: right;" v-on:click="submitLocation">Submit
@@ -769,13 +764,14 @@
             submitLocation: function () {
                 if (this.selectedLocation == null || this.locationText != this.selectedLocation.display_name) {
                     this.locationErrorFlag = true;
+                    this.locationErrorMessage = "Please select a location from the drop-down";
+                    this.locationUpdateMessage = ""
                     return;
                 }
                 this.locationErrorFlag = false;
                 const vueObj = this;
                 vueObj.locations = [];
                 vueObj.location = vueObj.selectedLocation;
-                console.log(vueObj.location.address.city);
                 let userId = this.profileId;
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
@@ -801,19 +797,16 @@
                         vueObj.locationDisplayText = vueObj.location.display_name;
                         vueObj.locationUpdateMessage = "Location successfully updated";
                         vueObj.locationErrorMessage = "";
-                    }).catch(function (error) {
-                        console.log(error);
+                    }).catch(function () {
                         vueObj.locationUpdateMessage = "";
                         vueObj.locationErrorMessage = "Location failed to update";
                     });
                 } else {
                     let data = {};
-                    api.updateProfileLocation(userId, data).then(function (response) {
-                        console.log(response);
+                    api.updateProfileLocation(userId, data).then(function () {
                         vueObj.locationUpdateMessage = "Location successfully updated";
                         vueObj.locationErrorMessage = "";
-                    }).catch(function (error) {
-                        console.log(error);
+                    }).catch(function () {
                         vueObj.locationUpdateMessage = "";
                         vueObj.locationErrorMessage = "Location failed to update";
                     });
