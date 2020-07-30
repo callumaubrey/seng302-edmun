@@ -133,7 +133,7 @@ public class FollowController {
     }
 
     /**
-     * Unsubscribes user from activity
+     * Unsubscribes user from activity and demotes the user to ACCESS
      *
      * @param profileId  id of the user that is unsubscribing
      * @param activityId id of the activity being unsubscribed from
@@ -174,8 +174,14 @@ public class FollowController {
 
         SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
         activeSubscription.setEndDateTime(LocalDateTime.now());
-
         subscriptionHistoryRepository.save(activeSubscription);
+
+        List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
+        if (!activityRoles.isEmpty()) {
+          ActivityRole activityRole = activityRoles.get(0);
+          activityRole.setActivityRoleType(ActivityRoleType.Access);
+          activityRoleRepository.save(activityRole);
+        }
 
         return ResponseEntity.ok("User unsubscribed from activity");
     }

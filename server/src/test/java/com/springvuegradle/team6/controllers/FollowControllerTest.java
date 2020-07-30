@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,6 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,6 +44,8 @@ public class FollowControllerTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -219,7 +224,7 @@ public class FollowControllerTest {
   }
 
   @Test
-  void deleteSubsriptionFromActivity() throws Exception {
+  void deleteSubscriptionFromActivity() throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
@@ -245,6 +250,31 @@ public class FollowControllerTest {
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals(false, obj.get("subscribed"));
+  }
+
+  @Test
+  void deleteSubscriptionFromActivityIsNowAccess() throws Exception {
+    Profile profile = profileRepository.findById(otherId);
+    Optional<Activity> activity = activityRepository.findById(activityId);
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity.get());
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity.get());
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, otherId);
+    ActivityRole activityRoleFound = activityRoles.get(0);
+    org.junit.jupiter.api.Assertions.assertEquals("Access", activityRoleFound.getActivityRoleType().toString());
   }
 
   @Test
