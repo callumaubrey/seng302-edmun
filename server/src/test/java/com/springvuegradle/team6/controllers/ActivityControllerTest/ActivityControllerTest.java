@@ -1454,7 +1454,7 @@ class ActivityControllerTest {
 
   @Test
   @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
-  void createActivityForAnotherUserThatDoesNotExistAsAdminAndExpectBadRequest() throws Exception {
+  void createActivityForAnotherUserThatDoesNotExistAsAdminAndExpectClientError() throws Exception {
     int nonExistingProfileId = 9381849;
     String jsonString =
             "{\n"
