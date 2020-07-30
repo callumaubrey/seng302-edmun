@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -41,6 +42,8 @@ public class FollowControllerTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -1059,7 +1062,6 @@ public class FollowControllerTest {
     Assert.assertEquals("access", result.getString("role"));
   }
 
-  @Disabled
   @Test
   void deleteActivityRole() throws Exception {
     Profile profile1 = new Profile();
@@ -1071,51 +1073,74 @@ public class FollowControllerTest {
     profileRepository.save(profile1);
 
     String activityJson =
-        "{\n"
-            + "  \"activity_name\": \"asdasdasd\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Run\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true\n"
-            + "}";
+            "{\n"
+                    + "  \"activity_name\": \"asdasdasd\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Run\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true\n"
+                    + "}";
     // Creates an activity
     String activityBody =
-        mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
+                            .content(activityJson)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
     int activityId2 = Integer.parseInt(activityBody);
 
-    String jsonString =
-        "{\n"
-            + "  \"subscriber\": { \n"
-            + "  \"email\": \"example1@email.com\",\n"
-            + "  \"role\": \"access\"\n"
-            + "  }\n"
-            + "}";
+
+    String giveAccess =
+            "{\n" +
+                    "  \"visibility\": \"restricted\",\n" +
+                    "  \"accessors\":[ \n" +
+                    "     \"example1@email.com\" \n" +
+                    "  ]\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", otherId, activityId2)
+                    .content(giveAccess)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String makeFollower =
+            "{\n"
+                    + "  \"subscriber\": { \n"
+                    + "  \"email\": \"example1@email.com\",\n"
+                    + "  \"role\": \"follower\"\n"
+                    + "  }\n"
+                    + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/" + otherId + "/activities/" + activityId2 + "/subscriber")
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isOk());
+                    .content(makeFollower)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
 
-    String jsonString2 = "{\n" + "\"email\": \"example1@email.com\"\n" + "}";
+    String removeAccess =
+            "{\n" +
+                    "  \"visibility\": \"restricted\",\n" +
+                    "  \"accessors\":[ \n" +
+                    "  ]\n" +
+                    "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.delete(
-                    "/profiles/" + otherId + "/activities/" + activityId2 + "/subscriber")
-                .content(jsonString2)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().is2xxSuccessful());
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", otherId, activityId2)
+                    .content(removeAccess)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Assert.assertEquals(subscriptionHistoryRepository.findActive(activityId2,profile1.getId()).size(),0);
   }
 }
