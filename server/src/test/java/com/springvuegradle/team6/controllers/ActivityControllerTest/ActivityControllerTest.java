@@ -769,12 +769,12 @@ class ActivityControllerTest {
   @Test
   void testAuthorisedUserViewsCorrectPrivateActivitiesAndPublicActivities() throws Exception {
     Activity testActivity1 = new Activity();
-    testActivity1.setVisibilityType("private");
+    testActivity1.setVisibilityTypeByString("private");
     testActivity1.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity1);
 
     Activity testActivity2 = new Activity();
-    testActivity2.setVisibilityType("public");
+    testActivity2.setVisibilityTypeByString("public");
     testActivity2.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity2);
 
@@ -795,7 +795,7 @@ class ActivityControllerTest {
   void testUnauthorisedUserCanNotGetPrivateActivities() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Activity testActivity1 = new Activity();
-    testActivity1.setVisibilityType("private");
+    testActivity1.setVisibilityTypeByString("private");
     testActivity1.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity1);
     String response =
@@ -815,10 +815,10 @@ class ActivityControllerTest {
   void testUnauthorisedUserCanNotGetPrivateActivitiesButCanViewPublic() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Activity testActivity1 = new Activity();
-    testActivity1.setVisibilityType("private");
+    testActivity1.setVisibilityTypeByString("private");
     testActivity1.setProfile(profileRepository.findById(id));
     Activity testActivity2 = new Activity();
-    testActivity2.setVisibilityType("public");
+    testActivity2.setVisibilityTypeByString("public");
     testActivity2.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity1);
     activityRepository.save(testActivity2);
@@ -840,12 +840,12 @@ class ActivityControllerTest {
   void testAdminCanViewPrivateActivities() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Activity testActivity1 = new Activity();
-    testActivity1.setVisibilityType("private");
+    testActivity1.setVisibilityTypeByString("private");
     testActivity1.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity1);
 
     Activity testActivity2 = new Activity();
-    testActivity2.setVisibilityType("public");
+    testActivity2.setVisibilityTypeByString("public");
     testActivity2.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity2);
 
@@ -884,7 +884,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity = activityRepository.save(activity);
 
     String jsonString =
@@ -917,7 +917,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -937,7 +937,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -954,7 +954,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("public");
+    activity.setVisibilityTypeByString("public");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -974,7 +974,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("public");
+    activity.setVisibilityTypeByString("public");
     activity = activityRepository.save(activity);
 
     mvc.perform(
@@ -994,7 +994,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
     Profile profile2 = new Profile();
@@ -1036,7 +1036,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
     Profile profile2 = new Profile();
@@ -1104,7 +1104,7 @@ class ActivityControllerTest {
     activity.setProfile(profile);
     activity.setActivityName("My running activity");
     activity.setContinuous(true);
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
     Profile profile2 = new Profile();

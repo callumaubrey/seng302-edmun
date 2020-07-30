@@ -3,6 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
@@ -72,7 +73,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getHashtagAutocompleteHashtagLengthLessThanThreeReturnInitialHashtag() throws Exception {
+  void testGetHashtagAutocompleteHashtagLengthLessThanThreeReturnInitialHashtag() throws Exception {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=co", id).session(session))
@@ -88,7 +89,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getHashtagAuctocompleteReturnCorrectOrder() throws Exception {
+  void testGetHashtagAuctocompleteReturnCorrectOrder() throws Exception {
     Tag cool = new Tag();
     cool.setName("is_cool");
     cool = tagRepository.save(cool);
@@ -160,7 +161,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getHashtagAutocompleteReturnTenResultsMax() throws Exception {
+  void testGetHashtagAutocompleteReturnTenResultsMax() throws Exception {
     Profile profile = profileRepository.getOne(id);
     Activity activity = new Activity();
     activity.setProfile(profile);
@@ -191,7 +192,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getActivitiesByHashTagReturnStatusOkReturnOneResult() throws Exception {
+  void testGetActivitiesByHashTagReturnStatusOkReturnOneResult() throws Exception {
     // Set up data
     Tag tag = new Tag();
     tag.setName("myrun");
@@ -212,7 +213,7 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/myrun")
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -224,7 +225,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getActivitiesByHashtagReturnStatusOkReturnNoResult() throws Exception {
+  void testGetActivitiesByHashtagReturnStatusOkReturnNoResult() throws Exception {
     Tag tag = new Tag();
     tag.setName("myrun");
     tagRepository.save(tag);
@@ -232,7 +233,7 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/myrun")
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -244,7 +245,7 @@ public class TagControllerTest {
   }
 
   @Test
-  void getActivitiesByHashtagReturnStatusOkReturnCorrectOrder() throws Exception {
+  void testGetActivitiesByHashtagReturnStatusOkReturnCorrectOrder() throws Exception {
     Tag cold = new Tag();
     cold.setName("is_cold");
     cold = tagRepository.save(cold);
@@ -261,7 +262,8 @@ public class TagControllerTest {
     activity.setTags(tags);
     activity = activityRepository.save(activity);
 
-    // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier than the previous activity
+    // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier
+    // than the previous activity
     TimeUnit.SECONDS.sleep(1);
 
     Activity activity1 = new Activity();
@@ -277,7 +279,7 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/" + cold.getName())
+                MockMvcRequestBuilders.get("/activities/hashtag/" + cold.getName())
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -293,5 +295,38 @@ public class TagControllerTest {
         LocalDateTime.parse(result.getJSONObject(1).getString("creationDate"));
     System.out.println(dateTime1);
     org.junit.jupiter.api.Assertions.assertTrue(dateTime.isAfter(dateTime1));
+  }
+
+  @Test
+  void testGetActivitiesByHashtagReturnStatusOkReturnPrivateActivities() throws Exception {
+    Tag tag = new Tag();
+    tag.setName("myrun");
+
+    Activity activity = new Activity();
+    activity.setActivityName("Test");
+    Set<Tag> tags = new HashSet<Tag>();
+    tags.add(tag);
+    activity.setTags(tags);
+    activity.setContinuous(false);
+    activity.setVisibilityType(VisibilityType.Private);
+    activity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+
+    tagRepository.save(tag);
+    activityRepository.save(activity);
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
   }
 }
