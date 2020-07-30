@@ -132,6 +132,7 @@
                                         v-model="$v.form.name.$model"
                                         :state="validateState('name')"
                                         aria-describedby="name-feedback"
+                                        maxlength=128
                                 ></b-form-input>
                                 <b-form-invalid-feedback id="name-feedback">This is a required field.
                                 </b-form-invalid-feedback>
@@ -149,6 +150,7 @@
                                         v-model="$v.form.description.$model"
                                         :state="validateState('description')"
                                         placeholder="What is the activity about?"
+                                        maxlength=2048
                                 ></b-form-textarea>
                             </b-form-group>
                         </b-col>
