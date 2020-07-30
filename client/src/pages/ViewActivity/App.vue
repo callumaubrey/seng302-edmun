@@ -7,6 +7,9 @@
         <div v-else-if="notFound">
             <h1 align="center">This activity does not exist</h1>
         </div>
+        <div v-else-if="!isAuthorized">
+            <h1 align="center">You are not authorized to view this activity</h1>
+        </div>
         <div v-else-if="!locationDataLoading" class="container">
             <div>
                 <!-- Image and Name -->
@@ -143,7 +146,8 @@
                 archived: false,
                 notFound: false,
                 visibility: null,
-                loggedInIsAdmin: false
+                loggedInIsAdmin: false,
+                isAuthorized: true
             }
         },
         mounted() {
@@ -253,12 +257,14 @@
                         }
                         vueObj.locationDataLoading = false;
                     }).catch((err) => {
-                    if (err.response && err.response.status == 404) {
-                        this.notFound = true;
-                    } else {
-                        let profileId = this.$route.params.id;
-                        vueObj.$router.push("/profiles/" + profileId);
-                    }
+                        if (err.response && err.response.status == 404) {
+                            this.notFound = true;
+                        } else if (err.response && err.response.status == 401) {
+                            this.isAuthorized = false;
+                        } else {
+                            let profileId = this.$route.params.id;
+                            vueObj.$router.push("/profiles/" + profileId);
+                        }
                 });
             },
             checkIsAdmin: async function () {
