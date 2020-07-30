@@ -261,7 +261,7 @@
                     }).catch((err) => {
                         if (err.response && err.response.status == 404) {
                             this.notFound = true;
-                        } else if (err.response && err.response.status == 401) {
+                        } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
                             this.isAuthorized = false;
                         } else {
                             let profileId = this.$route.params.id;
