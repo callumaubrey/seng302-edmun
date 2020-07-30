@@ -1063,7 +1063,7 @@ public class FollowControllerTest {
   }
 
   @Test
-  void deleteActivityRole() throws Exception {
+  void excludingPreviouslySubscribedUserFromRestrictedAccessorsUnsubscribesUser() throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
