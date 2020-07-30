@@ -2,7 +2,12 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
-import com.springvuegradle.team6.models.*;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Role;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.AddRoleRequest;
 import com.springvuegradle.team6.requests.AdminEditPasswordRequest;
 import com.springvuegradle.team6.requests.DeleteProfileRequest;
@@ -13,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.DocFlavor;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.Optional;

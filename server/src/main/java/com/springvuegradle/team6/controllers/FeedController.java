@@ -1,11 +1,14 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.SubscriptionHistory;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.responses.FeedResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +17,12 @@ import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
@@ -45,47 +53,49 @@ public class FeedController {
 
   /**
    * Extracts all the feed posts from all the subscriptions of the user
+   *
    * @param subscriptionHistorySet The history of all the subscriptions the user has made
-   * @return the list of feeds containing information on all subscriptions and activity updates related to the subscriptions
+   * @return the list of feeds containing information on all subscriptions and activity updates
+   *     related to the subscriptions
    */
   private List<FeedResponse> extractFeeds(Set<SubscriptionHistory> subscriptionHistorySet) {
     List<FeedResponse> feeds = new ArrayList<>();
     if (subscriptionHistorySet != null) {
       for (SubscriptionHistory subscriptionHistory : subscriptionHistorySet) {
         List<ActivityHistory> activityHistories =
-                activityHistoryRepository
-                        .getActivityHistoryBetweenSubscribeStartEndDateTimeAndActivityId(
-                                subscriptionHistory.getActivity().getId(),
-                                subscriptionHistory.getStartDateTime(),
-                                subscriptionHistory.getEndDateTime());
+            activityHistoryRepository
+                .getActivityHistoryBetweenSubscribeStartEndDateTimeAndActivityId(
+                    subscriptionHistory.getActivity().getId(),
+                    subscriptionHistory.getStartDateTime(),
+                    subscriptionHistory.getEndDateTime());
 
         if (activityHistories != null) {
           for (ActivityHistory activityHistory : activityHistories) {
             FeedResponse feed =
-                    new FeedResponse(
-                            activityHistory.getActivity().getId(),
-                            activityHistory.getMessage(),
-                            activityHistory.getTimeDate().toString());
+                new FeedResponse(
+                    activityHistory.getActivity().getId(),
+                    activityHistory.getMessage(),
+                    activityHistory.getTimeDate().toString());
             feeds.add(feed);
           }
         }
 
         FeedResponse feed =
-                new FeedResponse(
-                        subscriptionHistory.getActivity().getId(),
-                        "Subscribed to the activity: "
-                                + subscriptionHistory.getActivity().getActivityName()
-                                + ".",
-                        subscriptionHistory.getStartDateTime().toString());
+            new FeedResponse(
+                subscriptionHistory.getActivity().getId(),
+                "Subscribed to the activity: "
+                    + subscriptionHistory.getActivity().getActivityName()
+                    + ".",
+                subscriptionHistory.getStartDateTime().toString());
         feeds.add(feed);
         if (subscriptionHistory.getEndDateTime() != null) {
           FeedResponse feed1 =
-                  new FeedResponse(
-                          subscriptionHistory.getActivity().getId(),
-                          "Unsubscribed to the activity: "
-                                  + subscriptionHistory.getActivity().getActivityName()
-                                  + ".",
-                          subscriptionHistory.getEndDateTime().toString());
+              new FeedResponse(
+                  subscriptionHistory.getActivity().getId(),
+                  "Unsubscribed to the activity: "
+                      + subscriptionHistory.getActivity().getActivityName()
+                      + ".",
+                  subscriptionHistory.getEndDateTime().toString());
           feeds.add(feed1);
         }
       }
@@ -94,13 +104,16 @@ public class FeedController {
   }
 
   /**
-   * Extract from all the feeds a limited list of feeds which starts at the offset index and returns an amount equal to limit
+   * Extract from all the feeds a limited list of feeds which starts at the offset index and returns
+   * an amount equal to limit
+   *
    * @param feeds all the feeds of the user
    * @param offset the number of feeds to skip
    * @param limit the number of feeds to return
    * @return a limited list of feeds based on the offset and limit
    */
-  private List<FeedResponse> extractLimitedFeeds(List<FeedResponse> feeds, Integer offset, Integer limit) {
+  private List<FeedResponse> extractLimitedFeeds(
+      List<FeedResponse> feeds, Integer offset, Integer limit) {
     List<FeedResponse> limitedFeeds;
 
     if (limit == null) {

@@ -1,15 +1,17 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.Activity;
-import com.springvuegradle.team6.models.ActivityType;
 import com.springvuegradle.team6.models.Tag;
 import org.hibernate.validator.constraints.Length;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.Tag;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 
 public class CreateActivityRequest {
@@ -45,6 +47,9 @@ public class CreateActivityRequest {
   @JsonProperty("location")
   @Valid
   public LocationUpdateRequest location;
+
+  @JsonProperty("visibility")
+  public String visibility;
 
   public LocationUpdateRequest getLocation() {
     return location;

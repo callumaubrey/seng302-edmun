@@ -1,13 +1,11 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.ActivityRepository;
-import com.springvuegradle.team6.models.TagRepository;
-import com.springvuegradle.team6.requests.LoginRequest;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
 import net.minidev.json.JSONObject;
-import org.apache.coyote.Response;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
@@ -30,7 +33,7 @@ import java.util.Map;
       RequestMethod.PATCH
     })
 @RestController
-@RequestMapping("hashtag")
+@RequestMapping("")
 public class TagController {
 
   private final ActivityRepository activityRepository;
@@ -50,7 +53,7 @@ public class TagController {
    * @return the list of hashtags that match the hashtag
    */
   @GetMapping
-  @RequestMapping(value = "/autocomplete")
+  @RequestMapping(value = "/hashtag/autocomplete")
   public ResponseEntity getHashtagsAutocomplete(
       @RequestParam(name = "hashtag") String hashtag, HttpSession session) {
     Object id = session.getAttribute("id");
@@ -81,13 +84,23 @@ public class TagController {
     return new ResponseEntity(obj, HttpStatus.OK);
   }
 
-  @GetMapping("/{hashTag}")
-  public ResponseEntity getActivities(@PathVariable String hashTag, HttpSession session) {
+  /**
+   * Find all activities containing the given hashtag that the user has permission to view. User has
+   * permission to view all public activities and private activities that they own. The activities
+   * are returned in descending order of the activities creation date.
+   *
+   * @param hashTag the name of the hashtag
+   * @param session the current session logged in
+   * @return the activities
+   */
+  @GetMapping("/activities/hashtag/{hashTag}")
+  public ResponseEntity getActivitiesByHashtag(@PathVariable String hashTag, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    return new ResponseEntity(
-        activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+    hashTag = hashTag.toLowerCase();
+    List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
+    return new ResponseEntity(activities, HttpStatus.OK);
   }
 }

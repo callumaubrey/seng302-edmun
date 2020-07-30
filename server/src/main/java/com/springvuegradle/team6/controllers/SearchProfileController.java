@@ -1,9 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.responses.SearchProfileResponse;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,12 @@ import java.util.Optional;
 
 @RestController
 @CrossOrigin(
-    origins = "http://localhost:9500",
+    origins = {
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
+    },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
