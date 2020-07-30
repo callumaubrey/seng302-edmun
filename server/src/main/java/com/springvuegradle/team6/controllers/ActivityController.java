@@ -598,6 +598,12 @@ public class ActivityController {
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      }
+
+
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
         String editorName =
@@ -853,13 +859,15 @@ public class ActivityController {
         return new ResponseEntity<>(
             "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
-
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
 
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      }
 
-      ResponseEntity<String> editActivityRolesResponse =
-          editActivityRoles(request.getEmails(), activity, activityId);
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
       if (editActivityRolesResponse != null) {
         return editActivityRolesResponse;
       }
