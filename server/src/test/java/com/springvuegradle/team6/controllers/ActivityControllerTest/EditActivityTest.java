@@ -789,7 +789,7 @@ class EditActivityTest {
   }
 
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateUsingEdiVisibilityReturnAllRolesDeletedExceptOwner() throws Exception {
+  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditVisibilityReturnAllRolesDeletedExceptOwner() throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
