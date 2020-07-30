@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.location.NamedLocation;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +13,10 @@ import java.util.Set;
 
 @Entity
 public class Activity {
+
+  // Constants
+  public static final int NAME_MAX_LENGTH = 128;
+  public static final int DESCRIPTION_MAX_LENGTH = 2048;
 
   // For testing purposes only
   public Activity() {
@@ -31,15 +36,15 @@ public class Activity {
     this.activityTypes = request.activityTypes;
     this.tags = request.hashTags;
     this.continuous = request.continuous;
+
     if (!this.continuous) {
       this.startTime = request.startTime;
       this.endTime = request.endTime;
     }
+
     if (request.location != null) {
-      NamedLocation location =
-          new NamedLocation(
+      this.location = new NamedLocation(
               request.location.country, request.location.state, request.location.city);
-      this.location = location;
     }
   }
 
@@ -52,8 +57,12 @@ public class Activity {
   @JoinColumn(name = "author_id", nullable = false)
   private Profile profile;
 
+  @Size(max=NAME_MAX_LENGTH)
+  @Column(length=NAME_MAX_LENGTH)
   private String activityName;
 
+  @Size(max=DESCRIPTION_MAX_LENGTH)
+  @Column(length=DESCRIPTION_MAX_LENGTH)
   private String description;
 
   @ElementCollection(targetClass = ActivityType.class)
@@ -186,6 +195,22 @@ public class Activity {
     this.archived = archived;
   }
 
+  public Collection<Profile> getSubscribers() {
+    return subscribers;
+  }
+
+  public void setSubscribers(Collection<Profile> subscribers) {
+    this.subscribers = subscribers;
+  }
+
+  public VisibilityType getVisibilityType() {
+    return visibilityType;
+  }
+
+  public void setVisibilityType(VisibilityType visibilityType) {
+    this.visibilityType = visibilityType;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -201,11 +226,8 @@ public class Activity {
     return this.id == activity.getId();
   }
 
-  public Collection<Profile> getSubscribers() {
-    return subscribers;
-  }
-
-  public void setSubscribers(Collection<Profile> subscribers) {
-    this.subscribers = subscribers;
+  @Override
+  public int hashCode() {
+    return this.id;
   }
 }
