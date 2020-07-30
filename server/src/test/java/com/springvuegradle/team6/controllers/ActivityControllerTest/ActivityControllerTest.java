@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
@@ -22,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -53,6 +56,7 @@ class ActivityControllerTest {
   @Autowired private TagRepository tagRepository;
 
   @Autowired private MockMvc mvc;
+  @Autowired private ObjectMapper mapper;
 
   private int id;
 
@@ -79,7 +83,6 @@ class ActivityControllerTest {
             .getContentAsString();
     id = Integer.parseInt(body);
   }
-
 
   @Test
   void createActivityWithTimeReturnStatusIsCreated() throws Exception {
@@ -613,11 +616,12 @@ class ActivityControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(Integer.parseInt(activityId));
+    List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_Id(Integer.parseInt(activityId));
     ActivityRole creator = activityRoles.get(0);
-    org.junit.jupiter.api.Assertions.assertEquals(ActivityRoleType.Creator, creator.getActivityRoleType());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        ActivityRoleType.Creator, creator.getActivityRoleType());
     org.junit.jupiter.api.Assertions.assertEquals(id, creator.getProfile().getId());
-
   }
 
   @Test
@@ -763,6 +767,102 @@ class ActivityControllerTest {
   }
 
   @Test
+  void testAuthorisedUserViewsCorrectPrivateActivitiesAndPublicActivities() throws Exception {
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityType("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity2);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+
+  @Test
+  void testUnauthorisedUserCanNotGetPrivateActivities() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
+  }
+
+  @Test
+  void testUnauthorisedUserCanNotGetPrivateActivitiesButCanViewPublic() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityType("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+    activityRepository.save(testActivity2);
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  @WithMockUser(roles = {"USER", "USER_ADMIN"})
+  void testAdminCanViewPrivateActivities() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityType("private");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityType("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity2);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+
+  @Test
   void getActivityThatIsArchivedReturnStatusOKAndNoData() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
@@ -828,6 +928,26 @@ class ActivityControllerTest {
   }
 
   @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void getPrivateActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("private");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void getPublicActivityAnyoneCanView() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
@@ -836,6 +956,71 @@ class ActivityControllerTest {
     activity.setContinuous(true);
     activity.setVisibilityTypeByString("public");
     activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void getPublicActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("public");
+    activity = activityRepository.save(activity);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void getRestrictedActivityAdminCanView() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity.setVisibilityType("restricted");
+    activity = activityRepository.save(activity);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Doe");
+    profile2.setLastname("John");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    String jsonString1 =
+        "{\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"doe@email.com\",\n"
+            + "  ]\n"
+            + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+            .content(jsonString1)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session));
+
+    System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
@@ -1142,42 +1327,42 @@ class ActivityControllerTest {
   @Test
   void testUserIsAFollowerUponCreatingActivity() throws Exception {
     String activityJson =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track racey\",\n"
-                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track racey\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
     // Creates an activity
     String activityBody =
-            mvc.perform(
-                    MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                            .content(activityJson)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(activityJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
     int activityId = Integer.parseInt(activityBody);
 
     String response =
-            mvc.perform(MockMvcRequestBuilders
-                    .get("/profiles/"+ id + "/subscriptions/activities/" + activityId)
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + id + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .session(session)
-            )
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
   }
-  
+
   @Test
   void addActivityHashtagsReturnStatusOkAndHashtagSetSizeIsIncreased() throws Exception {
     Profile owner = profileRepository.findById(id);

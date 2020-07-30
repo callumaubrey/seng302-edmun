@@ -598,6 +598,12 @@ public class ActivityController {
       editActivityFromRequest(request, activity);
       activityRepository.save(activity);
 
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      }
+
+
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
         String editorName =
@@ -667,6 +673,7 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -674,10 +681,17 @@ public class ActivityController {
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
+    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either
+    // of these two, is a response if unauthorized.
+    ResponseEntity<String> activityAuthorizedResponse =
+        this.checkAuthorisedToEditActivity(activity, session);
+
     Object profileId = session.getAttribute("id");
     if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
-        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        if (activityAuthorizedResponse != null) {
+          return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        }
       }
 
       if (activity.getVisibilityType() == VisibilityType.Restricted) {
@@ -685,7 +699,9 @@ public class ActivityController {
             activityRoleRepository.findByProfile_IdAndActivity_Id(
                 Integer.parseInt(profileId.toString()), activityId);
         if (activityRoles == null) {
-          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          if (activityAuthorizedResponse != null) {
+            return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          }
         }
       }
     }
@@ -724,7 +740,9 @@ public class ActivityController {
   }
 
   /**
-   * Get all activity that a user has created by their userID that is not archived
+   * Get all activity that a user has created by their userID that is not archived. No activities
+   * that are private should be returned unless the user is either an admin or the creator of the
+   * activity
    *
    * @param profileId The id of the user profile
    * @param session The session of the current user logged in
@@ -743,7 +761,16 @@ public class ActivityController {
       return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
     }
 
-    return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
+    List<Activity> response;
+    if (UserSecurityService.checkIsAdminOrCreator((int) id, profileId)) {
+      response = activityRepository.findByProfile_IdAndArchivedFalse(profileId);
+    } else {
+      response =
+          activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+              profileId, VisibilityType.Private);
+    }
+
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -825,8 +852,12 @@ public class ActivityController {
       activity.setVisibilityTypeByString(request.getVisibility());
       activityRepository.save(activity);
 
-      ResponseEntity<String> editActivityRolesResponse =
-          editActivityRoles(request.getEmails(), activity, activityId);
+      // This checks if new visibility type is private, if so deletes all activity roles of the activity except the owner.
+      if (activity.getVisibilityType() == VisibilityType.Private) {
+        activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      }
+
+      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
       if (editActivityRolesResponse != null) {
         return editActivityRolesResponse;
       }

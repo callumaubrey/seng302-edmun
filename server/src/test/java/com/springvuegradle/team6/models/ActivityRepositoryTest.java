@@ -1,13 +1,14 @@
 package com.springvuegradle.team6.models;
 
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import org.junit.jupiter.api.Assertions;
 import io.cucumber.java.en_old.Ac;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @DataJpaTest
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -125,6 +127,80 @@ class ActivityRepositoryTest {
       resultStrings.add(tag.getName());
     }
     org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
+  }
+
+  @Test
+  void testFindActivitiesThatAreNotPrivate() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("private");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("public");
+    activityRepository.save(activity1);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("private");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+            activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+                    profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testAllActivitiesPrivateNoActivitiesReturned() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("private");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("private");
+    activityRepository.save(activity1);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("private");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+            activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+                    profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(0, result.size());
+  }
+
+  @Test
+  void testFindActivitiesMultipleActivitiesNotPrivate() {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityType("public");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityType("public");
+    activityRepository.save(activity1);
+
+    Activity activity3 = new Activity();
+    activity3.setProfile(profile);
+    activity3.setVisibilityType("private");
+    activityRepository.save(activity3);
+
+    Activity activity2 = new Activity();
+    activity2.setProfile(profile);
+    activity2.setVisibilityType("public");
+    activityRepository.save(activity2);
+
+    List<Activity> result =
+            activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
+                    profile.getId(), VisibilityType.Private);
+    Assertions.assertEquals(3, result.size());
   }
 
   @Test
@@ -353,6 +429,6 @@ class ActivityRepositoryTest {
     Activity resultActivity0 = activities.get(0);
     Activity resultActivity1 = activities.get(1);
     org.junit.jupiter.api.Assertions.assertTrue(
-        resultActivity0.getCreationDate().isAfter(resultActivity1.getCreationDate()));
+            resultActivity0.getCreationDate().isAfter(resultActivity1.getCreationDate()));
   }
 }

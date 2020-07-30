@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.permission;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
@@ -18,6 +20,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -54,8 +57,10 @@ class UserAdminPermissionTest {
     private String activityId;
 
 
+
     @BeforeAll
     void setup() throws Exception {
+        session = new MockHttpSession();
         createDummyUser();
         createUserAdminAndLogInAsUserAdmin();
     }
@@ -93,7 +98,6 @@ class UserAdminPermissionTest {
     }
 
     void createUserAdminAndLogInAsUserAdmin() throws Exception {
-        session = new MockHttpSession();
         String jsonString = "{\n"
                 + "  \"lastname\": \"Dallas\",\n"
                 + "  \"firstname\": \"Joe\",\n"
@@ -214,6 +218,4 @@ class UserAdminPermissionTest {
         List<Activity> anotherUserActivities = activityRepository.findByProfile_IdAndArchivedFalse(Integer.parseInt(anotherUserId));
         Assertions.assertEquals(activityId, anotherUserActivities.get(0).getId().toString());
     }
-
-
 }
