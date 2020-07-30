@@ -37,7 +37,12 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
 
   /**
    * Returns all activities sorted in descending order by the activities creation date that contain
-   * the given hashtag and are public, or are private and the user is the author of the activity.
+   * the given hashtag and are public or the user is author of the activity or the user was given
+   * access to the activity.
+   *
+   * <p>Note: visibility_type = 1 and visibility_type = 2 do not need to be checked as the activity
+   * is returned if the author is the user or if the user has a row in the table for the
+   * activity_role regardless of the visibility.
    *
    * @param hashtagName the name of the hashtag
    * @param profileId the id of the user that is calling the query
@@ -45,9 +50,10 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    */
   @Query(
       value =
-          "select * from ((activity a left join activity_tags b on a.id = b.activity_id)"
-              + " left join tag t on b.tag_id = t.id) WHERE t.name = :hashtagName and"
-              + " (a.visibility_type = 0 or (a.visibility_type = 1 and a.author_id = :profileId))"
+          "select * from activity a left join activity_tags b on a.id = b.activity_id"
+              + " left join tag t on b.tag_id = t.id left join activity_role r on a.id = r.activity_id"
+              + " and r.profile_id = :profileId WHERE t.name = :hashtagName and"
+              + " (a.visibility_type = 0 or a.author_id = :profileId or r.profile_id = :profileId)"
               + " order by a.creation_date desc",
       nativeQuery = true)
   List<Activity> getActivitiesByHashTag(String hashtagName, int profileId);
