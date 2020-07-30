@@ -1427,4 +1427,49 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(
         hashtagSetBefore.size() - 1, hashtagSetAfter.size());
   }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void createActivityForAnotherUserAsAdminAndExpectStatusIsCreated() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void createActivityForAnotherUserThatDoesNotExistAsAdminAndExpectBadRequest() throws Exception {
+    int nonExistingProfileId = 9381849;
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", nonExistingProfileId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
 }
