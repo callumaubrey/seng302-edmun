@@ -1448,6 +1448,8 @@ class ActivityControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().isCreated());
+    List<Activity> otherUsersActivities = activityRepository.findByProfile_IdAndArchivedFalse(id);
+    org.junit.jupiter.api.Assertions.assertFalse(otherUsersActivities.isEmpty());
   }
 
   @Test
