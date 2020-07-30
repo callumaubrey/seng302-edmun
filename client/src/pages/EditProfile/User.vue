@@ -353,7 +353,9 @@
                             Current location: {{locationDisplayText}}
                         </b-col>
                         <b-col cols="2" class="text-right">
-                            <b-button @click="removeLocation()" variant="danger">Remove</b-button>
+                            <b-button class="invisible-btn" style="float: right;" @click="removeLocation()">
+                                Remove
+                            </b-button>
                         </b-col>
                     </b-row>
                     <b-row v-else>
@@ -362,13 +364,22 @@
                         </b-col>
                     </b-row>
                     <hr>
+                    <b-row v-if="locationErrorFlag">
+                        <b-col>
+                            <p class="text-danger">Please select a location from the drop-down</p>
+                        </b-col>
+                    </b-row>
                     <b-row>
                         <b-col>
                             <p>Search for a location</p>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col cols="9">
                             <b-input autocomplete="off" class="form-control" type="text" v-model="locationText"
                                      @keyup.native="getLocationData(locationText)"></b-input>
                             <div v-for="i in locations" :key="i.place_id">
-                                <b-input v-on:click="setLocationInput(i)" type="button" :value=i.display_name></b-input>
+                                <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name></b-input>
                             </div>
                             <b-form-text>Locations searched will only display if the search includes a city/county or is
                                 part of a city e.g suburb
@@ -379,6 +390,11 @@
                             <b-form-invalid-feedback :state='locationUpdateMessage == ""'>
                                 {{locationErrorMessage}}
                             </b-form-invalid-feedback>
+                        </b-col>
+                        <b-col cols="3">
+                            <b-button class="invisible-btn" style="float: right;" v-on:click="submitLocation">Submit
+                            </b-button>
+
                         </b-col>
                     </b-row>
                 </b-container>
@@ -475,7 +491,9 @@
                 locationErrorMessage: "",
                 locationDeleteMessage: "No location is currently associated with this account",
                 locationDisplayText: "",
-                loggedInIsAdmin: false
+                loggedInIsAdmin: false,
+                selectedLocation: null,
+                locationErrorFlag: false,
             }
         },
         validations: {
@@ -581,7 +599,7 @@
                     bio: this.profileForm.bio,
                     activities: this.yourActivites,
                     passports: this.passportsCode
-                }
+                };
                 api.updateProfile(userId, updateData).then(function (response) {
                     vueObj.emailErrorMessage = "";
                     vueObj.profileUpdateMessage = response.data;
@@ -744,11 +762,20 @@
                     }
                 });
             },
-            setLocationInput: function (location) {
+            setSelectedLocation: function (location) {
+                this.selectedLocation = location;
+                this.locationText = this.selectedLocation.display_name;
+            },
+            submitLocation: function () {
+                if (this.selectedLocation == null || this.locationText != this.selectedLocation.display_name) {
+                    this.locationErrorFlag = true;
+                    return;
+                }
+                this.locationErrorFlag = false;
                 const vueObj = this;
                 vueObj.locations = [];
-                vueObj.location = location;
-                console.log(location.address.city);
+                vueObj.location = vueObj.selectedLocation;
+                console.log(vueObj.location.address.city);
                 let userId = this.profileId;
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
@@ -760,14 +787,14 @@
                         state: null,
                         city: null
                     };
-                    if (location.address.city) {
+                    if (vueObj.location.address.city) {
                         data.city = vueObj.location.address.city;
                     }
-                    if (location.address.state) {
-                        data.state = location.address.state;
+                    if (vueObj.location.address.state) {
+                        data.state = vueObj.location.address.state;
                     }
-                    if (location.address.country) {
-                        data.country = location.address.country;
+                    if (vueObj.location.address.country) {
+                        data.country = vueObj.location.address.country;
                     }
 
                     api.updateProfileLocation(userId, data).then(function () {
@@ -782,9 +809,13 @@
                 } else {
                     let data = {};
                     api.updateProfileLocation(userId, data).then(function (response) {
-                        console.log(response)
+                        console.log(response);
+                        vueObj.locationUpdateMessage = "Location successfully updated";
+                        vueObj.locationErrorMessage = "";
                     }).catch(function (error) {
-                        console.log(error)
+                        console.log(error);
+                        vueObj.locationUpdateMessage = "";
+                        vueObj.locationErrorMessage = "Location failed to update";
                     });
                 }
             },
@@ -1062,7 +1093,6 @@
         overflow: hidden;
         outline: none;
         color: blue;
-        padding-right: 0;
         font-size: 14px;
     }
 
