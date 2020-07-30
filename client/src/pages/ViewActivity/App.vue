@@ -8,7 +8,7 @@
             <h1 align="center">This activity does not exist</h1>
         </div>
         <div v-else-if="!isAuthorized">
-            <h1 align="center">You are not authorized to view this activity</h1>
+          <ForbiddenMessage></ForbiddenMessage>
         </div>
         <div v-else-if="!locationDataLoading" class="container">
             <div>
@@ -112,6 +112,7 @@
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
     import ShareActivity from "@/components/ShareActivity.vue";
+    import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
     import api from '@/Api'
     import AdminMixin from "../../mixins/AdminMixin";
 
@@ -123,6 +124,7 @@
             FollowerUserList,
             FollowerSummary,
             ShareActivity,
+            ForbiddenMessage
         },
         data: function () {
             return {
