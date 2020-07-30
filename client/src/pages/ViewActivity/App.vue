@@ -184,7 +184,7 @@
             },
             deleteActivity() {
                 // double check for if user clicks button when hidden.
-                if (parseInt(this.profileId) === parseInt(this.loggedInId)) {
+                if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
                     if (!confirm("Are you sure you want to delete this activity?")) {
                         return;
                     }
