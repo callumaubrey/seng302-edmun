@@ -141,7 +141,7 @@ public class FollowController {
      * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
      */
     @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-    public ResponseEntity<String> unfollowAndUnsubcribeFromActivity(@PathVariable int profileId,
+    public ResponseEntity<String> unfollowAndUnsubscribeFromActivity(@PathVariable int profileId,
                                                    @PathVariable int activityId,
                                                    HttpSession session) {
         // Check Authorisation
