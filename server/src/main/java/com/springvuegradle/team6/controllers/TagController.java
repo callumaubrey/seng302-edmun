@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
 import net.minidev.json.JSONObject;
@@ -32,7 +33,7 @@ import java.util.Map;
       RequestMethod.PATCH
     })
 @RestController
-@RequestMapping("hashtag")
+@RequestMapping("")
 public class TagController {
 
   private final ActivityRepository activityRepository;
@@ -52,7 +53,7 @@ public class TagController {
    * @return the list of hashtags that match the hashtag
    */
   @GetMapping
-  @RequestMapping(value = "/autocomplete")
+  @RequestMapping(value = "/hashtag/autocomplete")
   public ResponseEntity getHashtagsAutocomplete(
       @RequestParam(name = "hashtag") String hashtag, HttpSession session) {
     Object id = session.getAttribute("id");
@@ -84,20 +85,22 @@ public class TagController {
   }
 
   /**
-   * Find all activities that contain the given hashtag
+   * Find all activities containing the given hashtag that the user has permission to view. User has
+   * permission to view all public activities and private activities that they own. The activities
+   * are returned in descending order of the activities creation date.
    *
-   * @param hashTag the given hashtag
-   * @param session the current session
-   * @return activities that contain the hashtag
+   * @param hashTag the name of the hashtag
+   * @param session the current session logged in
+   * @return the activities
    */
-  @GetMapping("/{hashTag}")
+  @GetMapping("/activities/hashtag/{hashTag}")
   public ResponseEntity getActivitiesByHashtag(@PathVariable String hashTag, HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
     hashTag = hashTag.toLowerCase();
-    return new ResponseEntity(
-        activityRepository.findByTags_NameOrderByCreationDateDesc(hashTag), HttpStatus.OK);
+    List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
+    return new ResponseEntity(activities, HttpStatus.OK);
   }
 }

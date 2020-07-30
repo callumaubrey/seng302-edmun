@@ -62,7 +62,7 @@ export default {
 
     getAdminRole: (profileId) => instance.get('/admin/role/' + profileId),
 
-    getActivitiesByHashtag: (hashtag) => instance.get('/hashtag/' +hashtag),
+    getActivitiesByHashtag: (hashtag) => instance.get('/activities/hashtag/' +hashtag),
 
     getActivityCreatorId: (activityId) => instance.get('/activities/' + activityId + '/creatorId'),
 
