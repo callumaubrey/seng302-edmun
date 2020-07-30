@@ -797,7 +797,7 @@ public class FollowControllerTest {
   @Test
   void testUnauthorisedPrivate() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     activityRepository.save(activity);
     mvc.perform(
@@ -811,7 +811,7 @@ public class FollowControllerTest {
   void testAuthorisedPrivate() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
     activity.setProfile(profileRepository.findById(otherId));
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activityRepository.save(activity);
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
@@ -823,7 +823,7 @@ public class FollowControllerTest {
   @Test
   void testUnauthorisedRestricted() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activityRepository.save(activity);
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     mvc.perform(
@@ -837,7 +837,7 @@ public class FollowControllerTest {
   void testAuthorisedRestrictedWhenCreator() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
     activity.setProfile(profileRepository.findById(otherId));
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     LoginRequest login_request = new LoginRequest();
     login_request.email = "poly@pocket.com";
     login_request.password = "Password1";
@@ -858,7 +858,7 @@ public class FollowControllerTest {
   @Test
   void testAuthorisedRestricted() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity.setProfile(profileRepository.findById(otherId));
     activityRepository.save(activity);
     int authorisedId = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
@@ -880,7 +880,7 @@ public class FollowControllerTest {
   void testAdminRestricted() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityTypeByString("restricted");
     activity.setProfile(profileRepository.findById(otherId));
     activityRepository.save(activity);
     mvc.perform(
@@ -895,7 +895,7 @@ public class FollowControllerTest {
   void testAdminCanGetPrivateActivityMemberData() throws Exception {
     TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Activity activity = activityRepository.findById(activityId).get();
-    activity.setVisibilityType("private");
+    activity.setVisibilityTypeByString("private");
     activity.setProfile(profileRepository.findById(otherId));
     activityRepository.save(activity);
     mvc.perform(
