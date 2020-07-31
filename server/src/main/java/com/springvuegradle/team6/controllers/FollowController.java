@@ -242,7 +242,7 @@ public class FollowController {
       // If not access. Then we check and subscribe
       if (!activityRoleType.equals(ActivityRoleType.Access)) {
         List<SubscriptionHistory> optionalSubscription =
-            subscriptionHistoryRepository.findActive(activityId, profileId);
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
         if (optionalSubscription.isEmpty()) {
           SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
           subscriptionHistoryRepository.save(subscriptionHistory);
@@ -257,7 +257,7 @@ public class FollowController {
         activityRoleRepository.save(activityRoleFound);
         // Now unsubscribe
         List<SubscriptionHistory> optionalSubscription =
-            subscriptionHistoryRepository.findActive(activityId, profileId);
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
         if (!optionalSubscription.isEmpty()) {
           SubscriptionHistory activeSubscription = optionalSubscription.get(0);
           activeSubscription.setEndDateTime(LocalDateTime.now());
@@ -268,7 +268,7 @@ public class FollowController {
         activityRoleFound.setActivityRoleType(activityRoleType);
         activityRoleRepository.save(activityRoleFound);
         List<SubscriptionHistory> optionalSubscription =
-            subscriptionHistoryRepository.findActive(activityId, profileId);
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
         if (optionalSubscription.isEmpty()) {
           SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
           subscriptionHistoryRepository.save(subscriptionHistory);
@@ -399,8 +399,15 @@ public class FollowController {
     ActivityRole activityRole =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
     if (activityRole == null) {
-      return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+      return new ResponseEntity("User has no activity role", HttpStatus.NOT_FOUND);
     }
+
+    List<SubscriptionHistory> activeSubscriptions =
+        subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+    if (activeSubscriptions.isEmpty()) {
+      return new ResponseEntity<>("User is not subscribed", HttpStatus.NOT_FOUND);
+    }
+
 
     JSONObject obj = new JSONObject();
     obj.appendField("role", activityRole.getRole());
