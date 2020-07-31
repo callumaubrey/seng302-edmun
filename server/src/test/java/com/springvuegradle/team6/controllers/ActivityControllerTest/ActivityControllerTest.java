@@ -1442,7 +1442,7 @@ class ActivityControllerTest {
     activity.setStartTime("2000-04-28T15:50:41+1300");
     activity.setEndTime("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
-    activity.setVisibilityType("restricted");
+    activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);
     int activityId = activity.getId();
 
