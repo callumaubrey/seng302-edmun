@@ -1044,6 +1044,7 @@ class ActivityControllerTest {
     Profile profile3 = new Profile();
     profile3.setFirstname("Martin");
     profile3.setLastname("Johns");
+    profile3.setPassword("Password1");
     Set<Email> email3 = new HashSet<Email>();
     email3.add(new Email("martin@email.com"));
     profile3.setEmails(email3);
@@ -1067,18 +1068,18 @@ class ActivityControllerTest {
             .andExpect(status().isOk());
 
     String jsonString =
-        "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+        "{\r\n  \"email\": \"martin@email.com\",\r\n  \"password\": \"Password1\"\r\n}";
 
     mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
         .andExpect(status().isOk())
         .andDo(print());
 
     mvc.perform(
-            MockMvcRequestBuilders.post("/profiles")
+            MockMvcRequestBuilders.post("/login")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
-        .andExpect(status().isCreated())
+        .andExpect(status().isOk())
         .andDo(print());
 
     mvc.perform(
