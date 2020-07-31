@@ -178,9 +178,13 @@ public class FollowController {
 
         List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
         if (!activityRoles.isEmpty()) {
-          ActivityRole activityRole = activityRoles.get(0);
-          activityRole.setActivityRoleType(ActivityRoleType.Access);
-          activityRoleRepository.save(activityRole);
+          if (!activity.get().getVisibilityType().equals(VisibilityType.Public)) {
+            ActivityRole activityRole = activityRoles.get(0);
+            activityRole.setActivityRoleType(ActivityRoleType.Access);
+            activityRoleRepository.save(activityRole);
+          } else {
+            activityRoleRepository.delete(activityRoles.get(0));
+          }
         }
 
         return ResponseEntity.ok("User unsubscribed from activity");
@@ -263,7 +267,7 @@ public class FollowController {
 
     /**
      * To delete the activity role of the email in the request from the activity and deletes their subscription
-     * @param profileId the creator of the activity
+     * @param profileId the user who's subscription and role that is changing
      * @param activityId the id of the activity
      * @param request the request with the email to delete
      * @param session the session of the active user

@@ -253,8 +253,77 @@ public class FollowControllerTest {
   }
 
   @Test
-  void deleteSubscriptionFromActivityIsNowAccess() throws Exception {
-    Profile profile = profileRepository.findById(otherId);
+  void deleteSubscriptionFromRestrictedActivityAndUserRoleIsNowAccess() throws Exception {
+    Profile profile = new Profile();
+    profile.setFirstname("Doe");
+    profile.setLastname("John");
+    profile.setPassword("Password1");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile.setEmails(email2);
+    profile = profileRepository.save(profile);
+
+    String profileJson =
+            "{\n"
+                    + "  \"email\": \"doe@email.com\",\n"
+                    + "  \"password\": \"Password1\"\n"
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/login")
+                    .content(profileJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Optional<Activity> activity = activityRepository.findById(activityId);
+    activity.get().setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity.get());
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity.get());
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity.get());
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + profile.getId() + "/subscriptions/activities/" + activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
+    ActivityRole activityRoleFound = activityRoles.get(0);
+    org.junit.jupiter.api.Assertions.assertEquals("Access", activityRoleFound.getActivityRoleType().toString());
+  }
+
+  @Test
+  void deleteSubscriptionFromPublicActivityAndUserRoleDosentExist() throws Exception {
+    Profile profile = new Profile();
+    profile.setFirstname("Doe");
+    profile.setLastname("John");
+    profile.setPassword("Password1");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("doe@email.com"));
+    profile.setEmails(email2);
+    profile = profileRepository.save(profile);
+
+    String profileJson =
+            "{\n"
+                    + "  \"email\": \"doe@email.com\",\n"
+                    + "  \"password\": \"Password1\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/login")
+                    .content(profileJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
     Optional<Activity> activity = activityRepository.findById(activityId);
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity.get());
     subscriptionHistoryRepository.save(subscriptionHistory);
@@ -267,14 +336,13 @@ public class FollowControllerTest {
 
     mvc.perform(
             MockMvcRequestBuilders.delete(
-                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
+                    "/profiles/" + profile.getId() + "/subscriptions/activities/" + activityId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful());
 
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, otherId);
-    ActivityRole activityRoleFound = activityRoles.get(0);
-    org.junit.jupiter.api.Assertions.assertEquals("Access", activityRoleFound.getActivityRoleType().toString());
+    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(0, activityRoles.size());
   }
 
   @Test
