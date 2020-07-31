@@ -1049,6 +1049,23 @@ class ActivityControllerTest {
     profile3.setEmails(email3);
     profileRepository.save(profile3);
 
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
     String jsonString =
         "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
@@ -1063,25 +1080,6 @@ class ActivityControllerTest {
                 .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
-
-    String jsonString1 =
-        "{\n"
-            + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\": [\n"
-            + "    \"johnny@email.com\",\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
-            + "}";
-
-    mvc.perform(
-        MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-            .content(jsonString1)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
-
-    System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
@@ -1117,6 +1115,22 @@ class ActivityControllerTest {
     profile3.setEmails(email3);
     profileRepository.save(profile3);
 
+    String jsonString1 =
+            "{\n"
+                    + "  \"visibility\": \"restricted\",\n"
+                    + "  \"accessors\": [\n"
+                    + "    \"doe@email.com\",\n"
+                    + "    \"martin@email.com\"\n"
+                    + "  ]\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                    .content(jsonString1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session));
+
     String jsonString =
         "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"johnny@email.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
@@ -1132,23 +1146,6 @@ class ActivityControllerTest {
         .andExpect(status().isCreated())
         .andDo(print());
 
-    String jsonString1 =
-        "{\n"
-            + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\": [\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
-            + "}";
-
-    mvc.perform(
-        MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-            .content(jsonString1)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
-
-    System.out.println(session.getAttribute("id"));
 
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
