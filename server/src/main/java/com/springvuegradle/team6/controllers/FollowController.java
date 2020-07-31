@@ -54,333 +54,363 @@ public class FollowController {
     this.emailRepository = emailRepository;
   }
 
-    /**
-     * Creates new subscription history row between user and activity
-     * and also adds a new activity role for user as a follower
-     *
-     * @param profileId  id of the user subscribing
-     * @param activityId id of the activity being subscribed to
-     * @param session current http session
-     * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
-     */
-    @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-    public ResponseEntity<String> followAndSubscribeToActivity(@PathVariable int profileId,
-                                                 @PathVariable int activityId,
-                                                 HttpSession session) {
-        // Check Authorisation
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
-
-        Profile profile = profileRepository.findById(profileId);
-        if (profile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-        if (optionalActivity.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-
-        // Check if already subscribed
-        if (!subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty()) {
-            return new ResponseEntity<>("User already follows this activity", HttpStatus.BAD_REQUEST);
-        }
-
-        Activity activity = optionalActivity.get();
-
-        SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
-        subscriptionHistoryRepository.save(subscriptionHistory);
-
-        if (activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId) == null) {
-            ActivityRole activityRole = new ActivityRole();
-            activityRole.setActivity(activity);
-            activityRole.setProfile(profile);
-            activityRole.setActivityRoleType(ActivityRoleType.Follower);
-            activityRoleRepository.save(activityRole);
-        }
-
-        return ResponseEntity.ok("User is now subscribed");
+  /**
+   * Creates new subscription history row between user and activity and also adds a new activity
+   * role for user as a follower
+   *
+   * @param profileId id of the user subscribing
+   * @param activityId id of the activity being subscribed to
+   * @param session current http session
+   * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
+   */
+  @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
+  public ResponseEntity<String> followAndSubscribeToActivity(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check Authorisation
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
     }
 
-    /**
-     * Checks if the user is subscribed to the activity
-     *
-     * @param profileId  id of the user that is unsubscribing
-     * @param activityId id of the activity being unsubscribed from
-     * @param session    current http session
-     * @return Boolean true if user is subscribed, false if the user is unsubscribed
-     */
-    @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-    public ResponseEntity<String> getSubscribedToActivity(@PathVariable int profileId,
-                                                       @PathVariable int activityId,
-                                                       HttpSession session) {
-        Profile profile = profileRepository.findById(profileId);
-        if (profile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> activity = activityRepository.findById(activityId);
-        if (activity.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-        boolean subscribed;
-        // Check if already subbed
-        subscribed = !subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty();
-        JSONObject obj = new JSONObject();
-        obj.appendField("subscribed", subscribed);
-        return new ResponseEntity(obj, HttpStatus.OK);
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Unsubscribes user from activity
-     *
-     * @param profileId  id of the user that is unsubscribing
-     * @param activityId id of the activity being unsubscribed from
-     * @param session    current http session
-     * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
-     */
-    @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-    public ResponseEntity<String> unfollowAndUnsubcribeFromActivity(@PathVariable int profileId,
-                                                   @PathVariable int activityId,
-                                                   HttpSession session) {
-        // Check Authorisation
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
-
-        Profile profile = profileRepository.findById(profileId);
-        if (profile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> activity = activityRepository.findById(activityId);
-        if (activity.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-
-        if (activity.get().getProfile().getId() == profile.getId()) {
-            return new ResponseEntity("Cannot unfollow an activity you created", HttpStatus.BAD_REQUEST);
-        }
-
-        // Gets the active subscription history object for this user and activity if one exists
-        List<SubscriptionHistory> activeSubscriptions = subscriptionHistoryRepository.findActive(activityId, profileId);
-
-        // Check if already subbed
-        if (activeSubscriptions.isEmpty()) {
-            return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
-        }
-
-        SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
-        activeSubscription.setEndDateTime(LocalDateTime.now());
-
-        subscriptionHistoryRepository.save(activeSubscription);
-
-        return ResponseEntity.ok("User unsubscribed from activity");
+    // Check if already subscribed
+    if (!subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty()) {
+      return new ResponseEntity<>("User already follows this activity", HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Endpoint for creator of the activity to set activity roles for a user. If user doesnt yet have a role and its
-     * they are given a role higher than access then it also subscribes them to the activity.
-     * @param profileId id of creator of activity
-     * @param activityId if of activity
-     * @param editSubscriptionRequest information to edit subscription
-     * @param session the session of the active user
-     * @return response entity, 200 if successful.
-     */
-    @PutMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
-    public ResponseEntity editRoleOfOneUser(
-            @PathVariable int profileId,
-            @PathVariable int activityId,
-            @RequestBody @Valid EditSubscriptionRequest editSubscriptionRequest,
-            HttpSession session) {
-        SubscriptionRequest request = editSubscriptionRequest.getSubscription();
+    Activity activity = optionalActivity.get();
 
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
-        Profile creatorProfile = profileRepository.findById(profileId);
-        if (creatorProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> activityOptional = activityRepository.findById(activityId);
-        if (activityOptional.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-
-        Activity activity = activityOptional.get();
-        if (!activity.getProfile().getId().equals(profileId)) {
-            return new ResponseEntity<>(
-                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-        }
-        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-        if (optionalEmail.isEmpty()) {
-            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-        }
-
-        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-        if (roleProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-
-        ActivityRole activityRoleFound = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
-        String toCamelCase = request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
-        ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
-        if (activityRoleFound == null) {
-            // Create activity role
-            ActivityRole activityRole = new ActivityRole();
-            activityRole.setProfile(roleProfile);
-            activityRole.setActivity(activity);
-            activityRole.setActivityRoleType(activityRoleType);
-            activityRoleRepository.save(activityRole);
-            // Create Subscription history row
-            // Needs to check if only givign access, if so then shoudlnt subscribe
-            List<SubscriptionHistory> optionalSubscription = subscriptionHistoryRepository.findActive(activityId, profileId);
-             if (optionalSubscription.isEmpty()) {
-                 SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
-                 subscriptionHistoryRepository.save(subscriptionHistory);
-                 return new ResponseEntity("Activity role created and user is now subscribed", HttpStatus.OK);
-             } else {
-                 return new ResponseEntity("Activity role created", HttpStatus.OK);
-             }
-        } else {
-            activityRoleFound.setActivityRoleType(activityRoleType);
-            activityRoleRepository.save(activityRoleFound);
-        }
-
-        return new ResponseEntity("Activity role updated", HttpStatus.OK);
+    if (activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId) == null) {
+      ActivityRole activityRole = new ActivityRole();
+      activityRole.setActivity(activity);
+      activityRole.setProfile(profile);
+      activityRole.setActivityRoleType(ActivityRoleType.Follower);
+      activityRoleRepository.save(activityRole);
     }
 
-    /**
-     * To delete the activity role of the email in the request from the activity and deletes their subscription
-     * @param profileId the creator of the activity
-     * @param activityId the id of the activity
-     * @param request the request with the email to delete
-     * @param session the session of the active user
-     * @return the response, 200 if successfully deleted.
-     */
-    @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
-    public ResponseEntity deleteRoleAndSubscriptionOfUser(
-            @PathVariable int profileId,
-            @PathVariable int activityId,
-            @RequestBody @Valid DeleteSubscriptionRequest request,
-            HttpSession session) {
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
-
-        Profile creatorProfile = profileRepository.findById(profileId);
-        if (creatorProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> activityOptional = activityRepository.findById(activityId);
-        if (activityOptional.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-
-        Activity activity = activityOptional.get();
-        if (!activity.getProfile().getId().equals(profileId)) {
-            return new ResponseEntity<>(
-                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-        }
-        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-        if (optionalEmail.isEmpty()) {
-            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-        }
-
-        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-        if (roleProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-
-        ActivityRole activityRoleFound = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
-
-        if (activityRoleFound == null) {
-            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
-        } else {
-            activityRoleRepository.delete(activityRoleFound);
-
-            List<SubscriptionHistory> activeSubscriptions = subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
-
-            // Check if already subbed
-            if (activeSubscriptions.isEmpty()) {
-                return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
-            }
-
-            SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
-            activeSubscription.setEndDateTime(LocalDateTime.now());
-
-            subscriptionHistoryRepository.save(activeSubscription);
-        }
-
-        return new ResponseEntity("Activity role deleted", HttpStatus.OK);
-    }
-
-    /**
-     * This endpoint gets the role of the user associated to the email in the body.
-     * @param profileId owner of the activity
-     * @param activityId activity
-     * @param request the request with the email of the user we want to check
-     * @param session session
-     * @return
-     */
-    @GetMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
-    public ResponseEntity getRoleOfUser(
-            @PathVariable int profileId,
-            @PathVariable int activityId,
-            @RequestBody @Valid DeleteSubscriptionRequest request,
-            HttpSession session) {
-        ResponseEntity<String> authorisedResponse =
-                UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-        if (authorisedResponse != null) {
-            return authorisedResponse;
-        }
-
-        Profile creatorProfile = profileRepository.findById(profileId);
-        if (creatorProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-        Optional<Activity> activityOptional = activityRepository.findById(activityId);
-        if (activityOptional.isEmpty()) {
-            return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-        }
-
-        Activity activity = activityOptional.get();
-        if (!activity.getProfile().getId().equals(profileId)) {
-            return new ResponseEntity<>(
-                    "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-        }
-
-        Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-        if (optionalEmail.isEmpty()) {
-            return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-        }
-
-        Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-        if (roleProfile == null) {
-            return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-        }
-
-        ActivityRole activityRole = activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
-        if (activityRole == null) {
-            return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
-        }
-
-        JSONObject obj = new JSONObject();
-        obj.appendField("role", activityRole.getRole());
-        return new ResponseEntity(obj, HttpStatus.OK);
-    }
+    return ResponseEntity.ok("User is now subscribed");
+  }
 
   /**
-   * Retrieves all users associated with the activity and their role. If the activity is private only
-   * the creator or an admin can have access. If the activity is restricted only users that have a
-   * role in the activity will be granted access
+   * Checks if the user is subscribed to the activity
+   *
+   * @param profileId id of the user that is unsubscribing
+   * @param activityId id of the activity being unsubscribed from
+   * @param session current http session
+   * @return Boolean true if user is subscribed, false if the user is unsubscribed
+   */
+  @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
+  public ResponseEntity<String> getSubscribedToActivity(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activity = activityRepository.findById(activityId);
+    if (activity.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+    boolean subscribed;
+    // Check if already subbed
+    subscribed = !subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty();
+    JSONObject obj = new JSONObject();
+    obj.appendField("subscribed", subscribed);
+    return new ResponseEntity(obj, HttpStatus.OK);
+  }
+
+  /**
+   * Unsubscribes user from activity
+   *
+   * @param profileId id of the user that is unsubscribing
+   * @param activityId id of the activity being unsubscribed from
+   * @param session current http session
+   * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
+   */
+  @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
+  public ResponseEntity<String> unfollowAndUnsubcribeFromActivity(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check Authorisation
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activity = activityRepository.findById(activityId);
+    if (activity.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    if (activity.get().getProfile().getId() == profile.getId()) {
+      return new ResponseEntity("Cannot unfollow an activity you created", HttpStatus.BAD_REQUEST);
+    }
+
+    // Gets the active subscription history object for this user and activity if one exists
+    List<SubscriptionHistory> activeSubscriptions =
+        subscriptionHistoryRepository.findActive(activityId, profileId);
+
+    // Check if already subbed
+    if (activeSubscriptions.isEmpty()) {
+      return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
+    }
+
+    SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
+    activeSubscription.setEndDateTime(LocalDateTime.now());
+
+    subscriptionHistoryRepository.save(activeSubscription);
+
+    return ResponseEntity.ok("User unsubscribed from activity");
+  }
+
+  /**
+   * Endpoint for creator of the activity to set activity roles for a user. If user doesnt yet have
+   * a role and its they are given a role higher than access then it also subscribes them to the
+   * activity.
+   *
+   * @param profileId id of creator of activity
+   * @param activityId if of activity
+   * @param editSubscriptionRequest information to edit subscription
+   * @param session the session of the active user
+   * @return response entity, 200 if successful.
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+  public ResponseEntity editRoleOfOneUser(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid EditSubscriptionRequest editSubscriptionRequest,
+      HttpSession session) {
+    SubscriptionRequest request = editSubscriptionRequest.getSubscription();
+
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    Profile creatorProfile = profileRepository.findById(profileId);
+    if (creatorProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activityOptional = activityRepository.findById(activityId);
+    if (activityOptional.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = activityOptional.get();
+    if (!activity.getProfile().getId().equals(profileId)) {
+      return new ResponseEntity<>(
+          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    }
+    Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+    if (optionalEmail.isEmpty()) {
+      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+    }
+
+    Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+    if (roleProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityRole activityRoleFound =
+        activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+    String toCamelCase =
+        request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
+    ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
+    if (activityRoleFound == null) {
+      // User doesn't have role.
+      ActivityRole activityRole = new ActivityRole();
+      activityRole.setProfile(roleProfile);
+      activityRole.setActivity(activity);
+      activityRole.setActivityRoleType(activityRoleType);
+      activityRoleRepository.save(activityRole);
+      // If not access. Then we check and subscribe
+      if (!activityRoleType.equals(ActivityRoleType.Access)) {
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, profileId);
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
+      }
+    } else {
+      // User already has role.
+      if (!activityRoleFound.getActivityRoleType().equals(ActivityRoleType.Access)
+          && activityRoleType.equals(ActivityRoleType.Access)) {
+        // I am demoting them to access. Change role and unsubscribe
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        // Now unsubscribe
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, profileId);
+        if (!optionalSubscription.isEmpty()) {
+          SubscriptionHistory activeSubscription = optionalSubscription.get(0);
+          activeSubscription.setEndDateTime(LocalDateTime.now());
+          subscriptionHistoryRepository.save(activeSubscription);
+        }
+      } else {
+        // User has access and now giving them a higher role
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, profileId);
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
+      }
+    }
+
+    return new ResponseEntity("Activity role updated", HttpStatus.OK);
+  }
+
+  /**
+   * To delete the activity role of the email in the request from the activity and deletes their
+   * subscription
+   *
+   * @param profileId the creator of the activity
+   * @param activityId the id of the activity
+   * @param request the request with the email to delete
+   * @param session the session of the active user
+   * @return the response, 200 if successfully deleted.
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+  public ResponseEntity deleteRoleAndSubscriptionOfUser(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid DeleteSubscriptionRequest request,
+      HttpSession session) {
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    Profile creatorProfile = profileRepository.findById(profileId);
+    if (creatorProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activityOptional = activityRepository.findById(activityId);
+    if (activityOptional.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = activityOptional.get();
+    if (!activity.getProfile().getId().equals(profileId)) {
+      return new ResponseEntity<>(
+          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    }
+    Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+    if (optionalEmail.isEmpty()) {
+      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+    }
+
+    Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+    if (roleProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityRole activityRoleFound =
+        activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+
+    if (activityRoleFound == null) {
+      return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+    } else {
+      activityRoleRepository.delete(activityRoleFound);
+
+      List<SubscriptionHistory> activeSubscriptions =
+          subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+
+      // Check if already subbed
+      if (activeSubscriptions.isEmpty()) {
+        return new ResponseEntity<>("User does not follow this activity", HttpStatus.BAD_REQUEST);
+      }
+
+      SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
+      activeSubscription.setEndDateTime(LocalDateTime.now());
+
+      subscriptionHistoryRepository.save(activeSubscription);
+    }
+
+    return new ResponseEntity("Activity role deleted", HttpStatus.OK);
+  }
+
+  /**
+   * This endpoint gets the role of the user associated to the email in the body.
+   *
+   * @param profileId owner of the activity
+   * @param activityId activity
+   * @param request the request with the email of the user we want to check
+   * @param session session
+   * @return
+   */
+  @GetMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
+  public ResponseEntity getRoleOfUser(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid DeleteSubscriptionRequest request,
+      HttpSession session) {
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    Profile creatorProfile = profileRepository.findById(profileId);
+    if (creatorProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activityOptional = activityRepository.findById(activityId);
+    if (activityOptional.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = activityOptional.get();
+    if (!activity.getProfile().getId().equals(profileId)) {
+      return new ResponseEntity<>(
+          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
+    if (optionalEmail.isEmpty()) {
+      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+    }
+
+    Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+    if (roleProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityRole activityRole =
+        activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
+    if (activityRole == null) {
+      return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+    }
+
+    JSONObject obj = new JSONObject();
+    obj.appendField("role", activityRole.getRole());
+    return new ResponseEntity(obj, HttpStatus.OK);
+  }
+
+  /**
+   * Retrieves all users associated with the activity and their role. If the activity is private
+   * only the creator or an admin can have access. If the activity is restricted only users that
+   * have a role in the activity will be granted access
    *
    * @param activityId id of the activity
    * @param session current http session
