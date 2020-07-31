@@ -133,7 +133,7 @@ public class FollowController {
     }
 
     /**
-     * Unsubscribes user from activity
+     * Unsubscribes user from activity and demotes the user to ACCESS
      *
      * @param profileId  id of the user that is unsubscribing
      * @param activityId id of the activity being unsubscribed from
@@ -141,7 +141,7 @@ public class FollowController {
      * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
      */
     @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-    public ResponseEntity<String> unfollowAndUnsubcribeFromActivity(@PathVariable int profileId,
+    public ResponseEntity<String> unfollowAndUnsubscribeFromActivity(@PathVariable int profileId,
                                                    @PathVariable int activityId,
                                                    HttpSession session) {
         // Check Authorisation
@@ -174,8 +174,18 @@ public class FollowController {
 
         SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
         activeSubscription.setEndDateTime(LocalDateTime.now());
-
         subscriptionHistoryRepository.save(activeSubscription);
+
+        List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
+        if (!activityRoles.isEmpty()) {
+          if (!activity.get().getVisibilityType().equals(VisibilityType.Public)) {
+            ActivityRole activityRole = activityRoles.get(0);
+            activityRole.setActivityRoleType(ActivityRoleType.Access);
+            activityRoleRepository.save(activityRole);
+          } else {
+            activityRoleRepository.delete(activityRoles.get(0));
+          }
+        }
 
         return ResponseEntity.ok("User unsubscribed from activity");
     }
@@ -257,7 +267,7 @@ public class FollowController {
 
     /**
      * To delete the activity role of the email in the request from the activity and deletes their subscription
-     * @param profileId the creator of the activity
+     * @param profileId the user who's subscription and role that is changing
      * @param activityId the id of the activity
      * @param request the request with the email to delete
      * @param session the session of the active user
