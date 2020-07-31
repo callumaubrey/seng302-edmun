@@ -547,6 +547,21 @@ public class ActivityController {
   }
 
   /**
+   * This method will deal with the different cases of visibility and which roles to delete and which users to unsubscribe
+   * @param request the request with the new visibility
+   * @param activity the activity with the original visibility
+   */
+   void editActivityVisibilityHandling(EditActivityRequest request, Activity activity) {
+
+    if (request.visibility == "public" && activity.getVisibilityType() != VisibilityType.Public) {
+      activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
+    } else {
+      activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      subscriptionHistoryRepository.unSubscribeAllButCreator(activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
+    }
+  }
+
+  /**
    * Put Request to update an activity for the given profile based on the request
    *
    * @param profileId The id of the author of the activity
@@ -595,15 +610,8 @@ public class ActivityController {
       ObjectMapper mapper = new ObjectMapper();
       String preJson = mapper.writeValueAsString(activity);
 
+      editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       editActivityFromRequest(request, activity);
-      activityRepository.save(activity);
-
-      // This checks if new visibility type is private, if so deletes all activity roles of the
-      // activity except the owner.
-      if (activity.getVisibilityType() == VisibilityType.Private) {
-        activityRoleRepository.deleteAllActivityRolesExceptOwner(
-            activity.getId(), activity.getProfile().getId());
-      }
 
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
