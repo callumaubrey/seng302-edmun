@@ -1427,4 +1427,88 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(
         hashtagSetBefore.size() - 1, hashtagSetAfter.size());
   }
+
+  @Test
+  void createActivityWithInvalidDescriptionLengthReturnStatusIsBadRequest() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Blabber mouth\",\n"
+                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1) + "\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityWithMaxDescriptionLengthReturnStatusIsOK() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Blabber mouth\",\n"
+                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH) + "\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityWithInvalidNameLengthReturnStatusIsBadRequest() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH + 1) + "\",\n"
+                    + "  \"description\": \"String madness\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityWithMaxNameLengthReturnStatusIsOK() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH) + "\",\n"
+                    + "  \"description\": \"String madness\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated());
+  }
 }
