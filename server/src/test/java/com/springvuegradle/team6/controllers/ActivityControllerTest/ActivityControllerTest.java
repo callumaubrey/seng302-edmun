@@ -2,17 +2,8 @@ package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityRole;
-import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -31,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +44,8 @@ class ActivityControllerTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   @Autowired private TagRepository tagRepository;
 
@@ -1426,5 +1420,60 @@ class ActivityControllerTest {
     Set<Tag> hashtagSetAfter = activityRepository.findById(activity.getId()).get().getTags();
     org.junit.jupiter.api.Assertions.assertEquals(
         hashtagSetBefore.size() - 1, hashtagSetAfter.size());
+  }
+
+  @Test
+  void excludingPreviouslySubscribedUserFromRestrictedAccessorsUnsubscribesUser() throws Exception {
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTime("2000-04-28T15:50:41+1300");
+    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType("restricted");
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile1);
+    subscriptionHistory.setStartDateTime(LocalDateTime.now());
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String removeAccess =
+            "{\n" +
+                    "  \"visibility\": \"restricted\",\n" +
+                    "  \"accessors\":[ \n" +
+                    "  ]\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                    .content(removeAccess)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Assert.assertEquals(subscriptionHistoryRepository.findActive(activityId,profile1.getId()).size(),0);
   }
 }

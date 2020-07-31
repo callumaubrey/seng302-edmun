@@ -774,25 +774,19 @@ public class ActivityController {
   }
 
   /**
-   * Increases the activity role of each accessor to Access, and decreases the activity role to
-   * standard user if they no longer belongs to the list of accessor
+   * This takes care of all subscription adn activity role logic when changing visibility of an activity.
    *
    * @param emails list of accessor emails
    * @param activity the activity to be edited
    * @param activityId the activity id to be edited
-   * @return a NOT FOUND response entity if accessor is not found, otherwise return null
+   * @return a NOT FOUND response entity if an accessor is not found, otherwise return null
    */
   private ResponseEntity<String> editActivityRoles(
       List<String> emails, Activity activity, int activityId) {
-    // Returns if list of accessor is not passed
-    // or visibility type of activity is public (everyone can access) or private (no one can access)
-    if (emails == null
-        || activity.getVisibilityType() == VisibilityType.Public
-        || activity.getVisibilityType() == VisibilityType.Private) {
+    if (emails == null) {
       return null;
     }
 
-    // This loop is here to validate all emails first before we start adding them.
     for (String email : emails) {
       Profile profile = profileRepository.findByEmails_address(email);
       if (profile == null) {
@@ -805,27 +799,39 @@ public class ActivityController {
     if (activityRoles.size() > 0) {
       for (var i = 0; i < activityRoles.size(); i++) {
         Profile profile = activityRoles.get(i).getProfile();
-        if (!(emails.contains(profile.getPrimaryEmail().getAddress()))) {
+        if (!(emails.contains(profile.getPrimaryEmail().getAddress())) && activityRoles.get(i).getActivityRoleType() != ActivityRoleType.Creator) {
           activityRoleRepository.delete(activityRoles.get(i));
-          List<SubscriptionHistory> subHistory = subscriptionHistoryRepository.findActive(activityId, profile.getId());
-          if (subHistory.size() > 0) {
-            subHistory.get(0).setEndDateTime(LocalDateTime.now());
+          if (!activity.getVisibilityType().equals(VisibilityType.Public)) {
+            List<SubscriptionHistory> subHistory = subscriptionHistoryRepository.findActive(activityId, profile.getId());
+            if (subHistory.size() > 0) {
+              subHistory.get(0).setEndDateTime(LocalDateTime.now());
+              subscriptionHistoryRepository.save(subHistory.get(0));
+            }
           }
         }
       }
     }
 
-    if (emails.size() > 0) {
-      for (String email : emails) {
-        Profile profile = profileRepository.findByEmails_address(email);
-        ActivityRole role =
-            activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
-        if (role == null) {
-          ActivityRole activityRole = new ActivityRole();
-          activityRole.setActivity(activity);
-          activityRole.setProfile(profile);
-          activityRole.setActivityRoleType(ActivityRoleType.Access);
-          activityRoleRepository.save(activityRole);
+    if (activity.getVisibilityType() == VisibilityType.Restricted) {
+      // here we add role and sub history for new emails not in database.
+      if (emails.size() > 0) {
+        for (String email : emails) {
+          Profile profile = profileRepository.findByEmails_address(email);
+          ActivityRole role =
+                  activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+          if (role == null) {
+            ActivityRole activityRole = new ActivityRole();
+            activityRole.setActivity(activity);
+            activityRole.setProfile(profile);
+            activityRole.setActivityRoleType(ActivityRoleType.Access);
+            activityRoleRepository.save(activityRole);
+
+            SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+            subscriptionHistory.setActivity(activity);
+            subscriptionHistory.setProfile(profile);
+            subscriptionHistory.setStartDateTime(LocalDateTime.now());
+            subscriptionHistoryRepository.save(subscriptionHistory);
+          }
         }
       }
     }
@@ -855,9 +861,9 @@ public class ActivityController {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
-      if (!activity.getProfile().getId().equals(profileId)) {
+      if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
         return new ResponseEntity<>(
-            "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+            "You are not authorized to change visibility for this activity", HttpStatus.UNAUTHORIZED);
       }
       activity.setVisibilityType(request.getVisibility());
       activityRepository.save(activity);
