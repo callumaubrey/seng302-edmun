@@ -7,6 +7,9 @@
         <div v-else-if="notFound">
             <h1 align="center">This activity does not exist</h1>
         </div>
+        <div v-else-if="!isAuthorized">
+          <ForbiddenMessage></ForbiddenMessage>
+        </div>
         <div v-else-if="!locationDataLoading" class="container">
             <div>
                 <!-- Image and Name -->
@@ -109,6 +112,7 @@
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
     import ShareActivity from "@/components/ShareActivity.vue";
+    import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
     import api from '@/Api'
     import AdminMixin from "../../mixins/AdminMixin";
 
@@ -120,6 +124,7 @@
             FollowerUserList,
             FollowerSummary,
             ShareActivity,
+            ForbiddenMessage
         },
         data: function () {
             return {
@@ -143,7 +148,8 @@
                 archived: false,
                 notFound: false,
                 visibility: null,
-                loggedInIsAdmin: false
+                loggedInIsAdmin: false,
+                isAuthorized: true
             }
         },
         mounted() {
@@ -253,12 +259,14 @@
                         }
                         vueObj.locationDataLoading = false;
                     }).catch((err) => {
-                    if (err.response && err.response.status == 404) {
-                        this.notFound = true;
-                    } else {
-                        let profileId = this.$route.params.id;
-                        vueObj.$router.push("/profiles/" + profileId);
-                    }
+                        if (err.response && err.response.status == 404) {
+                            this.notFound = true;
+                        } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
+                            this.isAuthorized = false;
+                        } else {
+                            let profileId = this.$route.params.id;
+                            vueObj.$router.push("/profiles/" + profileId);
+                        }
                 });
             },
             checkIsAdmin: async function () {
