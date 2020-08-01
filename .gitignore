@@ -7,7 +7,8 @@ build/
 dist/
 node_modules/
 server/src/main/resources/application.properties
-server/com.springvuegradle.team6.models.Profile
+server/com.springvuegradle.team6.models.Profile/**
+server/com.springvuegradle.team6.models.entities.Profile/**
 coverage/
 
 ### STS ###
