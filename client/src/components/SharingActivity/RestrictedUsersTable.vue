@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-table :items="roleData.users" :fields="fields">
+    <b-table :items="data.users" :fields="fields">
       <!-- This v-slot deals with deciding to keep the user or not-->
       <template v-slot:cell(selected)="row">
         <b-form-checkbox
@@ -11,15 +11,15 @@
       </template>
       <!-- This v-slot deals with selecting the role for the user-->
       <template v-slot:cell(role)="row">
-        <b-form-select v-model="row.item.role" :options="activityRoles"></b-form-select>
+        <b-form-select v-model="row.item.role" :options="activityRoles" v-on:change="emitToParent"></b-form-select>
       </template>
     </b-table>
 
-    <b-button v-on:click="selectAll(roleData.users)" style="margin-right: 5px">
+    <b-button id="select-all-button" v-on:click="selectAll(data.users)" style="margin-right: 5px">
       Select All
     </b-button>
 
-    <b-button v-on:click="deselectAll(roleData.users)">
+    <b-button id="deselect-all-button" v-on:click="deselectAll(data.users)">
       Deselect All
     </b-button>
   </div>
@@ -31,7 +31,8 @@
     props: ['roleData', 'activityRoles'],
     data() {
       return {
-        fields: ['name', 'email', 'role', 'selected']
+        fields: ['name', 'email', 'role', 'selected'],
+        data: this.roleData
       }
     },
     methods: {
@@ -45,6 +46,7 @@
         } else {
           row.item._rowVariant = 'none';
         }
+        this.emitToParent();
       },
       /**
        * Checks the selected check box for all users
@@ -58,6 +60,7 @@
           user.selected = true;
           user._rowVariant = 'none';
         }
+        this.emitToParent();
       },
       /**
        * Unchecks the selected check box for all users
@@ -71,6 +74,14 @@
           user.selected = false;
           user._rowVariant = 'danger';
         }
+        this.emitToParent();
+      },
+      /**
+       * Emits changes to the parent whenever this function is called.
+       * This function should be called whenever data is changed.
+       */
+      emitToParent () {
+        this.$emit('childToParent', this.data)
       }
     }
   }
