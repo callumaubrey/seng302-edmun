@@ -859,7 +859,7 @@ class ActivityControllerTest {
             .getResponse()
             .getContentAsString();
     JSONArray result = new JSONArray(response);
-    org.junit.jupiter.api.Assertions.assertEquals(0, result.length());
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
   }
 
   @Test
@@ -947,10 +947,10 @@ class ActivityControllerTest {
     Activity testActivity2 = new Activity();
     testActivity2.setVisibilityTypeByString("restricted");
     testActivity2.setProfile(profileRepository.findById(id));
-    activityRepository.save(testActivity1);
+    activityRepository.save(testActivity2);
 
     Activity testActivity3 = new Activity();
-    testActivity3.setVisibilityTypeByString("public");
+    testActivity3.setVisibilityTypeByString("private");
     testActivity3.setProfile(profileRepository.findById(id));
     activityRepository.save(testActivity3);
 

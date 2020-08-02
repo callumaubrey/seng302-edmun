@@ -749,7 +749,7 @@ public class ActivityController {
   /**
    * Get all activity that a user has created by their userID that is not archived. No activities
    * that are private should be returned unless the user is either an admin or the creator of the
-   * activity
+   * activity. It should also return all restricted activities that
    *
    * @param profileId The id of the user profile
    * @param session The session of the current user logged in
@@ -772,9 +772,7 @@ public class ActivityController {
     if (UserSecurityService.checkIsAdminOrCreator((int) id, profileId)) {
       response = activityRepository.findByProfile_IdAndArchivedFalse(profileId);
     } else {
-      response =
-          activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
-              profileId, VisibilityType.Private);
+      response = activityRepository.getPublicAndRestrictedActivities(profileId, (int) id);
     }
 
     return ResponseEntity.ok(response);
