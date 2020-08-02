@@ -264,7 +264,8 @@ public class FollowController {
         List<SubscriptionHistory> optionalSubscription =
             subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
         if (optionalSubscription.isEmpty()) {
-          SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
           subscriptionHistoryRepository.save(subscriptionHistory);
         }
       }
@@ -281,6 +282,7 @@ public class FollowController {
         if (!optionalSubscription.isEmpty()) {
           SubscriptionHistory activeSubscription = optionalSubscription.get(0);
           activeSubscription.setEndDateTime(LocalDateTime.now());
+          activeSubscription.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
           subscriptionHistoryRepository.save(activeSubscription);
         }
       } else {
@@ -290,7 +292,8 @@ public class FollowController {
         List<SubscriptionHistory> optionalSubscription =
             subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
         if (optionalSubscription.isEmpty()) {
-          SubscriptionHistory subscriptionHistory = new SubscriptionHistory(roleProfile, activity);
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
           subscriptionHistoryRepository.save(subscriptionHistory);
         }
       }

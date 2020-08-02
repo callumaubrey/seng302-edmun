@@ -1173,10 +1173,10 @@ public class FollowControllerTest {
     // Creates an activity
     String activityBody =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                .content(activityJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
+                    .content(activityJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -1191,22 +1191,22 @@ public class FollowControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString2 = "{\n" + "\"email\": \"example@email.com\"\n" + "}";
 
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-                .content(jsonString2)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                    .content(jsonString2)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -1238,10 +1238,10 @@ public class FollowControllerTest {
     // Creates an activity
     String activityBody =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                .content(activityJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
+                    .content(activityJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -1256,11 +1256,11 @@ public class FollowControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString3 =
@@ -1272,22 +1272,22 @@ public class FollowControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-            .content(jsonString3)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                .content(jsonString3)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString2 = "{\n" + "\"email\": \"example@email.com\"\n" + "}";
 
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-                .content(jsonString2)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                    .content(jsonString2)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().is4xxClientError())
             .andReturn()
             .getResponse()
@@ -1318,10 +1318,10 @@ public class FollowControllerTest {
     // Creates an activity
     String activityBody =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                .content(activityJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
+                    .content(activityJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -1336,11 +1336,11 @@ public class FollowControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString3 =
@@ -1352,22 +1352,22 @@ public class FollowControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-            .content(jsonString3)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                .content(jsonString3)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString2 = "{\n" + "\"email\": \"example@email.com\"\n" + "}";
 
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
-                .content(jsonString2)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + otherId + "/activities/" + activityId + "/subscriber")
+                    .content(jsonString2)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
