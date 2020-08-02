@@ -20,6 +20,10 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * This controller contains all end points related to adding subscriptions to the activity and
+ * changing roles of users of the activity.
+ */
 @CrossOrigin(
     origins = "http://localhost:9500",
     allowCredentials = "true",
@@ -28,11 +32,11 @@ import java.util.*;
 @RestController
 @RequestMapping("")
 public class FollowController {
-  private ProfileRepository profileRepository;
-  private ActivityRepository activityRepository;
-  private ActivityRoleRepository activityRoleRepository;
-  private SubscriptionHistoryRepository subscriptionHistoryRepository;
-  private EmailRepository emailRepository;
+  private final ProfileRepository profileRepository;
+  private final ActivityRepository activityRepository;
+  private final ActivityRoleRepository activityRoleRepository;
+  private final SubscriptionHistoryRepository subscriptionHistoryRepository;
+  private final EmailRepository emailRepository;
 
   /**
    * Constructor for FollowController class which gets the profile, email and role repository
@@ -55,8 +59,8 @@ public class FollowController {
   }
 
   /**
-   * Creates new subscription history row between user and activity and also adds a new activity
-   * role for user as a follower
+   * The user follows/subscribes to the activity. Creates new subscription history row between user
+   * and activity and also adds a new activity role for user as a follower
    *
    * @param profileId id of the user subscribing
    * @param activityId id of the activity being subscribed to
@@ -64,8 +68,9 @@ public class FollowController {
    * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
    */
   @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-  public ResponseEntity<String> followAndSubscribeToActivity(
+  public ResponseEntity<String> subscribeToActivity(
       @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+
     // Check Authorisation
     ResponseEntity<String> authorisedResponse =
         UserSecurityService.checkAuthorised(profileId, session, profileRepository);
@@ -74,9 +79,7 @@ public class FollowController {
     }
 
     Profile profile = profileRepository.findById(profileId);
-    if (profile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
+
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
@@ -84,12 +87,14 @@ public class FollowController {
 
     // Check if already subscribed
     if (!subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty()) {
-      return new ResponseEntity<>("User already follows this activity", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(
+          "User already subscribed to this activity", HttpStatus.BAD_REQUEST);
     }
 
     Activity activity = optionalActivity.get();
 
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+    SubscriptionHistory subscriptionHistory =
+        new SubscriptionHistory(profile, activity, SubscribeMethod.SELF);
     subscriptionHistoryRepository.save(subscriptionHistory);
 
     if (activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId) == null) {
@@ -100,7 +105,7 @@ public class FollowController {
       activityRoleRepository.save(activityRole);
     }
 
-    return ResponseEntity.ok("User is now subscribed");
+    return ResponseEntity.ok("User is now subscribed to the activity");
   }
 
   /**
@@ -131,7 +136,10 @@ public class FollowController {
   }
 
   /**
-   * Unsubscribes user from activity
+   * The user unsubscribes themselves from the activity. Update their subscription history to have
+   * subscription end date time as now. The user's activity role is changed to ACCESS if the
+   * activity was restricted, and if the activity was public then the role is simply removed as all
+   * users have access to a public activity.
    *
    * @param profileId id of the user that is unsubscribing
    * @param activityId id of the activity being unsubscribed from
@@ -139,7 +147,7 @@ public class FollowController {
    * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
    */
   @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
-  public ResponseEntity<String> unfollowAndUnsubcribeFromActivity(
+  public ResponseEntity<String> unfollowAndUnsubscribeFromActivity(
       @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
     // Check Authorisation
     ResponseEntity<String> authorisedResponse =
@@ -172,16 +180,28 @@ public class FollowController {
 
     SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
     activeSubscription.setEndDateTime(LocalDateTime.now());
-
+    activeSubscription.setUnsubscribeMethod(UnsubscribeMethod.SELF);
     subscriptionHistoryRepository.save(activeSubscription);
+
+    List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
+    if (!activityRoles.isEmpty()) {
+      if (!activity.get().getVisibilityType().equals(VisibilityType.Public)) {
+        ActivityRole activityRole = activityRoles.get(0);
+        activityRole.setActivityRoleType(ActivityRoleType.Access);
+        activityRoleRepository.save(activityRole);
+      } else {
+        activityRoleRepository.delete(activityRoles.get(0));
+      }
+    }
 
     return ResponseEntity.ok("User unsubscribed from activity");
   }
 
   /**
-   * Endpoint for creator of the activity to set activity roles for a user. If user doesnt yet have
-   * a role and its they are given a role higher than access then it also subscribes them to the
-   * activity.
+   * Endpoint for creator of the activity to set activity roles for a user for their activity. If
+   * user does not have a role and they are given a role higher than access then it also subscribes
+   * them to the activity.
    *
    * @param profileId id of creator of activity
    * @param activityId if of activity
@@ -276,14 +296,15 @@ public class FollowController {
       }
     }
 
-    return new ResponseEntity("Activity role updated", HttpStatus.OK);
+    return new ResponseEntity("Activity role of user was updated", HttpStatus.OK);
   }
 
   /**
+   * Endpoint for creator of the activity to delete activity roles for a user from their activity.
    * To delete the activity role of the email in the request from the activity and deletes their
    * subscription
    *
-   * @param profileId the creator of the activity
+   * @param profileId the user who's subscription and role that is changing
    * @param activityId the id of the activity
    * @param request the request with the email to delete
    * @param session the session of the active user
@@ -343,6 +364,7 @@ public class FollowController {
 
       SubscriptionHistory activeSubscription = activeSubscriptions.get(0);
       activeSubscription.setEndDateTime(LocalDateTime.now());
+      activeSubscription.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
 
       subscriptionHistoryRepository.save(activeSubscription);
     }
@@ -407,7 +429,6 @@ public class FollowController {
     if (activeSubscriptions.isEmpty()) {
       return new ResponseEntity<>("User is not subscribed", HttpStatus.NOT_FOUND);
     }
-
 
     JSONObject obj = new JSONObject();
     obj.appendField("role", activityRole.getRole());
