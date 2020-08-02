@@ -253,28 +253,50 @@ public class FollowController {
         request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
     ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
     if (activityRoleFound == null) {
-      // Create activity role
+      // User doesn't have role.
       ActivityRole activityRole = new ActivityRole();
       activityRole.setProfile(roleProfile);
       activityRole.setActivity(activity);
       activityRole.setActivityRoleType(activityRoleType);
       activityRoleRepository.save(activityRole);
-      // Create Subscription history row
-      // Needs to check if only given access, if so then should not subscribe
-      List<SubscriptionHistory> optionalSubscription =
-          subscriptionHistoryRepository.findActive(activityId, profileId);
-      if (optionalSubscription.isEmpty()) {
-        SubscriptionHistory subscriptionHistory =
-            new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
-        subscriptionHistoryRepository.save(subscriptionHistory);
-        return new ResponseEntity(
-            "Activity role of user was created and user is now subscribed", HttpStatus.OK);
-      } else {
-        return new ResponseEntity("Activity role of user was created", HttpStatus.OK);
+      // If not access. Then we check and subscribe
+      if (!activityRoleType.equals(ActivityRoleType.Access)) {
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
       }
     } else {
-      activityRoleFound.setActivityRoleType(activityRoleType);
-      activityRoleRepository.save(activityRoleFound);
+      // User already has role.
+      if (!activityRoleFound.getActivityRoleType().equals(ActivityRoleType.Access)
+          && activityRoleType.equals(ActivityRoleType.Access)) {
+        // I am demoting them to access. Change role and unsubscribe
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        // Now unsubscribe
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (!optionalSubscription.isEmpty()) {
+          SubscriptionHistory activeSubscription = optionalSubscription.get(0);
+          activeSubscription.setEndDateTime(LocalDateTime.now());
+          activeSubscription.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+          subscriptionHistoryRepository.save(activeSubscription);
+        }
+      } else {
+        // User has access and now giving them a higher role
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
+      }
     }
 
     return new ResponseEntity("Activity role of user was updated", HttpStatus.OK);
@@ -402,7 +424,13 @@ public class FollowController {
     ActivityRole activityRole =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
     if (activityRole == null) {
-      return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+      return new ResponseEntity("User has no activity role", HttpStatus.NOT_FOUND);
+    }
+
+    List<SubscriptionHistory> activeSubscriptions =
+        subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+    if (activeSubscriptions.isEmpty()) {
+      return new ResponseEntity<>("User is not subscribed", HttpStatus.NOT_FOUND);
     }
 
     JSONObject obj = new JSONObject();
