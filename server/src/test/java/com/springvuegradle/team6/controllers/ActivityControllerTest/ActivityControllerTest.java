@@ -1736,4 +1736,60 @@ class ActivityControllerTest {
 
     Assert.assertEquals(0, activityRoleRepository.findMembersCount(activityId, 4));
   }
+
+  @Test
+  void includingAccessorsWhenMakingPrivateReturnsBadRequest() throws Exception {
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTime("2000-04-28T15:50:41+1300");
+    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile1);
+    subscriptionHistory.setStartDateTime(LocalDateTime.now());
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String removeAccess =
+            "{\n" +
+                    "  \"visibility\": \"private\",\n" +
+                    "  \"accessors\":[ \n" +
+                    "  \"example1@email.com\"\n" +
+                    "  ]\n" +
+                    "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                    .content(removeAccess)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isBadRequest());
+    
+  }
 }
