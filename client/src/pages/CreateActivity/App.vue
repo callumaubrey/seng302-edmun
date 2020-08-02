@@ -1,6 +1,7 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
+        <Notification></Notification>
         <div class="container">
             <b-container fluid>
                 <b-row>
@@ -178,7 +179,7 @@
                         </b-col>
                     </b-row>
                     <b-row>
-                        <b-col >
+                        <b-col>
                             <label>Select sharing</label>
                             <b-form-select v-model=selectedVisibility :options="options" size="sm"/>
                             <br><br>
@@ -191,7 +192,7 @@
                             <b-button type="submit" variant="primary">Submit</b-button>
                         </b-col>
                         <b-col sm="2">
-                            <b-button @click="goToActivities">Your Activities</b-button>
+                            <b-button @click="goToActivitiesList">Your Activities</b-button>
                         </b-col>
                     </b-row>
 
@@ -216,6 +217,7 @@
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
+    import {store} from "../../store";
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -254,9 +256,9 @@
                 },
                 selectedVisibility: 'Public',
                 options: [
-                    { value: 'Private', text: 'Private' },
-                    { value: 'Restricted', text: 'Restricted' },
-                    { value: 'Public', text: 'Public' }
+                    {value: 'Private', text: 'Private'},
+                    {value: 'Restricted', text: 'Restricted'},
+                    {value: 'Public', text: 'Public'}
                 ],
 
             }
@@ -450,7 +452,7 @@
                         .then(function () {
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            currentObj.$router.push('/profiles/' + currentObj.profileId + '/activities');
+                            currentObj.goToActivitiesList();
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
@@ -477,7 +479,7 @@
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
                             alert(currentObj.form.name + " was successfully added to your list of activities");
-                            currentObj.goToActivities();
+                            currentObj.goToActivitiesList();
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
@@ -538,9 +540,10 @@
                     .catch(function () {
                     });
             },
-            goToActivities() {
+            goToActivitiesList() {
                 const profileId = this.$route.params.id;
-                this.$router.push('/profiles/' + profileId + '/activities');
+                store.newNotification('Activity created successfully', 'success', 4)
+                this.$router.push('/profiles/' + profileId + '/activities/');
             },
             checkAuthorized: async function () {
                 let currentObj = this;
@@ -555,10 +558,9 @@
                     .catch(function () {
                     });
             },
-            onChildClick: function(val) {
-               this.selectedVisibility = val
+            onChildClick: function (val) {
+                this.selectedVisibility = val
             }
-
 
 
         },
