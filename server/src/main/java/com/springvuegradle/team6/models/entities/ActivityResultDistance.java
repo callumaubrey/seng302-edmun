@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("1")
 public class ActivityResultDistance extends ActivityResult {
 
-  @Column(name = "result")
+  @Column(name = "distance_result")
   private float result;
 
   public ActivityResultDistance(

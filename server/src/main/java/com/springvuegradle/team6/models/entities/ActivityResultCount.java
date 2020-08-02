@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("0")
 public class ActivityResultCount extends ActivityResult {
 
-  @Column(name = "result")
+  @Column(name = "count_result")
   private Integer result;
 
   public ActivityResultCount(

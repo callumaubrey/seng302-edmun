@@ -13,7 +13,7 @@ import javax.persistence.Entity;
 public class ActivityResultDuration extends ActivityResult {
 
   // duration in terms of seconds
-  @Column(name = "result")
+  @Column(name = "duration_result")
   private Duration result;
 
   public ActivityResultDuration(

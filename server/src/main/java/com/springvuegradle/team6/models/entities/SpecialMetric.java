@@ -1,5 +1,5 @@
 package com.springvuegradle.team6.models.entities;
 
-public enum OtherUnit {
+public enum SpecialMetric {
   Disqualified, TechnicalFailure, DidNotFinish
 }
