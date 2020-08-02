@@ -749,7 +749,8 @@ public class ActivityController {
   /**
    * Get all activity that a user has created by their userID that is not archived. No activities
    * that are private should be returned unless the user is either an admin or the creator of the
-   * activity. It should also return all restricted activities that
+   * activity. It should also return all restricted activities that the requesting user has access
+   * to.
    *
    * @param profileId The id of the user profile
    * @param session The session of the current user logged in
