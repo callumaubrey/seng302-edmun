@@ -450,7 +450,7 @@
                         .then(function () {
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            currentObj.$router.push('/profiles/' + currentObj.profileId + '/activities/');
+                            currentObj.$router.push('/profiles/' + currentObj.profileId + '/activities');
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
