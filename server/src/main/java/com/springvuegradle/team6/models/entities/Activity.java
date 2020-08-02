@@ -106,6 +106,9 @@ public class Activity {
   @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
 
+  @OneToMany(mappedBy = "activity")
+  private List<ActivityQualificationMetrics> activityQualificationMetrics;
+
   public String getActivityName() {
     return activityName;
   }

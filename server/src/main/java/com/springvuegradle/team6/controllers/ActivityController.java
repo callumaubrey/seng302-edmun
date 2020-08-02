@@ -9,6 +9,7 @@ import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
 import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
@@ -50,6 +51,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * This controller contains end points related to getting, creating, editing and deleting the
+ * activity.
+ */
 @CrossOrigin(
     origins = {
       "http://localhost:9000",
@@ -471,7 +476,8 @@ public class ActivityController {
 
     activityRepository.save(activity);
 
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+    SubscriptionHistory subscriptionHistory =
+        new SubscriptionHistory(profile, activity, SubscribeMethod.SELF);
 
     subscriptionHistoryRepository.save(subscriptionHistory);
 

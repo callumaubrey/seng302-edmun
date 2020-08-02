@@ -188,36 +188,31 @@ public class FollowControllerTest {
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is2xxSuccessful());
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
 
-    String loginJson = "{\n"
-            + "  \"email\": \"poly@pocket.com\",\n"
-            + "  \"password\": \"Password1\"\n"
-            + "}";
+    String loginJson =
+        "{\n" + "  \"email\": \"poly@pocket.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
     mvc.perform(
-            MockMvcRequestBuilders.post(
-                    "/login")
-                    .content(loginJson)
+            MockMvcRequestBuilders.post("/login")
+                .content(loginJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+
+    String subscriberJson = "{\n" + "  \"email\": \"poly2@pocket.com\"\n" + "}";
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + id + "/activities/" + activityId + "/subscriber")
+                    .content(subscriberJson)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
-            .andExpect(status().is2xxSuccessful());
-
-    String subscriberJson = "{\n"
-            + "  \"email\": \"poly2@pocket.com\"\n"
-            + "}";
-    String response =
-            mvc.perform(
-                    MockMvcRequestBuilders.get(
-                            "/profiles/" + id + "/activities/" + activityId + "/subscriber")
-                            .content(subscriberJson)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals("follower", obj.get("role"));
@@ -264,22 +259,19 @@ public class FollowControllerTest {
     profile = profileRepository.save(profile);
 
     String profileJson =
-            "{\n"
-                    + "  \"email\": \"doe@email.com\",\n"
-                    + "  \"password\": \"Password1\"\n"
-            + "}";
+        "{\n" + "  \"email\": \"doe@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
     mvc.perform(
-            MockMvcRequestBuilders.post(
-                    "/login")
-                    .content(profileJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+            MockMvcRequestBuilders.post("/login")
+                .content(profileJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     Optional<Activity> activity = activityRepository.findById(activityId);
     activity.get().setVisibilityType(VisibilityType.Restricted);
     activityRepository.save(activity.get());
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity.get());
+    SubscriptionHistory subscriptionHistory =
+        new SubscriptionHistory(profile, activity.get(), SubscribeMethod.SELF);
     subscriptionHistoryRepository.save(subscriptionHistory);
 
     ActivityRole activityRole = new ActivityRole();
@@ -291,13 +283,15 @@ public class FollowControllerTest {
     mvc.perform(
             MockMvcRequestBuilders.delete(
                     "/profiles/" + profile.getId() + "/subscriptions/activities/" + activityId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is2xxSuccessful());
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
 
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
+    List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
     ActivityRole activityRoleFound = activityRoles.get(0);
-    org.junit.jupiter.api.Assertions.assertEquals("Access", activityRoleFound.getActivityRoleType().toString());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "Access", activityRoleFound.getActivityRoleType().toString());
   }
 
   @Test
@@ -312,20 +306,17 @@ public class FollowControllerTest {
     profile = profileRepository.save(profile);
 
     String profileJson =
-            "{\n"
-                    + "  \"email\": \"doe@email.com\",\n"
-                    + "  \"password\": \"Password1\"\n"
-                    + "}";
+        "{\n" + "  \"email\": \"doe@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
     mvc.perform(
-            MockMvcRequestBuilders.post(
-                    "/login")
-                    .content(profileJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+            MockMvcRequestBuilders.post("/login")
+                .content(profileJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     Optional<Activity> activity = activityRepository.findById(activityId);
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity.get());
+    SubscriptionHistory subscriptionHistory =
+        new SubscriptionHistory(profile, activity.get(), SubscribeMethod.SELF);
     subscriptionHistoryRepository.save(subscriptionHistory);
 
     ActivityRole activityRole = new ActivityRole();
@@ -337,11 +328,12 @@ public class FollowControllerTest {
     mvc.perform(
             MockMvcRequestBuilders.delete(
                     "/profiles/" + profile.getId() + "/subscriptions/activities/" + activityId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is2xxSuccessful());
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
 
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
+    List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
     org.junit.jupiter.api.Assertions.assertEquals(0, activityRoles.size());
   }
 
