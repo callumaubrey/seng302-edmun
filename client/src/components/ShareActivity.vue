@@ -38,7 +38,7 @@
 
                     <b-col style="size: auto">
                         <br>
-                        <follower-user-list :activity-id=activityId :logged-in-id=profileId :activity-creator-id="profileId" style="size: auto"></follower-user-list>
+                        <restricted-user-list></restricted-user-list>
                     </b-col>
                 </b-row>
             </b-modal>
@@ -49,11 +49,11 @@
 
 <script>
     import api from '@/Api'
-    import FollowerUserList from "./Activity/FollowerUserList";
+    import RestrictedUserList from "./Activity/RestrictedUserList";
     export default {
 
         name: "ShareActivity",
-        components: {FollowerUserList},
+        components: {RestrictedUserList},
         props: {
             profileId: String,
             activityId: String,
@@ -79,7 +79,7 @@
                 partCount:null,
                 organiserCount:null,
                 followerCount:null,
-
+                moreRestrictive: false
             }
         },
         methods: {
