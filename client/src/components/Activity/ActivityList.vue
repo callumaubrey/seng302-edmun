@@ -17,6 +17,10 @@
         </b-row>
 
 
+        <!-- Error Message -->
+        <h2 v-if='show_error_message' class="text-danger text-center">
+            {{error_message}}
+        </h2>
 
         <!-- Activity List -->
         <b-card v-for="activity in filtered_activity_data" :key="activity.id"
@@ -111,7 +115,7 @@
                     this.activity_data = res.data;
                 }).catch(() => {
                     this.show_error_message = true;
-                    this.error_message = "Could not load activity data. Try again later";
+                    this.error_message = "Could not load activities. Try again later.";
                 })
             },
 

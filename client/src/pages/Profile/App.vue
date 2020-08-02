@@ -85,6 +85,21 @@
                                 </b-col>
                             </b-row>
                         </b-card>
+
+                        <b-card style="margin: 1em" title="Intrested In:">
+                            <b-row>
+                                <b-col>
+                                    <p>
+                                    <ul>
+                                        <li :key="item" v-for="item in activities">
+                                            {{ item }}
+                                        </li>
+                                    </ul>
+                                    </p>
+                                </b-col>
+                            </b-row>
+                        </b-card>
+
                     </b-tab>
 
                     <b-tab title="Location Info">
@@ -102,28 +117,13 @@
                             </b-col>
                         </b-card>
                     </b-tab>
-                    <b-tab title="Activity Info">
-                        <b-card style="margin: 1em" title="Activity Info:">
-                            <b-row>
-                                <b-col><b>Activity Types</b></b-col>
-                                <b-col>
-                                    <p>
-                                    <ul>
-                                        <li :key="item" v-for="item in activities">
-                                            {{ item }}
-                                        </li>
-                                    </ul>
-                                    </p>
-                                </b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col>
-                                    <b-link @click="goToActivities">Click Here to view {{userData.firstname}}'s
-                                        Activities
-                                    </b-link>
-                                </b-col>
-                            </b-row>
-                        </b-card>
+                    <b-tab style="margin: 1em" title="Activities">
+
+                        <b-row>
+                            <b-col>
+                                <ActivityList :user_id="parseInt(this.$route.params.id)"></ActivityList>
+                            </b-col>
+                        </b-row>
 
                     </b-tab>
                 </b-tabs>
@@ -140,10 +140,12 @@
     import AdminSideBar from "@/components/AdminSideBar.vue"
     import AdminMixin from "../../mixins/AdminMixin";
     import {store} from "../../store";
+    import ActivityList from "../../components/Activity/ActivityList";
 
     const App = {
         name: 'App',
         components: {
+            ActivityList,
             NavBar,
             AdminSideBar
         },
