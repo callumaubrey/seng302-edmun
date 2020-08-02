@@ -821,12 +821,14 @@ public class ActivityController {
 
     List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
     if (activityRoles.size() > 0) {
-      for (var i = 0; i < activityRoles.size(); i++) {
-        Profile profile = activityRoles.get(i).getProfile();
-        if ((!(request.getEmails().contains(profile.getPrimaryEmail().getAddress()))) && activityRoles.get(i).getActivityRoleType() != ActivityRoleType.Creator) {
-          activityRoleRepository.delete(activityRoles.get(i));
+      for (ActivityRole activityRole : activityRoles) {
+        Profile profile = activityRole.getProfile();
+        if (!request.getEmails().contains(profile.getPrimaryEmail().getAddress())
+            && !activityRole.getActivityRoleType().equals(ActivityRoleType.Creator)) {
+          activityRoleRepository.delete(activityRole);
           if (!request.getVisibility().equals("public")) {
-            List<SubscriptionHistory> subHistory = subscriptionHistoryRepository.findActive(activityId, profile.getId());
+            List<SubscriptionHistory> subHistory =
+                subscriptionHistoryRepository.findActive(activityId, profile.getId());
             if (subHistory.size() > 0) {
               subHistory.get(0).setEndDateTime(LocalDateTime.now());
               subscriptionHistoryRepository.save(subHistory.get(0));
