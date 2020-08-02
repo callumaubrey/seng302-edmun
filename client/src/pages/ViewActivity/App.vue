@@ -184,7 +184,7 @@
             },
             deleteActivity() {
                 // double check for if user clicks button when hidden.
-                if (parseInt(this.profileId) === parseInt(this.loggedInId)) {
+                if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
                     if (!confirm("Are you sure you want to delete this activity?")) {
                         return;
                     }
@@ -201,11 +201,8 @@
             editActivity() {
                 let profileId = this.$route.params.id;
                 let activityId = this.$route.params.activityId;
-                // double check for it somehow user clicks edit button when hidden.
-                console.log("profile Id: " + this.profileId);
-                console.log("loggedin Id: " + this.loggedInId);
 
-                if (parseInt(this.profileId) === parseInt(this.loggedInId)) {
+                if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
                     this.$router.push(
                         "/profiles/" + profileId + "/activities/" + activityId + "/edit"
                     );

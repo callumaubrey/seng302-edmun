@@ -24,6 +24,8 @@ export default {
 
     createActivity: (profileId, data) => instance.post('/profiles/' + profileId + '/activities', data),
 
+    subscribeToActivity: (userId, activityId) => instance.post('/profiles/' + userId + '/subscriptions/activities/' + activityId),
+
     // (R)ead
 
     getProfileRoles: () => instance.get('/profiles/role'),
@@ -60,12 +62,13 @@ export default {
 
     getAdminRole: (profileId) => instance.get('/admin/role/' + profileId),
 
-    getActivitiesByHashtag: (hashtag) => instance.get('/hashtag/' +hashtag),
+    getActivitiesByHashtag: (hashtag) => instance.get('/activities/hashtag/' +hashtag),
 
     getActivityCreatorId: (activityId) => instance.get('/activities/' + activityId + '/creatorId'),
 
-    getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
+    getIsSubscribed: (userId, activityId) => instance.get('/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
+        getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
@@ -97,5 +100,9 @@ export default {
     deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId),
 
     removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
+
+    removeLocation: (profileId) => instance.delete('/profiles/' + profileId + '/location'),
+    
+    unsubscribeToActivity: (userId, activityId) => instance.delete('/profiles/' + userId + '/subscriptions/activities/' + activityId)
 
 }

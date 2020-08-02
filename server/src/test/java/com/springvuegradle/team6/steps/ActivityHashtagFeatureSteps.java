@@ -38,7 +38,6 @@ public class ActivityHashtagFeatureSteps {
 
   @Autowired private MockMvc mvc;
 
-
   @Given("there are no activities in the database")
   public void there_are_no_activities_in_the_database() {
     List<Activity> activities = activityRepository.findAll();
@@ -135,14 +134,13 @@ public class ActivityHashtagFeatureSteps {
                 .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
     System.out.println(activityId);
-
   }
 
   @When("I search for activity by hashtag {string}")
   public void i_search_for_activity_by_hashtag(String hashtag) throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/" + hashtag)
+                MockMvcRequestBuilders.get("/activities/hashtag/" + hashtag)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(loginSteps.session))
             .andExpect(status().is2xxSuccessful())
@@ -201,7 +199,8 @@ public class ActivityHashtagFeatureSteps {
   public void i_search_for_hashtag(String string) throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=" + string, loginSteps.profileId)
+                MockMvcRequestBuilders.get(
+                        "/hashtag/autocomplete?hashtag=" + string, loginSteps.profileId)
                     .session(loginSteps.session))
             .andExpect(status().isOk())
             .andReturn()
