@@ -553,9 +553,9 @@ public class ActivityController {
    */
    void editActivityVisibilityHandling(EditActivityRequest request, Activity activity) {
 
-    if (request.visibility == "public" && activity.getVisibilityType() != VisibilityType.Public) {
+    if (activity.getVisibilityType() == VisibilityType.Restricted && request.visibility == "public") {  //access roles dont need to exist if going from restricted to public
       activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
-    } else {
+    } else if (!(activity.getVisibilityType() == VisibilityType.Public && request.visibility == "public") && !(activity.getVisibilityType() == VisibilityType.Restricted && request.visibility == "restricted")) { //This checks if there was no change in visibility.
       activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
       subscriptionHistoryRepository.unSubscribeAllButCreator(activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
     }
