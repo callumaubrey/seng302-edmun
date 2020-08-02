@@ -896,13 +896,6 @@ public class ActivityController {
       activity.setVisibilityTypeByString(request.getVisibility());
       activityRepository.save(activity);
 
-      // This checks if new visibility type is private, if so deletes all activity roles of the
-      // activity except the owner.
-//      if (activity.getVisibilityType() == VisibilityType.Private) {
-//        activityRoleRepository.deleteAllActivityRolesExceptOwner(
-//            activity.getId(), activity.getProfile().getId());
-//      }
-
       return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
