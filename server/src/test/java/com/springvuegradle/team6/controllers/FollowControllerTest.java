@@ -1159,28 +1159,18 @@ public class FollowControllerTest {
     Set<Email> email1 = new HashSet<Email>();
     email1.add(new Email("example@email.com"));
     profile1.setEmails(email1);
-    profileRepository.save(profile1);
+    profile1 = profileRepository.save(profile1);
 
-    String activityJson =
-        "{\n"
-            + "  \"activity_name\": \"asdasdasd\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Run\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true\n"
-            + "}";
-    // Creates an activity
-    String activityBody =
-        mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    int activityId = Integer.parseInt(activityBody);
+    Activity activity = new Activity();
+    activity.setActivityName("asdasdadsads");
+    activity.setDescription("a big nice race on a lovely asda");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(otherId));
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
 
     String jsonString =
         "{\n"
@@ -1211,9 +1201,11 @@ public class FollowControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
-
     JSONObject result = new JSONObject(response);
     Assert.assertEquals("organiser", result.getString("role"));
+
+    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    Assert.assertEquals(1, active.size());
   }
 
   @Test
@@ -1226,26 +1218,16 @@ public class FollowControllerTest {
     profile1.setEmails(email1);
     profileRepository.save(profile1);
 
-    String activityJson =
-        "{\n"
-            + "  \"activity_name\": \"asdasdasd\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Run\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true\n"
-            + "}";
-    // Creates an activity
-    String activityBody =
-        mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    int activityId = Integer.parseInt(activityBody);
+    Activity activity = new Activity();
+    activity.setActivityName("asdasdadsads");
+    activity.setDescription("a big nice race on a lovely asda");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(otherId));
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
 
     String jsonString =
         "{\n"
@@ -1294,6 +1276,9 @@ public class FollowControllerTest {
             .getContentAsString();
 
     Assert.assertEquals("User is not subscribed", response);
+
+    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    Assert.assertEquals(0, active.size());
   }
 
   @Test
@@ -1306,26 +1291,16 @@ public class FollowControllerTest {
     profile1.setEmails(email1);
     profileRepository.save(profile1);
 
-    String activityJson =
-        "{\n"
-            + "  \"activity_name\": \"asdasdasd\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Run\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true\n"
-            + "}";
-    // Creates an activity
-    String activityBody =
-        mvc.perform(
-                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", otherId)
-                    .content(activityJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    int activityId = Integer.parseInt(activityBody);
+    Activity activity = new Activity();
+    activity.setActivityName("asdasdadsads");
+    activity.setDescription("a big nice race on a lovely asda");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(otherId));
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
 
     String jsonString =
         "{\n"
@@ -1375,6 +1350,9 @@ public class FollowControllerTest {
 
     JSONObject result = new JSONObject(response);
     Assert.assertEquals("participant", result.getString("role"));
+
+    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    Assert.assertEquals(1, active.size());
   }
 
   @Disabled
