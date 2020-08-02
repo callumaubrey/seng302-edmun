@@ -33,17 +33,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
   List<Activity> findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
       Integer profile_id, VisibilityType visibilityType);
 
-  List<Activity> findByTags_NameOrderByCreationDateDesc(String name);
-  /**
-   * Used for searching activities by hash-tag returning
-   * only activities which are not archived. Results are ordered
-   * by creationDate.
-   *
-   * @param name tag name to search for
-   * @return list of not archived activities
-   */
-  List<Activity> findByTags_NameAndArchivedIsFalseOrderByCreationDateDesc(String name);
-
   List<Activity> findAll();
 
   Activity findByActivityName(String activityName);
@@ -67,8 +56,8 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
   @Query(
       value =
           "select * from activity a left join activity_tags b on a.id = b.activity_id"
-              + " left join tag t on b.tag_id = t.id left join activity_role r on a.id = r.activity_id and a.archived is FALSE"
-              + " and r.profile_id = :profileId WHERE t.name = :hashtagName and"
+              + " left join tag t on b.tag_id = t.id left join activity_role r on a.id = r.activity_id"
+              + " and r.profile_id = :profileId WHERE t.name = :hashtagName and a.archived = 0 and"
               + " (a.visibility_type = 0 or a.author_id = :profileId or r.profile_id = :profileId)"
               + " order by a.creation_date desc",
       nativeQuery = true)

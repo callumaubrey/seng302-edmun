@@ -334,7 +334,7 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/myrun")
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -385,7 +385,7 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/myrun")
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
