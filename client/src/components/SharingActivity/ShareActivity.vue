@@ -38,7 +38,7 @@
 
                     <b-col style="size: auto">
                         <br>
-                        <restricted-user-list></restricted-user-list>
+                        <restricted-user-tabs></restricted-user-tabs>
                     </b-col>
                 </b-row>
             </b-modal>
@@ -49,11 +49,11 @@
 
 <script>
     import api from '@/Api'
-    import RestrictedUserList from "./Activity/RestrictedUserList";
+    import RestrictedUserTabs from "./RestrictedUsersTabs";
     export default {
 
         name: "ShareActivity",
-        components: {RestrictedUserList},
+        components: {RestrictedUserTabs},
         props: {
             profileId: String,
             activityId: String,
