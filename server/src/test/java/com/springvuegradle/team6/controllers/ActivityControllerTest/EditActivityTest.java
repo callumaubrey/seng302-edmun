@@ -824,5 +824,89 @@ class EditActivityTest {
     Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
 
   }
+
+  @Test
+  void testEditActivityWithMaxNameLengthReturnIsOK() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH) + "\",\n"
+                    + "  \"description\": \"A new description\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Run\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void testEditActivityWithInvalidNameLengthReturnIsBadRequest() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH + 1) + "\",\n"
+                    + "  \"description\": \"A new description\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Run\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testEditActivityWithMaxDescriptionLengthReturnIsOK() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Changed activity name\",\n"
+                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH) + "\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Run\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void testEditActivityWithInvalidDescriptionLengthReturnIsBadRequest() throws Exception {
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Changed activity name\",\n"
+                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1) + "\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Run\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": true\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
 }
 

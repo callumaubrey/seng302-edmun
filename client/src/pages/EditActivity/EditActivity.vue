@@ -133,6 +133,7 @@
                                         id="name-input"
                                         name="name-input"
                                         v-model="$v.form.name.$model"
+                                        maxlength=128
                                 ></b-form-input>
                                 <b-form-invalid-feedback id="name-feedback">This is a required field.
                                 </b-form-invalid-feedback>
@@ -150,6 +151,7 @@
                                         name="description-input"
                                         placeholder="How did it go?"
                                         v-model="$v.form.description.$model"
+                                        maxlength=2048
                                 ></b-form-textarea>
                                 <b-form-invalid-feedback id="name-feedback">This is a required field.
                                 </b-form-invalid-feedback>
