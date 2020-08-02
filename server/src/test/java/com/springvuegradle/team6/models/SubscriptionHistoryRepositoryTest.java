@@ -3,6 +3,7 @@ package com.springvuegradle.team6.models;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
 import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -55,7 +56,8 @@ class SubscriptionHistoryRepositoryTest {
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.now());
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     Profile profile1 = profileRepository.findByEmailsContains(email);
     Set<SubscriptionHistory> subscriptionHistories =
@@ -63,7 +65,6 @@ class SubscriptionHistoryRepositoryTest {
     org.junit.jupiter.api.Assertions.assertEquals(1, subscriptionHistories.size());
   }
 
-  @Disabled
   @Test
   void testSingleSubscriptionFindByActivity() {
     Set<Email> emails = new HashSet<>();
@@ -88,7 +89,8 @@ class SubscriptionHistoryRepositoryTest {
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.now());
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     Profile profile1 = profileRepository.findByEmailsContains(email);
     Set<SubscriptionHistory> subscriptionHistories =
