@@ -10,7 +10,7 @@
                         <b-form-text>Click on an activity to view more information on the activity</b-form-text>
                     </b-col>
                     <b-col sm="1">
-                        <b-button v-if="profileId === loggedinId" align="right" @click="goToCreateActivity"> Create
+                        <b-button v-if="profileId === loggedinId || loggedInIsAdmin" align="right" @click="goToCreateActivity"> Create
                         </b-button>
                     </b-col>
                 </b-row>
@@ -24,6 +24,7 @@
     import NavBar from "@/components/NavBar.vue"
     import ActivityList from "@/components/ActivityList.vue";
     import api from "@/Api"
+    import AdminMixin from "../../mixins/AdminMixin";
 
     const List = {
         name: 'List',
@@ -40,7 +41,8 @@
                 profileName: '',
                 userName: '',
                 items: [],
-                fields: ['activityName', 'description', 'activityTypes']
+                fields: ['activityName', 'description', 'activityTypes'],
+                loggedInIsAdmin: false,
             }
         },
         methods: {
@@ -92,15 +94,19 @@
             },
             goToCreateActivity: function () {
                 // double check, if user somehow clicks create button when hidden.
-                if (parseInt(this.profileId) === parseInt(this.loggedinId)) {
+                if (parseInt(this.profileId) === parseInt(this.loggedinId) || this.loggedInIsAdmin) {
                     this.$router.push('/profiles/' + this.profileId + '/activities/create');
                 }
-            }
+            },
+            checkIsAdmin: async function () {
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+            },
         },
         beforeMount() {
             this.getProfileIdAndName();
             this.getLoggedInId();
             this.getLoggedInName();
+            this.checkIsAdmin();
         },
         mounted() {
         },
