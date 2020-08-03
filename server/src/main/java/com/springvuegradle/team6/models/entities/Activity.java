@@ -1,14 +1,25 @@
 package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.validation.constraints.Size;
 
 @Entity
 public class Activity {
@@ -30,6 +41,22 @@ public class Activity {
     this.creationDate = LocalDateTime.now();
   }
 
+  @Size(max = NAME_MAX_LENGTH)
+  @Column(length = NAME_MAX_LENGTH)
+  private String activityName;
+
+  @Id
+  @GeneratedValue
+  @Column(name = "id")
+  private Integer id;
+
+  @ManyToOne
+  @JoinColumn(name = "author_id", nullable = false)
+  private Profile profile;
+  @Size(max = DESCRIPTION_MAX_LENGTH)
+  @Column(length = DESCRIPTION_MAX_LENGTH)
+  private String description;
+
   public Activity(CreateActivityRequest request, Profile profile) {
     this.profile = profile;
     this.activityName = request.activityName;
@@ -44,8 +71,9 @@ public class Activity {
     }
 
     if (request.location != null) {
-      this.location = new NamedLocation(
-          request.location.country, request.location.state, request.location.city);
+      this.location =
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
     }
     if (request.visibility != null) {
       setVisibilityTypeByString(request.visibility);
@@ -53,23 +81,6 @@ public class Activity {
       this.visibilityType = VisibilityType.Public;
     }
   }
-
-  @Id
-  @GeneratedValue
-  @Column(name = "id")
-  private Integer id;
-
-  @ManyToOne
-  @JoinColumn(name = "author_id", nullable = false)
-  private Profile profile;
-
-  @Size(max=NAME_MAX_LENGTH)
-  @Column(length=NAME_MAX_LENGTH)
-  private String activityName;
-
-  @Size(max=DESCRIPTION_MAX_LENGTH)
-  @Column(length=DESCRIPTION_MAX_LENGTH)
-  private String description;
 
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
@@ -212,6 +223,14 @@ public class Activity {
 
   public void setVisibilityType(VisibilityType visibilityType) {
     this.visibilityType = visibilityType;
+  }
+
+  public List<ActivityQualificationMetrics> getMetrics() {
+    return this.activityQualificationMetrics;
+  }
+
+  public void setMetrics(List<ActivityQualificationMetrics> metrics) {
+    this.activityQualificationMetrics = metrics;
   }
 
   @Override
