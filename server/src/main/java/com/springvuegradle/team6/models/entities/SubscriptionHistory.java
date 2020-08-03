@@ -5,8 +5,13 @@ import java.time.LocalDateTime;
 
 /**
  * Entity to keep track of each time a subscription is change. Used to display this change on home
- * feed. Each time subscription state changes a new row is created with the current timestamp and
- * the current state of the subscription.
+ * feed. Each SubscriptionHistory has a start date time, end date time, subscribe method and
+ * unsubscribe method. When a subscription is made, the start date time is set to now and the
+ * subscribe method is mentioned. When a subscription is removed, the end date time of the
+ * subscription is set to now and unsubscribe method is mentioned.
+ *
+ * @see SubscribeMethod
+ * @see UnsubscribeMethod
  */
 @Entity
 public class SubscriptionHistory {
@@ -20,15 +25,17 @@ public class SubscriptionHistory {
   }
 
   /**
-   * Constructor taking the profile and activity involved in the subscription
-   * also sets start date to now
+   * Constructor taking the profile and activity involved in the subscription also sets start date
+   * to now
+   *
    * @param profile the profile that is subscribing to an activity
    * @param activity the activity being subscribed to
    */
-  public SubscriptionHistory(Profile profile, Activity activity) {
+  public SubscriptionHistory(Profile profile, Activity activity, SubscribeMethod subscribeMethod) {
     this.profile = profile;
     this.activity = activity;
     this.startDateTime = LocalDateTime.now();
+    this.subscribeMethod = subscribeMethod;
     this.endDateTime = null;
   }
 
@@ -51,6 +58,14 @@ public class SubscriptionHistory {
 
   @Column(name = "end_date_time")
   private LocalDateTime endDateTime;
+
+  /** The method of subscribing to the activity */
+  @Column(name = "subscribe_method", nullable = false)
+  private SubscribeMethod subscribeMethod;
+
+  /** The method of unsubscribing to the activity */
+  @Column(name = "unsubscribe_method")
+  private UnsubscribeMethod unsubscribeMethod;
 
   // ==========GETTERS==========
 
@@ -94,5 +109,21 @@ public class SubscriptionHistory {
 
   public void setEndDateTime(LocalDateTime endDateTime) {
     this.endDateTime = endDateTime;
+  }
+
+  public SubscribeMethod getSubscribeMethod() {
+    return subscribeMethod;
+  }
+
+  public void setSubscribeMethod(SubscribeMethod subscribeMethod) {
+    this.subscribeMethod = subscribeMethod;
+  }
+
+  public UnsubscribeMethod getUnsubscribeMethod() {
+    return unsubscribeMethod;
+  }
+
+  public void setUnsubscribeMethod(UnsubscribeMethod unsubscribeMethod) {
+    this.unsubscribeMethod = unsubscribeMethod;
   }
 }

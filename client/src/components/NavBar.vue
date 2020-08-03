@@ -20,7 +20,7 @@
                                 <b-form-select v-model="searchBy" :options="searchOptions"></b-form-select>
                             </template>
 
-                            <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
+                            <b-form-input @keydown.enter.native="search()" placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
                                 <b-button @click="search()">
@@ -141,10 +141,15 @@
                     .catch(function () {
                     });
             },
+
             search() {
-                if (this.searchQuery === '') return;
-                this.$router.push('/profiles?fullname=' + this.searchQuery);
+                if (this.searchQuery === '') {
+                    this.$router.push('/profiles');
+                } else {
+                    this.$router.push('/profiles?fullname=' + this.searchQuery);
+                }
             },
+
             switchAccessControl(value) {
                 mutations.switchAccessControl(value);
             }

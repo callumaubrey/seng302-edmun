@@ -1,10 +1,14 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
 import org.json.JSONArray;
@@ -43,9 +47,11 @@ public class TagControllerTest {
 
   @Autowired private ProfileRepository profileRepository;
 
-  private MockHttpSession session;
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private MockMvc mvc;
+
+  private MockHttpSession session;
 
   private int id;
 
@@ -116,7 +122,7 @@ public class TagControllerTest {
     tags.add(cold);
     tags.add(cool);
     activity.setTags(tags);
-    activity = activityRepository.save(activity);
+    activityRepository.save(activity);
 
     Activity activity1 = new Activity();
     activity1.setProfile(profile);
@@ -126,7 +132,7 @@ public class TagControllerTest {
     tags1.add(cold);
     tags1.add(colour);
     activity1.setTags(tags1);
-    activity1 = activityRepository.save(activity1);
+    activityRepository.save(activity1);
 
     Activity activity2 = new Activity();
     activity2.setProfile(profile);
@@ -137,7 +143,7 @@ public class TagControllerTest {
     tags2.add(awesome);
     tags2.add(cool);
     activity2.setTags(tags2);
-    activity2 = activityRepository.save(activity2);
+    activityRepository.save(activity2);
 
     String response =
         mvc.perform(
@@ -175,7 +181,7 @@ public class TagControllerTest {
       tags.add(tag);
     }
     activity.setTags(tags);
-    activity = activityRepository.save(activity);
+    activityRepository.save(activity);
 
     String response =
         mvc.perform(
@@ -199,7 +205,7 @@ public class TagControllerTest {
 
     Activity activity = new Activity();
     activity.setActivityName("Test");
-    Set<Tag> tags = new HashSet<Tag>();
+    Set<Tag> tags = new HashSet<>();
     tags.add(tag);
     activity.setTags(tags);
     activity.setContinuous(false);
@@ -260,7 +266,7 @@ public class TagControllerTest {
     Set<Tag> tags = new HashSet<>();
     tags.add(cold);
     activity.setTags(tags);
-    activity = activityRepository.save(activity);
+    activityRepository.save(activity);
 
     // Wait 1 second because sometimes the second activity has LocalDateTime.now() being earlier
     // than the previous activity
@@ -274,7 +280,7 @@ public class TagControllerTest {
     Set<Tag> tags1 = new HashSet<>();
     tags1.add(cold);
     activity1.setTags(tags1);
-    activity1 = activityRepository.save(activity1);
+    activityRepository.save(activity1);
 
     // Actual MVC response
     String response =
@@ -304,7 +310,7 @@ public class TagControllerTest {
 
     Activity activity = new Activity();
     activity.setActivityName("Test");
-    Set<Tag> tags = new HashSet<Tag>();
+    Set<Tag> tags = new HashSet<>();
     tags.add(tag);
     activity.setTags(tags);
     activity.setContinuous(false);
@@ -328,5 +334,80 @@ public class TagControllerTest {
             .getContentAsString();
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void testGetActivitiesByHashtagReturnStatusOkReturnRestrictedActivities() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("mista@seng302.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile otherProfile = new Profile();
+    otherProfile.setFirstname("Mista");
+    otherProfile.setLastname("Mista");
+    otherProfile.setEmails(emails);
+    otherProfile.setDob("1977-01-01");
+    otherProfile.setPassword("Password1");
+    otherProfile.setGender("male");
+    otherProfile = profileRepository.save(otherProfile);
+
+    Tag tag = new Tag();
+    tag.setName("myrun");
+    tagRepository.save(tag);
+
+    // Activity that is restricted and owned by user
+    Activity activity = new Activity();
+    activity.setActivityName("Test");
+    Set<Tag> tags = new HashSet<>();
+    tags.add(tag);
+    activity.setTags(tags);
+    activity.setContinuous(false);
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activityRepository.save(activity);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    // Activity that is restricted and owned by other user
+    Activity activity1 = new Activity();
+    activity1.setProfile(otherProfile);
+    activity1.setActivityName("Run at Avonhead Park");
+    activity1.setContinuous(true);
+    Set<Tag> tags1 = new HashSet<>();
+    tags1.add(tag);
+    activity1.setTags(tags);
+    activity1.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity1);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity1);
+    activityRole1.setProfile(otherProfile);
+    activityRole1.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole1);
+
+    ActivityRole activityRole2 = new ActivityRole();
+    activityRole2.setActivity(activity1);
+    activityRole2.setProfile(profile);
+    activityRole2.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole2);
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
   }
 }

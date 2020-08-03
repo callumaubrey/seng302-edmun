@@ -1,7 +1,10 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
-        <div class="container">
+        <div v-if="!authorised">
+            <ForbiddenMessage></ForbiddenMessage>
+        </div>
+        <div v-else class="container">
             <b-container fluid>
                 <b-row align-h="between">
                     <b-col>
@@ -130,6 +133,7 @@
                                         id="name-input"
                                         name="name-input"
                                         v-model="$v.form.name.$model"
+                                        maxlength=128
                                 ></b-form-input>
                                 <b-form-invalid-feedback id="name-feedback">This is a required field.
                                 </b-form-invalid-feedback>
@@ -147,6 +151,7 @@
                                         name="description-input"
                                         placeholder="How did it go?"
                                         v-model="$v.form.description.$model"
+                                        maxlength=2048
                                 ></b-form-textarea>
                                 <b-form-invalid-feedback id="name-feedback">This is a required field.
                                 </b-form-invalid-feedback>
@@ -193,6 +198,7 @@
 <script>
     import NavBar from "@/components/NavBar.vue";
     import SearchTag from "../../components/SearchTag";
+    import ForbiddenMessage from "../../components/ForbiddenMessage";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
     import locationMixin from "../../mixins/locationMixin";
@@ -203,7 +209,8 @@
         mixins: [validationMixin, locationMixin],
         components: {
             SearchTag,
-            NavBar
+            NavBar,
+            ForbiddenMessage
         },
         data() {
             return {
@@ -236,6 +243,7 @@
                     options: [],
                     values: []
                 },
+                authorised: true
             }
         },
         validations: {
@@ -518,10 +526,11 @@
                     .then(function (response) {
                         currentObj.profileId = response.data;
                         if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
-                            currentObj.$router.push("/login");
+                            currentObj.authorised = false
                         }
                     })
                     .catch(function () {
+                        currentObj.authorised = false
                     });
             },
             goToActivity: function () {
@@ -530,7 +539,6 @@
             onChildClick: function(val) {
                 this.selectedVisibility = val
             }
-
         },
         mounted: async function () {
             this.activityId = this.$route.params.activityId;

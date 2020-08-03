@@ -22,6 +22,7 @@
                 </b-col>
                 <b-col sm="2">
                     <b-button :disabled=isSearchButtonDisabled() class="float-right" @click.prevent="updateUrl()" v-on:click="searchUser()"
+                              @keydown.enter.native="searchUser()"
                               variant="light">Search
                     </b-button>
                 </b-col>

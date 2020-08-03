@@ -1,16 +1,32 @@
 package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.validation.constraints.Size;
 
 @Entity
 public class Activity {
+
+  // Constants
+  public static final int NAME_MAX_LENGTH = 128;
+  public static final int DESCRIPTION_MAX_LENGTH = 2048;
 
   /** This constructor is used for testing purposes only */
   public Activity() {
@@ -25,27 +41,9 @@ public class Activity {
     this.creationDate = LocalDateTime.now();
   }
 
-  public Activity(CreateActivityRequest request, Profile profile) {
-    this.profile = profile;
-    this.activityName = request.activityName;
-    this.description = request.description;
-    this.activityTypes = request.activityTypes;
-    this.tags = request.hashTags;
-    this.continuous = request.continuous;
-    if (!this.continuous) {
-      this.startTime = request.startTime;
-      this.endTime = request.endTime;
-    }
-    if (request.location != null) {
-      this.location = new NamedLocation(
-          request.location.country, request.location.state, request.location.city);
-    }
-    if (request.visibility != null) {
-      setVisibilityTypeByString(request.visibility);
-    } else {
-      this.visibilityType = VisibilityType.Public;
-    }
-  }
+  @Size(max = NAME_MAX_LENGTH)
+  @Column(length = NAME_MAX_LENGTH)
+  private String activityName;
 
   @Id
   @GeneratedValue
@@ -55,10 +53,34 @@ public class Activity {
   @ManyToOne
   @JoinColumn(name = "author_id", nullable = false)
   private Profile profile;
-
-  private String activityName;
-
+  @Size(max = DESCRIPTION_MAX_LENGTH)
+  @Column(length = DESCRIPTION_MAX_LENGTH)
   private String description;
+
+  public Activity(CreateActivityRequest request, Profile profile) {
+    this.profile = profile;
+    this.activityName = request.activityName;
+    this.description = request.description;
+    this.activityTypes = request.activityTypes;
+    this.tags = request.hashTags;
+    this.continuous = request.continuous;
+
+    if (!this.continuous) {
+      this.startTime = request.startTime;
+      this.endTime = request.endTime;
+    }
+
+    if (request.location != null) {
+      this.location =
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
+    }
+    if (request.visibility != null) {
+      setVisibilityTypeByString(request.visibility);
+    } else {
+      this.visibilityType = VisibilityType.Public;
+    }
+  }
 
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
@@ -94,6 +116,9 @@ public class Activity {
 
   @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
+
+  @OneToMany(mappedBy = "activity")
+  private List<ActivityQualificationMetrics> activityQualificationMetrics;
 
   public String getActivityName() {
     return activityName;
@@ -200,6 +225,14 @@ public class Activity {
     this.visibilityType = visibilityType;
   }
 
+  public List<ActivityQualificationMetrics> getMetrics() {
+    return this.activityQualificationMetrics;
+  }
+
+  public void setMetrics(List<ActivityQualificationMetrics> metrics) {
+    this.activityQualificationMetrics = metrics;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -213,6 +246,11 @@ public class Activity {
     Activity activity = (Activity) o;
 
     return this.id == activity.getId();
+  }
+
+  @Override
+  public int hashCode() {
+    return this.id;
   }
 
   public Collection<Profile> getSubscribers() {
