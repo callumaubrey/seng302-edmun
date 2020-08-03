@@ -449,10 +449,11 @@
                         visibility: this.selectedVisibility
                     };
                     api.createActivity(userId, data)
-                        .then(function () {
+                        .then(function (res) {
+                            const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            currentObj.$router.push('/profiles/' + userId + '/activities/');
+                            currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
@@ -474,11 +475,11 @@
                         end_time: isoDates[1]
                     };
                     api.createActivity(userId, data)
-                        .then(function (response) {
-                            console.log(response);
+                        .then(function (res) {
+                            const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            currentObj.$router.push('/profiles/' + userId + '/activities/');
+                            currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
