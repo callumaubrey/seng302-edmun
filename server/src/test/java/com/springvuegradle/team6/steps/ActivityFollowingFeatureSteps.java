@@ -1,11 +1,16 @@
 package com.springvuegradle.team6.steps;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +21,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
@@ -44,7 +43,7 @@ public class ActivityFollowingFeatureSteps {
 
   private String jsonString;
 
-  private String activityId;
+  public String activityId;
 
   @Given("I create an activity {string}")
   public void i_create_an_activity(String activityName) throws Exception {
