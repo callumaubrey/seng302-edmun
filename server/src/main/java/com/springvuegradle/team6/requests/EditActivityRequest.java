@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
 import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import java.util.List;
 import java.util.Set;
 import javax.validation.Valid;
@@ -55,27 +53,4 @@ public class EditActivityRequest {
 
   @JsonProperty("metrics")
   public List<ActivityQualificationMetrics> metrics;
-
-  public void editActivityFromRequest(
-      Activity activity, NamedLocationRepository locationRepository) {
-    activity.setActivityName(this.activityName);
-    activity.setDescription(this.description);
-    activity.setActivityTypes(this.activityTypes);
-    activity.setContinuous(this.continuous);
-    if (this.visibility != null) {
-      activity.setVisibilityTypeByString(this.visibility);
-    }
-    if (activity.isContinuous()) {
-      activity.setStartTime(null);
-      activity.setEndTime(null);
-    } else {
-      activity.setStartTime(this.startTime);
-      activity.setEndTime(this.endTime);
-    }
-    if (this.location != null) {
-      NamedLocation location =
-          new NamedLocation(this.location.country, this.location.state, this.location.city);
-      activity.setLocation(location);
-    }
-  }
 }
