@@ -1238,7 +1238,7 @@ class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
-  };
+  }
 
   @Test
   void getRestrictedActivityWithoutAccess() throws Exception {
@@ -1304,7 +1304,7 @@ class ActivityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
-  };
+  }
 
   @Test
   void putActivityVisibilityAdd() throws Exception {
