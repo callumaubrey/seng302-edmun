@@ -1,10 +1,30 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTest;
 
-import com.springvuegradle.team6.models.entities.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.transaction.Transactional;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,15 +41,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import javax.validation.constraints.AssertTrue;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,6 +63,9 @@ class EditActivityTest {
   @Autowired
   private ActivityRoleRepository activityRoleRepository;
 
+  @Autowired
+  private ActivityQualificationMetricsRepository activityQualificationMetricsRepository;
+
   private int id;
 
   private int activityId;
@@ -68,10 +82,10 @@ class EditActivityTest {
 
     // Logs in and get profile Id
     mvc.perform(
-            MockMvcRequestBuilders.post("/profiles")
-                .content(profileJson)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.post("/profiles")
+            .content(profileJson)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -112,11 +126,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(otherSession))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(otherSession))
         .andExpect(status().isUnauthorized());
   }
 
@@ -133,34 +147,36 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
   void editActivityAsAdminReturnStatusIsOk() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Changed activity name\",\n"
-                    + "  \"description\": \"A new description\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Changed activity name\",\n"
+            + "  \"description\": \"A new description\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -178,11 +194,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
   }
 
@@ -201,11 +217,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
   }
 
@@ -224,11 +240,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -247,11 +263,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -270,11 +286,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -293,11 +309,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk())
         .andDo(print());
   }
@@ -307,11 +323,11 @@ class EditActivityTest {
     String jsonString = "{\n" + "  \"activity_name\": \"Kaikoura Coast Track race\"\n" + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -335,11 +351,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
   }
 
@@ -360,11 +376,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -374,53 +390,55 @@ class EditActivityTest {
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
             + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                + "  \"activity_type\":[ \n"
-                + "    \"Walk\"\n"
-                + "  ],\n"
-                + "  \"continuous\": false,\n"
-                + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-                + " \"location\": {\n"
-                + " \t\"city\": \"Christchurch\",\n"
-                + " \t\"country\": \"New Zealand\"\n"
-                + "  }"
-                + "}";
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"city\": \"Christchurch\",\n"
+            + " \t\"country\": \"New Zealand\"\n"
+            + "  }"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
   void editActivityAsAdminLocationNoStateReturnStatusIsOk() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-                    + " \"location\": {\n"
-                    + " \t\"city\": \"Christchurch\",\n"
-                    + " \t\"country\": \"New Zealand\"\n"
-                    + "  }"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"city\": \"Christchurch\",\n"
+            + " \t\"country\": \"New Zealand\"\n"
+            + "  }"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -444,11 +462,11 @@ class EditActivityTest {
             + "  ]\n"
             + "}";
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
     Set<String> expectedResult = new HashSet<>();
 
@@ -470,33 +488,35 @@ class EditActivityTest {
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
   void editActivityAsAdminWithHashtagReturnStatusOKAndActivityIsUpdated() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
-                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
-                    + "  \"hashtags\": [\n"
-                    + "    \"#a1\",\n"
-                    + "    \"#a2\",\n"
-                    + "    \"#a3\",\n"
-                    + "    \"#a4\",\n"
-                    + "    \"#a5\"\n"
-                    + "  ]\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + "  \"hashtags\": [\n"
+            + "    \"#a1\",\n"
+            + "    \"#a2\",\n"
+            + "    \"#a3\",\n"
+            + "    \"#a4\",\n"
+            + "    \"#a5\"\n"
+            + "  ]\n"
+            + "}";
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
     Set<String> expectedResult = new HashSet<>();
 
     expectedResult.add("a1");
@@ -540,7 +560,7 @@ class EditActivityTest {
     ResultActions responseString =
         mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                "/profiles/{profileId}/activities/{activityId}", id, activityId)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
@@ -588,115 +608,128 @@ class EditActivityTest {
             + "    \"#a20\",\n"
             + "    \"#a21\",\n"
             + "    \"#a22\",\n"
-                + "    \"#a23\",\n"
-                + "    \"#a24\",\n"
-                + "    \"#a25\",\n"
-                + "    \"#a26\",\n"
-                + "    \"#a27\",\n"
-                + "    \"#a28\",\n"
-                + "    \"#a29\",\n"
-                + "    \"#a30\",\n"
-                + "    \"#a31\"\n"
-                + "  ]\n"
-                + "}";
+            + "    \"#a23\",\n"
+            + "    \"#a24\",\n"
+            + "    \"#a25\",\n"
+            + "    \"#a26\",\n"
+            + "    \"#a27\",\n"
+            + "    \"#a28\",\n"
+            + "    \"#a29\",\n"
+            + "    \"#a30\",\n"
+            + "    \"#a31\"\n"
+            + "  ]\n"
+            + "}";
     ResultActions responseString =
-            mvc.perform(
-                    MockMvcRequestBuilders.put(
-                            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session));
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
     responseString.andExpect(status().isBadRequest());
   }
 
   @Test
   void editActivityReturnStatusOkAndCreatesNewEntryOfActivityHistory() throws Exception {
-    Set<ActivityHistory> activityHistorySetBefore = activityHistoryRepository.findByActivity_id(activityId);
+    Set<ActivityHistory> activityHistorySetBefore =
+        activityHistoryRepository.findByActivity_id(activityId);
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Changed activity name\",\n"
-                    + "  \"description\": \"A new description\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Changed activity name\",\n"
+            + "  \"description\": \"A new description\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Set<ActivityHistory> activityHistorySetAfter = activityHistoryRepository.findByActivity_id(activityId);
-    org.junit.jupiter.api.Assertions.assertEquals(activityHistorySetBefore.size() + 1, activityHistorySetAfter.size());
+    Set<ActivityHistory> activityHistorySetAfter =
+        activityHistoryRepository.findByActivity_id(activityId);
+    org.junit.jupiter.api.Assertions.assertEquals(
+        activityHistorySetBefore.size() + 1, activityHistorySetAfter.size());
   }
 
   @Test
-  void editActivityWithNoChangesReturnStatusOkAndDoesNotCreateNewEntryOfActivityHistory() throws Exception {
-    // calls the edit activity endpoint with the same json twice to ensure there is no updates to the activity
+  void editActivityWithNoChangesReturnStatusOkAndDoesNotCreateNewEntryOfActivityHistory()
+      throws Exception {
+    // calls the edit activity endpoint with the same json twice to ensure there is no updates to
+    // the activity
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n" +
-                    "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Set<ActivityHistory> activityHistorySetBefore = activityHistoryRepository.findByActivity_id(activityId);
+    Set<ActivityHistory> activityHistorySetBefore =
+        activityHistoryRepository.findByActivity_id(activityId);
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
-    Set<ActivityHistory> activityHistorySetAfter = activityHistoryRepository.findByActivity_id(activityId);
-    org.junit.jupiter.api.Assertions.assertEquals(activityHistorySetBefore.size(), activityHistorySetAfter.size());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+    Set<ActivityHistory> activityHistorySetAfter =
+        activityHistoryRepository.findByActivity_id(activityId);
+    org.junit.jupiter.api.Assertions.assertEquals(
+        activityHistorySetBefore.size(), activityHistorySetAfter.size());
   }
 
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged() throws Exception {
+  void
+  EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged()
+      throws Exception {
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast Track race\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": false,\n" +
-                    "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n" +
-                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
-                    "  \"visibility\": \"private\"\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"visibility\": \"private\"\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Assert.assertSame(VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
+    Assert.assertSame(
+        VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
-  
+
   @Disabled
   @Test
-  void editActivityVisbilityTypeFromPublicToRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors() throws Exception {
+  void
+  editActivityVisbilityTypeFromPublicToRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors()
+      throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -714,40 +747,43 @@ class EditActivityTest {
     profileRepository.save(profile2);
 
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n" +
-                    "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n" +
-                    "  \"visibility\": \"restricted\",\n" +
-                    "  \"accessors\": [\n" +
-                    "    \"johnny@email.com\",\n" +
-                    "    \"doe@email.com\",\n" +
-                    "    \"poly@pocket.com\"\n" +
-                    "  ]\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"visibility\": \"restricted\",\n"
+            + "  \"accessors\": [\n"
+            + "    \"johnny@email.com\",\n"
+            + "    \"doe@email.com\",\n"
+            + "    \"poly@pocket.com\"\n"
+            + "  ]\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Assert.assertSame(VisibilityType.Restricted, activityRepository.findById(activityId).get().getVisibilityType());
+    Assert.assertSame(
+        VisibilityType.Restricted,
+        activityRepository.findById(activityId).get().getVisibilityType());
 
     List<ActivityRole> activityRoleList = activityRoleRepository.findByActivity_Id(activityId);
     org.junit.jupiter.api.Assertions.assertEquals(3, activityRoleList.size());
-
   }
 
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner() throws Exception {
+  void
+  EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner()
+      throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
@@ -765,31 +801,32 @@ class EditActivityTest {
     activityRoleRepository.save(activityRole);
 
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"visibility\": \"private\"\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"visibility\": \"private\"\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
-
-
+    Assertions.assertNull(
+        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
   }
 
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditVisibilityReturnAllRolesDeletedExceptOwner() throws Exception {
+  void
+  EditActivityVisibilityTypeFromPublicToPrivateUsingEditVisibilityReturnAllRolesDeletedExceptOwner()
+      throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
@@ -807,106 +844,281 @@ class EditActivityTest {
     activityRoleRepository.save(activityRole);
 
     String jsonString =
-            "{\n" +
-                    "  \"visibility\": \"private\",\n" +
-                    "  \"accessors\":[ \n" +
-                    "  ]\n" +
-                    "}";
+        "{\n" + "  \"visibility\": \"private\",\n" + "  \"accessors\":[ \n" + "  ]\n" + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
-    Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
-
+    Assertions.assertNull(
+        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
   }
 
   @Test
   void testEditActivityWithMaxNameLengthReturnIsOK() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH) + "\",\n"
-                    + "  \"description\": \"A new description\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + "A".repeat(Activity.NAME_MAX_LENGTH)
+            + "\",\n"
+            + "  \"description\": \"A new description\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
   void testEditActivityWithInvalidNameLengthReturnIsBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH + 1) + "\",\n"
-                    + "  \"description\": \"A new description\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + "A".repeat(Activity.NAME_MAX_LENGTH + 1)
+            + "\",\n"
+            + "  \"description\": \"A new description\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
   }
 
   @Test
   void testEditActivityWithMaxDescriptionLengthReturnIsOK() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Changed activity name\",\n"
-                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH) + "\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Changed activity name\",\n"
+            + "  \"description\": \""
+            + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH)
+            + "\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
   void testEditActivityWithInvalidDescriptionLengthReturnIsBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Changed activity name\",\n"
-                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1) + "\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Run\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": true\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Changed activity name\",\n"
+            + "  \"description\": \""
+            + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1)
+            + "\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Run\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void addActivityMetricWithEditActivityRequestReturnStatusOkAndActivityMetricIsAdded()
+      throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Count\"},\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    Activity activity = activityRepository.findById(activityId).get();
+    org.junit.jupiter.api.Assertions.assertEquals(2, activity.getMetrics().size());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void editExistingActivityMetricWithEditActivityRequestReturnStatusOkAndActivityMetricIsEdited()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    activityQualificationMetricsRepository.save(metric);
+
+    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    ActivityQualificationMetrics metricAfter =
+        activityRepository.findById(activityId).get().getMetrics().get(0);
+    org.junit.jupiter.api.Assertions.assertEquals(Unit.Distance, metricAfter.getUnit());
+    org.junit.jupiter.api.Assertions.assertEquals("I can go the distance", metricAfter.getTitle());
+    org.junit.jupiter.api.Assertions.assertEquals("Herculees", metricAfter.getDescription());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void
+  editActivityMetricWithoutUnitByUsingEditActivityRequestReturnStatusBadRequestAndActivityMetricIsNotEdited()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    activityQualificationMetricsRepository.save(metric);
+
+    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isBadRequest());
+
+    ActivityQualificationMetrics metricAfter =
+        activityRepository.findById(activityId).get().getMetrics().get(0);
+    org.junit.jupiter.api.Assertions.assertEquals(Unit.Count, metricAfter.getUnit());
+    Assertions.assertNull(metricAfter.getTitle());
+    Assertions.assertNull(metricAfter.getDescription());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void removeActivityMetricUsingEditActivityRequestReturnStatusOkAndActivityMetricIsRemoved()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    activityQualificationMetricsRepository.save(metric);
+
+    List<ActivityQualificationMetrics> metricsBefore = new ArrayList<>();
+    metricsBefore.add(metric);
+    activity.setMetrics(metricsBefore);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityQualificationMetrics> metricsAfter =
+        activityRepository.findById(activityId).get().getMetrics();
+    org.junit.jupiter.api.Assertions.assertEquals(metricsBefore.size() - 1, metricsAfter.size());
   }
 }
-

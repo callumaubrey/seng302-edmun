@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -14,6 +15,7 @@ import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
@@ -81,6 +83,7 @@ public class ActivityController {
   private final TagRepository tagRepository;
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
+  private final ActivityQualificationMetricsRepository activityQualificationMetricsRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -89,7 +92,8 @@ public class ActivityController {
       NamedLocationRepository locationRepository,
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
-      ActivityHistoryRepository activityHistoryRepository) {
+      ActivityHistoryRepository activityHistoryRepository,
+      ActivityQualificationMetricsRepository activityQualificationMetricsRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -97,6 +101,7 @@ public class ActivityController {
     this.tagRepository = tagRepository;
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
+    this.activityQualificationMetricsRepository = activityQualificationMetricsRepository;
   }
 
   /**
@@ -550,14 +555,42 @@ public class ActivityController {
       }
       activity.setTags(hashtags);
     }
+
+    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    if (request.metrics != null) {
+      for (ActivityQualificationMetrics metric : request.metrics) {
+        metric.setActivity(activity);
+        activityQualificationMetricsRepository.save(metric);
+        metrics.add(metric);
+      }
+      activity.setMetrics(metrics);
+    }
+  }
+
+  /**
+   * Check if activity metrics passed in request is valid. Metric unit is non nullable
+   *
+   * @param metrics list of metrics passed in request
+   * @return Bad request response entity if metric unit is null, otherwise null
+   */
+  private ResponseEntity<String> checkActivityMetricsValidity(
+      List<ActivityQualificationMetrics> metrics) {
+    if (metrics != null) {
+      for (ActivityQualificationMetrics metric : metrics) {
+        if (metric.getUnit() == null) {
+          return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
+        }
+      }
+    }
+    return null;
   }
 
   /**
    * Put Request to update an activity for the given profile based on the request
    *
    * @param profileId The id of the author of the activity
-   * @param request The request with values to update the activity
-   * @param session The session of the currently logged in user
+   * @param request   The request with values to update the activity
+   * @param session   The session of the currently logged in user
    * @return The response code and message
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}")
@@ -596,6 +629,13 @@ public class ActivityController {
           checkEditActivityDateTime(request, activity);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
+      }
+
+      // Check metrics validity
+      ResponseEntity<String> checkActivityMetricsValidityResponse =
+          checkActivityMetricsValidity(request.metrics);
+      if (checkActivityMetricsValidityResponse != null) {
+        return checkActivityMetricsValidityResponse;
       }
 
       ObjectMapper mapper = new ObjectMapper();
