@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
@@ -204,6 +205,104 @@ class ActivityRepositoryTest {
         activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
             profile.getId(), VisibilityType.Private);
     Assertions.assertEquals(3, result.size());
+  }
+
+  @Test
+  void testFindActivitiesThatAreRestrictedAndUserIsAuthorised() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityTypeByString("public");
+    activityRepository.save(activity1);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(2, result.size());
+  }
+
+  @Test
+  void testUnAuthorisedUserCannotSeeRestrictedActivities() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityTypeByString("public");
+    activityRepository.save(activity1);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testUserGrantedToOneRestrictedActivity() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity1);
+
+    Activity activity3 = new Activity();
+    activity3.setProfile(profile);
+    activity3.setVisibilityTypeByString("private");
+    activityRepository.save(activity3);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void userCannotSeeAnyActivities() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+    Profile otherUser2 = TestDataGenerator.createExtraProfile(profileRepository);
+
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity);
+
+    Activity activity1 = new Activity();
+    activity1.setProfile(profile);
+    activity1.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity1);
+
+    Activity activity3 = new Activity();
+    activity3.setProfile(profile);
+    activity3.setVisibilityTypeByString("private");
+    activityRepository.save(activity3);
+
+    Activity activity4 = new Activity();
+    activity4.setProfile(profile);
+    activity4.setVisibilityTypeByString("restricted");
+    activityRepository.save(activity4);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser2.getId());
+    Assertions.assertEquals(0, result.size());
   }
 
   @Test

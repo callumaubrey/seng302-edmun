@@ -199,6 +199,47 @@ public class FollowController {
   }
 
   /**
+   * Checks the user is logged in, that the user exists and is the author of the activity
+   *
+   * @param profileId the profileId to check
+   * @param activityId the activityId to check
+   * @param email the email String to check against a users profile
+   * @param session the HttpSession
+   * @return null if everything is OK. ResponseEntity if not
+   */
+  private ResponseEntity<String> checkUserIsAuthorAndExists(
+      int profileId,
+      int activityId,
+      String email,
+      HttpSession session) {
+    Profile creatorProfile = profileRepository.findById(profileId);
+    if (creatorProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activityOptional = activityRepository.findById(activityId);
+    if (activityOptional.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = activityOptional.get();
+    if (!activity.getProfile().getId().equals(profileId)) {
+      return new ResponseEntity<>(
+          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    }
+    Optional<Email> optionalEmail = emailRepository.findByAddress(email);
+    if (optionalEmail.isEmpty()) {
+      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+    }
+
+    Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+    if (roleProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+
+    return null;
+  }
+
+  /**
    * Endpoint for creator of the activity to set activity roles for a user for their activity. If
    * user does not have a role and they are given a role higher than access then it also subscribes
    * them to the activity.
@@ -223,29 +264,16 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
+
     Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-    }
-
     Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-    }
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRoleFound =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
@@ -253,28 +281,50 @@ public class FollowController {
         request.getRole().substring(0, 1).toUpperCase() + request.getRole().substring(1);
     ActivityRoleType activityRoleType = ActivityRoleType.valueOf(toCamelCase);
     if (activityRoleFound == null) {
-      // Create activity role
+      // User doesn't have role.
       ActivityRole activityRole = new ActivityRole();
       activityRole.setProfile(roleProfile);
       activityRole.setActivity(activity);
       activityRole.setActivityRoleType(activityRoleType);
       activityRoleRepository.save(activityRole);
-      // Create Subscription history row
-      // Needs to check if only given access, if so then should not subscribe
-      List<SubscriptionHistory> optionalSubscription =
-          subscriptionHistoryRepository.findActive(activityId, profileId);
-      if (optionalSubscription.isEmpty()) {
-        SubscriptionHistory subscriptionHistory =
-            new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
-        subscriptionHistoryRepository.save(subscriptionHistory);
-        return new ResponseEntity(
-            "Activity role of user was created and user is now subscribed", HttpStatus.OK);
-      } else {
-        return new ResponseEntity("Activity role of user was created", HttpStatus.OK);
+      // If not access. Then we check and subscribe
+      if (!activityRoleType.equals(ActivityRoleType.Access)) {
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
       }
     } else {
-      activityRoleFound.setActivityRoleType(activityRoleType);
-      activityRoleRepository.save(activityRoleFound);
+      // User already has role.
+      if (!activityRoleFound.getActivityRoleType().equals(ActivityRoleType.Access)
+          && activityRoleType.equals(ActivityRoleType.Access)) {
+        // I am demoting them to access. Change role and unsubscribe
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        // Now unsubscribe
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (!optionalSubscription.isEmpty()) {
+          SubscriptionHistory activeSubscription = optionalSubscription.get(0);
+          activeSubscription.setEndDateTime(LocalDateTime.now());
+          activeSubscription.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+          subscriptionHistoryRepository.save(activeSubscription);
+        }
+      } else {
+        // User has access and now giving them a higher role
+        activityRoleFound.setActivityRoleType(activityRoleType);
+        activityRoleRepository.save(activityRoleFound);
+        List<SubscriptionHistory> optionalSubscription =
+            subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+        if (optionalSubscription.isEmpty()) {
+          SubscriptionHistory subscriptionHistory =
+              new SubscriptionHistory(roleProfile, activity, SubscribeMethod.ADDED);
+          subscriptionHistoryRepository.save(subscriptionHistory);
+        }
+      }
     }
 
     return new ResponseEntity("Activity role of user was updated", HttpStatus.OK);
@@ -303,29 +353,14 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
-    Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
 
-    Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-    }
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRoleFound =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
@@ -374,35 +409,25 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
-    Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-    }
-
-    Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
 
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRole =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
     if (activityRole == null) {
-      return new ResponseEntity("User is not subscribed", HttpStatus.NOT_FOUND);
+      return new ResponseEntity("User has no activity role", HttpStatus.NOT_FOUND);
+    }
+
+    List<SubscriptionHistory> activeSubscriptions =
+        subscriptionHistoryRepository.findActive(activityId, roleProfile.getId());
+    if (activeSubscriptions.isEmpty()) {
+      return new ResponseEntity<>("User is not subscribed", HttpStatus.NOT_FOUND);
     }
 
     JSONObject obj = new JSONObject();

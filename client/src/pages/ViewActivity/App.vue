@@ -23,15 +23,15 @@
                 </b-row>
 
                 <!-- Summary -->
-                <FollowerSummary class="text-center" :activityId="$route.params.activityId"></FollowerSummary>
+                <FollowerSummary class="text-center" :activityId="parseInt($route.params.activityId)"></FollowerSummary>
                 <b-row align-h="center">
                     <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
                 </b-row>
 
                 <!-- Actions -->
                 <b-row align-h="center">
-                    <FollowUnfollow v-bind:activityId="this.$route.params.activityId"
-                                    v-bind:activityOwnerId="this.$route.params.id"
+                    <FollowUnfollow v-bind:activityId="parseInt(this.$route.params.activityId)"
+                                    v-bind:activityOwnerId="parseInt(this.$route.params.id)"
                                     v-bind:loggedInId="loggedInId"></FollowUnfollow>
                 </b-row>
                 <b-row align-h="center">
@@ -97,7 +97,7 @@
                 <b-row align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em" title="Participants:">
-                            <FollowerUserList :activity-id="$route.params.activityId" :logged-in-id="loggedInId" :activity-creator-id="activityOwner.id"></FollowerUserList>
+                            <FollowerUserList :activity-id="parseInt($route.params.activityId)" :logged-in-id="loggedInId" :activity-creator-id="activityOwner.id"></FollowerUserList>
                         </b-card>
                     </b-col>
                 </b-row>
@@ -111,7 +111,7 @@
     import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
-    import ShareActivity from "@/components/ShareActivity.vue";
+    import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
     import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
     import api from '@/Api'
     import AdminMixin from "../../mixins/AdminMixin";

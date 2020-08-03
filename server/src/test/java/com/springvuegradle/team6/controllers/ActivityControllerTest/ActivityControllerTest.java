@@ -801,6 +801,150 @@ class ActivityControllerTest {
   }
 
   @Test
+  void testAuthorisedCanGetRestrictedActivities() throws Exception {
+    int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityTypeByString("restricted");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    TestDataGenerator.addActivityRole(
+        profileRepository.findById(user),
+        testActivity1,
+        ActivityRoleType.Access,
+        activityRoleRepository);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void testUnauthorisedCanNotGetRestrictedActivityList() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityTypeByString("restricted");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityTypeByString("public");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity2);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void testCreatorCanGetRestrictedActivities() throws Exception {
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityTypeByString("restricted");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void testAuthorisedCanGetMultipleRestrictedActivities() throws Exception {
+    int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityTypeByString("restricted");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    Activity testActivity2 = new Activity();
+    testActivity2.setVisibilityTypeByString("restricted");
+    testActivity2.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity2);
+
+    Activity testActivity3 = new Activity();
+    testActivity3.setVisibilityTypeByString("private");
+    testActivity3.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity3);
+
+    TestDataGenerator.addActivityRole(
+        profileRepository.findById(user),
+        testActivity1,
+        ActivityRoleType.Access,
+        activityRoleRepository);
+    TestDataGenerator.addActivityRole(
+        profileRepository.findById(user),
+        testActivity2,
+        ActivityRoleType.Participant,
+        activityRoleRepository);
+    TestDataGenerator.addActivityRole(
+        profileRepository.findById(user),
+        testActivity3,
+        ActivityRoleType.Organiser,
+        activityRoleRepository);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(3, result.length());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void testAdminCanGetRestrictedActivities() throws Exception {
+    Activity testActivity1 = new Activity();
+    testActivity1.setVisibilityTypeByString("restricted");
+    testActivity1.setProfile(profileRepository.findById(id));
+    activityRepository.save(testActivity1);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
   void getActivityThatIsArchivedReturnStatusOKAndNoData() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
@@ -1032,7 +1176,6 @@ class ActivityControllerTest {
                 .session(session))
         .andExpect(status().isOk());
   }
-  ;
 
   @Test
   void getRestrictedActivityWithoutAccess() throws Exception {
@@ -1098,7 +1241,6 @@ class ActivityControllerTest {
                 .session(session))
         .andExpect(status().is4xxClientError());
   }
-  ;
 
   @Test
   void putActivityVisibilityAdd() throws Exception {
@@ -1365,11 +1507,12 @@ class ActivityControllerTest {
   }
 
   @Test
-  void createActivityWithInvalidDescriptionLengthReturnStatusIsBadRequest() throws Exception {
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void createActivityForAnotherUserAsAdminAndExpectStatusIsCreated() throws Exception {
     String jsonString =
             "{\n"
-                    + "  \"activity_name\": \"Blabber mouth\",\n"
-                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1) + "\",\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
                     + "  \"activity_type\":[ \n"
                     + "    \"Walk\"\n"
                     + "  ],\n"
@@ -1382,70 +1525,124 @@ class ActivityControllerTest {
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
+            .andExpect(status().isCreated());
+    List<Activity> otherUsersActivities = activityRepository.findByProfile_IdAndArchivedFalse(id);
+    org.junit.jupiter.api.Assertions.assertFalse(otherUsersActivities.isEmpty());
+  }
+
+  @Test
+  @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
+  void createActivityForAnotherUserThatDoesNotExistAsAdminAndExpectClientError() throws Exception {
+    int nonExistingProfileId = 9381849;
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", nonExistingProfileId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityWithInvalidDescriptionLengthReturnStatusIsBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Blabber mouth\",\n"
+            + "  \"description\": \""
+            + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH + 1)
+            + "\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
   }
 
   @Test
   void createActivityWithMaxDescriptionLengthReturnStatusIsOK() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"Blabber mouth\",\n"
-                    + "  \"description\": \"" + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH) + "\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \"Blabber mouth\",\n"
+            + "  \"description\": \""
+            + "A".repeat(Activity.DESCRIPTION_MAX_LENGTH)
+            + "\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
   }
 
   @Test
   void createActivityWithInvalidNameLengthReturnStatusIsBadRequest() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH + 1) + "\",\n"
-                    + "  \"description\": \"String madness\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + "A".repeat(Activity.NAME_MAX_LENGTH + 1)
+            + "\",\n"
+            + "  \"description\": \"String madness\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
   }
 
   @Test
   void createActivityWithMaxNameLengthReturnStatusIsOK() throws Exception {
     String jsonString =
-            "{\n"
-                    + "  \"activity_name\": \"" + "A".repeat(Activity.NAME_MAX_LENGTH) + "\",\n"
-                    + "  \"description\": \"String madness\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Walk\"\n"
-                    + "  ],\n"
-                    + "  \"continuous\": false,\n"
-                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
-                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + "A".repeat(Activity.NAME_MAX_LENGTH)
+            + "\",\n"
+            + "  \"description\": \"String madness\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+            + "}";
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
   }
 
   @Test

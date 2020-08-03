@@ -5,6 +5,8 @@ import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.LoginRequest;
 import org.springframework.http.MediaType;
@@ -71,6 +73,24 @@ public class TestDataGenerator {
         return activityRole;
 
 
+    }
+    public static void addActivityRole(Profile profile, Activity activity, ActivityRoleType roleType, ActivityRoleRepository activityRoleRepository) {
+        ActivityRole role = new ActivityRole();
+        role.setProfile(profile);
+        role.setActivityRoleType(roleType);
+        role.setActivity(activity);
+        activityRoleRepository.save(role);
+    }
+
+    public static Profile createExtraProfile(ProfileRepository profileRepository) {
+        Profile otherProfile = new Profile();
+        otherProfile.setFirstname("Poly");
+        otherProfile.setLastname("Pocket");
+        otherProfile.setDob("2010-10-10");
+        otherProfile.setPassword("Password1");
+        otherProfile.setGender("female");
+        profileRepository.save(otherProfile);
+        return otherProfile;
     }
 
 }

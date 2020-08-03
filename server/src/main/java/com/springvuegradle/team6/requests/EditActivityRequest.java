@@ -2,27 +2,26 @@ package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.NamedLocation;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
-import org.hibernate.validator.constraints.Length;
-
+import java.util.List;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Set;
+import org.hibernate.validator.constraints.Length;
 
 public class EditActivityRequest {
 
   @NotNull
   @NotEmpty
-  @Length(max=Activity.NAME_MAX_LENGTH)
+  @Length(max = Activity.NAME_MAX_LENGTH)
   @JsonProperty("activity_name")
   public String activityName;
 
-  @Length(max=Activity.DESCRIPTION_MAX_LENGTH)
+  @Length(max = Activity.DESCRIPTION_MAX_LENGTH)
   @JsonProperty("description")
   public String description;
 
@@ -52,26 +51,6 @@ public class EditActivityRequest {
   @JsonProperty("visibility")
   public String visibility;
 
-  public void editActivityFromRequest(
-          Activity activity, NamedLocationRepository locationRepository) {
-    activity.setActivityName(this.activityName);
-    activity.setDescription(this.description);
-    activity.setActivityTypes(this.activityTypes);
-    activity.setContinuous(this.continuous);
-    if (this.visibility != null) {
-      activity.setVisibilityTypeByString(this.visibility);
-    }
-    if (activity.isContinuous()) {
-      activity.setStartTime(null);
-      activity.setEndTime(null);
-    } else {
-      activity.setStartTime(this.startTime);
-      activity.setEndTime(this.endTime);
-    }
-    if (this.location != null) {
-      NamedLocation location =
-              new NamedLocation(this.location.country, this.location.state, this.location.city);
-      activity.setLocation(location);
-    }
-  }
+  @JsonProperty("metrics")
+  public List<ActivityQualificationMetrics> metrics;
 }
