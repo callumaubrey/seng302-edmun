@@ -150,7 +150,6 @@
                 var start_has_time = (start_date.getHours() + start_date.getMinutes() + start_date.getSeconds()) > 0;
                 var end_has_time = (end_date.getHours() + end_date.getMinutes() + end_date.getSeconds()) > 0;
 
-                console.log(start_date);
 
                 // No time added
                 if(!start_has_time && !end_has_time) {
