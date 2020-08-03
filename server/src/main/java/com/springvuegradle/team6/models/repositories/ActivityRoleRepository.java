@@ -19,6 +19,10 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
 
   ActivityRole findByProfile_IdAndActivity_Id(int profileId, int activityId);
 
+  @Query(
+          value = "select * from activity_role where activity_id = :activityId",
+          nativeQuery = true
+  )
   List<ActivityRole> findByActivity_Id(int activityId);
 
   @Query(
@@ -37,6 +41,8 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
       nativeQuery = true)
   int findMembersCount(int activityId, int type);
 
+
+
   @Modifying
   @Transactional
   @Query(
@@ -44,4 +50,12 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
                   "delete from activity_role where activity_id = :activityId and profile_id != :profileId",
           nativeQuery = true)
   void deleteAllActivityRolesExceptOwner(int activityId, int profileId);
+
+  @Modifying
+  @Transactional
+  @Query(
+          value =
+                  "delete from activity_role where activity_id = :activityId and activity_role_type = 4",
+          nativeQuery = true)
+  void deleteAllAccessRolesOfActivity(int activityId);
 }

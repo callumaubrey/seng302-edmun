@@ -725,66 +725,9 @@ class EditActivityTest {
         VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
 
-  @Disabled
-  @Test
-  void
-  editActivityVisbilityTypeFromPublicToRestrictedReturnStatusOkAndAccessRoleIsAssignedToAccessors()
-      throws Exception {
-    Profile profile1 = new Profile();
-    profile1.setFirstname("Johnny");
-    profile1.setLastname("Dong");
-    Set<Email> email1 = new HashSet<Email>();
-    email1.add(new Email("johnny@email.com"));
-    profile1.setEmails(email1);
-    profileRepository.save(profile1);
-
-    Profile profile2 = new Profile();
-    profile2.setFirstname("Doe");
-    profile2.setLastname("John");
-    Set<Email> email2 = new HashSet<Email>();
-    email2.add(new Email("doe@email.com"));
-    profile2.setEmails(email2);
-    profileRepository.save(profile2);
-
-    String jsonString =
-        "{\n"
-            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Walk\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true,\n"
-            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
-            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
-            + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\": [\n"
-            + "    \"johnny@email.com\",\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"poly@pocket.com\"\n"
-            + "  ]\n"
-            + "}";
-
-    mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().isOk());
-
-    Assert.assertSame(
-        VisibilityType.Restricted,
-        activityRepository.findById(activityId).get().getVisibilityType());
-
-    List<ActivityRole> activityRoleList = activityRoleRepository.findByActivity_Id(activityId);
-    org.junit.jupiter.api.Assertions.assertEquals(3, activityRoleList.size());
-  }
 
   @Test
-  void
-  EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner()
-      throws Exception {
-
+  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner() throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -819,14 +762,11 @@ class EditActivityTest {
             .session(session))
         .andExpect(status().isOk());
 
-    Assertions.assertNull(
-        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
+    Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
   }
 
   @Test
-  void
-  EditActivityVisibilityTypeFromPublicToPrivateUsingEditVisibilityReturnAllRolesDeletedExceptOwner()
-      throws Exception {
+  void VisibilityTypeFromRestrictedToPublicUsingEditActivityDeletesAllAccessRolesAndKeepsAllOtherRoles() throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
@@ -836,26 +776,52 @@ class EditActivityTest {
     profile1.setEmails(email1);
     profileRepository.save(profile1);
 
-    // adding Johnny as a follower to the activity
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Mark");
+    profile2.setLastname("Zuck");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("mark@email.com"));
+    profile2.setEmails(email2);
+    profileRepository.save(profile2);
+
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    // adding Johnny as ACCESS to the activity
     ActivityRole activityRole = new ActivityRole();
     activityRole.setActivity(activityRepository.findById(activityId).get());
     activityRole.setProfile(profile1);
-    activityRole.setActivityRoleType(ActivityRoleType.Follower);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
     activityRoleRepository.save(activityRole);
 
+    ActivityRole activityRole2 = new ActivityRole();
+    activityRole2.setActivity(activityRepository.findById(activityId).get());
+    activityRole2.setProfile(profile2);
+    activityRole2.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(activityRole2);
+
     String jsonString =
-        "{\n" + "  \"visibility\": \"private\",\n" + "  \"accessors\":[ \n" + "  ]\n" + "}";
+            "{\n" +
+                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
+                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
+                    "  \"activity_type\":[ \n" +
+                    "    \"Walk\"\n" +
+                    "  ],\n" +
+                    "  \"continuous\": true,\n" +
+                    "  \"visibility\": \"public\"\n" +
+                    "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().isOk());
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
 
-    Assertions.assertNull(
-        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
+    Assertions.assertEquals(0, activityRoleRepository.findMembersCount(activityId, 4));
+    Assertions.assertEquals(1, activityRoleRepository.findMembersCount(activityId, 3));
   }
 
   @Test
