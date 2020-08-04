@@ -95,8 +95,8 @@ public class ActivityMetricsFeatureSteps {
                 .session(loginSteps.session));
   }
 
-  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
-  // LazyInitializationException
+  @Transactional
+  //ensures all method calls in this test case EAGERLY loads object, a way to fix LazyInitializationException
   @Then("there will be an activity {string} without metrics")
   public void there_will_be_an_activity_without_metrics(String string)
       throws UnsupportedEncodingException {
@@ -173,7 +173,7 @@ public class ActivityMetricsFeatureSteps {
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     Activity activity = activityRepository.findById(activityId).get();
 
-    // Filter our deleted metrics
+    // Filter our metrics to be deleted
     List<ActivityQualificationMetrics> metricsIterator = activity.getMetrics();
     List<ActivityQualificationMetrics> metricsAfter = activity.getMetrics();
     for (Map<String, String> metricMapping : dataTable.asMaps()) {

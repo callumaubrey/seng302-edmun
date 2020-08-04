@@ -31,7 +31,7 @@ public class ActivityQualificationMetrics {
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
   /**
-   * Boolean to rank metrics in different orders. Default value is true
+   * Boolean to rank metrics in different orders. Default value is false
    */
   @JsonProperty("rank_asc")
   private boolean rankByAsc;
