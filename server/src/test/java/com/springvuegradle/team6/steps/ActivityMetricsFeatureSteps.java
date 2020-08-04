@@ -3,7 +3,7 @@ package com.springvuegradle.team6.steps;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -174,10 +174,10 @@ public class ActivityMetricsFeatureSteps {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Filter our metrics to be deleted
-    List<ActivityQualificationMetrics> metricsIterator = activity.getMetrics();
-    List<ActivityQualificationMetrics> metricsAfter = activity.getMetrics();
+    List<ActivityQualificationMetric> metricsIterator = activity.getMetrics();
+    List<ActivityQualificationMetric> metricsAfter = activity.getMetrics();
     for (Map<String, String> metricMapping : dataTable.asMaps()) {
-      for (ActivityQualificationMetrics metric : metricsIterator) {
+      for (ActivityQualificationMetric metric : metricsIterator) {
         if (metricMapping.get("Name").equals(metric.getTitle())
             && metricMapping.get("Unit").equals(metric.getUnit().toString())) {
           metricsAfter.remove(metric);
@@ -186,7 +186,7 @@ public class ActivityMetricsFeatureSteps {
     }
 
     List<JSONObject> metrics = new ArrayList<>();
-    for (ActivityQualificationMetrics metric : metricsAfter) {
+    for (ActivityQualificationMetric metric : metricsAfter) {
       JSONObject metricJSON = new JSONObject();
       metricJSON.put("title", metric.getTitle());
       metricJSON.put("unit", metric.getUnit());

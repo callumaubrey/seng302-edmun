@@ -2,7 +2,7 @@ package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Tag;
 import java.util.List;
@@ -51,7 +51,7 @@ public class CreateActivityRequest {
   public String visibility;
 
   @JsonProperty("metrics")
-  public List<ActivityQualificationMetrics> metrics;
+  public List<ActivityQualificationMetric> metrics;
 
   public LocationUpdateRequest getLocation() {
     return location;
