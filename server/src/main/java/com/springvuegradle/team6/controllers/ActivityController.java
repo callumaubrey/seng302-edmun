@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -15,7 +15,7 @@ import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
@@ -83,7 +83,7 @@ public class ActivityController {
   private final TagRepository tagRepository;
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
-  private final ActivityQualificationMetricsRepository activityQualificationMetricsRepository;
+  private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -93,7 +93,7 @@ public class ActivityController {
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricsRepository activityQualificationMetricsRepository) {
+      ActivityQualificationMetricRepository activityQualificationMetricRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -101,7 +101,7 @@ public class ActivityController {
     this.tagRepository = tagRepository;
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
-    this.activityQualificationMetricsRepository = activityQualificationMetricsRepository;
+    this.activityQualificationMetricRepository = activityQualificationMetricRepository;
   }
 
   /**
@@ -574,12 +574,12 @@ public class ActivityController {
    * @param requestMetrics metric list that was passed into request
    */
   private void addMetricsToActivity(
-      Activity activity, List<ActivityQualificationMetrics> requestMetrics) {
-    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
     if (requestMetrics != null) {
-      for (ActivityQualificationMetrics metric : requestMetrics) {
+      for (ActivityQualificationMetric metric : requestMetrics) {
         metric.setActivity(activity);
-        activityQualificationMetricsRepository.save(metric);
+        activityQualificationMetricRepository.save(metric);
         metrics.add(metric);
       }
       activity.setMetrics(metrics);
@@ -593,9 +593,9 @@ public class ActivityController {
    * @return Bad request response entity if metric unit is null, otherwise null
    */
   private ResponseEntity<String> checkActivityMetricsValidity(
-      List<ActivityQualificationMetrics> metrics) {
+      List<ActivityQualificationMetric> metrics) {
     if (metrics != null) {
-      for (ActivityQualificationMetrics metric : metrics) {
+      for (ActivityQualificationMetric metric : metrics) {
         if (metric.getUnit() == null) {
           return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
         }
@@ -608,27 +608,17 @@ public class ActivityController {
   }
 
   /**
-   * This method will deal with the different cases of visibility and which roles to delete and
-   * which users to unsubscribe
-   *
-   * @param request  the request with the new visibility
+   * This method will deal with the different cases of visibility and which roles to delete and which users to unsubscribe
+   * @param request the request with the new visibility
    * @param activity the activity with the original visibility
    */
-  void editActivityVisibilityHandling(EditActivityRequest request, Activity activity) {
+   void editActivityVisibilityHandling(EditActivityRequest request, Activity activity) {
 
-    if (activity.getVisibilityType() == VisibilityType.Restricted
-        && request.visibility.equals(
-        "public")) { // access roles dont need to exist if going from restricted to public;
+    if (activity.getVisibilityType() == VisibilityType.Restricted && request.visibility.equals("public")) {  //access roles dont need to exist if going from restricted to public;
       activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
-    } else if (!(activity.getVisibilityType() == VisibilityType.Public
-        && request.visibility.equals("public"))
-        && !(activity.getVisibilityType() == VisibilityType.Restricted
-        && request.visibility.equals(
-        "restricted"))) { // This checks if there was no change in visibility.
-      activityRoleRepository.deleteAllActivityRolesExceptOwner(
-          activity.getId(), activity.getProfile().getId());
-      subscriptionHistoryRepository.unSubscribeAllButCreator(
-          activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
+    } else if (!(activity.getVisibilityType() == VisibilityType.Public && request.visibility.equals("public")) && !(activity.getVisibilityType() == VisibilityType.Restricted && request.visibility.equals("restricted"))) { //This checks if there was no change in visibility.
+      activityRoleRepository.deleteAllActivityRolesExceptOwner(activity.getId(), activity.getProfile().getId());
+      subscriptionHistoryRepository.unSubscribeAllButCreator(activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
     }
   }
 
@@ -862,16 +852,15 @@ public class ActivityController {
   }
 
   /**
-   * This takes care of all subscription adn activity role logic when changing visibility of an
-   * activity using visibility endpoint.
+   * This takes care of all subscription adn activity role logic when changing visibility of an activity using visibility endpoint.
    *
-   * @param request    the request with the new visibility and accessors
-   * @param activity   the activity to be edited
+   * @param request the request with the new visibility and accessors
+   * @param activity the activity to be edited
    * @param activityId the activity id to be edited
    * @return a NOT FOUND response entity if an accessor is not found, otherwise return null
    */
   private ResponseEntity<String> editActivityRoles(
-      EditActivityVisibilityRequest request, Activity activity, int activityId) {
+          EditActivityVisibilityRequest request, Activity activity, int activityId) {
     if (request.getEmails() == null) {
       return null;
     }
@@ -879,7 +868,7 @@ public class ActivityController {
     if (request.getVisibility().equals("public") || request.getVisibility().equals("private")) {
       if (request.getEmails().size() > 0) {
         return new ResponseEntity(
-            "Can't have accessors when changing to private or public.", HttpStatus.BAD_REQUEST);
+                "Can't have accessors when changing to private or public.", HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -887,7 +876,7 @@ public class ActivityController {
       Profile profile = profileRepository.findByEmails_address(email);
       if (profile == null) {
         return new ResponseEntity(
-            "User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
+                "User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
       }
     }
 
@@ -916,7 +905,7 @@ public class ActivityController {
         for (String email : request.getEmails()) {
           Profile profile = profileRepository.findByEmails_address(email);
           ActivityRole role =
-              activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+                  activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
           if (role == null) {
             ActivityRole activityRole = new ActivityRole();
             activityRole.setActivity(activity);
@@ -956,12 +945,11 @@ public class ActivityController {
       Activity activity = optionalActivity.get();
       if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
         return new ResponseEntity<>(
-            "You are not authorized to change visibility for this activity",
-            HttpStatus.UNAUTHORIZED);
+            "You are not authorized to change visibility for this activity", HttpStatus.UNAUTHORIZED);
       }
 
       ResponseEntity<String> editActivityRolesResponse =
-          editActivityRoles(request, activity, activityId);
+              editActivityRoles(request, activity, activityId);
       if (editActivityRolesResponse != null) {
         return editActivityRolesResponse;
       }
