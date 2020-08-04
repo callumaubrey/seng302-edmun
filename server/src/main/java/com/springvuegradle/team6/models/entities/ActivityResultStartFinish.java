@@ -18,7 +18,7 @@ public class ActivityResultStartFinish extends ActivityResult {
   private LocalDateTime resultFinish;
 
   public ActivityResultStartFinish(
-      ActivityQualificationMetrics metricId,
+      ActivityQualificationMetric metricId,
       Profile userId,
       LocalDateTime resultStart,
       LocalDateTime resultFinish) {

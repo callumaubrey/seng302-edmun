@@ -15,7 +15,7 @@ public class ActivityResultDistance extends ActivityResult {
   private float result;
 
   public ActivityResultDistance(
-      ActivityQualificationMetrics metricId, Profile userId, float result) {
+      ActivityQualificationMetric metricId, Profile userId, float result) {
     super(metricId, userId);
     this.result = result;
   }
