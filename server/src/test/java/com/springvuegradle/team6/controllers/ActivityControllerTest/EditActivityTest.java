@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -725,9 +724,10 @@ class EditActivityTest {
         VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
 
-
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner() throws Exception {
+  void
+  EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner()
+      throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -762,11 +762,14 @@ class EditActivityTest {
             .session(session))
         .andExpect(status().isOk());
 
-    Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
+    Assertions.assertNull(
+        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
   }
 
   @Test
-  void VisibilityTypeFromRestrictedToPublicUsingEditActivityDeletesAllAccessRolesAndKeepsAllOtherRoles() throws Exception {
+  void
+  VisibilityTypeFromRestrictedToPublicUsingEditActivityDeletesAllAccessRolesAndKeepsAllOtherRoles()
+      throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
@@ -802,23 +805,23 @@ class EditActivityTest {
     activityRoleRepository.save(activityRole2);
 
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"visibility\": \"public\"\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"visibility\": \"public\"\n"
+            + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
 
     Assertions.assertEquals(0, activityRoleRepository.findMembersCount(activityId, 4));
     Assertions.assertEquals(1, activityRoleRepository.findMembersCount(activityId, 3));
@@ -932,7 +935,7 @@ class EditActivityTest {
             + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
             + "  \"metrics\": [\n"
-            + "    {\"unit\": \"Count\"},\n"
+            + "    {\"unit\": \"Count\", \"title\": \"Counting sizth dimensions\"},\n"
             + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
             + "  ]\n"
             + "}\n";
@@ -977,7 +980,7 @@ class EditActivityTest {
             + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
             + "  \"metrics\": [\n"
-            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\", \"rank_asc\": \"true\"}\n"
             + "  ]\n"
             + "}\n";
 
@@ -994,6 +997,7 @@ class EditActivityTest {
     org.junit.jupiter.api.Assertions.assertEquals(Unit.Distance, metricAfter.getUnit());
     org.junit.jupiter.api.Assertions.assertEquals("I can go the distance", metricAfter.getTitle());
     org.junit.jupiter.api.Assertions.assertEquals("Herculees", metricAfter.getDescription());
+    org.junit.jupiter.api.Assertions.assertTrue(metricAfter.getRankByAsc());
   }
 
   @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix

@@ -580,6 +580,9 @@ public class ActivityController {
         if (metric.getUnit() == null) {
           return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
         }
+        if (metric.getTitle() == null) {
+          return new ResponseEntity<>("Metric title cannot be null", HttpStatus.BAD_REQUEST);
+        }
       }
     }
     return null;
