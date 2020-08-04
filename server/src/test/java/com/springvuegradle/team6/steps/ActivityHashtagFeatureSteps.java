@@ -1,11 +1,18 @@
 package com.springvuegradle.team6.steps;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -18,16 +25,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.*;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @DirtiesContext
 public class ActivityHashtagFeatureSteps {
+
   private String jsonString;
-  private ResultActions mvcResponse;
+  public ResultActions mvcResponse;
   private String activityId;
   private List<String> autocompleteResult;
   private List<String> activityNamesByHashtag;
@@ -237,8 +241,8 @@ public class ActivityHashtagFeatureSteps {
   }
 
   @Then("I will receive {string} status code")
-  public void i_will_receive_status_code(String string) throws Exception {
-    mvcResponse.andExpect(status().isBadRequest());
+  public void i_will_receive_status_code(String statusCode) throws Exception {
+    mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
   }
 
   @Then("the activity {string} has no hashtags")
