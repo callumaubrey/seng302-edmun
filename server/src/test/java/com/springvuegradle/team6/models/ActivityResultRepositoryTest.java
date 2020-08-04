@@ -2,12 +2,12 @@ package com.springvuegradle.team6.models;
 
 import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityResultDistance;
 import com.springvuegradle.team6.models.entities.ActivityResultDuration;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -30,7 +30,7 @@ public class ActivityResultRepositoryTest {
 
   @Autowired private ProfileRepository profileRepository;
 
-  @Autowired private ActivityQualificationMetricsRepository activityMetricsRepository;
+  @Autowired private ActivityQualificationMetricRepository activityMetricsRepository;
 
   @Autowired private ActivityResultRepository activityResultRepository;
 
@@ -51,7 +51,7 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityOneActivityReturnSingleActivityResult() {
-    ActivityQualificationMetrics activityMetrics = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
     activityMetrics.setDescription("Time to run up hill");
@@ -71,7 +71,7 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityTwoActivityResultReturnTwoActivityResult() {
-    ActivityQualificationMetrics activityMetrics = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
     activityMetrics.setDescription("Time to run up hill");
@@ -90,7 +90,7 @@ public class ActivityResultRepositoryTest {
   @Test
   void testFindActivityResultOfUserOnActivityManyActivityResultReturnManyActivityResult() {
     Profile anotherProfile = TestDataGenerator.createExtraProfile(profileRepository);
-    ActivityQualificationMetrics activityMetrics = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
     activityMetrics.setDescription("Time to run up hill");
@@ -112,13 +112,13 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityDifferentActivityMetrics() {
-    ActivityQualificationMetrics activityMetrics = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
     activityMetrics.setDescription("Distance to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
-    ActivityQualificationMetrics activityMetrics2 = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
     activityMetrics2.setActivity(activity);
     activityMetrics2.setUnit(Unit.TimeDuration);
     activityMetrics2.setDescription("Time to run up hill");
@@ -137,13 +137,13 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityTwoDifferentActivities() {
-    ActivityQualificationMetrics activityMetrics = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
     activityMetrics.setDescription("Distance to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
-    ActivityQualificationMetrics activityMetrics2 = new ActivityQualificationMetrics();
+    ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
     activityMetrics2.setActivity(activity);
     activityMetrics2.setUnit(Unit.TimeDuration);
     activityMetrics2.setDescription("Time to run up hill");
