@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -15,7 +15,7 @@ import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
@@ -83,7 +83,7 @@ public class ActivityController {
   private final TagRepository tagRepository;
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
-  private final ActivityQualificationMetricsRepository activityQualificationMetricsRepository;
+  private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -93,7 +93,7 @@ public class ActivityController {
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricsRepository activityQualificationMetricsRepository) {
+      ActivityQualificationMetricRepository activityQualificationMetricRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -101,7 +101,7 @@ public class ActivityController {
     this.tagRepository = tagRepository;
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
-    this.activityQualificationMetricsRepository = activityQualificationMetricsRepository;
+    this.activityQualificationMetricRepository = activityQualificationMetricRepository;
   }
 
   /**
@@ -556,11 +556,11 @@ public class ActivityController {
       activity.setTags(hashtags);
     }
 
-    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
     if (request.metrics != null) {
-      for (ActivityQualificationMetrics metric : request.metrics) {
+      for (ActivityQualificationMetric metric : request.metrics) {
         metric.setActivity(activity);
-        activityQualificationMetricsRepository.save(metric);
+        activityQualificationMetricRepository.save(metric);
         metrics.add(metric);
       }
       activity.setMetrics(metrics);
@@ -574,9 +574,9 @@ public class ActivityController {
    * @return Bad request response entity if metric unit is null, otherwise null
    */
   private ResponseEntity<String> checkActivityMetricsValidity(
-      List<ActivityQualificationMetrics> metrics) {
+      List<ActivityQualificationMetric> metrics) {
     if (metrics != null) {
-      for (ActivityQualificationMetrics metric : metrics) {
+      for (ActivityQualificationMetric metric : metrics) {
         if (metric.getUnit() == null) {
           return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
         }

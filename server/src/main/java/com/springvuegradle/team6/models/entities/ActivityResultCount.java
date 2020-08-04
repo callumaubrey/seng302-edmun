@@ -15,7 +15,7 @@ public class ActivityResultCount extends ActivityResult {
   private Integer result;
 
   public ActivityResultCount(
-      ActivityQualificationMetrics metricId, Profile userId, Integer result) {
+      ActivityQualificationMetric metricId, Profile userId, Integer result) {
     super(metricId, userId);
     this.result = result;
   }
