@@ -29,5 +29,5 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
               + "description, title from activity_result a JOIN activity_qualification_metrics q on "
               + "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId ",
       nativeQuery = true)
-  List<JSONObject> findActivityResultOfUserOnActivity(int activityId, int userId);
+  List<JSONObject> findSingleUsersResultsOnActivity(int activityId, int userId);
 }
