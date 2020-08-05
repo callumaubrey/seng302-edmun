@@ -560,5 +560,92 @@ public class ActivityMetricControllerTest {
     Assert.assertEquals(1, results.size());
   }
 
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void adminCreateResultForParticipantReturnsOk() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
 
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    String jsonString =
+        "{\n" +
+            "  \"metric_id\": \"" + metric.getId() + "\",\n" +
+            "  \"value\": \"10\"\n" +
+            "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result", profile1.getId(), activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
+    Assert.assertEquals(1, results.size());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void adminCreateResultForNonParticipantReturns4xx() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole);
+
+    String jsonString =
+        "{\n" +
+            "  \"metric_id\": \"" + metric.getId() + "\",\n" +
+            "  \"value\": \"10\"\n" +
+            "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result", profile1.getId(), activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
 }
