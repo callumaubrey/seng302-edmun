@@ -12,11 +12,6 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
   /**
    * Gets all a particular users results for an activity.
    *
-   * <p>Note: Two tables activity_result and activity_qualification_metrics need to be joined as we
-   * need both the metrics and results when displaying on the front-end. There are also many rows in
-   * the select part of the query as each row had to be manually retrieved because both tables had a
-   * conflicting row 'id'
-   *
    * @param activityId the activity the user wants to retrive the results for
    * @param userId the user that created the result
    * @return the activity results and the metrics
