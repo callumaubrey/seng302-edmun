@@ -1,6 +1,5 @@
 <template>
     <div id="app" v-if="isLoggedIn">
-        <Notification></Notification>
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div v-if="archived">
             <h1 align="center">This activity has been deleted</h1>
