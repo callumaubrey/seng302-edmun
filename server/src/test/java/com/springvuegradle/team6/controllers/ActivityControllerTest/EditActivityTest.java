@@ -47,23 +47,17 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 class EditActivityTest {
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Autowired
-  private ActivityRepository activityRepository;
+  @Autowired private ActivityRepository activityRepository;
 
-  @Autowired
-  private ProfileRepository profileRepository;
+  @Autowired private ProfileRepository profileRepository;
 
-  @Autowired
-  private ActivityHistoryRepository activityHistoryRepository;
+  @Autowired private ActivityHistoryRepository activityHistoryRepository;
 
-  @Autowired
-  private ActivityRoleRepository activityRoleRepository;
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
-  @Autowired
-  private ActivityQualificationMetricRepository activityQualificationMetricRepository;
+  @Autowired private ActivityQualificationMetricRepository activityQualificationMetricRepository;
 
   private int id;
 
@@ -81,10 +75,10 @@ class EditActivityTest {
 
     // Logs in and get profile Id
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles")
-            .content(profileJson)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles")
+                .content(profileJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -125,11 +119,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(otherSession))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(otherSession))
         .andExpect(status().isUnauthorized());
   }
 
@@ -146,11 +140,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -170,11 +164,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -193,11 +187,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -216,11 +210,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -239,11 +233,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -262,11 +256,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -285,11 +279,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -308,11 +302,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk())
         .andDo(print());
   }
@@ -322,11 +316,11 @@ class EditActivityTest {
     String jsonString = "{\n" + "  \"activity_name\": \"Kaikoura Coast Track race\"\n" + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -350,11 +344,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -375,11 +369,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -402,11 +396,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -432,11 +426,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -461,11 +455,11 @@ class EditActivityTest {
             + "  ]\n"
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
     Set<String> expectedResult = new HashSet<>();
 
@@ -510,11 +504,11 @@ class EditActivityTest {
             + "  ]\n"
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
     Set<String> expectedResult = new HashSet<>();
 
@@ -559,7 +553,7 @@ class EditActivityTest {
     ResultActions responseString =
         mvc.perform(
             MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
@@ -621,7 +615,7 @@ class EditActivityTest {
     ResultActions responseString =
         mvc.perform(
             MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session));
@@ -643,11 +637,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Set<ActivityHistory> activityHistorySetAfter =
@@ -673,21 +667,21 @@ class EditActivityTest {
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Set<ActivityHistory> activityHistorySetBefore =
         activityHistoryRepository.findByActivity_id(activityId);
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
     Set<ActivityHistory> activityHistorySetAfter =
         activityHistoryRepository.findByActivity_id(activityId);
@@ -697,8 +691,8 @@ class EditActivityTest {
 
   @Test
   void
-  EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged()
-      throws Exception {
+      EditActivityVisibilityTypeFromPublicToPrivateReturnStatusIsOkAndActivityVisibilityTypeIsChanged()
+          throws Exception {
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -713,20 +707,21 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertSame(
         VisibilityType.Private, activityRepository.findById(activityId).get().getVisibilityType());
   }
 
-
   @Test
-  void EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner() throws Exception {
+  void
+      EditActivityVisibilityTypeFromPublicToPrivateUsingEditActivityReturnAllRolesDeletedExceptOwner()
+          throws Exception {
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -754,18 +749,21 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
-    Assertions.assertNull(activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
+    Assertions.assertNull(
+        activityRoleRepository.findByProfile_IdAndActivity_Id(profile1.getId(), activityId));
   }
 
   @Test
-  void VisibilityTypeFromRestrictedToPublicUsingEditActivityDeletesAllAccessRolesAndKeepsAllOtherRoles() throws Exception {
+  void
+      VisibilityTypeFromRestrictedToPublicUsingEditActivityDeletesAllAccessRolesAndKeepsAllOtherRoles()
+          throws Exception {
 
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
@@ -801,23 +799,23 @@ class EditActivityTest {
     activityRoleRepository.save(activityRole2);
 
     String jsonString =
-            "{\n" +
-                    "  \"activity_name\": \"Kaikoura Coast track\",\n" +
-                    "  \"description\": \"A big and nice race on a lovely peninsula\",\n" +
-                    "  \"activity_type\":[ \n" +
-                    "    \"Walk\"\n" +
-                    "  ],\n" +
-                    "  \"continuous\": true,\n" +
-                    "  \"visibility\": \"public\"\n" +
-                    "}";
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"visibility\": \"public\"\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.put(
                     "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     Assertions.assertEquals(0, activityRoleRepository.findMembersCount(activityId, 4));
     Assertions.assertEquals(1, activityRoleRepository.findMembersCount(activityId, 3));
@@ -838,11 +836,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -861,11 +859,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
 
@@ -884,11 +882,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
   }
 
@@ -907,11 +905,11 @@ class EditActivityTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
 
@@ -931,17 +929,17 @@ class EditActivityTest {
             + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
             + "  \"metrics\": [\n"
-            + "    {\"unit\": \"Count\"},\n"
+            + "    {\"unit\": \"Count\", \"title\": \"Counting sizth dimensions\"},\n"
             + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
             + "  ]\n"
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Activity activity = activityRepository.findById(activityId).get();
@@ -959,6 +957,7 @@ class EditActivityTest {
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
+    metric.setTitle("Hercules");
     activityQualificationMetricRepository.save(metric);
 
     List<ActivityQualificationMetric> metrics = new ArrayList<>();
@@ -976,16 +975,16 @@ class EditActivityTest {
             + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
             + "  \"metrics\": [\n"
-            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\"}\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"I can go the distance\", \"description\": \"Herculees\", \"rank_asc\": \"true\"}\n"
             + "  ]\n"
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     ActivityQualificationMetric metricAfter =
@@ -993,14 +992,15 @@ class EditActivityTest {
     org.junit.jupiter.api.Assertions.assertEquals(Unit.Distance, metricAfter.getUnit());
     org.junit.jupiter.api.Assertions.assertEquals("I can go the distance", metricAfter.getTitle());
     org.junit.jupiter.api.Assertions.assertEquals("Herculees", metricAfter.getDescription());
+    org.junit.jupiter.api.Assertions.assertTrue(metricAfter.getRankByAsc());
   }
 
   @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
   // LazyInitializationException
   @Test
   void
-  editActivityMetricWithoutUnitByUsingEditActivityRequestReturnStatusBadRequestAndActivityMetricIsNotEdited()
-      throws Exception {
+      editActivityMetricWithoutUnitByUsingEditActivityRequestReturnStatusBadRequestAndActivityMetricIsNotEdited()
+          throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Create metric
@@ -1029,11 +1029,11 @@ class EditActivityTest {
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
 
     ActivityQualificationMetric metricAfter =
@@ -1046,19 +1046,70 @@ class EditActivityTest {
   @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
   // LazyInitializationException
   @Test
-  void removeActivityMetricUsingEditActivityRequestReturnStatusOkAndActivityMetricIsRemoved()
-      throws Exception {
+  void
+      editActivityMetricWithoutTitleByUsingEditActivityRequestReturnStatusBadRequestAndActivityMetricIsNotEdited()
+          throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
+    metric.setTitle("Hello");
     activityQualificationMetricRepository.save(metric);
 
-    List<ActivityQualificationMetric> metricsBefore = new ArrayList<>();
-    metricsBefore.add(metric);
-    activity.setMetrics(metricsBefore);
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Distance\", \"description\": \"Herculees\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isBadRequest());
+
+    ActivityQualificationMetric metricAfter =
+        activityRepository.findById(activityId).get().getMetrics().get(0);
+    org.junit.jupiter.api.Assertions.assertEquals(Unit.Count, metricAfter.getUnit());
+    org.junit.jupiter.api.Assertions.assertEquals(metric.getTitle(), metricAfter.getTitle());
+    Assertions.assertNull(metricAfter.getDescription());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void
+      editActivityMetricWithEmptyMetricListUsingEditActivityRequestReturnStatusOkAndExistingActivityMetricIsRemoved()
+          throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setTitle("Hello");
+    activityQualificationMetricRepository.save(metric);
+
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
 
     String jsonString =
         "{\n"
@@ -1075,15 +1126,16 @@ class EditActivityTest {
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}", id, activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
-    List<ActivityQualificationMetric> metricsAfter =
-        activityRepository.findById(activityId).get().getMetrics();
-    org.junit.jupiter.api.Assertions.assertEquals(metricsBefore.size() - 1, metricsAfter.size());
+    org.junit.jupiter.api.Assertions.assertTrue(
+        activityRepository.findById(activityId).get().getMetrics().isEmpty());
   }
+
+
 }
