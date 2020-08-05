@@ -444,12 +444,6 @@ public class ActivityController {
       return checkHashtagsValidityResponse;
     }
 
-    ResponseEntity<String> checkActivityMetricsValidityResponse =
-        checkActivityMetricsValidity(request.metrics);
-    if (checkActivityMetricsValidityResponse != null) {
-      return checkActivityMetricsValidityResponse;
-    }
-
     Activity activity = new Activity(request, profile);
     if (activity.getLocation() != null) {
       Optional<NamedLocation> optionalNamedLocation =
@@ -587,27 +581,6 @@ public class ActivityController {
   }
 
   /**
-   * Check if activity metrics passed in request is valid. Metric unit is non nullable
-   *
-   * @param metrics list of metrics passed in request
-   * @return Bad request response entity if metric unit is null, otherwise null
-   */
-  private ResponseEntity<String> checkActivityMetricsValidity(
-      List<ActivityQualificationMetric> metrics) {
-    if (metrics != null) {
-      for (ActivityQualificationMetric metric : metrics) {
-        if (metric.getUnit() == null) {
-          return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
-        }
-        if (metric.getTitle() == null) {
-          return new ResponseEntity<>("Metric title cannot be null", HttpStatus.BAD_REQUEST);
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
    * This method will deal with the different cases of visibility and which roles to delete and which users to unsubscribe
    * @param request the request with the new visibility
    * @param activity the activity with the original visibility
@@ -666,13 +639,6 @@ public class ActivityController {
           checkEditActivityDateTime(request, activity);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
-      }
-
-      // Check metrics validity
-      ResponseEntity<String> checkActivityMetricsValidityResponse =
-          checkActivityMetricsValidity(request.metrics);
-      if (checkActivityMetricsValidityResponse != null) {
-        return checkActivityMetricsValidityResponse;
       }
 
       ObjectMapper mapper = new ObjectMapper();

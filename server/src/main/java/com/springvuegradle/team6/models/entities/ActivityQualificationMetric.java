@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ActivityQualificationMetric {
@@ -19,6 +20,7 @@ public class ActivityQualificationMetric {
   /**
    * The title of the qualification metric
    */
+  @NotNull(message = "Metric title cannot be null")
   private String title;
   /**
    * The description of the qualification metric
@@ -38,6 +40,7 @@ public class ActivityQualificationMetric {
   /**
    * The Unit Enmun associated with this instance
    */
+  @NotNull(message = "Metric unit cannot be null")
   private Unit unit;
 
   public ActivityQualificationMetric() {
@@ -56,6 +59,8 @@ public class ActivityQualificationMetric {
   public void setDescription(String description) {
     this.description = description;
   }
+
+  public void setTitle(String title) {this.title = title; }
 
   // =========GETTERS================
   public Unit getUnit() {

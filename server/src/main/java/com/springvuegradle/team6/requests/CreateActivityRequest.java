@@ -51,7 +51,7 @@ public class CreateActivityRequest {
   public String visibility;
 
   @JsonProperty("metrics")
-  public List<ActivityQualificationMetric> metrics;
+  public List<@Valid ActivityQualificationMetric> metrics;
 
   public LocationUpdateRequest getLocation() {
     return location;

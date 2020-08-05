@@ -1158,13 +1158,13 @@ class ActivityControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility",
-            id,
-            activity.getId())
-            .content(jsonString1)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility",
+                    id,
+                    activity.getId())
+                .content(jsonString1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     String jsonString =
@@ -1226,7 +1226,7 @@ class ActivityControllerTest {
 
     mvc.perform(
         MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
+                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
             .content(jsonString1)
             .contentType(MediaType.APPLICATION_JSON)
             .session(session));
@@ -1534,10 +1534,10 @@ class ActivityControllerTest {
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated());
     List<Activity> otherUsersActivities = activityRepository.findByProfile_IdAndArchivedFalse(id);
     org.junit.jupiter.api.Assertions.assertFalse(otherUsersActivities.isEmpty());
@@ -1561,10 +1561,10 @@ class ActivityControllerTest {
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", nonExistingProfileId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", nonExistingProfileId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
 
@@ -1701,11 +1701,11 @@ class ActivityControllerTest {
         "{\n" + "  \"visibility\": \"restricted\",\n" + "  \"accessors\":[ \n" + "  ]\n" + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(removeAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(removeAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertEquals(
@@ -1753,11 +1753,11 @@ class ActivityControllerTest {
         "{\n" + "  \"visibility\": \"restricted\",\n" + "  \"accessors\":[ \n" + "  ]\n" + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(removeAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(removeAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertEquals(
@@ -1816,11 +1816,11 @@ class ActivityControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(retainAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(retainAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertEquals(
@@ -1877,11 +1877,11 @@ class ActivityControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(retainAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(retainAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertEquals(
@@ -1932,11 +1932,11 @@ class ActivityControllerTest {
         "{\n" + "  \"visibility\": \"private\",\n" + "  \"accessors\":[ \n" + "  ]\n" + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(removeAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(removeAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isOk());
 
     Assert.assertEquals(0, activityRoleRepository.findMembersCount(activityId, 4));
@@ -1988,11 +1988,11 @@ class ActivityControllerTest {
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
-            .content(removeAccess)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility", id, activityId)
+                .content(removeAccess)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isBadRequest());
   }
 
@@ -2018,10 +2018,10 @@ class ActivityControllerTest {
 
     String activityId =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
@@ -2052,13 +2052,78 @@ class ActivityControllerTest {
 
     String activityId =
         mvc.perform(
-            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isBadRequest())
             .andReturn()
             .getResponse()
             .getContentAsString();
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void createActivityAndMetricHasNoUnitReturnStatusBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"description\": \"Herculees\", \"title\": \"Hmmmmmmmm\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    String activityId =
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void createActivityWithEmptyMetricListReturnStatusCreatedAndActivityHasNoMetric()
+      throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "  ]\n"
+            + "}\n";
+
+    String activityId =
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(
+        activityRepository.findById(Integer.parseInt(activityId)).get().getMetrics().isEmpty());
   }
 }
