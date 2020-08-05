@@ -23,6 +23,7 @@ import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
+import com.springvuegradle.team6.requests.CreateActivityResult;
 import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
@@ -939,5 +940,46 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  @PostMapping("/profiles/{profileId}/activities/{activityId}/result")
+  public ResponseEntity createActivityResult(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid CreateActivityResult request,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+    if (activity.getVisibilityType().equals(VisibilityType.Restricted)) {
+      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      }
+    }
+
+    if (activity.getVisibilityType().equals(VisibilityType.Private)) {
+      if (!activity.getProfile().getId().equals(profileId)) {
+        return new ResponseEntity("Only owner can add new results", HttpStatus.UNAUTHORIZED);
+      }
+    }
+
+    Optional<ActivityQualificationMetrics> metric = activityQualificationMetricsRepository.findById(request.getMetricId());
+
+    return new ResponseEntity("Saved", HttpStatus.OK);
   }
 }
