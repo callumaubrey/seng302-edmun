@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
+import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;

@@ -5,6 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
+import com.springvuegradle.team6.models.entities.ActivityResultDistance;
+import com.springvuegradle.team6.models.entities.ActivityResultDuration;
+import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -13,10 +18,12 @@ import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.SubscribeMethod;
 import com.springvuegradle.team6.models.entities.SubscriptionHistory;
 import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.Unit;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -29,6 +36,8 @@ import com.springvuegradle.team6.requests.EditActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityTypeRequest;
 import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -85,6 +94,7 @@ public class ActivityController {
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
+  private final ActivityResultRepository activityResultRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -94,7 +104,8 @@ public class ActivityController {
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricRepository activityQualificationMetricRepository) {
+      ActivityQualificationMetricRepository activityQualificationMetricRepository,
+      ActivityResultRepository activityResultRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -103,6 +114,7 @@ public class ActivityController {
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
+    this.activityResultRepository = activityResultRepository;
   }
 
   /**
@@ -940,46 +952,5 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
-  }
-
-  @PostMapping("/profiles/{profileId}/activities/{activityId}/result")
-  public ResponseEntity createActivityResult(
-      @PathVariable int profileId,
-      @PathVariable int activityId,
-      @RequestBody @Valid CreateActivityResult request,
-      HttpSession session) {
-    Object id = session.getAttribute("id");
-
-    if (id == null) {
-      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
-    }
-
-    Profile profile = profileRepository.findById(profileId);
-    if (profile == null) {
-      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
-    }
-
-    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-    if (optionalActivity.isEmpty()) {
-      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
-    }
-
-    Activity activity = optionalActivity.get();
-    if (activity.getVisibilityType().equals(VisibilityType.Restricted)) {
-      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
-      if (activityRoles.isEmpty()) {
-        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
-      }
-    }
-
-    if (activity.getVisibilityType().equals(VisibilityType.Private)) {
-      if (!activity.getProfile().getId().equals(profileId)) {
-        return new ResponseEntity("Only owner can add new results", HttpStatus.UNAUTHORIZED);
-      }
-    }
-
-    Optional<ActivityQualificationMetrics> metric = activityQualificationMetricsRepository.findById(request.getMetricId());
-
-    return new ResponseEntity("Saved", HttpStatus.OK);
   }
 }

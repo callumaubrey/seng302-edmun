@@ -15,24 +15,29 @@ public class ActivityQualificationMetric {
   @Id
   @GeneratedValue
   private int id;
+
   /**
    * The title of the qualification metric
    */
   private String title;
+
   /**
    * The description of the qualification metric
    */
   private String description;
+
   /**
    * The activity this instance is associated with
    */
   @ManyToOne
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
+
   /**
    * Boolean to rank metrics in different orders.
    */
   private boolean rankByAsc;
+
   /**
    * The Unit Enmun associated with this instance
    */
@@ -41,11 +46,14 @@ public class ActivityQualificationMetric {
   public ActivityQualificationMetric() {
   }
 
+  public int getId() {
+    return id;
+  }
+
   public void setActivity(Activity activity) {
     this.activity = activity;
   }
 
-  // =========GETTERS================
   public Unit getUnit() {
     return this.unit;
   }
@@ -61,6 +69,7 @@ public class ActivityQualificationMetric {
   public String getDescription() {
     return this.description;
   }
+
   public void setDescription(String description) {
     this.description = description;
   }
