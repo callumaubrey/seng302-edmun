@@ -648,4 +648,77 @@ public class ActivityMetricControllerTest {
             .session(session))
         .andExpect(status().is4xxClientError());
   }
+
+  @Test
+  void participantCreatesResultForAnotherParticipantReturns4xx() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    Profile profile2 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("example12@email.com"));
+    profile2.setEmails(email2);
+    profile2.setPassword("Password1");
+    profile2 = profileRepository.save(profile2);
+
+    ActivityRole activityRole2 = new ActivityRole();
+    activityRole2.setActivity(activity);
+    activityRole2.setProfile(profile1);
+    activityRole2.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole2);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonString =
+        "{\n" +
+            "  \"metric_id\": \"" + metric.getId() + "\",\n" +
+            "  \"value\": \"10\"\n" +
+            "}";
+
+    String jsonStringUser =
+        "{\n" +
+            "  \"email\": \"example1@email.com\",\n" +
+            "  \"password\": \"Password1\"\n" +
+            "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result", profile2.getId(), activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
 }
