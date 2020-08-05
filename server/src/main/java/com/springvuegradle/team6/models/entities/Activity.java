@@ -3,6 +3,7 @@ package com.springvuegradle.team6.models.entities;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +12,10 @@ import java.util.Set;
 
 @Entity
 public class Activity {
+
+  // Constants
+  public static final int NAME_MAX_LENGTH = 128;
+  public static final int DESCRIPTION_MAX_LENGTH = 2048;
 
   /** This constructor is used for testing purposes only */
   public Activity() {
@@ -32,10 +37,12 @@ public class Activity {
     this.activityTypes = request.activityTypes;
     this.tags = request.hashTags;
     this.continuous = request.continuous;
+
     if (!this.continuous) {
       this.startTime = request.startTime;
       this.endTime = request.endTime;
     }
+
     if (request.location != null) {
       this.location = new NamedLocation(
           request.location.country, request.location.state, request.location.city);
@@ -56,8 +63,12 @@ public class Activity {
   @JoinColumn(name = "author_id", nullable = false)
   private Profile profile;
 
+  @Size(max=NAME_MAX_LENGTH)
+  @Column(length=NAME_MAX_LENGTH)
   private String activityName;
 
+  @Size(max=DESCRIPTION_MAX_LENGTH)
+  @Column(length=DESCRIPTION_MAX_LENGTH)
   private String description;
 
   @ElementCollection(targetClass = ActivityType.class)
@@ -94,6 +105,9 @@ public class Activity {
 
   @Enumerated(EnumType.ORDINAL)
   private VisibilityType visibilityType;
+
+  @OneToMany(mappedBy = "activity")
+  private List<ActivityQualificationMetrics> activityQualificationMetrics;
 
   public String getActivityName() {
     return activityName;
@@ -213,6 +227,11 @@ public class Activity {
     Activity activity = (Activity) o;
 
     return this.id == activity.getId();
+  }
+
+  @Override
+  public int hashCode() {
+    return this.id;
   }
 
   public Collection<Profile> getSubscribers() {

@@ -6,6 +6,7 @@ import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -17,9 +18,11 @@ public class EditActivityRequest {
 
   @NotNull
   @NotEmpty
+  @Length(max=Activity.NAME_MAX_LENGTH)
   @JsonProperty("activity_name")
   public String activityName;
 
+  @Length(max=Activity.DESCRIPTION_MAX_LENGTH)
   @JsonProperty("description")
   public String description;
 
