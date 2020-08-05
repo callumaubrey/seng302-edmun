@@ -17,7 +17,7 @@ public class ActivityResultDuration extends ActivityResult {
   private Duration result;
 
   public ActivityResultDuration(
-      ActivityQualificationMetrics metricId, Profile userId, Duration result) {
+      ActivityQualificationMetric metricId, Profile userId, Duration result) {
     super(metricId, userId);
     this.result = result;
   }

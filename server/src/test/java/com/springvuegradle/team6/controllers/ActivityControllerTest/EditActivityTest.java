@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetrics;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -16,7 +16,7 @@ import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.Unit;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricsRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -64,7 +63,7 @@ class EditActivityTest {
   private ActivityRoleRepository activityRoleRepository;
 
   @Autowired
-  private ActivityQualificationMetricsRepository activityQualificationMetricsRepository;
+  private ActivityQualificationMetricRepository activityQualificationMetricRepository;
 
   private int id;
 
@@ -957,12 +956,12 @@ class EditActivityTest {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Create metric
-    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
-    activityQualificationMetricsRepository.save(metric);
+    activityQualificationMetricRepository.save(metric);
 
-    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
     metrics.add(metric);
     activity.setMetrics(metrics);
 
@@ -989,7 +988,7 @@ class EditActivityTest {
             .session(session))
         .andExpect(status().isOk());
 
-    ActivityQualificationMetrics metricAfter =
+    ActivityQualificationMetric metricAfter =
         activityRepository.findById(activityId).get().getMetrics().get(0);
     org.junit.jupiter.api.Assertions.assertEquals(Unit.Distance, metricAfter.getUnit());
     org.junit.jupiter.api.Assertions.assertEquals("I can go the distance", metricAfter.getTitle());
@@ -1005,12 +1004,12 @@ class EditActivityTest {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Create metric
-    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
-    activityQualificationMetricsRepository.save(metric);
+    activityQualificationMetricRepository.save(metric);
 
-    List<ActivityQualificationMetrics> metrics = new ArrayList<>();
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
     metrics.add(metric);
     activity.setMetrics(metrics);
 
@@ -1037,7 +1036,7 @@ class EditActivityTest {
             .session(session))
         .andExpect(status().isBadRequest());
 
-    ActivityQualificationMetrics metricAfter =
+    ActivityQualificationMetric metricAfter =
         activityRepository.findById(activityId).get().getMetrics().get(0);
     org.junit.jupiter.api.Assertions.assertEquals(Unit.Count, metricAfter.getUnit());
     Assertions.assertNull(metricAfter.getTitle());
@@ -1052,12 +1051,12 @@ class EditActivityTest {
     Activity activity = activityRepository.findById(activityId).get();
 
     // Create metric
-    ActivityQualificationMetrics metric = new ActivityQualificationMetrics();
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
-    activityQualificationMetricsRepository.save(metric);
+    activityQualificationMetricRepository.save(metric);
 
-    List<ActivityQualificationMetrics> metricsBefore = new ArrayList<>();
+    List<ActivityQualificationMetric> metricsBefore = new ArrayList<>();
     metricsBefore.add(metric);
     activity.setMetrics(metricsBefore);
 
@@ -1083,7 +1082,7 @@ class EditActivityTest {
             .session(session))
         .andExpect(status().isOk());
 
-    List<ActivityQualificationMetrics> metricsAfter =
+    List<ActivityQualificationMetric> metricsAfter =
         activityRepository.findById(activityId).get().getMetrics();
     org.junit.jupiter.api.Assertions.assertEquals(metricsBefore.size() - 1, metricsAfter.size());
   }
