@@ -559,4 +559,6 @@ public class ActivityMetricControllerTest {
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile.getId());
     Assert.assertEquals(1, results.size());
   }
+
+
 }
