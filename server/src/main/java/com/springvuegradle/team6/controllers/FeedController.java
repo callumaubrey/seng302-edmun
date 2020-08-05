@@ -1,7 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
 import com.springvuegradle.team6.models.entities.SubscriptionHistory;
+import com.springvuegradle.team6.models.entities.UnsubscribeMethod;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -80,19 +82,28 @@ public class FeedController {
           }
         }
 
+        String subscribeMessage = "Subscribed to the activity: ";
+        if (subscriptionHistory.getSubscribeMethod() == SubscribeMethod.ADDED) {
+          subscribeMessage = "Added to the activity: ";
+        }
+
         FeedResponse feed =
             new FeedResponse(
                 subscriptionHistory.getActivity().getId(),
-                "Subscribed to the activity: "
+                subscribeMessage
                     + subscriptionHistory.getActivity().getActivityName()
                     + ".",
                 subscriptionHistory.getStartDateTime().toString());
         feeds.add(feed);
         if (subscriptionHistory.getEndDateTime() != null) {
+          String unsubscribeMessage = "Unsubscribed from the activity: ";
+          if (subscriptionHistory.getUnsubscribeMethod() == UnsubscribeMethod.REMOVED) {
+            unsubscribeMessage = "Removed from the activity: ";
+          }
           FeedResponse feed1 =
               new FeedResponse(
                   subscriptionHistory.getActivity().getId(),
-                  "Unsubscribed to the activity: "
+                  unsubscribeMessage
                       + subscriptionHistory.getActivity().getActivityName()
                       + ".",
                   subscriptionHistory.getEndDateTime().toString());
