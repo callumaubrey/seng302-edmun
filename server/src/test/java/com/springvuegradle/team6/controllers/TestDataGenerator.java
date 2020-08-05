@@ -101,6 +101,7 @@ public class TestDataGenerator {
         activityMetrics.setActivity(activity);
         activityMetrics.setUnit(unit);
         activityMetrics.setDescription("Dummy");
+        activityMetrics.setTitle("test");
         metricRepo.save(activityMetrics);
         return activityMetrics;
     }
