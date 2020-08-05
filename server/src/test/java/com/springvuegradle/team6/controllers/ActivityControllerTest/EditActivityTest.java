@@ -957,6 +957,7 @@ class EditActivityTest {
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
+    metric.setTitle("Hercules");
     activityQualificationMetricRepository.save(metric);
 
     List<ActivityQualificationMetric> metrics = new ArrayList<>();
@@ -1136,47 +1137,5 @@ class EditActivityTest {
         activityRepository.findById(activityId).get().getMetrics().isEmpty());
   }
 
-  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
-  // LazyInitializationException
-  @Test
-  void removeActivityMetricUsingEditActivityRequestReturnStatusOkAndActivityMetricIsRemoved()
-      throws Exception {
-    Activity activity = activityRepository.findById(activityId).get();
 
-    // Create metric
-    ActivityQualificationMetric metric = new ActivityQualificationMetric();
-    metric.setActivity(activity);
-    metric.setUnit(Unit.Count);
-    activityQualificationMetricRepository.save(metric);
-
-    List<ActivityQualificationMetric> metricsBefore = new ArrayList<>();
-    metricsBefore.add(metric);
-    activity.setMetrics(metricsBefore);
-
-    String jsonString =
-        "{\n"
-            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
-            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
-            + "  \"activity_type\":[ \n"
-            + "    \"Walk\"\n"
-            + "  ],\n"
-            + "  \"continuous\": true,\n"
-            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
-            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
-            + "  \"metrics\": [\n"
-            + "  ]\n"
-            + "}\n";
-
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isOk());
-
-    List<ActivityQualificationMetric> metricsAfter =
-        activityRepository.findById(activityId).get().getMetrics();
-    org.junit.jupiter.api.Assertions.assertEquals(metricsBefore.size() - 1, metricsAfter.size());
-  }
 }
