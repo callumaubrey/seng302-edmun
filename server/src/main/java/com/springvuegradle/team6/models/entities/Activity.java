@@ -118,7 +118,7 @@ public class Activity {
   private VisibilityType visibilityType;
 
   @OneToMany(mappedBy = "activity")
-  private List<ActivityQualificationMetrics> activityQualificationMetrics;
+  private List<ActivityQualificationMetric> activityQualificationMetrics;
 
   public String getActivityName() {
     return activityName;
@@ -225,11 +225,11 @@ public class Activity {
     this.visibilityType = visibilityType;
   }
 
-  public List<ActivityQualificationMetrics> getMetrics() {
+  public List<ActivityQualificationMetric> getMetrics() {
     return this.activityQualificationMetrics;
   }
 
-  public void setMetrics(List<ActivityQualificationMetrics> metrics) {
+  public void setMetrics(List<ActivityQualificationMetric> metrics) {
     this.activityQualificationMetrics = metrics;
   }
 

@@ -7,7 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class ActivityQualificationMetrics {
+public class ActivityQualificationMetric {
 
   /**
    * Each activity qualification metric instance has its own unique id
@@ -38,7 +38,7 @@ public class ActivityQualificationMetrics {
    */
   private Unit unit;
 
-  public ActivityQualificationMetrics() {
+  public ActivityQualificationMetric() {
   }
 
   public void setActivity(Activity activity) {
@@ -60,5 +60,8 @@ public class ActivityQualificationMetrics {
 
   public String getDescription() {
     return this.description;
+  }
+  public void setDescription(String description) {
+    this.description = description;
   }
 }
