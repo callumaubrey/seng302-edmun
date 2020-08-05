@@ -1,5 +1,6 @@
 <template>
     <div id="app" v-if="isLoggedIn">
+        <Notification></Notification>
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
         <div v-if="archived">
             <h1 align="center">This activity has been deleted</h1>
@@ -108,6 +109,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
+    import Notification from "../../components/Notification";
     import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
@@ -124,7 +126,8 @@
             FollowerUserList,
             FollowerSummary,
             ShareActivity,
-            ForbiddenMessage
+            ForbiddenMessage,
+            Notification
         },
         data: function () {
             return {

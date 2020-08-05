@@ -1,7 +1,6 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn"></NavBar>
-        <Notification></Notification>
         <div class="container">
             <b-container fluid>
                 <b-row>
@@ -482,6 +481,7 @@
                             const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
+                            store.newNotification('Activity created successfully', 'success', 4)
                             currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
