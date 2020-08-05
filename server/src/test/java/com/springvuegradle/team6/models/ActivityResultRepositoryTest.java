@@ -54,6 +54,7 @@ public class ActivityResultRepositoryTest {
     ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
+    activityMetrics.setTitle("Hercules");
     activityMetrics.setDescription("Time to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
@@ -74,6 +75,7 @@ public class ActivityResultRepositoryTest {
     ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
+    activityMetrics.setTitle("Hercules");
     activityMetrics.setDescription("Time to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
@@ -93,6 +95,7 @@ public class ActivityResultRepositoryTest {
     ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
+    activityMetrics.setTitle("Hercules");
     activityMetrics.setDescription("Time to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
@@ -115,12 +118,14 @@ public class ActivityResultRepositoryTest {
     ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
+    activityMetrics.setTitle("Hercules");
     activityMetrics.setDescription("Distance to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
     ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
     activityMetrics2.setActivity(activity);
     activityMetrics2.setUnit(Unit.TimeDuration);
+    activityMetrics2.setTitle("Hercules");
     activityMetrics2.setDescription("Time to run up hill");
     activityMetricsRepository.save(activityMetrics2);
 
@@ -140,12 +145,14 @@ public class ActivityResultRepositoryTest {
     ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
     activityMetrics.setActivity(activity);
     activityMetrics.setUnit(Unit.Distance);
+    activityMetrics.setTitle("Hercules");
     activityMetrics.setDescription("Distance to run up hill");
     activityMetricsRepository.save(activityMetrics);
 
     ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
     activityMetrics2.setActivity(activity);
     activityMetrics2.setUnit(Unit.TimeDuration);
+    activityMetrics2.setTitle("Hercules");
     activityMetrics2.setDescription("Time to run up hill");
     activityMetricsRepository.save(activityMetrics2);
 

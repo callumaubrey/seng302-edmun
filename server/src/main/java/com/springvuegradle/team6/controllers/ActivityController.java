@@ -494,6 +494,8 @@ public class ActivityController {
 
     activityRepository.save(activity);
 
+    addMetricsToActivity(activity, request.metrics);
+
     SubscriptionHistory subscriptionHistory =
         new SubscriptionHistory(profile, activity, SubscribeMethod.SELF);
 
@@ -569,33 +571,26 @@ public class ActivityController {
       activity.setTags(hashtags);
     }
 
+    addMetricsToActivity(activity, request.metrics);
+  }
+
+  /**
+   * Method to add metrics to activity. Nothing will be done if no metric is passed into request
+   *
+   * @param activity       activity in the request
+   * @param requestMetrics metric list that was passed into request
+   */
+  private void addMetricsToActivity(
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
     List<ActivityQualificationMetric> metrics = new ArrayList<>();
-    if (request.metrics != null) {
-      for (ActivityQualificationMetric metric : request.metrics) {
+    if (requestMetrics != null) {
+      for (ActivityQualificationMetric metric : requestMetrics) {
         metric.setActivity(activity);
         activityQualificationMetricRepository.save(metric);
         metrics.add(metric);
       }
       activity.setMetrics(metrics);
     }
-  }
-
-  /**
-   * Check if activity metrics passed in request is valid. Metric unit is non nullable
-   *
-   * @param metrics list of metrics passed in request
-   * @return Bad request response entity if metric unit is null, otherwise null
-   */
-  private ResponseEntity<String> checkActivityMetricsValidity(
-      List<ActivityQualificationMetric> metrics) {
-    if (metrics != null) {
-      for (ActivityQualificationMetric metric : metrics) {
-        if (metric.getUnit() == null) {
-          return new ResponseEntity<>("Metric unit cannot be null", HttpStatus.BAD_REQUEST);
-        }
-      }
-    }
-    return null;
   }
 
   /**
@@ -657,13 +652,6 @@ public class ActivityController {
           checkEditActivityDateTime(request, activity);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
-      }
-
-      // Check metrics validity
-      ResponseEntity<String> checkActivityMetricsValidityResponse =
-          checkActivityMetricsValidity(request.metrics);
-      if (checkActivityMetricsValidityResponse != null) {
-        return checkActivityMetricsValidityResponse;
       }
 
       ObjectMapper mapper = new ObjectMapper();
