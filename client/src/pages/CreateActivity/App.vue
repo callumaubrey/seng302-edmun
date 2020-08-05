@@ -180,7 +180,7 @@
                         </b-col>
                     </b-row>
                     <b-row>
-                        <b-col >
+                        <b-col>
                             <label>Select sharing</label>
                             <b-form-select v-model=selectedVisibility :options="options" size="sm"/>
                             <br><br>
@@ -218,6 +218,7 @@
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
+    import {store} from "../../store";
 
     export default {
         mixins: [validationMixin, locationMixin],
@@ -256,9 +257,9 @@
                 },
                 selectedVisibility: 'Public',
                 options: [
-                    { value: 'Private', text: 'Private' },
-                    { value: 'Restricted', text: 'Restricted' },
-                    { value: 'Public', text: 'Public' }
+                    {value: 'Private', text: 'Private'},
+                    {value: 'Restricted', text: 'Restricted'},
+                    {value: 'Public', text: 'Public'}
                 ],
 
             }
@@ -453,6 +454,7 @@
                             const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
+                            store.newNotification('Activity created successfully', 'success', 4)
                             currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
@@ -479,6 +481,7 @@
                             const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
+                            store.newNotification('Activity created successfully', 'success', 4)
                             currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
@@ -557,10 +560,9 @@
                     .catch(function () {
                     });
             },
-            onChildClick: function(val) {
-               this.selectedVisibility = val
+            onChildClick: function (val) {
+                this.selectedVisibility = val
             }
-
 
 
         },
