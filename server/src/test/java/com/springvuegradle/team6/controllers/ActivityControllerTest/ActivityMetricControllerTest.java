@@ -95,6 +95,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -157,6 +158,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Distance);
     metric = activityQualificationMetricRepository.save(metric);
@@ -219,6 +221,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.TimeStartFinish);
     metric = activityQualificationMetricRepository.save(metric);
@@ -282,6 +285,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.TimeDuration);
     metric = activityQualificationMetricRepository.save(metric);
@@ -344,6 +348,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -402,6 +407,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -442,6 +448,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -490,6 +497,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -532,6 +540,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -569,6 +578,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -615,6 +625,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
@@ -655,6 +666,7 @@ public class ActivityMetricControllerTest {
 
     // Create metric
     ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
     metric.setActivity(activity);
     metric.setUnit(Unit.Count);
     metric = activityQualificationMetricRepository.save(metric);
