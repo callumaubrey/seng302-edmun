@@ -11,18 +11,15 @@ import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
-import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.requests.CreateActivityResult;
+import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
@@ -77,18 +74,21 @@ public class ActivityMetricController {
   }
 
   /**
+   * This endpoint creates a new activity result for a Participant of an activity
+   * An admin can create a new activity result for an owner and a participant
+   * An owner can create a new activity result for a participant
    *
    * @param profileId the user that is the activity result is for
    * @param activityId activity ID
-   * @param request
-   * @param session
+   * @param request the CreateActivityResultRequest class
+   * @param session the HttpSession
    * @return
    */
   @PostMapping("/profiles/{profileId}/activities/{activityId}/result")
   public ResponseEntity createActivityResult(
       @PathVariable int profileId,
       @PathVariable int activityId,
-      @RequestBody @Valid CreateActivityResult request,
+      @RequestBody @Valid CreateActivityResultRequest request,
       HttpSession session) {
     Object id = session.getAttribute("id");
 

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public class CreateActivityResult {
+public class CreateActivityResultRequest {
 
   @NotNull
   @JsonProperty("metric_id")
