@@ -12,9 +12,9 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
   /**
    * Gets all a particular users results for an activity.
    *
-   * @param activityId the activity the user wants to retrive the results for
+   * @param activityId the activity the user wants to retrieve the results for
    * @param userId the user that created the result
-   * @return the activity results and the metrics
+   * @return the activity results for that user
    */
   @Query(
       value =
@@ -22,4 +22,17 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
               + "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId ",
       nativeQuery = true)
   List<ActivityResult> findSingleUsersResultsOnActivity(int activityId, int userId);
+
+  /**
+   * Gets all results for an activity.
+   *
+   * @param activityId the activity the user wants to retrieve all results for
+   * @return the activity results
+   */
+  @Query(
+      value =
+          "select * from activity_result a LEFT JOIN activity_qualification_metric q on "
+              + "a.metric_id = q.id where q.activity_id = :activityId",
+      nativeQuery = true)
+  List<ActivityResult> findAllResultsForAnActivity(int activityId);
 }

@@ -4,6 +4,7 @@ import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
 import com.springvuegradle.team6.models.entities.ActivityResultDistance;
 import com.springvuegradle.team6.models.entities.ActivityResultDuration;
 import com.springvuegradle.team6.models.entities.Profile;
@@ -51,12 +52,7 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityOneActivityReturnSingleActivityResult() {
-    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-    activityMetrics.setActivity(activity);
-    activityMetrics.setUnit(Unit.Distance);
-    activityMetrics.setDescription("Time to run up hill");
-    activityMetricsRepository.save(activityMetrics);
-
+    ActivityQualificationMetric activityMetrics = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
     ActivityResultDistance activityResultDistance = new ActivityResultDistance(activityMetrics, profile, 5.2f);
     activityResultRepository.save(activityResultDistance);
 
@@ -67,11 +63,7 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityTwoActivityResultReturnTwoActivityResult() {
-    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-    activityMetrics.setActivity(activity);
-    activityMetrics.setUnit(Unit.Distance);
-    activityMetrics.setDescription("Time to run up hill");
-    activityMetricsRepository.save(activityMetrics);
+    ActivityQualificationMetric activityMetrics = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance = new ActivityResultDistance(activityMetrics, profile, 5.2f);
     activityResultRepository.save(activityResultDistance);
@@ -86,11 +78,7 @@ public class ActivityResultRepositoryTest {
   @Test
   void testFindActivityResultOfUserOnActivityManyActivityResultReturnManyActivityResult() {
     Profile anotherProfile = TestDataGenerator.createExtraProfile(profileRepository);
-    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-    activityMetrics.setActivity(activity);
-    activityMetrics.setUnit(Unit.Distance);
-    activityMetrics.setDescription("Time to run up hill");
-    activityMetricsRepository.save(activityMetrics);
+    ActivityQualificationMetric activityMetrics = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance = new ActivityResultDistance(activityMetrics, profile, 5.2f);
     activityResultRepository.save(activityResultDistance);
@@ -108,17 +96,8 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityDifferentActivityMetrics() {
-    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-    activityMetrics.setActivity(activity);
-    activityMetrics.setUnit(Unit.Distance);
-    activityMetrics.setDescription("Distance to run up hill");
-    activityMetricsRepository.save(activityMetrics);
-
-    ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
-    activityMetrics2.setActivity(activity);
-    activityMetrics2.setUnit(Unit.TimeDuration);
-    activityMetrics2.setDescription("Time to run up hill");
-    activityMetricsRepository.save(activityMetrics2);
+    ActivityQualificationMetric activityMetrics = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityQualificationMetric activityMetrics2 = TestDataGenerator.createDummyActivityMetric(activity, Unit.TimeDuration, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance = new ActivityResultDistance(activityMetrics, profile, 5.2f);
     activityResultRepository.save(activityResultDistance);
@@ -133,17 +112,8 @@ public class ActivityResultRepositoryTest {
 
   @Test
   void testFindActivityResultOfUserOnActivityTwoDifferentActivities() {
-    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-    activityMetrics.setActivity(activity);
-    activityMetrics.setUnit(Unit.Distance);
-    activityMetrics.setDescription("Distance to run up hill");
-    activityMetricsRepository.save(activityMetrics);
-
-    ActivityQualificationMetric activityMetrics2 = new ActivityQualificationMetric();
-    activityMetrics2.setActivity(activity);
-    activityMetrics2.setUnit(Unit.TimeDuration);
-    activityMetrics2.setDescription("Time to run up hill");
-    activityMetricsRepository.save(activityMetrics2);
+    ActivityQualificationMetric activityMetrics = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityQualificationMetric activityMetrics2 = TestDataGenerator.createDummyActivityMetric(activity, Unit.TimeDuration, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance = new ActivityResultDistance(activityMetrics, profile, 5.2f);
     activityResultRepository.save(activityResultDistance);
@@ -152,6 +122,65 @@ public class ActivityResultRepositoryTest {
 
     List<ActivityResult> results =
         activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(2, results.size());
+  }
+
+  @Test
+  void testFindAllActivityResultsWithOneResult() {
+    ActivityQualificationMetric metric = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityResultDistance activityResultDistance = new ActivityResultDistance(metric, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+
+    List<ActivityResult> results =
+        activityResultRepository.findAllResultsForAnActivity(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(1, results.size());
+  }
+
+  @Test
+  void testFindAllActivityResultsWithNoResults() {
+    List<ActivityResult> results =
+        activityResultRepository.findAllResultsForAnActivity(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(0, results.size());
+  }
+
+  @Test
+  void testFindAllActivityResultsWithTwoResults() {
+    ActivityQualificationMetric metric = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityResultDistance activityResultDistance = new ActivityResultDistance(metric, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+    ActivityResultDistance activityResultDistance2 = new ActivityResultDistance(metric, profile, 5.5f);
+    activityResultRepository.save(activityResultDistance2);
+
+    List<ActivityResult> results =
+        activityResultRepository.findAllResultsForAnActivity(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(2, results.size());
+  }
+
+  @Test
+  void testFindAllActivityResultsWithTwoDifferentUsersResults() {
+    ActivityQualificationMetric metric = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityResultDistance activityResultDistance = new ActivityResultDistance(metric, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+    Profile profile2 = TestDataGenerator.createExtraProfile(profileRepository);
+    ActivityResultDistance activityResultDistance2 = new ActivityResultDistance(metric, profile2, 5.5f);
+    activityResultRepository.save(activityResultDistance2);
+
+    List<ActivityResult> results =
+        activityResultRepository.findAllResultsForAnActivity(activity.getId());
+    org.junit.jupiter.api.Assertions.assertEquals(2, results.size());
+  }
+
+  @Test
+  void testFindAllActivityResultsWithTwoResultsForTwoDifferentMetrics() {
+    ActivityQualificationMetric metric = TestDataGenerator.createDummyActivityMetric(activity, Unit.Distance, activityMetricsRepository);
+    ActivityQualificationMetric metric2 = TestDataGenerator.createDummyActivityMetric(activity, Unit.Count, activityMetricsRepository);
+    ActivityResultDistance activityResultDistance = new ActivityResultDistance(metric, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+    ActivityResultCount activityResultCount = new ActivityResultCount(metric2, profile, 5);
+    activityResultRepository.save(activityResultCount);
+
+    List<ActivityResult> results =
+        activityResultRepository.findAllResultsForAnActivity(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(2, results.size());
   }
 
