@@ -199,6 +199,47 @@ public class FollowController {
   }
 
   /**
+   * Checks the user is logged in, that the user exists and is the author of the activity
+   *
+   * @param profileId the profileId to check
+   * @param activityId the activityId to check
+   * @param email the email String to check against a users profile
+   * @param session the HttpSession
+   * @return null if everything is OK. ResponseEntity if not
+   */
+  private ResponseEntity<String> checkUserIsAuthorAndExists(
+      int profileId,
+      int activityId,
+      String email,
+      HttpSession session) {
+    Profile creatorProfile = profileRepository.findById(profileId);
+    if (creatorProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+    Optional<Activity> activityOptional = activityRepository.findById(activityId);
+    if (activityOptional.isEmpty()) {
+      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = activityOptional.get();
+    if (!activity.getProfile().getId().equals(profileId)) {
+      return new ResponseEntity<>(
+          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    }
+    Optional<Email> optionalEmail = emailRepository.findByAddress(email);
+    if (optionalEmail.isEmpty()) {
+      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
+    }
+
+    Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
+    if (roleProfile == null) {
+      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    }
+
+    return null;
+  }
+
+  /**
    * Endpoint for creator of the activity to set activity roles for a user for their activity. If
    * user does not have a role and they are given a role higher than access then it also subscribes
    * them to the activity.
@@ -223,29 +264,16 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
+
     Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-    }
-
     Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-    }
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRoleFound =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
@@ -325,29 +353,14 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
-    Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
 
-    Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
-    }
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRoleFound =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);
@@ -396,30 +409,14 @@ public class FollowController {
       return authorisedResponse;
     }
 
-    Profile creatorProfile = profileRepository.findById(profileId);
-    if (creatorProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
-    Optional<Activity> activityOptional = activityRepository.findById(activityId);
-    if (activityOptional.isEmpty()) {
-      return new ResponseEntity("No such activity", HttpStatus.NOT_FOUND);
-    }
-
-    Activity activity = activityOptional.get();
-    if (!activity.getProfile().getId().equals(profileId)) {
-      return new ResponseEntity<>(
-          "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+    ResponseEntity<String> checks =
+        checkUserIsAuthorAndExists(profileId, activityId, request.getEmail(), session);
+    if (checks != null) {
+      return checks;
     }
 
     Optional<Email> optionalEmail = emailRepository.findByAddress(request.getEmail());
-    if (optionalEmail.isEmpty()) {
-      return new ResponseEntity("No such email", HttpStatus.NOT_FOUND);
-    }
-
     Profile roleProfile = profileRepository.findByEmailsContains(optionalEmail.get());
-    if (roleProfile == null) {
-      return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
-    }
 
     ActivityRole activityRole =
         activityRoleRepository.findByProfile_IdAndActivity_Id(roleProfile.getId(), activityId);

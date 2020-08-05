@@ -31,7 +31,7 @@ public class ActivityResult {
 
   @ManyToOne
   @JoinColumn(name = "metric_id", nullable = false)
-  private ActivityQualificationMetrics metricId;
+  private ActivityQualificationMetric metricId;
 
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
@@ -40,7 +40,7 @@ public class ActivityResult {
   @Column(name = "special_metric")
   private SpecialMetric specialMetric;
 
-  public ActivityResult(ActivityQualificationMetrics metricId, Profile userId) {
+  public ActivityResult(ActivityQualificationMetric metricId, Profile userId) {
     this.metricId = metricId;
     this.userId = userId;
     this.specialMetric = null;

@@ -62,4 +62,22 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
               + " order by a.creation_date desc",
       nativeQuery = true)
   List<Activity> getActivitiesByHashTag(String hashtagName, int profileId);
+
+  /**
+   * Returns activities that the acquiring user has access to, this function is only called after it
+   * has been established that the acquiring user is not an admin or the creator. Hence this
+   * function does not retrieve any private activities. The function should return all activities
+   * that are public and all the restricted activities that the acquiring user has access to. It
+   * should return no private activities
+   *
+   * @param activityOwner the activity owners id
+   * @param acquiringUser the acquiring users id
+   * @return list of activities
+   */
+  @Query(
+      value =
+          "select * from activity a left join activity_role r on a.id = r.activity_id and a.author_id = "
+              + " :activityOwner WHERE (a.visibility_type = 0 or r.profile_id = :acquiringUser)",
+      nativeQuery = true)
+  List<Activity> getPublicAndRestrictedActivities(int activityOwner, int acquiringUser);
 }

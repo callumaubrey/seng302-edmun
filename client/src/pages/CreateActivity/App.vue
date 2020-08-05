@@ -194,7 +194,7 @@
                             <b-button type="submit" variant="primary">Submit</b-button>
                         </b-col>
                         <b-col sm="2">
-                            <b-button @click="goToActivitiesList">Your Activities</b-button>
+                            <b-button @click="goToActivities">Your Activities</b-button>
                         </b-col>
                     </b-row>
 
@@ -449,12 +449,14 @@
                         location: this.locationData,
                         hashtags: this.hashtag.values,
                         visibility: this.selectedVisibility
-                    }
+                    };
                     api.createActivity(userId, data)
-                        .then(function () {
+                        .then(function (res) {
+                            const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            currentObj.goToActivitiesList();
+                            store.newNotification('Activity created successfully', 'success', 4)
+                            currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
@@ -474,14 +476,13 @@
                         activity_type: this.form.selectedActivityTypes, continuous: false, start_time: isoDates[0],
                         visibility: this.selectedVisibility,
                         end_time: isoDates[1]
-                    }
+                    };
                     api.createActivity(userId, data)
-                        .then(function (response) {
-                            console.log(response);
+                        .then(function (res) {
+                            const activityId = res.data;
                             currentObj.activityErrorMessage = "";
                             currentObj.activityUpdateMessage = "'" + currentObj.form.name + "' was successfully added to your activities";
-                            alert(currentObj.form.name + " was successfully added to your list of activities");
-                            currentObj.goToActivitiesList();
+                            currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                         })
                         .catch(function (error) {
                             currentObj.activityUpdateMessage = "";
@@ -542,10 +543,9 @@
                     .catch(function () {
                     });
             },
-            goToActivitiesList() {
+            goToActivities() {
                 const profileId = this.$route.params.id;
-                store.newNotification('Activity created successfully', 'success', 4)
-                this.$router.push('/profiles/' + profileId + '/activities/');
+                this.$router.push('/profiles/' + profileId + '/activities');
             },
             checkAuthorized: async function () {
                 let currentObj = this;
