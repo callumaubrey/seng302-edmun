@@ -109,7 +109,6 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
-    import Notification from "../../components/Notification";
     import FollowUnfollow from "@/components/FollowUnfollow.vue";
     import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
     import FollowerUserList from "../../components/Activity/FollowerUserList";
@@ -126,8 +125,7 @@
             FollowerUserList,
             FollowerSummary,
             ShareActivity,
-            ForbiddenMessage,
-            Notification
+            ForbiddenMessage
         },
         data: function () {
             return {
