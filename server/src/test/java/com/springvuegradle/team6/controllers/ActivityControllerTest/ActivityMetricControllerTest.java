@@ -6,12 +6,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
@@ -50,6 +52,8 @@ public class ActivityMetricControllerTest {
   @Autowired private ActivityResultRepository activityResultRepository;
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired private ActivityHistoryRepository activityHistoryRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -150,6 +154,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -213,6 +220,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -277,6 +287,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -340,6 +353,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -484,6 +500,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -524,6 +543,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activity.getId());
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -567,6 +589,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activity.getId());
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
@@ -614,6 +639,9 @@ public class ActivityMetricControllerTest {
 
     List<net.minidev.json.JSONObject> results = activityResultRepository.findSingleUsersResultsOnActivity(activity.getId(), profile1.getId());
     Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory = activityHistoryRepository.findByActivity_id(activityId);
+    Assert.assertEquals(1, foundHistory.size());
   }
 
   @Test
