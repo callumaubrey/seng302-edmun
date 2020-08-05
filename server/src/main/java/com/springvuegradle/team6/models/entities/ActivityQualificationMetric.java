@@ -63,6 +63,10 @@ public class ActivityQualificationMetric {
   public void setTitle(String title) {this.title = title; }
 
   // =========GETTERS================
+  public int getId() {
+    return id;
+  }
+
   public Unit getUnit() {
     return this.unit;
   }
@@ -78,5 +82,4 @@ public class ActivityQualificationMetric {
   public boolean getRankByAsc() {
     return this.rankByAsc;
   }
-
 }
