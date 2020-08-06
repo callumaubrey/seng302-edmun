@@ -226,7 +226,7 @@ public class ActivityMetricController {
 
     Profile profile = profileRepository.findById(profileId);
     if (profile == null) {
-      return new ResponseEntity("User does not exist OWNER", HttpStatus.NOT_FOUND);
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
     }
 
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
