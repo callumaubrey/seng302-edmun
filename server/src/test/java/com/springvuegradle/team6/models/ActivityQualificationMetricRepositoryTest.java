@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Unit;
 import com.springvuegradle.team6.models.repositories.*;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,8 @@ public class ActivityQualificationMetricRepositoryTest {
     void testSingleMetricFindByActivityId() {
 
         ActivityQualificationMetric qualificationMetric = new ActivityQualificationMetric();
+        qualificationMetric.setTitle("metric1");
+        qualificationMetric.setUnit(Unit.Count);
         qualificationMetric.setActivity(activityRepository.findById(activityId).get());
         activityQualificationMetricRepository.save(qualificationMetric);
 
@@ -73,9 +76,13 @@ public class ActivityQualificationMetricRepositoryTest {
     void testMultipleMetricFindByActivityId() {
 
         ActivityQualificationMetric qualificationMetric1 = new ActivityQualificationMetric();
+        qualificationMetric1.setTitle("metric1");
+        qualificationMetric1.setUnit(Unit.Count);
         qualificationMetric1.setActivity(activityRepository.findById(activityId).get());
 
         ActivityQualificationMetric qualificationMetric2 = new ActivityQualificationMetric();
+        qualificationMetric2.setTitle("metric2");
+        qualificationMetric2.setUnit(Unit.Count);
         qualificationMetric2.setActivity(activityRepository.findById(activityId).get());
 
         activityQualificationMetricRepository.save(qualificationMetric1);
