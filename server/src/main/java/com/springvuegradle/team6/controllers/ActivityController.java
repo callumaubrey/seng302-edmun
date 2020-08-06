@@ -546,6 +546,8 @@ public class ActivityController {
           activity.setLocation(location);
         }
       }
+    } else {
+      activity.setLocation(null);
     }
 
     Set<Tag> hashtags = new HashSet<>();
