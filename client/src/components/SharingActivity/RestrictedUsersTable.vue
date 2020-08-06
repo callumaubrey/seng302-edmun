@@ -11,15 +11,16 @@
       </template>
       <!-- This v-slot deals with selecting the role for the user-->
       <template v-slot:cell(role)="row">
-        <b-form-select v-model="row.item.role" :options="activityRoles" v-on:change="emitToParent"></b-form-select>
+        <b-form-select v-model="row.item.role" :options="activityRoles"
+                       v-on:change="rowChanged(row)"></b-form-select>
       </template>
     </b-table>
 
-    <b-button id="select-all-button" v-on:click="selectAll(data.users)" style="margin-right: 5px">
+    <b-button id="select-all-button" v-on:click="selectAll" style="margin-right: 5px">
       Select All
     </b-button>
 
-    <b-button id="deselect-all-button" v-on:click="deselectAll(data.users)">
+    <b-button id="deselect-all-button" v-on:click="deselectAll">
       Deselect All
     </b-button>
   </div>
@@ -31,7 +32,6 @@
     props: ['roleData', 'activityRoles'],
     data() {
       return {
-        // fields: ['name', 'email', 'role', 'selected'],
         fields: [
           {
             key: 'full_name',
@@ -50,7 +50,25 @@
             key: 'selected'
           }
         ],
-        data: this.roleData
+        data: {
+          users: [
+            {
+              name: "John Doe",
+              email: "johndoe@doe.com",
+              role: "organiser",
+              selected: false,
+              _rowVariant: 'danger'
+            },
+            {
+              name: "James Smith",
+              email: "jamessmith@google.com",
+              role: "organiser",
+              selected: true,
+              _rowVariant: 'none'
+            },
+          ]
+
+        }
       }
     },
     methods: {
@@ -64,43 +82,21 @@
         } else {
           row.item._rowVariant = 'none';
         }
-        this.emitToParent();
+        this.rowChanged(row)
       },
-      /**
-       * Checks the selected check box for all users
-       * @param users all the users in the table
-       */
-      selectAll: function (users) {
-        let i;
-        let len = users.length
-        for (i = 0; i < len; i++) {
-          let user = users[i]
-          user.selected = true;
-          user._rowVariant = 'none';
-        }
-        this.emitToParent();
+      selectAll: function () {
+        this.$emit('selectAll')
       },
-      /**
-       * Unchecks the selected check box for all users
-       * @param users all the users in the table
-       */
-      deselectAll: function (users) {
-        let i;
-        let len = users.length
-        for (i = 0; i < len; i++) {
-          let user = users[i]
-          user.selected = false;
-          user._rowVariant = 'danger';
-        }
-        this.emitToParent();
+      deselectAll: function () {
+        this.$emit('deselectAll')
       },
-      /**
-       * Emits changes to the parent whenever this function is called.
-       * This function should be called whenever data is changed.
-       */
-      emitToParent () {
-        this.$emit('childToParent', this.data)
+      rowChanged(row) {
+
+        this.$emit('rowChanged', row)
       }
+    },
+    beforeMount() {
+      this.data = this.roleData;
     }
   }
 </script>
