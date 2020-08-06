@@ -1122,7 +1122,7 @@ class ActivityControllerTest {
   }
 
   @Test
-  void getRestrictedActivityWithAccess() throws Exception {
+  void getRestrictedActivityWithAccessRoleReturnStatusOk() throws Exception {
     Activity activity = new Activity();
     Profile profile = profileRepository.findById(id);
     activity.setProfile(profile);
@@ -1131,42 +1131,20 @@ class ActivityControllerTest {
     activity.setVisibilityTypeByString("restricted");
     activity = activityRepository.save(activity);
 
-    Profile profile2 = new Profile();
-    profile2.setFirstname("Doe");
-    profile2.setLastname("John");
-    Set<Email> email2 = new HashSet<Email>();
-    email2.add(new Email("doe@email.com"));
-    profile2.setEmails(email2);
-    profileRepository.save(profile2);
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Martin");
+    profile1.setLastname("Johns");
+    profile1.setPassword("Password1");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("martin@email.com"));
+    profile1.setEmails(email1);
+    profileRepository.save(profile1);
 
-    Profile profile3 = new Profile();
-    profile3.setFirstname("Martin");
-    profile3.setLastname("Johns");
-    profile3.setPassword("Password1");
-    Set<Email> email3 = new HashSet<Email>();
-    email3.add(new Email("martin@email.com"));
-    profile3.setEmails(email3);
-    profileRepository.save(profile3);
-
-    String jsonString1 =
-        "{\n"
-            + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\": [\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
-            + "}";
-
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/visibility",
-                    id,
-                    activity.getId())
-                .content(jsonString1)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-        .andExpect(status().isOk());
-
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile1);
+    activityRole1.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole1);
     String jsonString =
         "{\r\n  \"email\": \"martin@email.com\",\r\n  \"password\": \"Password1\"\r\n}";
 
@@ -1290,30 +1268,43 @@ class ActivityControllerTest {
         "{\n"
             + "  \"visibility\": \"restricted\",\n"
             + "  \"accessors\": [\n"
-            + "    \"johnny@email.com\",\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
+            + "    {\n"
+            + "      \"email\": \"johnny@email.com\",\n"
+            + "      \"role\": \"access\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"email\" : \"doe@email.com\",\n"
+            + "      \"role\": \"access\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"email\" : \"martin@email.com\",\n"
+            + "      \"role\": \"access\"\n"
+            + "    }\n"
+            + "  ]         \n"
             + "}";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility",
+                    id,
+                    activity.getId())
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
     org.junit.jupiter.api.Assertions.assertEquals(3, result.size());
   }
 
   @Test
-  void putActivityVisibilityDelete() throws Exception {
+  void testChangeActivityVisibilityRestrictedReturnsStatusOkRemovesUsers() throws Exception {
     Profile owner = profileRepository.findById(id);
     Activity activity = new Activity();
     activity.setActivityName("testing my run");
     activity.setContinuous(true);
     activity.setProfile(owner);
+    activity.setVisibilityType(VisibilityType.Public);
     activity = activityRepository.save(activity);
 
     Profile profile1 = new Profile();
@@ -1340,41 +1331,58 @@ class ActivityControllerTest {
     profile3.setEmails(email3);
     profileRepository.save(profile3);
 
-    String jsonString1 =
-        "{\n"
-            + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\": [\n"
-            + "    \"johnny@email.com\",\n"
-            + "    \"doe@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
-            + "}";
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRole.setActivity(activity);
+    activityRole.setProfile(owner);
+    activityRoleRepository.save(activityRole);
 
-    mvc.perform(
-        MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-            .content(jsonString1)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivityRoleType(ActivityRoleType.Access);
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile1);
+    activityRoleRepository.save(activityRole1);
+
+    ActivityRole activityRole2 = new ActivityRole();
+    activityRole2.setActivityRoleType(ActivityRoleType.Access);
+    activityRole2.setActivity(activity);
+    activityRole2.setProfile(profile2);
+    activityRoleRepository.save(activityRole2);
+
+    ActivityRole activityRole3 = new ActivityRole();
+    activityRole3.setActivityRoleType(ActivityRoleType.Access);
+    activityRole3.setActivity(activity);
+    activityRole3.setProfile(profile3);
+    activityRoleRepository.save(activityRole3);
 
     String jsonString2 =
         "{\n"
             + "  \"visibility\": \"restricted\",\n"
             + "  \"accessors\": [\n"
-            + "    \"johnny@email.com\",\n"
-            + "    \"martin@email.com\"\n"
-            + "  ]\n"
-            + "}";
+            + "    {\n"
+            + "      \"email\": \"johnny@email.com\",\n"
+            + "      \"role\": \"access\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"email\": \"martin@email.com\",\n"
+            + "      \"role\": \"access\"\n"
+            + "    }\n"
+            + "\n"
+            + "  ]         \n"
+            + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-                "/profiles/{profileId}/activities/{activityId}/visibility", id, activity.getId())
-            .content(jsonString2)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}/visibility",
+                    id,
+                    activity.getId())
+                .content(jsonString2)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
 
     List<ActivityRole> result = activityRoleRepository.findByActivity_Id(activity.getId());
-    org.junit.jupiter.api.Assertions.assertEquals(2, result.size());
+    org.junit.jupiter.api.Assertions.assertEquals(3, result.size());
   }
 
   @Test
@@ -1709,7 +1717,7 @@ class ActivityControllerTest {
         .andExpect(status().isOk());
 
     Assert.assertEquals(
-        subscriptionHistoryRepository.findActive(activityId, profile1.getId()).size(), 0);
+        0, subscriptionHistoryRepository.findActive(activityId, profile1.getId()).size());
   }
 
   @Test
@@ -1810,9 +1818,12 @@ class ActivityControllerTest {
     String retainAccess =
         "{\n"
             + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\":[ \n"
-            + "  \"example1@email.com\"\n"
-            + "  ]\n"
+            + "  \"accessors\": [\n"
+            + "    {\n"
+            + "      \"email\": \"example1@email.com\",\n"
+            + "      \"role\": \"follower\"\n"
+            + "    }\n"
+            + "  ]         \n"
             + "}";
 
     mvc.perform(
@@ -1829,8 +1840,6 @@ class ActivityControllerTest {
 
   @Test
   void includingFollowingUserInRestrictedAccessorsRetainsActivityRole() throws Exception {
-    // for some reason I cant seem to find where this is going wrong, it is giving Johnny access
-    // role instead of retaining his organiser role.
     Profile profile1 = new Profile();
     profile1.setFirstname("Johnny");
     profile1.setLastname("Dong");
@@ -1871,10 +1880,13 @@ class ActivityControllerTest {
     String retainAccess =
         "{\n"
             + "  \"visibility\": \"restricted\",\n"
-            + "  \"accessors\":[ \n"
-            + "  \"example1@email.com\"\n"
-            + "  ]\n"
-            + "}";
+            + "  \"accessors\": [\n"
+            + "    {\n"
+            + "      \"email\": \"example1@email.com\",\n"
+            + "      \"role\": \"organiser\"\n"
+            + "    }\n"
+            + "  ]         \n"
+            + "}\n";
 
     mvc.perform(
             MockMvcRequestBuilders.put(

@@ -17,6 +17,8 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
 
   List<ActivityRole> findByActivityRoleType(ActivityRoleType type);
 
+  List<ActivityRole> findByActivityRoleTypeAndActivity_Id(ActivityRoleType type, int activityId);
+
   ActivityRole findByProfile_IdAndActivity_Id(int profileId, int activityId);
 
   @Query(value = "select * from activity_role where activity_id = :activityId", nativeQuery = true)
