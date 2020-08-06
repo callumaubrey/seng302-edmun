@@ -4,22 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityHistory;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
-import com.springvuegradle.team6.models.entities.ActivityRole;
-import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.Unit;
-import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +45,8 @@ class EditActivityTest {
   @Autowired private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private ActivityQualificationMetricRepository activityQualificationMetricRepository;
+
+  @Autowired private NamedLocationRepository namedLocationRepository;
 
   private int id;
 
@@ -402,6 +391,44 @@ class EditActivityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void EditActivityWithoutLocationReturnStatusIsOkAndDeletesLocation() throws Exception {
+    NamedLocation location = new NamedLocation();
+    location.setCity("Christchurch");
+    location.setCountry("NZ");
+    location = namedLocationRepository.save(location);
+
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setLocation(location);
+    activityRepository.save(activity);
+
+
+    String jsonString =
+            "{\n"
+                    + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+                    + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+                    + "  \"activity_type\":[ \n"
+                    + "    \"Walk\"\n"
+                    + "  ],\n"
+                    + "  \"continuous\": false,\n"
+                    + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+                    + "  \"end_time\": \"2030-08-28T15:50:41+1300\"\n"
+                    + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    activity = activityRepository.findById(activityId).get();
+
+    org.junit.jupiter.api.Assertions.assertNull(activity.getLocation());
+
   }
 
   @Test
