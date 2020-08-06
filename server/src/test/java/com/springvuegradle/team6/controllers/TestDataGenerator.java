@@ -113,15 +113,16 @@ public class TestDataGenerator {
     return otherProfile;
   }
 
-    public static ActivityQualificationMetric createDummyActivityMetric(Activity activity, Unit unit, ActivityQualificationMetricRepository metricRepo) {
-        ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
-        activityMetrics.setActivity(activity);
-        activityMetrics.setUnit(unit);
-        activityMetrics.setDescription("Dummy");
-        activityMetrics.setTitle("test");
-        metricRepo.save(activityMetrics);
-        return activityMetrics;
-    }
+  public static ActivityQualificationMetric createDummyActivityMetric(
+      Activity activity, Unit unit, ActivityQualificationMetricRepository metricRepo) {
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
+    activityMetrics.setActivity(activity);
+    activityMetrics.setUnit(unit);
+    activityMetrics.setDescription("Dummy");
+    activityMetrics.setTitle("test");
+    metricRepo.save(activityMetrics);
+    return activityMetrics;
+  }
 
   public static Activity createExtraActivity(
       Profile profile, ActivityRepository repo, VisibilityType vis) {
