@@ -85,6 +85,12 @@ public class ActivityQualificationMetricRepositoryTest {
         Assertions.assertEquals(2, metrics.size());
     }
 
+    @Test
+    void testNoMetricsFindByActivityId() {
+        List<ActivityQualificationMetric> metrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+        Assertions.assertEquals(0, metrics.size());
+    }
+
 
 
 }
