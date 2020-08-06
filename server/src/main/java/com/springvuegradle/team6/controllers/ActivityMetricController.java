@@ -21,19 +21,19 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(
     origins = {
-        "http://localhost:9000",
-        "http://localhost:9500",
-        "https://csse-s302g7.canterbury.ac.nz/test",
-        "https://csse-s302g7.canterbury.ac.nz/prod"
+      "http://localhost:9000",
+      "http://localhost:9500",
+      "https://csse-s302g7.canterbury.ac.nz/test",
+      "https://csse-s302g7.canterbury.ac.nz/prod"
     },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
-        RequestMethod.GET,
-        RequestMethod.POST,
-        RequestMethod.DELETE,
-        RequestMethod.PUT,
-        RequestMethod.PATCH
+      RequestMethod.GET,
+      RequestMethod.POST,
+      RequestMethod.DELETE,
+      RequestMethod.PUT,
+      RequestMethod.PATCH
     })
 @RestController
 @RequestMapping("")
@@ -62,9 +62,9 @@ public class ActivityMetricController {
   }
 
   /**
-   * This endpoint creates a new activity result for a Participant of an activity
-   * An admin can create a new activity result for an owner and a participant
-   * An owner can create a new activity result for a participant
+   * This endpoint creates a new activity result for a Participant of an activity An admin can
+   * create a new activity result for an owner and a participant An owner can create a new activity
+   * result for a participant
    *
    * @param profileId the user that is the activity result is for (not the activity owner id)
    * @param activityId activity ID
@@ -97,7 +97,8 @@ public class ActivityMetricController {
     Activity activity = optionalActivity.get();
     Profile ownerProfile = activity.getProfile();
 
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
+    List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profile.getId());
     if (activityRoles.isEmpty()) {
       return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
     } else {
@@ -107,12 +108,13 @@ public class ActivityMetricController {
         if (!ownerProfile.getId().equals(profile.getId())) {
           // If we are not the owner then we check if participant
           if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Participant)) {
-            return new ResponseEntity("You must be a participant" , HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity("You must be a participant", HttpStatus.UNAUTHORIZED);
           }
         }
       } else {
         // Doing it for someone else
-        boolean isAdminOrCreator = UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
+        boolean isAdminOrCreator =
+            UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
         if (isAdminOrCreator) {
           if (!ownerProfile.getId().equals(profile.getId())) {
             // If we are making result for owner as admin
@@ -121,12 +123,14 @@ public class ActivityMetricController {
             }
           }
         } else {
-          return new ResponseEntity("You can't make a result for this profile", HttpStatus.UNAUTHORIZED);
+          return new ResponseEntity(
+              "You can't make a result for this profile", HttpStatus.UNAUTHORIZED);
         }
       }
     }
 
-    Optional<ActivityQualificationMetric> metricOptional = activityQualificationMetricRepository.findById(request.getMetricId());
+    Optional<ActivityQualificationMetric> metricOptional =
+        activityQualificationMetricRepository.findById(request.getMetricId());
     if (metricOptional.isEmpty()) {
       return new ResponseEntity("No such metric ID", HttpStatus.NOT_FOUND);
     }
@@ -144,28 +148,38 @@ public class ActivityMetricController {
       }
     }
 
-    String message = profile.getFirstname() + " participated in " + metric.getTitle() + " for "
-        + activity.getActivityName() + " and recorded ";
+    String message =
+        profile.getFirstname()
+            + " participated in "
+            + metric.getTitle()
+            + " for "
+            + activity.getActivityName()
+            + " and recorded ";
 
     if (metricUnit.equals(Unit.Count)) {
-      ActivityResult result = new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
+      ActivityResult result =
+          new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
       activityResultRepository.save(result);
       message += request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
-      ActivityResult result = new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
+      ActivityResult result =
+          new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
       activityResultRepository.save(result);
       message += "distance: " + request.getValue() + " km";
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
-      String durationString = Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
+      String durationString =
+          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
       Duration duration = Duration.parse(durationString);
       ActivityResult result = new ActivityResultDuration(metric, profile, duration);
       activityResultRepository.save(result);
       message += "duration: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
-      ActivityResult result = new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
+      ActivityResult result =
+          new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
       activityResultRepository.save(result);
-      message += "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+      message +=
+          "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
     }
 
     ActivityHistory activityHistory = new ActivityHistory(activity, message);
@@ -173,7 +187,6 @@ public class ActivityMetricController {
 
     return new ResponseEntity("Activity result saved", HttpStatus.OK);
   }
-
 
   /**
    * Gets and returns all the results for all users for a specific activity
@@ -184,8 +197,7 @@ public class ActivityMetricController {
    */
   @GetMapping("/profiles/activities/{activityId}/result")
   public ResponseEntity getAllResultsForActivity(
-          @PathVariable int activityId,
-          HttpSession session) {
+      @PathVariable int activityId, HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -207,7 +219,8 @@ public class ActivityMetricController {
 
     if (activity.getVisibilityType() != VisibilityType.Public) {
       List<ActivityRole> activityRoles =
-              activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+          activityRoleRepository.findByActivity_IdAndProfile_Id(
+              activityId, loggedInProfile.getId());
       if (activityRoles.isEmpty()) {
         return new ResponseEntity("You don't have access", HttpStatus.FORBIDDEN);
       }
