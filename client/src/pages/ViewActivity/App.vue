@@ -93,6 +93,23 @@
                     </b-col>
                 </b-row>
 
+                <b-row align-h="center">
+                  <b-col cols="9">
+                    <b-row class="horizontal-scroll">
+                      <div class="d-flex flex-row flex-nowrap">
+                        <div v-for="metric in metrics" v-bind:key="metric">
+                          <b-card :title="metric.title" class="metric-card">
+                            <b-card-body>
+                              <p>{{ metric.type }}</p>
+                              <p>{{ metric.description }}</p>
+                            </b-card-body>
+                          </b-card>
+                        </div>
+                      </div>
+                    </b-row>
+                  </b-col>
+                </b-row>
+
                 <!-- Participants -->
                 <b-row align-h="center">
                     <b-col cols="9">
@@ -149,7 +166,13 @@
                 notFound: false,
                 visibility: null,
                 loggedInIsAdmin: false,
-                isAuthorized: true
+                isAuthorized: true,
+                metrics: [
+                    { title: 'Eggs counted', type: 'Count', description: 'lorem ipsuim asdadads'},
+                    { title: 'How long it took', type: 'Duration', description: 'lorem ipsuim asdadads'},
+                    { title: 'Start and Finish', type: 'StartFinish', description: 'lorem ipsuim asdadads'},
+                    { title: 'KMS reached', type: 'Distance', description: 'lorem ipsuim asdadads'}
+                ]
             }
         },
         mounted() {
@@ -296,4 +319,23 @@
     };
     export default App;
 </script>
+
+<style>
+  .horizontal-scroll {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: auto;
+    margin-left:15px;
+    margin-right:15px;
+  }
+
+  .metric-card {
+    width:250px;
+    margin-right:10px;
+  }
+
+  .metric-card .card-title {
+    font-size:18px;
+  }
+</style>
 
