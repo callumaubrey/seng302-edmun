@@ -23,4 +23,8 @@ public class ActivityResultCount extends ActivityResult {
   // For testing purposes
   public ActivityResultCount() {
   }
+
+  public void setResult(Integer result) {
+    this.result = result;
+  }
 }

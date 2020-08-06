@@ -1,7 +1,10 @@
 package com.springvuegradle.team6.models.repositories;
 
-import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.*;
+
 import java.util.List;
+import java.util.Optional;
+
 import net.minidev.json.JSONObject;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +33,36 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
               + "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId ",
       nativeQuery = true)
   List<JSONObject> findSingleUsersResultsOnActivity(int activityId, int userId);
+
+  @Query(
+          value =
+                  "select * from activity_result a JOIN activity_qualification_metric q on " +
+                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
+                          "and a.metric_id = :metricId",
+          nativeQuery = true)
+  Optional<ActivityResultCount> findUsersCountResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+
+  @Query(
+          value =
+                  "select * from activity_result a JOIN activity_qualification_metric q on " +
+                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
+                          "and a.metric_id = :metricId",
+          nativeQuery = true)
+  Optional<ActivityResultDistance> findUsersDistanceResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+
+  @Query(
+          value =
+                  "select * from activity_result a JOIN activity_qualification_metric q on " +
+                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
+                          "and a.metric_id = :metricId",
+          nativeQuery = true)
+  Optional<ActivityResultDuration> findUsersDurationResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+
+  @Query(
+          value =
+                  "select * from activity_result a JOIN activity_qualification_metric q on " +
+                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
+                          "and a.metric_id = :metricId",
+          nativeQuery = true)
+  Optional<ActivityResultStartFinish> findUsersStartFinishResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
 }

@@ -30,4 +30,9 @@ public class ActivityResultStartFinish extends ActivityResult {
   // For testing purposes
   public ActivityResultStartFinish() {
   }
+
+  public void setStartFinish(LocalDateTime resultStart, LocalDateTime resultFinish) {
+    this.resultStart = resultStart;
+    this.resultFinish = resultFinish;
+  }
 }
