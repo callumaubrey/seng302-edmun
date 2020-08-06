@@ -16,20 +16,13 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
   /**
    * Gets all a particular users results for an activity.
    *
-   * <p>Note: Two tables activity_result and activity_qualification_metrics need to be joined as we
-   * need both the metrics and results when displaying on the front-end. There are also many rows in
-   * the select part of the query as each row had to be manually retrieved because both tables had a
-   * conflicting row 'id'
-   *
-   * @param activityId the activity the user wants to retrive the results for
+   * @param activityId the activity the user wants to retrieve the results for
    * @param userId the user that created the result
-   * @return the activity results and the metrics
+   * @return the activity results for that user
    */
   @Query(
       value =
-          "select result_type, special_metric, count_result, distance_result, duration_result, a.id,"
-              + "result_finish, result_start, metric_id, user_id, rank_by_asc, unit, activity_id, "
-              + "description, title from activity_result a JOIN activity_qualification_metric q on "
+          "select * from activity_result a LEFT JOIN activity_qualification_metric q on "
               + "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId ",
       nativeQuery = true)
   List<JSONObject> findSingleUsersResultsOnActivity(int activityId, int userId);
@@ -65,4 +58,17 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
                           "and a.metric_id = :metricId",
           nativeQuery = true)
   Optional<ActivityResultStartFinish> findUsersStartFinishResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+
+  /**
+   * Gets all results for an activity.
+   *
+   * @param activityId the activity the user wants to retrieve all results for
+   * @return the activity results
+   */
+  @Query(
+      value =
+          "select * from activity_result a LEFT JOIN activity_qualification_metric q on "
+              + "a.metric_id = q.id where q.activity_id = :activityId",
+      nativeQuery = true)
+  List<ActivityResult> findAllResultsForAnActivity(int activityId);
 }

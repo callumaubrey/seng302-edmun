@@ -1,7 +1,7 @@
 <template>
     <b-navbar class="nav-bar" fixed toggleable="lg" type="dark" variant="dark">
-        <b-navbar-brand v-if="!isLoggedIn" to='/'>Edmun</b-navbar-brand>
-        <b-navbar-brand v-if="isLoggedIn" @click="goToProfile">Edmun</b-navbar-brand>
+        <b-navbar-brand v-if="!isLoggedIn" to='/'><b-img :src="require('@/assets/goatonly_navbar.png')" height="40px"></b-img></b-navbar-brand>
+        <b-navbar-brand v-if="isLoggedIn" @click="goToProfile"><b-img :src="require('@/assets/goatonly_navbar.png')" height="40px"></b-img></b-navbar-brand>
         <b-navbar-toggle fixed target="nav-collapse" toggleable="true"></b-navbar-toggle>
 
         <b-collapse id="nav-collapse" is-nav>

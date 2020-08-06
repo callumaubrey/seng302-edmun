@@ -2,9 +2,12 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
@@ -108,6 +111,17 @@ public class TestDataGenerator {
     otherProfile.setGender("female");
     profileRepository.save(otherProfile);
     return otherProfile;
+  }
+
+  public static ActivityQualificationMetric createDummyActivityMetric(
+      Activity activity, Unit unit, ActivityQualificationMetricRepository metricRepo) {
+    ActivityQualificationMetric activityMetrics = new ActivityQualificationMetric();
+    activityMetrics.setActivity(activity);
+    activityMetrics.setUnit(unit);
+    activityMetrics.setDescription("Dummy");
+    activityMetrics.setTitle("test");
+    metricRepo.save(activityMetrics);
+    return activityMetrics;
   }
 
   public static Activity createExtraActivity(
