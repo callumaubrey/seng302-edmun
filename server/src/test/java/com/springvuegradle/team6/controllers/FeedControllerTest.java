@@ -405,4 +405,156 @@ public class FeedControllerTest {
     JSONArray arr = obj.getJSONArray("feeds");
     org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
   }
+
+  @Test
+  void
+  testSelfSubscribeToActivityAndGetHomeFeedReturnStatusOkReturnSelfSubscribeMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Subscribed to the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Added to the activity:"));
+  }
+
+  @Test
+  void
+  testAddedToActivityAndGetHomeFeedReturnStatusOkReturnAddedToActivityMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Added to the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Subscribed to the activity:"));
+  }
+
+  @Test
+  void
+  testSelfUnsubscribeFromActivityAndGetHomeFeedReturnStatusOkReturnSelfUnsubscribeMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistory.setEndDateTime(LocalDateTime.of(2020, 3, 2, 1, 0));
+    subscriptionHistory.setUnsubscribeMethod(UnsubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Unsubscribed from the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Removed from the activity:"));
+  }
+
+  @Test
+  void
+  testRemovedFromActivityAndGetHomeFeedReturnStatusOkReturnRemovedFromActivityMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistory.setEndDateTime(LocalDateTime.of(2020, 3, 2, 1, 0));
+    subscriptionHistory.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Removed from the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Unsubscribed to the activity:"));
+  }
 }
