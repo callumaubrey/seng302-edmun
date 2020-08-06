@@ -461,7 +461,6 @@
                     userId = this.$route.params.id;
                 }
 
-                console.log(!this.$refs.metric_editor);
                 if (this.isContinuous == '1') {
 
                     // Check if data is valid
