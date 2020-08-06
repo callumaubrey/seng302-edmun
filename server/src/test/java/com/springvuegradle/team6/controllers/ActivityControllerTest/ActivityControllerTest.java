@@ -884,7 +884,7 @@ class ActivityControllerTest {
   }
 
   @Test
-  void testOnlyActivatesFromOneUserAreReceived() throws Exception {
+  void testOnlyActivitiesFromOneUserAreReceived() throws Exception {
     int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
     Profile profile = profileRepository.findById(id);
     Profile profile2 = profileRepository.findById(user);
