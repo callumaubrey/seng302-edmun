@@ -17,6 +17,7 @@ import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -84,6 +85,7 @@ public class ActivityController {
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
+  private final ActivityResultRepository activityResultRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -93,7 +95,8 @@ public class ActivityController {
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricRepository activityQualificationMetricRepository) {
+      ActivityQualificationMetricRepository activityQualificationMetricRepository,
+      ActivityResultRepository activityResultRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -102,6 +105,7 @@ public class ActivityController {
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
+    this.activityResultRepository = activityResultRepository;
   }
 
   /**

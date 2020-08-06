@@ -1,11 +1,12 @@
 <template>
     <div>
+        <Notification></Notification>
         <slot></slot>
         <b-table hover
-            :items="items"
-            :fields="fields"
-            @row-clicked="goToActivity"
-            :busy="tableIsLoading"
+                 :items="items"
+                 :fields="fields"
+                 @row-clicked="goToActivity"
+                 :busy="tableIsLoading"
         >
             <template v-slot:cell(selectedActivity)></template>
             <template v-slot:table-busy>
@@ -19,25 +20,30 @@
 </template>
 
 <script>
+    import Notification from "@/components/Notification.vue";
+
     export default {
         name: "ActivityList",
+        components: {
+            Notification,
+        },
         props: {
             items: Array,
             fields: Array,
             profileId: Number,
-            tableIsLoading: Number
+            tableIsLoading: Boolean,
         },
         data() {
             return {
-                selectedActivity: []
+                selectedActivity: [],
             }
         },
         methods: {
-            goToActivity: function(items) {
+            goToActivity: function (items) {
                 this.selectedActivity = items;
                 let activityId = this.selectedActivity.id;
                 this.$router.push('/profiles/' + this.selectedActivity.profile.id + '/activities/' + activityId);
             }
-        }
+        },
     }
 </script>
