@@ -284,6 +284,15 @@ public class ActivityMetricController {
       }
     }
 
+    String message = "";
+    if (loggedInProfile == profile) {
+      message += profile.getFirstname() + " edited their results for " + metric.getTitle() + " in "
+              + activity.getActivityName() + " their new results are: ";
+    } else {
+      message += "An event organiser edited " + profile.getFirstname() + "'s results for " + metric.getTitle() + " in "
+              + activity.getActivityName() + " their new results are: ";
+    }
+
     if (metricUnit.equals(Unit.Count)) {
       Optional<ActivityResultCount> optionalResult = activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(activityId, profileId, request.getMetricId());
       if (!optionalResult.isPresent()) {
@@ -292,6 +301,7 @@ public class ActivityMetricController {
       ActivityResultCount result = optionalResult.get();
       result.setResult(Integer.parseInt(request.getValue()));
       activityResultRepository.save(result);
+      message += "count: " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       Optional<ActivityResultDistance> optionalResult = activityResultRepository.findUsersDistanceResultForSpecificActivityAndMetric(activityId, profileId, request.getMetricId());
       if (!optionalResult.isPresent()) {
@@ -300,6 +310,7 @@ public class ActivityMetricController {
       ActivityResultDistance result = optionalResult.get();
       result.setResult(Float.parseFloat(request.getValue()));
       activityResultRepository.save(result);
+      message += "distance: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
       Optional<ActivityResultDuration> optionalResult = activityResultRepository.findUsersDurationResultForSpecificActivityAndMetric(activityId, profileId, request.getMetricId());
@@ -311,6 +322,7 @@ public class ActivityMetricController {
       Duration duration = Duration.parse(durationString);
       result.setResult(duration);
       activityResultRepository.save(result);
+      message += "duration: " + durationString;
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult = activityResultRepository.findUsersStartFinishResultForSpecificActivityAndMetric(activityId, profileId, request.getMetricId());
       if (!optionalResult.isPresent()) {
@@ -319,7 +331,11 @@ public class ActivityMetricController {
       ActivityResultStartFinish result = optionalResult.get();
       result.setStartFinish(request.getStart(), request.getEnd());
       activityResultRepository.save(result);
+      message += "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
     }
+
+    ActivityHistory activityHistory = new ActivityHistory(activity, message);
+    activityHistoryRepository.save(activityHistory);
 
     return new ResponseEntity("Updated", HttpStatus.OK);
   }
