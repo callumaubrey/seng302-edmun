@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityResult;
 import com.springvuegradle.team6.models.entities.ActivityResultCount;
@@ -11,6 +12,7 @@ import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
@@ -59,18 +61,21 @@ public class ActivityMetricController {
   private final ActivityRoleRepository activityRoleRepository;
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
+  private final ActivityHistoryRepository activityHistoryRepository;
 
   ActivityMetricController(
       ProfileRepository profileRepository,
       ActivityRepository activityRepository,
       ActivityRoleRepository activityRoleRepository,
       ActivityQualificationMetricRepository activityQualificationMetricRepository,
-      ActivityResultRepository activityResultRepository) {
+      ActivityResultRepository activityResultRepository,
+      ActivityHistoryRepository activityHistoryRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
+    this.activityHistoryRepository = activityHistoryRepository;
   }
 
   /**
@@ -78,7 +83,7 @@ public class ActivityMetricController {
    * An admin can create a new activity result for an owner and a participant
    * An owner can create a new activity result for a participant
    *
-   * @param profileId the user that is the activity result is for
+   * @param profileId the user that is the activity result is for (not the activity owner id)
    * @param activityId activity ID
    * @param request the CreateActivityResultRequest class
    * @param session the HttpSession
@@ -156,23 +161,33 @@ public class ActivityMetricController {
       }
     }
 
+    String message = profile.getFirstname() + " participated in " + metric.getTitle() + " for "
+        + activity.getActivityName() + " and recorded ";
+
     if (metricUnit.equals(Unit.Count)) {
       ActivityResult result = new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
       activityResultRepository.save(result);
+      message += request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       ActivityResult result = new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
       activityResultRepository.save(result);
+      message += "distance: " + request.getValue() + " km";
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
       String durationString = Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
       Duration duration = Duration.parse(durationString);
       ActivityResult result = new ActivityResultDuration(metric, profile, duration);
       activityResultRepository.save(result);
+      message += "duration: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       ActivityResult result = new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
       activityResultRepository.save(result);
+      message += "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
     }
 
-    return new ResponseEntity("Saved", HttpStatus.OK);
+    ActivityHistory activityHistory = new ActivityHistory(activity, message);
+    activityHistoryRepository.save(activityHistory);
+
+    return new ResponseEntity("Activity result saved", HttpStatus.OK);
   }
 }
