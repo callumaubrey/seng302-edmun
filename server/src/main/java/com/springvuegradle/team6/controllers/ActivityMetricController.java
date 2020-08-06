@@ -217,12 +217,16 @@ public class ActivityMetricController {
     Profile loggedInProfile = optionalLoggedInProfile.get();
     Activity activity = optionalActivity.get();
 
-    if (activity.getVisibilityType() != VisibilityType.Public) {
-      List<ActivityRole> activityRoles =
-          activityRoleRepository.findByActivity_IdAndProfile_Id(
-              activityId, loggedInProfile.getId());
-      if (activityRoles.isEmpty()) {
-        return new ResponseEntity("You don't have access", HttpStatus.FORBIDDEN);
+    boolean isAdminOrCreator = UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId());
+
+    if (!isAdminOrCreator) {
+      if (activity.getVisibilityType() != VisibilityType.Public) {
+        List<ActivityRole> activityRoles =
+            activityRoleRepository.findByActivity_IdAndProfile_Id(
+                activityId, loggedInProfile.getId());
+        if (activityRoles.isEmpty()) {
+          return new ResponseEntity("You don't have access", HttpStatus.FORBIDDEN);
+        }
       }
     }
 
