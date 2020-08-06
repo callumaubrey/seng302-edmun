@@ -235,7 +235,9 @@ public class ActivityMetricController {
     }
     Activity activity = optionalActivity.get();
 
-    if (activity.getVisibilityType() != VisibilityType.Public) {
+    boolean authorised = UserSecurityService.checkIsAdminOrCreator((int) id, activity.getProfile().getId());
+
+    if (activity.getVisibilityType() != VisibilityType.Public && !authorised) {
       List<ActivityRole> activityRoles =
           activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, (int) id);
       if (activityRoles.isEmpty()) {
