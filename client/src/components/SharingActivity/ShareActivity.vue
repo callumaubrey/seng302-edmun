@@ -15,7 +15,7 @@
                             <p v-if="selected == 'Private'">Only you will be able to view this activity.</p>
                             <p v-if="selected == 'Restricted'">Only people you allow will be able to view this activity.</p>
                         </div>
-                        <b-form-select style="margin-bottom: 40%;" v-model="selected" :options="options" size="sm"></b-form-select>
+                        <b-form-select style="margin-bottom: 40%;" v-model="selected" :options="options" size="sm" v-on:change="selectedVisibilityChanged"></b-form-select>
                         <b-alert
                                 :show="showWarning"
                                 dismissible
@@ -33,12 +33,13 @@
                                      ></b-input>
                             <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants {{organiserCount}} Organisers</p>
                         </b-form-group>
-                        <b-button style="margin: 15px" @click="submit()">Ok</b-button>
+                        <b-button style="margin: 15px" @click="submit()">Save changes</b-button>
                     </b-col>
 
-                    <b-col style="size: auto">
+
+                    <b-col style="size: auto" v-if="selected == 'Restricted'">
                         <br>
-                        <restricted-user-tabs></restricted-user-tabs>
+                        <restricted-user-tabs :organisers="organisers" :participants="participants" :followers="followers" :accessors="accessors"></restricted-user-tabs>
                     </b-col>
                 </b-row>
             </b-modal>
@@ -71,10 +72,10 @@
                      { value: 'Restricted', text: 'Restricted' },
                     { value: 'Public', text: 'Public' }
                 ],
-                organisers: [],
-                participants: [],
-                accessors: [],
-                followers: [],
+                organisers: {},
+                participants: {},
+                accessors: {},
+                followers: {},
                 showWarning:false,
                 partCount:null,
                 organiserCount:null,
@@ -92,11 +93,14 @@
                 this.selected = this.visibility
                 await api.getActivityMembers(this.activityId, 0, 10)
                     .then((res) => {
-                        this.organisers = res.data.Organiser;
-                        this.participants = res.data.Participant;
-                        this.accessors = res.data.Access;
-                        this.followers = res.data.Follower;
-                        console.log(this.organisers.length)
+                        this.organisers["users"] = res.data.Organiser;
+                        this.participants["users"] = res.data.Participant;
+                        this.followers["users"] = res.data.Follower;
+                        this.accessors["users"] = res.data.Access;
+                        this.reformatUserData(this.organisers["users"], "organiser");
+                        this.reformatUserData(this.participants["users"], "participant");
+                        this.reformatUserData(this.followers["users"], "follower");
+                        this.reformatUserData(this.accessors["users"], "accessor");
                     })
                     .catch(err => {
                         console.log(err)
@@ -107,7 +111,6 @@
                 alert(id)
 
             },
-
             changeVisibilityType() {
 
                 let data = {
@@ -155,6 +158,23 @@
                     .catch(function (error) {
                         console.log(error)
                     });
+            },
+            selectedVisibilityChanged() {
+                console.log("changed")
+                console.log(this.organisers);
+                console.log(this.followers);
+                console.log(this.accessors);
+            },
+            reformatUserData(roleUsers, roleName) {
+                let i;
+                let n = roleUsers.length;
+                for (i = 0; i < n; i++) {
+                    let user = roleUsers[i]
+                    user["selected"] = false;
+                    user["_rowVariant"] = "danger";
+                    user["role"] = roleName;
+                    console.log(roleUsers[i])
+                }
             }
 
     },

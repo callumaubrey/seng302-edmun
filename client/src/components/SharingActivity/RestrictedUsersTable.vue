@@ -31,7 +31,25 @@
     props: ['roleData', 'activityRoles'],
     data() {
       return {
-        fields: ['name', 'email', 'role', 'selected'],
+        // fields: ['name', 'email', 'role', 'selected'],
+        fields: [
+          {
+            key: 'full_name',
+            label: 'Name',
+            sortable: true
+          },
+          {
+            key: 'primary_email',
+            label: 'Primary Email',
+            sortable: true
+          },
+          {
+            key: 'role'
+          },
+          {
+            key: 'selected'
+          }
+        ],
         data: this.roleData
       }
     },

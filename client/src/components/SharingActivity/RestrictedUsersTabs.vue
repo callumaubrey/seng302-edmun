@@ -27,32 +27,33 @@
     import RestrictedUsersTable from "./RestrictedUsersTable";
     export default {
         name: "ShareActivityUserList",
+        props: ["organisers", "participants", "accessors", "followers"],
         components: {
             RestrictedUsersTable
         },
         data() {
             return {
-                organisers: {
-                    users: [
-                        {
-                            name: "John Doe",
-                            email: "johndoe@doe.com",
-                            role: "organiser",
-                            selected: false,
-                            _rowVariant: 'danger'
-                        },
-                        {
-                            name: "James Smith",
-                            email: "jamessmith@google.com",
-                            role: "organiser",
-                            selected: true,
-                            _rowVariant: 'none'
-                        },
-                    ]
-                },
-                participants: [],
-                accessors: [],
-                followers: [],
+                // organisers: {
+                //     users: [
+                //         {
+                //             name: "John Doe",
+                //             email: "johndoe@doe.com",
+                //             role: "organiser",
+                //             selected: false,
+                //             _rowVariant: 'danger'
+                //         },
+                //         {
+                //             name: "James Smith",
+                //             email: "jamessmith@google.com",
+                //             role: "organiser",
+                //             selected: true,
+                //             _rowVariant: 'none'
+                //         },
+                //     ]
+                // },
+                // participants: [],
+                // accessors: [],
+                // followers: [],
                 activityRoles: [
                     {value: "organiser", text: "Organiser"},
                     {value: "participant", text: "Participant"},
