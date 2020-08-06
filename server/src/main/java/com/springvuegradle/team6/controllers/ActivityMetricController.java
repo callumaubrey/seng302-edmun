@@ -1,17 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityHistory;
-import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
-import com.springvuegradle.team6.models.entities.ActivityResult;
-import com.springvuegradle.team6.models.entities.ActivityResultCount;
-import com.springvuegradle.team6.models.entities.ActivityResultDistance;
-import com.springvuegradle.team6.models.entities.ActivityResultDuration;
-import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
-import com.springvuegradle.team6.models.entities.ActivityRole;
-import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
@@ -28,13 +17,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(
     origins = {
@@ -189,5 +172,49 @@ public class ActivityMetricController {
     activityHistoryRepository.save(activityHistory);
 
     return new ResponseEntity("Activity result saved", HttpStatus.OK);
+  }
+
+
+  /**
+   * Gets and returns all the results for all users for a specific activity
+   *
+   * @param activityId the id of the activity with the desired results
+   * @param session current http session
+   * @return response entity containing list of all results for activity
+   */
+  @GetMapping("/profiles/activities/{activityId}/result")
+  public ResponseEntity getAllResultsForActivity(
+          @PathVariable int activityId,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Profile> optionalLoggedInProfile = profileRepository.findById((Integer) id);
+    if (!optionalLoggedInProfile.isPresent()) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile loggedInProfile = optionalLoggedInProfile.get();
+    Activity activity = optionalActivity.get();
+
+    if (activity.getVisibilityType() != VisibilityType.Public) {
+      List<ActivityRole> activityRoles =
+              activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.FORBIDDEN);
+      }
+    }
+
+    List<ActivityResult> results = activityResultRepository.findAllResultsForAnActivity(activityId);
+
+    return new ResponseEntity(results, HttpStatus.OK);
   }
 }
