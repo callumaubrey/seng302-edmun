@@ -68,7 +68,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    * has been established that the acquiring user is not an admin or the creator. Hence this
    * function does not retrieve any private activities. The function should return all activities
    * that are public and all the restricted activities that the acquiring user has access to. It
-   * should return no private activities
+   * should return no private activities or any archived activities
    *
    * @param activityOwner the activity owners id
    * @param acquiringUser the acquiring users id
@@ -76,8 +76,9 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    */
   @Query(
       value =
-          "select * from activity a left join activity_role r on a.id = r.activity_id and a.author_id = "
-              + " :activityOwner WHERE (a.visibility_type = 0 or r.profile_id = :acquiringUser)",
+          "select * from activity a left join activity_role r on a.id = r.activity_id WHERE "
+              + "a.author_id = :activityOwner AND a.archived = 0 AND (a.visibility_type = 0 or "
+              + "r.profile_id = :acquiringUser)",
       nativeQuery = true)
   List<Activity> getPublicAndRestrictedActivities(int activityOwner, int acquiringUser);
 }

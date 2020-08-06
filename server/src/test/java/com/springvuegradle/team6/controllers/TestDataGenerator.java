@@ -5,6 +5,8 @@ import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
@@ -92,5 +94,14 @@ public class TestDataGenerator {
         profileRepository.save(otherProfile);
         return otherProfile;
     }
+
+  public static Activity createExtraActivity(Profile profile, ActivityRepository repo, VisibilityType vis) {
+        Activity activity = new Activity();
+        activity.setProfile(profile);
+        activity.setVisibilityType(vis);
+        repo.save(activity);
+        return activity;
+    }
+
 
 }

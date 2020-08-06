@@ -884,6 +884,57 @@ class ActivityControllerTest {
   }
 
   @Test
+  void testOnlyActivatesFromOneUserAreReceived() throws Exception {
+    int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Profile profile = profileRepository.findById(id);
+    Profile profile2 = profileRepository.findById(user);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+
+  @Test
+  void testGetActivitiesArchivedActivitiesAreNotReceived() throws Exception {
+    int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Profile profile = profileRepository.findById(id);
+    Profile profile2 = profileRepository.findById(user);
+    Activity activity =
+        TestDataGenerator.createExtraActivity(profile, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+    TestDataGenerator.createExtraActivity(profile2, activityRepository, VisibilityType.Public);
+    activity.setArchived(true);
+    activityRepository.save(activity);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/profiles/{profileId}/activities", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
   void testAuthorisedCanGetMultipleRestrictedActivities() throws Exception {
     int user = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
