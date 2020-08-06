@@ -19,17 +19,17 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
 
   ActivityRole findByProfile_IdAndActivity_Id(int profileId, int activityId);
 
-  @Query(
-          value = "select * from activity_role where activity_id = :activityId",
-          nativeQuery = true
-  )
+  @Query(value = "select * from activity_role where activity_id = :activityId", nativeQuery = true)
   List<ActivityRole> findByActivity_Id(int activityId);
 
   @Query(
       value =
-          "select CONCAT(firstname, ' ' , lastname) as full_name, profile_id from activity_role JOIN profile on "
-              + "activity_role.profile_id = profile.id where activity_id = :activityId and activity_role_type = :type "
-              + "LIMIT :limit OFFSET :offset",
+          "select CONCAT(firstname, ' ' , lastname) as full_name, ar.profile_id, e.address as primary_email"
+              + " from activity_role ar left join profile p on ar.profile_id = p.id"
+              + " left join profile_emails pe on pe.profile_id = p.id"
+              + " left join email e on pe.emails_id = e.id"
+              + " where ar.activity_id = :activityId and ar.activity_role_type = :type and e.is_primary = 1 "
+              + " LIMIT :limit OFFSET :offset",
       nativeQuery = true)
   List<JSONObject> findMembers(int activityId, int type, int limit, int offset);
 
@@ -41,21 +41,19 @@ public interface ActivityRoleRepository extends JpaRepository<ActivityRole, Inte
       nativeQuery = true)
   int findMembersCount(int activityId, int type);
 
-
-
   @Modifying
   @Transactional
   @Query(
-          value =
-                  "delete from activity_role where activity_id = :activityId and profile_id != :profileId",
-          nativeQuery = true)
+      value =
+          "delete from activity_role where activity_id = :activityId and profile_id != :profileId",
+      nativeQuery = true)
   void deleteAllActivityRolesExceptOwner(int activityId, int profileId);
 
   @Modifying
   @Transactional
   @Query(
-          value =
-                  "delete from activity_role where activity_id = :activityId and activity_role_type = 4",
-          nativeQuery = true)
+      value =
+          "delete from activity_role where activity_id = :activityId and activity_role_type = 4",
+      nativeQuery = true)
   void deleteAllAccessRolesOfActivity(int activityId);
 }
