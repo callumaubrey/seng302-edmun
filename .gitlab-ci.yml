@@ -64,6 +64,7 @@ deploy-test-client:
   script:
     # Create artifact
     - cd client
+    - rm -rf ./dist
     - npm run build
     # Move artifact to clean directory
     - rm -rf /home/gitlab-runner/test-client/
@@ -110,6 +111,7 @@ deploy-prod-client:
   script:
     # Create artifact
     - cd client
+    - rm -rf ./dist
     - npm run build
     # Move artifact to clean directory
     - rm -rf /home/gitlab-runner/prod-client/
