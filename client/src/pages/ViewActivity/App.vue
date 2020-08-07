@@ -100,12 +100,12 @@
                         <div v-for="(metric, i) in metrics" v-bind:key="metric">
                           <b-card v-if="i == metrics.length - 1" :title="metric.title" class="metric-card" style="margin-right:0;">
                             <b-card-body>
-                              <p>{{ metric.description }}</p>
+                              <p style="font-size:14px;">{{ metric.description }}</p>
                             </b-card-body>
                           </b-card>
                           <b-card v-else :title="metric.title" class="metric-card">
                             <b-card-body>
-                                <p>{{ metric.description }}</p>
+                                <p style="font-size:14px;">{{ metric.description }}</p>
                             </b-card-body>
                           </b-card>
                         </div>
@@ -342,25 +342,27 @@
 </script>
 
 <style>
-  .horizontal-scroll {
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    overflow: auto;
-    margin-left:15px;
-    margin-right:15px;
-  }
+    .horizontal-scroll {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow: auto;
+        margin-left:15px;
+        margin-right:15px;
+    }
 
-  .metric-card {
-    width:250px;
-    margin-right:10px;
-  }
+    .metric-card {
+        width:250px;
+        margin-right:10px;
+    }
 
-  .metric-card .card-body {
-      white-space: pre-line;
-  }
+    .metric-card .card-body {
+        white-space: pre-line;
+        padding:10px;
+    }
 
-  .metric-card .card-title {
-    font-size:18px;
-  }
+    .metric-card .card-title {
+        font-size:18px;
+        margin-left:7px;
+    }
 </style>
 
