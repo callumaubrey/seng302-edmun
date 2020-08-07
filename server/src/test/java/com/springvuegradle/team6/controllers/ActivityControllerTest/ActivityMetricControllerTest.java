@@ -763,6 +763,12 @@ public class ActivityMetricControllerTest {
         .andExpect(status().is4xxClientError());
   }
 
+  /**
+   * Creates an activity metric that is associated to a particular activity result
+   * Usefull to test get requests to make sure the right amount of results are returned
+   * @param activity the activity the metric is associated with
+   * @param profile the profile that the result is associated with
+   */
   private void createDummyMetricAndResult(Activity activity, Profile profile) {
     ActivityQualificationMetric activityMetrics =
         TestDataGenerator.createDummyActivityMetric(
