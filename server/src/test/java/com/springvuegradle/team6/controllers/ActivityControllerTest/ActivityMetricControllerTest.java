@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
@@ -20,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,6 +136,7 @@ public class ActivityMetricControllerTest {
                 .session(session))
         .andExpect(status().isOk())
         .andDo(print());
+
 
     mvc.perform(
             MockMvcRequestBuilders.post(
@@ -1437,6 +1441,160 @@ public class ActivityMetricControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void ownerGetActivityMetricReturnsStatusOKAndMetric() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String response =
+    mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void userWithoutAccessGetActivityMetricReturnStatus4xxError() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    String jsonStringUser =
+            "{\n" +
+                    "  \"email\": \"example1@email.com\",\n" +
+                    "  \"password\": \"Password1\"\n" +
+                    "}";
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                    .content(jsonStringUser)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+
+  }
+
+  @Test
+  void userWithAccessGetActivityMetricReturnStatusOkAndMetric() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole);
+
+    String jsonStringUser =
+            "{\n" +
+                    "  \"email\": \"example1@email.com\",\n" +
+                    "  \"password\": \"Password1\"\n" +
+                    "}";
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                    .content(jsonStringUser)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk())
+            .andDo(print());
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(
+          username = "admin",
+          roles = {"USER", "ADMIN"})
+  void adminGetActivityMetricReturnsStatusOKAndMetric() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String response =
+            mvc.perform(
+                    MockMvcRequestBuilders.get(
+                            "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
   }
 
   @Test
