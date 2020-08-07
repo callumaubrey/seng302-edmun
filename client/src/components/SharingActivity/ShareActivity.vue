@@ -154,13 +154,15 @@
               vueObj.getCount()
               vueObj.visibility = vueObj.selected
               vueObj.$bvModal.hide('modal-1');
-
+              vueObj.notifyParent();
             })
             .catch(function () {
               alert("An error has occurred, please refresh the page")
             });
 
+
       },
+
       submit() {
         this.parseEmailInput();
         this.changeVisibilityType();
@@ -260,6 +262,10 @@
           user._rowVariant = 'danger';
         }
       },
+      notifyParent() {
+        console.log("emitted")
+        this.$emit("componentUpdate");
+      }
     },
     watch: {
       selected: function () {

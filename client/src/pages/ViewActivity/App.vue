@@ -22,10 +22,11 @@
                     <h3>{{ activityName }}</h3>
                 </b-row>
 
-                <!-- Summary -->
-                <FollowerSummary class="text-center" :activityId="parseInt($route.params.activityId)"></FollowerSummary>
+                <!-- Summary of the users associated to the activity-->
+                <FollowerSummary class="text-center" :activityId="parseInt($route.params.activityId)" :key="followSummaryKey"></FollowerSummary>
+
                 <b-row align-h="center">
-                    <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
+                    <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId" v-on:componentUpdate="forceRerender" :key="shareActivityKey"></ShareActivity>
                 </b-row>
 
                 <!-- Actions -->
@@ -149,7 +150,9 @@
                 notFound: false,
                 visibility: null,
                 loggedInIsAdmin: false,
-                isAuthorized: true
+                isAuthorized: true,
+                followSummaryKey:  0,
+                shareActivityKey: 0
             }
         },
         mounted() {
@@ -291,6 +294,11 @@
             clickHashtag(hashtag) {
                 hashtag = hashtag.substring(1);
                 this.$router.push("/hashtag/" + hashtag);
+            },
+            forceRerender() {
+                console.log("rerencder")
+                this.shareActivityKey += 1;
+                this.followSummaryKey += 1;
             }
         }
     };
