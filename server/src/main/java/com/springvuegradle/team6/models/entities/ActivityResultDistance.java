@@ -27,4 +27,8 @@ public class ActivityResultDistance extends ActivityResult {
   public void setResult(float result) {
     this.result = result;
   }
+
+  public float getValue() {
+    return this.result;
+  }
 }

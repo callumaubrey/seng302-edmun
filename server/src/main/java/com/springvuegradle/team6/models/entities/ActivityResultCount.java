@@ -27,4 +27,8 @@ public class ActivityResultCount extends ActivityResult {
   public void setResult(Integer result) {
     this.result = result;
   }
+
+  public int getValue() {
+    return this.result;
+  }
 }

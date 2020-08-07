@@ -224,8 +224,10 @@ public class ActivityMetricController {
     Profile ownerProfile = activity.getProfile();
     Profile loggedInProfile = profileRepository.findById(loggedInId);
 
+    boolean isOwnerOrAdmin = UserSecurityService.checkIsAdminOrCreator(loggedInId, ownerProfile.getId());
+
     // Check if user is actually has a participating role
-    List<ActivityRole> userRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInId);
+    List<ActivityRole> userRoles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
     boolean isParticipating = false;
     // User who is being edited or not is organiser or not
     boolean organiser = false;
@@ -243,7 +245,7 @@ public class ActivityMetricController {
 
     // Check right to edit result
     // Check if not admin or owner
-    if (!UserSecurityService.checkIsAdminOrCreator(loggedInId, ownerProfile.getId())) {
+    if (!isOwnerOrAdmin) {
       // Check if not organiser
       List<ActivityRole> roles = activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInId);
       boolean isOrganiser = false;

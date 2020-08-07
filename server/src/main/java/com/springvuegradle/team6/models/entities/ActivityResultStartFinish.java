@@ -35,4 +35,12 @@ public class ActivityResultStartFinish extends ActivityResult {
     this.resultStart = resultStart;
     this.resultFinish = resultFinish;
   }
+
+  public LocalDateTime getStart() {
+    return this.resultStart;
+  }
+
+  public LocalDateTime getFinish() {
+    return this.resultFinish;
+  }
 }
