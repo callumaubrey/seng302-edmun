@@ -7,6 +7,9 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.Duration;
@@ -217,7 +220,8 @@ public class ActivityMetricController {
     Profile loggedInProfile = optionalLoggedInProfile.get();
     Activity activity = optionalActivity.get();
 
-    boolean isAdminOrCreator = UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId());
+    boolean isAdminOrCreator =
+        UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId());
 
     if (!isAdminOrCreator) {
       if (activity.getVisibilityType() != VisibilityType.Public) {
@@ -233,5 +237,51 @@ public class ActivityMetricController {
     List<ActivityResult> results = activityResultRepository.findAllResultsForAnActivity(activityId);
 
     return new ResponseEntity(results, HttpStatus.OK);
+  }
+
+  /**
+   * Gets all the different metrics of an activity only if session has permission
+   *
+   * @param profileId the owner of the activity
+   * @param activityId the activity id
+   * @param session the session of the user who has called the endpoint
+   * @return 200 Response with metrics in body if successful
+   */
+  @GetMapping("/profiles/{profileId}/activities/{activityId}/metrics")
+  public ResponseEntity getActivityMetrics(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (activity.isArchived()) {
+      return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
+    }
+
+    Object sessionId = session.getAttribute("id");
+
+    if (!(activity.getVisibilityType() == VisibilityType.Public)) {
+      ActivityRole activityRole =
+          activityRoleRepository.findByProfile_IdAndActivity_Id(
+              Integer.parseInt(sessionId.toString()), activityId);
+      if (activityRole == null) {
+        if (!UserSecurityService.checkIsAdminOrCreator(
+            Integer.parseInt(sessionId.toString()), profileId)) {
+          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+        }
+      }
+    }
+
+    List<ActivityQualificationMetric> activityMetrics =
+        activityQualificationMetricRepository.findByActivity_Id(activityId);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String postJson = mapper.writeValueAsString(activityMetrics);
+      return ResponseEntity.ok(postJson);
+    } catch (Exception e) {
+      return new ResponseEntity<>("Activity Metrics do not exist", HttpStatus.NOT_FOUND);
+    }
   }
 }
