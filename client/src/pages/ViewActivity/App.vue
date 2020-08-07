@@ -93,27 +93,34 @@
                     </b-col>
                 </b-row>
 
-                <b-row align-h="center">
+                <b-row align-h="center" v-if="metrics.length > 0">
                   <b-col cols="9">
-                    <b-row class="horizontal-scroll" v-if="metrics.length > 0">
+                    <b-row class="horizontal-scroll">
                       <div class="d-flex flex-row flex-nowrap">
                         <div v-for="(metric, i) in metrics" v-bind:key="metric">
                           <b-card v-if="i == metrics.length - 1" :title="metric.title" class="metric-card" style="margin-right:0;">
                             <b-card-body>
-                              <p>{{ metric.type }}</p>
                               <p>{{ metric.description }}</p>
                             </b-card-body>
                           </b-card>
                           <b-card v-else :title="metric.title" class="metric-card">
                             <b-card-body>
-                              <p>{{ metric.type }}</p>
-                              <p>{{ metric.description }}</p>
+                                <p>{{ metric.description }}</p>
                             </b-card-body>
                           </b-card>
                         </div>
                       </div>
                     </b-row>
                   </b-col>
+                </b-row>
+                <b-row v-else align-h="center">
+                    <b-col cols="9">
+                        <b-card style="margin: 1em">
+                            <b-card-body>
+                                No metrics available
+                            </b-card-body>
+                        </b-card>
+                    </b-col>
                 </b-row>
 
                 <!-- Participants -->
@@ -282,6 +289,7 @@
                                 this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
                             }
                             this.getActivityTypeDisplay(vueObj);
+                            this.getMetrics(res.data.profile.id);
                         }
                         vueObj.locationDataLoading = false;
                     }).catch((err) => {
@@ -294,6 +302,16 @@
                             vueObj.$router.push("/profiles/" + profileId);
                         }
                 });
+            },
+            getMetrics(ownerId) {
+                let activityId = this.$route.params.activityId;
+                api.getActivityMetrics(ownerId, activityId)
+                    .then((res) => {
+                        this.metrics = res.data;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
             },
             checkIsAdmin: async function () {
                 this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
@@ -335,6 +353,10 @@
   .metric-card {
     width:250px;
     margin-right:10px;
+  }
+
+  .metric-card .card-body {
+      white-space: pre-line;
   }
 
   .metric-card .card-title {
