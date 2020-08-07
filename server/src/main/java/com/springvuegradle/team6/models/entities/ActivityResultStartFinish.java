@@ -30,4 +30,16 @@ public class ActivityResultStartFinish extends ActivityResult {
   // For testing purposes
   public ActivityResultStartFinish() {
   }
+
+  public LocalDateTime getResultFinish() {
+    return resultFinish;
+  }
+
+  public LocalDateTime getResultStart() {
+    return resultStart;
+  }
+
+  public String getType() {
+    return "StartFinish";
+  }
 }

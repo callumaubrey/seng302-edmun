@@ -25,4 +25,12 @@ public class ActivityResultDuration extends ActivityResult {
   // For testing purposes
   public ActivityResultDuration() {
   }
+
+  public Duration getResult() {
+    return this.result;
+  }
+
+  public String getType() {
+    return "Duration";
+  }
 }

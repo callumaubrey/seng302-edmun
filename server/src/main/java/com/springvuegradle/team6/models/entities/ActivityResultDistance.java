@@ -23,4 +23,14 @@ public class ActivityResultDistance extends ActivityResult {
   // For testing purposes
   public ActivityResultDistance() {
   }
+
+  public float getResult() {
+    return this.result;
+  }
+
+  public String getType() {
+    return "Distance";
+  }
+
+
 }
