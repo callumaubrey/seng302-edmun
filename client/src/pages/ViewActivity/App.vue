@@ -116,6 +116,7 @@
                 <b-row v-else align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em">
+                          <RecordActivityResultModal></RecordActivityResultModal>
                             <b-card-body>
                                 No metrics available
                             </b-card-body>
@@ -137,35 +138,37 @@
 </template>
 
 <script>
-    import NavBar from "@/components/NavBar.vue";
-    import FollowUnfollow from "@/components/FollowUnfollow.vue";
-    import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
-    import FollowerUserList from "../../components/Activity/FollowerUserList";
-    import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
-    import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
-    import api from '@/Api'
-    import AdminMixin from "../../mixins/AdminMixin";
+import NavBar from "@/components/NavBar.vue";
+import FollowUnfollow from "@/components/FollowUnfollow.vue";
+import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
+import FollowerUserList from "../../components/Activity/FollowerUserList";
+import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
+import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
+import RecordActivityResultModal from "@/components/Activity/RecordActivityResultModal";
+import api from '@/Api'
+import AdminMixin from "../../mixins/AdminMixin";
 
-    const App = {
-        name: "App",
-        components: {
-            NavBar,
-            FollowUnfollow,
-            FollowerUserList,
-            FollowerSummary,
-            ShareActivity,
-            ForbiddenMessage
-        },
-        data: function () {
-            return {
-                //isActivityOwner: false,
-                userData: "",
-                isLoggedIn: false,
-                userName: "",
-                loggedInId: null,
-                profileId: null,
-                activityName: "",
-                description: "",
+const App = {
+  name: "App",
+  components: {
+    RecordActivityResultModal,
+    NavBar,
+    FollowUnfollow,
+    FollowerUserList,
+    FollowerSummary,
+    ShareActivity,
+    ForbiddenMessage
+  },
+  data: function () {
+    return {
+      //isActivityOwner: false,
+      userData: "",
+      isLoggedIn: false,
+      userName: "",
+      loggedInId: null,
+      profileId: null,
+      activityName: "",
+      description: "",
                 activityTypes: [],
                 continuous: false,
                 startTime: "",
