@@ -4,9 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
-/**
- * One of the subclasses of ActivityResult. It records distance as result
- */
+/** One of the subclasses of ActivityResult. It records distance as result */
 @Entity
 @DiscriminatorValue("1")
 public class ActivityResultDistance extends ActivityResult {
@@ -21,8 +19,7 @@ public class ActivityResultDistance extends ActivityResult {
   }
 
   // For testing purposes
-  public ActivityResultDistance() {
-  }
+  public ActivityResultDistance() {}
 
   public void setResult(float result) {
     this.result = result;

@@ -5,15 +5,14 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
-/**
- * One of the subclasses of ActivityResult. It records start DateTime and end DateTime as result
- */
+/** One of the subclasses of ActivityResult. It records start DateTime and end DateTime as result */
 @Entity
 @DiscriminatorValue("3")
 public class ActivityResultStartFinish extends ActivityResult {
 
   @Column(name = "result_start")
   private LocalDateTime resultStart;
+
   @Column(name = "result_finish")
   private LocalDateTime resultFinish;
 
@@ -28,8 +27,7 @@ public class ActivityResultStartFinish extends ActivityResult {
   }
 
   // For testing purposes
-  public ActivityResultStartFinish() {
-  }
+  public ActivityResultStartFinish() {}
 
   public void setStartFinish(LocalDateTime resultStart, LocalDateTime resultFinish) {
     this.resultStart = resultStart;
