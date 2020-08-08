@@ -14,7 +14,8 @@
       </b-col>
       <b-col sm="1">
         <b-button-group>
-          <b-button @click="result.isEditMode=true" class="button-group" variant="success">Edit
+          <b-button @click="result.isEditMode=true" class="button-group" id="edit-result-button"
+                    variant="success">Edit
           </b-button>
           <b-button class="button-group" variant="danger">Delete</b-button>
         </b-button-group>
@@ -25,7 +26,8 @@
   <div v-else>
     <b-row>
       <b-col sm="4">
-        <b-form-select :options="Object.keys(metricTitleDict)" v-model="result.title"
+        <b-form-select :options="Object.keys(metricTitleDict)" id="select-metric-title"
+                       v-model="result.title"
                        v-on:change="updateInputGroup"></b-form-select>
       </b-col>
       <b-col sm="6">
@@ -45,8 +47,8 @@
         </b-input-group>
       </b-col>
       <b-col sm="1">
-        <b-button v-if="isCreateResult">Create</b-button>
-        <b-button @click="result.isEditMode=false" v-else>Save</b-button>
+        <b-button id="create-result-button" v-if="isCreateResult">Create</b-button>
+        <b-button @click="result.isEditMode=false" id="save-result-button" v-else>Save</b-button>
       </b-col>
     </b-row>
   </div>

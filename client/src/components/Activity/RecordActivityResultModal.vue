@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import RecordActivityResultForm from "@/components/RecordActivityResultForm";
+import RecordActivityResultForm from "@/components/Activity/RecordActivityResultForm";
 
 export default {
   name: "RecordActivityResultModal",
