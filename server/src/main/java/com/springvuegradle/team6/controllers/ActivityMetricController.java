@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
+import com.springvuegradle.team6.requests.EditActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -212,7 +213,194 @@ public class ActivityMetricController {
   }
 
   /**
+   * This endpoint edits an activity result for a Participant of an activity An admin can edit an
+   * activity result for an owner and a participant An owner or organiser can edit an activity
+   * result for a participant
+   *
+   * @param profileId the user that is the activity result is for
+   * @param activityId activity ID
+   * @param request the EditActivityResultRequest class
+   * @param session the HttpSession
+   * @return
+   */
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/result")
+  public ResponseEntity editActivityResult(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid EditActivityResultRequest request,
+      HttpSession session) {
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Object id = session.getAttribute("id");
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist OWNER", HttpStatus.NOT_FOUND);
+    }
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    int loggedInId = (Integer) id;
+    Activity activity = optionalActivity.get();
+    Profile ownerProfile = activity.getProfile();
+    Profile loggedInProfile = profileRepository.findById(loggedInId);
+
+    boolean isOwnerOrAdmin =
+        UserSecurityService.checkIsAdminOrCreator(loggedInId, ownerProfile.getId());
+
+    // Check if user is actually has a participating role
+    List<ActivityRole> userRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, profileId);
+    boolean isParticipating = false;
+    // User who is being edited or not is organiser or not
+    boolean organiser = false;
+    for (ActivityRole role : userRoles) {
+      if (!role.getRole().equals("follower") && !role.getRole().equals("access")) {
+        isParticipating = true;
+        if (role.getRole().equals("organiser")) {
+          organiser = true;
+        }
+      }
+    }
+    if (!isParticipating) {
+      return new ResponseEntity("Specified user is not a participant", HttpStatus.BAD_REQUEST);
+    }
+
+    // Check right to edit result
+    // Check if not admin or owner
+    if (!isOwnerOrAdmin) {
+      // Check if not organiser
+      List<ActivityRole> roles =
+          activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInId);
+      boolean isOrganiser = false;
+      for (ActivityRole role : roles) {
+        if (role.getRole().equals("organiser")) {
+          isOrganiser = true;
+        }
+      }
+      if (!isOrganiser) {
+        // Check if not logged in user
+        if (profile != loggedInProfile) {
+          return new ResponseEntity("You can not edit this users results", HttpStatus.FORBIDDEN);
+        }
+      } else {
+        // An organiser should not be able to edit another organisers results
+        if (organiser) {
+          return new ResponseEntity(
+              "You can not edit another organisers results", HttpStatus.FORBIDDEN);
+        }
+      }
+    }
+
+    // Test Request is legit
+    Optional<ActivityQualificationMetric> metricOptional =
+        activityQualificationMetricRepository.findById(request.getMetricId());
+    if (metricOptional.isEmpty()) {
+      return new ResponseEntity("No such metric ID", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityQualificationMetric metric = metricOptional.get();
+    Unit metricUnit = metric.getUnit();
+
+    if (metricUnit.equals(Unit.TimeStartFinish)) {
+      if (request.getEnd() == null || request.getStart() == null) {
+        return new ResponseEntity("Must provide start AND end times", HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      if (request.getValue().isEmpty() || request.getValue() == null) {
+        return new ResponseEntity("Request value is empty", HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    String message = "";
+    if (loggedInProfile == profile) {
+      message +=
+          profile.getFirstname()
+              + " edited their results for "
+              + metric.getTitle()
+              + " in "
+              + activity.getActivityName()
+              + " their new results are: ";
+    } else {
+      message +=
+          "An event organiser edited "
+              + profile.getFirstname()
+              + "'s results for "
+              + metric.getTitle()
+              + " in "
+              + activity.getActivityName()
+              + " their new results are: ";
+    }
+
+    if (metricUnit.equals(Unit.Count)) {
+      Optional<ActivityResultCount> optionalResult =
+          activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
+              activityId, profileId, request.getMetricId());
+      if (!optionalResult.isPresent()) {
+        return new ResponseEntity(
+            "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
+      }
+      ActivityResultCount result = optionalResult.get();
+      result.setResult(Integer.parseInt(request.getValue()));
+      activityResultRepository.save(result);
+      message += "count: " + request.getValue();
+    } else if (metricUnit.equals(Unit.Distance)) {
+      Optional<ActivityResultDistance> optionalResult =
+          activityResultRepository.findUsersDistanceResultForSpecificActivityAndMetric(
+              activityId, profileId, request.getMetricId());
+      if (!optionalResult.isPresent()) {
+        return new ResponseEntity(
+            "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
+      }
+      ActivityResultDistance result = optionalResult.get();
+      result.setResult(Float.parseFloat(request.getValue()));
+      activityResultRepository.save(result);
+      message += "distance: " + request.getValue();
+    } else if (metricUnit.equals(Unit.TimeDuration)) {
+      // in the format H:I:S
+      Optional<ActivityResultDuration> optionalResult =
+          activityResultRepository.findUsersDurationResultForSpecificActivityAndMetric(
+              activityId, profileId, request.getMetricId());
+      if (!optionalResult.isPresent()) {
+        return new ResponseEntity(
+            "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
+      }
+      ActivityResultDuration result = optionalResult.get();
+      String durationString =
+          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
+      Duration duration = Duration.parse(durationString);
+      result.setResult(duration);
+      activityResultRepository.save(result);
+      message += "duration: " + durationString;
+    } else if (metricUnit.equals(Unit.TimeStartFinish)) {
+      Optional<ActivityResultStartFinish> optionalResult =
+          activityResultRepository.findUsersStartFinishResultForSpecificActivityAndMetric(
+              activityId, profileId, request.getMetricId());
+      if (!optionalResult.isPresent()) {
+        return new ResponseEntity(
+            "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
+      }
+      ActivityResultStartFinish result = optionalResult.get();
+      result.setStartFinish(request.getStart(), request.getEnd());
+      activityResultRepository.save(result);
+      message +=
+          "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+    }
+
+    ActivityHistory activityHistory = new ActivityHistory(activity, message);
+    activityHistoryRepository.save(activityHistory);
+
+    return new ResponseEntity("Updated", HttpStatus.OK);
+  }
+
+  /**
    * Gets all the different metrics of an activity only if session has permission
+   *
    * @param profileId the owner of the activity
    * @param activityId the activity id
    * @param session the session of the user who has called the endpoint
@@ -220,9 +408,7 @@ public class ActivityMetricController {
    */
   @GetMapping("/profiles/{profileId}/activities/{activityId}/metrics")
   public ResponseEntity getActivityMetrics(
-          @PathVariable int profileId,
-          @PathVariable int activityId,
-          HttpSession session) {
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
     if (optionalActivity.isEmpty()) {
@@ -237,16 +423,18 @@ public class ActivityMetricController {
 
     if (!(activity.getVisibilityType() == VisibilityType.Public)) {
       ActivityRole activityRole =
-              activityRoleRepository.findByProfile_IdAndActivity_Id(
-                      Integer.parseInt(sessionId.toString()), activityId);
+          activityRoleRepository.findByProfile_IdAndActivity_Id(
+              Integer.parseInt(sessionId.toString()), activityId);
       if (activityRole == null) {
-        if (!UserSecurityService.checkIsAdminOrCreator(Integer.parseInt(sessionId.toString()), profileId)) {
+        if (!UserSecurityService.checkIsAdminOrCreator(
+            Integer.parseInt(sessionId.toString()), profileId)) {
           return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
         }
       }
     }
 
-    List<ActivityQualificationMetric> activityMetrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+    List<ActivityQualificationMetric> activityMetrics =
+        activityQualificationMetricRepository.findByActivity_Id(activityId);
     try {
       ObjectMapper mapper = new ObjectMapper();
       String postJson = mapper.writeValueAsString(activityMetrics);
