@@ -128,8 +128,8 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String startTime = result.getJSONObject(0).get("resultStart").toString();
-    String endTime = result.getJSONObject(0).get("resultFinish").toString();
+    String startTime = result.getJSONObject(0).get("result_start").toString();
+    String endTime = result.getJSONObject(0).get("result_finish").toString();
     Assert.assertEquals(expectedValues.get(0), startTime);
     Assert.assertEquals(expectedValues.get(1), endTime);
   }

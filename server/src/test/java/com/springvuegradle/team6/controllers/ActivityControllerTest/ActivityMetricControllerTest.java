@@ -764,8 +764,9 @@ public class ActivityMetricControllerTest {
   }
 
   /**
-   * Creates an activity metric that is associated to a particular activity result
-   * Useful to test get requests to make sure the right amount of results are returned
+   * Creates an activity metric that is associated to a particular activity result Useful to test
+   * get requests to make sure the right amount of results are returned
+   *
    * @param activity the activity the metric is associated with
    * @param profile the profile that the result is associated with
    */
@@ -851,12 +852,12 @@ public class ActivityMetricControllerTest {
     createDummyMetricAndResult(activity, profile);
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/profiles/{profileId}/activities/{activityId}/result",
-                profile.getId(),
-                activity.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/result",
+                        profile.getId(),
+                        activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -1061,15 +1062,17 @@ public class ActivityMetricControllerTest {
     metric = activityQualificationMetricRepository.save(metric);
 
     String response =
-    mvc.perform(
-        MockMvcRequestBuilders.get(
-            "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().isOk())
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/metrics",
+                        activity.getProfile().getId(),
+                        activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
@@ -1097,30 +1100,28 @@ public class ActivityMetricControllerTest {
     profile1 = profileRepository.save(profile1);
 
     String jsonStringUser =
-            "{\n" +
-                    "  \"email\": \"example1@email.com\",\n" +
-                    "  \"password\": \"Password1\"\n" +
-                    "}";
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
 
     mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.post("/login")
-                    .content(jsonStringUser)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+                .content(jsonStringUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.get(
-                    "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().is4xxClientError());
-
+                    "/profiles/{profileId}/activities/{activityId}/metrics",
+                    activity.getProfile().getId(),
+                    activityId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -1151,35 +1152,34 @@ public class ActivityMetricControllerTest {
     activityRoleRepository.save(activityRole);
 
     String jsonStringUser =
-            "{\n" +
-                    "  \"email\": \"example1@email.com\",\n" +
-                    "  \"password\": \"Password1\"\n" +
-                    "}";
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
 
     mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.post("/login")
-                    .content(jsonStringUser)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+                .content(jsonStringUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
 
     mvc.perform(
             MockMvcRequestBuilders.get(
-                    "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isOk());
+                    "/profiles/{profileId}/activities/{activityId}/metrics",
+                    activity.getProfile().getId(),
+                    activityId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isOk());
   }
 
   @Test
   @WithMockUser(
-          username = "admin",
-          roles = {"USER", "ADMIN"})
+      username = "admin",
+      roles = {"USER", "ADMIN"})
   void adminGetActivityMetricReturnsStatusOKAndMetric() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
 
@@ -1190,15 +1190,17 @@ public class ActivityMetricControllerTest {
     metric = activityQualificationMetricRepository.save(metric);
 
     String response =
-            mvc.perform(
-                    MockMvcRequestBuilders.get(
-                            "/profiles/{profileId}/activities/{activityId}/metrics", activity.getProfile().getId(), activityId)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/metrics",
+                        activity.getProfile().getId(),
+                        activityId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
