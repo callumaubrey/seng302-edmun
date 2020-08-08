@@ -97,7 +97,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String resultDuration = result.getJSONObject(0).get("DURATION_RESULT").toString();
+    String resultDuration = result.getJSONObject(0).get("result").toString();
     Assert.assertEquals(expectedDuration.toString(), resultDuration);
   }
 
@@ -107,7 +107,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String resultDuration = result.getJSONObject(0).get("COUNT_RESULT").toString();
+    String resultDuration = result.getJSONObject(0).get("result").toString();
     Assert.assertEquals(expectedCount.toString(), resultDuration);
   }
 
@@ -117,7 +117,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String resultDuration = result.getJSONObject(0).get("DISTANCE_RESULT").toString();
+    String resultDuration = result.getJSONObject(0).get("result").toString();
     Assert.assertEquals(expectedDuration.toString(), resultDuration);
   }
 
@@ -128,8 +128,8 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String startTime = result.getJSONObject(0).get("RESULT_START").toString();
-    String endTime = result.getJSONObject(0).get("RESULT_FINISH").toString();
+    String startTime = result.getJSONObject(0).get("resultStart").toString();
+    String endTime = result.getJSONObject(0).get("resultFinish").toString();
     Assert.assertEquals(expectedValues.get(0), startTime);
     Assert.assertEquals(expectedValues.get(1), endTime);
   }
@@ -140,7 +140,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("SPECIAL_METRIC").toString();
+    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
     Assert.assertEquals(SpecialMetric.Disqualified.ordinal(), Integer.parseInt(special_metric));
   }
 
@@ -150,7 +150,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("SPECIAL_METRIC").toString();
+    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
     Assert.assertEquals(SpecialMetric.TechnicalFailure.ordinal(), Integer.parseInt(special_metric));
   }
   @Then("the details of my participation is recorded as did not finish")
@@ -159,7 +159,7 @@ public class ActivityRecordOutcomeFeatureSteps {
         Integer.parseInt(
             activityHashtagFeatureSteps.mvcResponse.andReturn().getResponse().getContentAsString());
     JSONArray result = getResultsRequest(activityId.toString(), loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("SPECIAL_METRIC").toString();
+    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
     Assert.assertEquals(SpecialMetric.DidNotFinish.ordinal(), Integer.parseInt(special_metric));
   }
 }

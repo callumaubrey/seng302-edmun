@@ -843,6 +843,30 @@ public class ActivityMetricControllerTest {
   }
 
   @Test
+  void testResultReturnedIsNotEmptyList() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/profiles/{profileId}/activities/{activityId}/result",
+                profile.getId(),
+                activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    String activityResult = result.getJSONObject(0).get("result").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("5.2", activityResult);
+  }
+
+  @Test
   void testCreatorGetActivityResultPrivateActivity() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
     activity.setVisibilityType(VisibilityType.Private);
