@@ -1,5 +1,24 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
+import com.springvuegradle.team6.models.entities.ActivityResultDistance;
+import com.springvuegradle.team6.models.entities.ActivityResultDuration;
+import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
@@ -14,6 +33,14 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(
@@ -415,5 +442,51 @@ public class ActivityMetricController {
     } catch (Exception e) {
       return new ResponseEntity<>("Activity Metrics do not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Gets all an activities results for a particular user
+   *
+   * @param profileId the id of the user who has the results
+   * @param activityId the id of the activity
+   * @param session
+   * @return activity results, if user has no results return 404
+   */
+  @GetMapping("/profiles/{profileId}/activities/{activityId}/result")
+  public ResponseEntity getAllActivityResultsForSingleUser(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    boolean authorised =
+        UserSecurityService.checkIsAdminOrCreator((int) id, activity.getProfile().getId());
+
+    if (activity.getVisibilityType() != VisibilityType.Public && !authorised) {
+      List<ActivityRole> activityRoles =
+          activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, (int) id);
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      }
+    }
+    List<ActivityResult> results =
+        activityResultRepository.findSingleUsersResultsOnActivity(activityId, profileId);
+    if (results.isEmpty()) {
+      return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity(results, HttpStatus.OK);
   }
 }
