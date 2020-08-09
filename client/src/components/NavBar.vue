@@ -102,6 +102,8 @@
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
+
+                        mutations.logout();
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
