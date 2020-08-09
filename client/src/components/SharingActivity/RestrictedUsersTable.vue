@@ -29,45 +29,10 @@
 <script>
   export default {
     name: "RestrictedUsersTable",
-    props: ['roleData', 'activityRoles'],
+    props: ['roleData', 'activityRoles', 'fields'],
     data() {
       return {
-        fields: [
-          {
-            key: 'full_name',
-            label: 'Name',
-            sortable: true
-          },
-          {
-            key: 'primary_email',
-            label: 'Primary Email',
-            sortable: true
-          },
-          {
-            key: 'role'
-          },
-          {
-            key: 'selected'
-          }
-        ],
         data: {
-          users: [
-            {
-              name: "John Doe",
-              email: "johndoe@doe.com",
-              role: "organiser",
-              selected: false,
-              _rowVariant: 'danger'
-            },
-            {
-              name: "James Smith",
-              email: "jamessmith@google.com",
-              role: "organiser",
-              selected: true,
-              _rowVariant: 'none'
-            },
-          ]
-
         }
       }
     },
