@@ -2,7 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.security.UserSecurityService;
+import java.security.Security;
 import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.PageRequest;
@@ -18,19 +22,19 @@ import java.util.Map;
 
 @CrossOrigin(
     origins = {
-      "http://localhost:9000",
-      "http://localhost:9500",
-      "https://csse-s302g7.canterbury.ac.nz/test",
-      "https://csse-s302g7.canterbury.ac.nz/prod"
+        "http://localhost:9000",
+        "http://localhost:9500",
+        "https://csse-s302g7.canterbury.ac.nz/test",
+        "https://csse-s302g7.canterbury.ac.nz/prod"
     },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
-      RequestMethod.GET,
-      RequestMethod.POST,
-      RequestMethod.DELETE,
-      RequestMethod.PUT,
-      RequestMethod.PATCH
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.DELETE,
+        RequestMethod.PUT,
+        RequestMethod.PATCH
     })
 @RestController
 @RequestMapping("")
@@ -99,8 +103,16 @@ public class TagController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    hashTag = hashTag.toLowerCase();
-    List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
-    return new ResponseEntity(activities, HttpStatus.OK);
+    //Check if user is an admin, if so return activities regardless of their visibility.
+    if (true) {
+      hashTag = hashTag.toLowerCase();
+      List<Activity> activities = activityRepository
+          .getActivitiesByHashTagAnyVisibilityType(hashTag, (int) id);
+      return new ResponseEntity(activities, HttpStatus.OK);
+    } else {
+      hashTag = hashTag.toLowerCase();
+      List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
+      return new ResponseEntity(activities, HttpStatus.OK);
+    }
   }
 }

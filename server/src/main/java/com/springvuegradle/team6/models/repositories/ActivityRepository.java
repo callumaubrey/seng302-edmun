@@ -13,6 +13,7 @@ import java.util.Set;
 
 @RepositoryRestResource
 public interface ActivityRepository extends JpaRepository<Activity, Integer> {
+
   /**
    * Find activity by activity id
    *
@@ -22,8 +23,8 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
   Optional<Activity> findById(int id);
 
   /**
-   * Used for searching for a profile's activities by hash-tag
-   * returning only activities which are not archived
+   * Used for searching for a profile's activities by hash-tag returning only activities which are
+   * not archived
    *
    * @param id profile id
    * @return list of not archived activities
@@ -50,7 +51,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    * activity_role regardless of the visibility.
    *
    * @param hashtagName the name of the hashtag
-   * @param profileId the id of the user that is calling the query
+   * @param profileId   the id of the user that is calling the query
    * @return the activities
    */
   @Query(
@@ -81,4 +82,24 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
               + "r.profile_id = :acquiringUser)",
       nativeQuery = true)
   List<Activity> getPublicAndRestrictedActivities(int activityOwner, int acquiringUser);
+
+  /**
+   * Returns all activities sorted in descending order by the activities creation date that contain
+   * the given hashtag regardless of the visibility of the activity.
+   *
+   * <p>Note: This should only be used for admin users, as visibility of an activity does not matter
+   * so all activities which contain the hashtag are returned
+   *
+   * @param hashtagName the name of the hashtag
+   * @param profileId   the id of the user that is calling the query
+   * @return a list of activities which contain the hashtag and are any visibility type
+   */
+  @Query(
+      value =
+          "select * from activity a left join activity_tags b on a.id = b.activity_id"
+              + " left join tag t on b.tag_id = t.id left join activity_role r on a.id = r.activity_id"
+              + " and r.profile_id = :profileId WHERE t.name = :hashtagName and a.archived = 0"
+              + " order by a.creation_date desc",
+      nativeQuery = true)
+  List<Activity> getActivitiesByHashTagAnyVisibilityType(String hashtagName, int profileId);
 }
