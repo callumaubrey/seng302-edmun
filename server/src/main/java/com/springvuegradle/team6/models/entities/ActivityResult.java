@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -59,4 +60,25 @@ public class ActivityResult {
   public void overrideResult(SpecialMetric otherMetric) {
     this.specialMetric = otherMetric;
   }
+
+  public Integer getId() {
+    return this.id;
+  }
+
+  @JsonProperty("metric_id")
+  public Integer getMetricId() {
+    return this.metricId.getId();
+  }
+
+  @JsonProperty("user_id")
+  public Integer getUserId() {
+    return this.userId.getId();
+  }
+
+  @JsonProperty("special_metric")
+  public SpecialMetric getSpecialMetric() {
+    return this.specialMetric;
+  }
+
+
 }

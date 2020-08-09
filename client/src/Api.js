@@ -104,6 +104,7 @@ export default {
 
     removeLocation: (profileId) => instance.delete('/profiles/' + profileId + '/location'),
     
-    unsubscribeToActivity: (userId, activityId) => instance.delete('/profiles/' + userId + '/subscriptions/activities/' + activityId)
+    unsubscribeToActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/subscriptions/activities/' + activityId),
 
+    getActivityMetrics: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/metrics')
 }
