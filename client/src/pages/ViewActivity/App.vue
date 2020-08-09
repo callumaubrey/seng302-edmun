@@ -116,10 +116,12 @@
                 <b-row v-else align-h="center">
                     <b-col cols="9">
                         <b-card style="margin: 1em">
-                          <RecordActivityResultModal></RecordActivityResultModal>
-                            <b-card-body>
-                                No metrics available
-                            </b-card-body>
+                          <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                                     :logged-in-id="loggedInId"
+                                                     :profile-id="profileId"></RecordActivityResultModal>
+                          <b-card-body>
+                            No metrics available
+                          </b-card-body>
                         </b-card>
                     </b-col>
                 </b-row>

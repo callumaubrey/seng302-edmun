@@ -17,7 +17,7 @@ beforeEach(() => {
         resultEnd: null,
         isEditMode: false
       },
-      metricTitleDict: {
+      metricDict: {
         "Eggs collected": "Count",
         "Distance flown": "Distance",
         "Duration spent trippin": "Duration",
