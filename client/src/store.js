@@ -4,6 +4,21 @@ import Vue from 'vue';
 
 export const store = Vue.observable({
     adminAccess: true,
+    notifications: [],
+    //Style should be a vue variant name (eg. 'success', 'warning', 'danger')
+    newNotification(message, style, time) {
+        let notification = {
+            notificationMessage: 'Hello :)',
+            notificationStyle: 'success',
+            dismissCountDown: 3,
+        }
+        notification.notificationMessage = message
+        notification.notificationStyle = style
+        notification.dismissCountDown = time
+        store.notifications.push(notification)
+    }
+})
+    adminAccess: true,
     logged_in_id: null,
 });
 

@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -31,7 +32,7 @@ public class ActivityResult {
 
   @ManyToOne
   @JoinColumn(name = "metric_id", nullable = false)
-  private ActivityQualificationMetrics metricId;
+  private ActivityQualificationMetric metricId;
 
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
@@ -40,7 +41,7 @@ public class ActivityResult {
   @Column(name = "special_metric")
   private SpecialMetric specialMetric;
 
-  public ActivityResult(ActivityQualificationMetrics metricId, Profile userId) {
+  public ActivityResult(ActivityQualificationMetric metricId, Profile userId) {
     this.metricId = metricId;
     this.userId = userId;
     this.specialMetric = null;
@@ -59,4 +60,25 @@ public class ActivityResult {
   public void overrideResult(SpecialMetric otherMetric) {
     this.specialMetric = otherMetric;
   }
+
+  public Integer getId() {
+    return this.id;
+  }
+
+  @JsonProperty("metric_id")
+  public Integer getMetricId() {
+    return this.metricId.getId();
+  }
+
+  @JsonProperty("user_id")
+  public Integer getUserId() {
+    return this.userId.getId();
+  }
+
+  @JsonProperty("special_metric")
+  public SpecialMetric getSpecialMetric() {
+    return this.specialMetric;
+  }
+
+
 }

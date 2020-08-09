@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models;
 
+import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
@@ -38,10 +39,17 @@ class ActivityRepositoryTest {
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
 
+  private VisibilityType restrictedType;
+  private VisibilityType publicType;
+  private VisibilityType privateType;
+
   private Profile profile;
 
   @BeforeEach
   void setup() {
+    restrictedType = VisibilityType.Restricted;
+    publicType = VisibilityType.Public;
+    privateType = VisibilityType.Private;
     Set<Email> emails = new HashSet<>();
     Email email = new Email("johnydoe99@gmail.com");
     email.setPrimary(true);
@@ -134,20 +142,9 @@ class ActivityRepositoryTest {
 
   @Test
   void testFindActivitiesThatAreNotPrivate() {
-    Activity activity = new Activity();
-    activity.setProfile(profile);
-    activity.setVisibilityTypeByString("private");
-    activityRepository.save(activity);
-
-    Activity activity1 = new Activity();
-    activity1.setProfile(profile);
-    activity1.setVisibilityTypeByString("public");
-    activityRepository.save(activity1);
-
-    Activity activity2 = new Activity();
-    activity2.setProfile(profile);
-    activity2.setVisibilityTypeByString("private");
-    activityRepository.save(activity2);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
 
     List<Activity> result =
         activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
@@ -157,20 +154,9 @@ class ActivityRepositoryTest {
 
   @Test
   void testAllActivitiesPrivateNoActivitiesReturned() {
-    Activity activity = new Activity();
-    activity.setProfile(profile);
-    activity.setVisibilityTypeByString("private");
-    activityRepository.save(activity);
-
-    Activity activity1 = new Activity();
-    activity1.setProfile(profile);
-    activity1.setVisibilityTypeByString("private");
-    activityRepository.save(activity1);
-
-    Activity activity2 = new Activity();
-    activity2.setProfile(profile);
-    activity2.setVisibilityTypeByString("private");
-    activityRepository.save(activity2);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
 
     List<Activity> result =
         activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
@@ -180,30 +166,156 @@ class ActivityRepositoryTest {
 
   @Test
   void testFindActivitiesMultipleActivitiesNotPrivate() {
-    Activity activity = new Activity();
-    activity.setProfile(profile);
-    activity.setVisibilityTypeByString("public");
-    activityRepository.save(activity);
-
-    Activity activity1 = new Activity();
-    activity1.setProfile(profile);
-    activity1.setVisibilityTypeByString("public");
-    activityRepository.save(activity1);
-
-    Activity activity3 = new Activity();
-    activity3.setProfile(profile);
-    activity3.setVisibilityTypeByString("private");
-    activityRepository.save(activity3);
-
-    Activity activity2 = new Activity();
-    activity2.setProfile(profile);
-    activity2.setVisibilityTypeByString("public");
-    activityRepository.save(activity2);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
 
     List<Activity> result =
         activityRepository.findByProfile_IdAndArchivedFalseAndVisibilityTypeNotLike(
             profile.getId(), VisibilityType.Private);
     Assertions.assertEquals(3, result.size());
+  }
+
+  @Test
+  void testFindActivitiesThatAreRestrictedAndUserIsAuthorised() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    Activity activity =
+        TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(2, result.size());
+  }
+
+  @Test
+  void testUnAuthorisedUserCannotSeeRestrictedActivities() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testUserGrantedToOneRestrictedActivity() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    Activity activity =
+        TestDataGenerator.createExtraActivity(
+            profile, activityRepository, VisibilityType.Restricted);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void userCannotSeeAnyActivities() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+    Profile otherUser2 = TestDataGenerator.createExtraProfile(profileRepository);
+
+    Activity activity =
+        TestDataGenerator.createExtraActivity(
+            profile, activityRepository, VisibilityType.Restricted);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser2.getId());
+    Assertions.assertEquals(0, result.size());
+  }
+
+  @Test
+  void multipleProfilesWithActivitiesOnlyDisplaysOneProfilesActivities() {
+    Profile otherUser2 = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(otherUser2, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(otherUser2, activityRepository, publicType);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser2.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void multipleProfilesWithActivitiesOnlyDisplaysOneProfilesActivitiesIncludingRestricted() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(otherUser, activityRepository, publicType);
+    Activity activity3 =
+        TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+
+    TestDataGenerator.addActivityRole(
+        otherUser, activity3, ActivityRoleType.Access, activityRoleRepository);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(2, result.size());
+  }
+
+  @Test
+  void multipleProfilesWithActivitiesOnlyDisplaysOneProfilesActivitiesIncludingPrivate() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    TestDataGenerator.createExtraActivity(profile, activityRepository, privateType);
+    TestDataGenerator.createExtraActivity(otherUser, activityRepository, publicType);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testArchivedActivitiesAreNotReturned() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    Activity activity =
+        TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    activity.setArchived(true);
+    activityRepository.save(activity);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
+  }
+
+  @Test
+  void testArchivedActivitiesAreNotReturnedOnRestrictedActivities() {
+    Profile otherUser = TestDataGenerator.createExtraProfile(profileRepository);
+
+    TestDataGenerator.createExtraActivity(profile, activityRepository, publicType);
+    Activity activity =
+        TestDataGenerator.createExtraActivity(profile, activityRepository, restrictedType);
+    activity.setArchived(true);
+    activityRepository.save(activity);
+
+    List<Activity> result =
+        activityRepository.getPublicAndRestrictedActivities(profile.getId(), otherUser.getId());
+    Assertions.assertEquals(1, result.size());
   }
 
   @Test

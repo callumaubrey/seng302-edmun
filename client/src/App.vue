@@ -2,15 +2,20 @@
 
 <template>
     <div id="app">
+        <Notification></Notification>
         <router-view />
     </div>
 </template>
 
 <script>
+    import Notification from "./components/Notification";
     import api from "./Api";
     import {mutations} from "./store";
 
     export default {
+        components: {
+            Notification
+        }
 
         /**
          * This should trigger the first time the website is loaded
