@@ -25,36 +25,46 @@
                 <!-- Summary -->
                 <FollowerSummary class="text-center" :activityId="parseInt($route.params.activityId)"></FollowerSummary>
                 <b-row align-h="center">
-                    <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility" :profileId="profileId" :activityId="$route.params.activityId"></ShareActivity>
+                  <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility"
+                                 :profileId="profileId"
+                                 :activityId="$route.params.activityId"></ShareActivity>
                 </b-row>
 
-                <!-- Actions -->
-                <b-row align-h="center">
-                    <FollowUnfollow v-bind:activityId="parseInt(this.$route.params.activityId)"
-                                    v-bind:activityOwnerId="parseInt(this.$route.params.id)"
-                                    v-bind:loggedInId="loggedInId"></FollowUnfollow>
-                </b-row>
-                <b-row align-h="center">
-                    <b-dropdown v-if="profileId == loggedInId || loggedInIsAdmin" text="Actions" class="m-md-2">
-                        <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
-                        <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
-                    </b-dropdown>
-                </b-row>
 
-                <!-- Content -->
-                <b-row align-h="center">
-                    <b-col cols="9">
-                <b-card style="margin: 1em" title="About:">
+              <!-- Actions -->
+              <b-row align-h="center">
+                <FollowUnfollow v-bind:activityId="parseInt(this.$route.params.activityId)"
+                                v-bind:activityOwnerId="parseInt(this.$route.params.id)"
+                                v-bind:loggedInId="loggedInId"></FollowUnfollow>
+              </b-row>
+              <b-row align-h="center">
+                <b-dropdown class="m-md-2" text="Actions"
+                            v-if="profileId == loggedInId || loggedInIsAdmin">
+                  <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
+                  <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
+                </b-dropdown>
+              </b-row>
+
+              <b-row align-h="center">
+                <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                           :logged-in-id="loggedInId"
+                                           :profile-id="profileId"></RecordActivityResultModal>
+              </b-row>
+
+              <!-- Content -->
+              <b-row align-h="center">
+                <b-col cols="9">
+                  <b-card style="margin: 1em" title="About:">
                     <div v-if="locationDataLoading">
-                        <div class="text-center text-primary my-2">
-                            <b-spinner class="align-middle"></b-spinner>
-                            <strong> Loading...</strong>
-                        </div>
+                      <div class="text-center text-primary my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong> Loading...</strong>
+                      </div>
                     </div>
                     <div v-else>
-                        <b-row>
-                            <b-col cols="3"><b>Activity Type(s):</b></b-col>
-                            <b-col><p>{{activityTypes}}</p></b-col>
+                      <b-row>
+                        <b-col cols="3"><b>Activity Type(s):</b></b-col>
+                        <b-col><p>{{ activityTypes }}</p></b-col>
                         </b-row>
                         <b-row v-if="!continuous">
                             <b-col cols="3"><b>Start:</b></b-col>
@@ -115,14 +125,12 @@
                 </b-row>
                 <b-row v-else align-h="center">
                     <b-col cols="9">
-                        <b-card style="margin: 1em">
-                          <RecordActivityResultModal :activity-id="this.$route.params.activityId"
-                                                     :logged-in-id="loggedInId"
-                                                     :profile-id="profileId"></RecordActivityResultModal>
-                          <b-card-body>
-                            No metrics available
-                          </b-card-body>
-                        </b-card>
+                      <b-card style="margin: 1em">
+
+                        <b-card-body>
+                          No metrics available
+                        </b-card-body>
+                      </b-card>
                     </b-col>
                 </b-row>
 

@@ -2,20 +2,29 @@
   <div>
     <b-button @click="$bvModal.show('record-result-modal')">Record Activity Result</b-button>
 
-    <b-modal hide-footer id="record-result-modal" size="lg" title="Record Activity Result">
+    <b-modal hide-footer id="record-result-modal" size="xl" title="Record Activity Result">
       <RecordActivityResultForm :is-create-result="true" :metric-dict="metricDict"
                                 :result="createResultForm"></RecordActivityResultForm>
 
       <hr>
 
       <h5>Current Activity Results</h5>
-      <b-card-group :key="index" v-for="(result, index) in resultList">
+      <div v-if="userHasNoResultsMessage !== null">
         <b-card>
-          <RecordActivityResultForm :activity-id="activityId" :is-create-result="false"
-                                    :metric-dict="metricDict" :result="result"
-                                    :user-id="profileId"></RecordActivityResultForm>
+          {{ this.userHasNoResultsMessage }}
         </b-card>
-      </b-card-group>
+      </div>
+      <div v-else>
+        <b-card-group :key="index" v-for="(result, index) in resultList">
+          <b-card>
+            <RecordActivityResultForm :activity-id="activityId" :is-create-result="false"
+                                      :metric-dict="metricDict" :result="result"
+                                      :user-id="profileId"
+                                      v-on:child-to-parent="forceUpdateComponent"></RecordActivityResultForm>
+          </b-card>
+        </b-card-group>
+      </div>
+
     </b-modal>
   </div>
 
@@ -34,13 +43,18 @@ export default {
   data() {
     return {
       createResultForm: {
-        title: null,
-        type: null,
+        metric_id: null,
+        user_id: null,
+        special_metric: null,
         result: null,
-        resultStart: null,
-        resultEnd: null,
-        isEditMode: true
+        result_finish: null,
+        result_start: null,
+        type: null,
+        isEditMode: true,
+        title: null,
+        description: null
       },
+      userHasNoResultsMessage: null,
       // placeholder. key = metric title, value = metric type
       // metricTitleDict: {
       //   "Eggs collected": "Count",
@@ -71,6 +85,7 @@ export default {
   },
   methods: {
     getActivityResultsForUser() {
+
       api.getUserActivityResults(this.profileId, this.activityId).then((res) => {
         let result;
         for (result of res.data) {
@@ -85,9 +100,16 @@ export default {
           // }
           result.title = this.metricDict[result.metric_id].title;
           result.description = this.metricDict[result.metric_id].description;
+          result.isEditMode = false
           this.resultList.push(result)
         }
+        console.log(this.resultList)
       })
+      .catch(() => {
+        this.userHasNoResultsMessage = "User has no activity results";
+      })
+      console.log("YEET")
+      this.$forceUpdate();
     },
     getAllMetricsForActivity() {
       api.getActivityMetrics(this.loggedInId, this.activityId).then((res) => {
@@ -97,8 +119,18 @@ export default {
         }
         this.getActivityResultsForUser();
       })
+      .catch((err) => {
+        console.log(err);
+      })
+    },
+    forceUpdateComponent() {
+      console.log("HOO")
+      this.$forceUpdate();
     }
   },
+  mounted() {
+    this.getAllMetricsForActivity();
+  }
 
 }
 

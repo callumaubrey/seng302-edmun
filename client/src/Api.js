@@ -29,8 +29,8 @@ export default {
     subscribeToActivity: (userId, activityId) => instance.post(
         '/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
-    createActivityResult: (userId, activityId) => instance.post(
-        'profiles/' + userId + '/activities/' + activityId + '/result'),
+    createActivityResult: (userId, activityId, data) => instance.post(
+        'profiles/' + userId + '/activities/' + activityId + '/result', data),
     // (R)ead
 
     getProfileRoles: () => instance.get('/profiles/role'),
