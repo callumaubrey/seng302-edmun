@@ -26,8 +26,7 @@ public class LoginControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    @Autowired
-    private ObjectMapper mapper;
+  @Autowired private ObjectMapper mapper;
 
     @BeforeEach
     void setup() throws Exception {

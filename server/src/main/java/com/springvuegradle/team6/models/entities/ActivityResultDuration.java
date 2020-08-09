@@ -5,9 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
-/**
- * One of the subclasses of ActivityResult. It records duration as result
- */
+/** One of the subclasses of ActivityResult. It records duration as result */
 @Entity
 @DiscriminatorValue("2")
 public class ActivityResultDuration extends ActivityResult {
@@ -23,6 +21,21 @@ public class ActivityResultDuration extends ActivityResult {
   }
 
   // For testing purposes
-  public ActivityResultDuration() {
+  public ActivityResultDuration() {}
+
+  public void setResult(Duration result) {
+    this.result = result;
+  }
+
+  public Duration getValue() {
+    return this.result;
+  }
+
+  public Duration getResult() {
+    return this.result;
+  }
+
+  public String getType() {
+    return "Duration";
   }
 }
