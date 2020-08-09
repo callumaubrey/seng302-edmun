@@ -4,7 +4,9 @@ import Vue from 'vue';
 
 export const store = Vue.observable({
     adminAccess: true,
+    logged_in_id: null,
     notifications: [],
+
     //Style should be a vue variant name (eg. 'success', 'warning', 'danger')
     newNotification(message, style, time) {
         let notification = {
@@ -17,9 +19,6 @@ export const store = Vue.observable({
         notification.dismissCountDown = time
         store.notifications.push(notification)
     }
-})
-    adminAccess: true,
-    logged_in_id: null,
 });
 
 export const mutations = {
@@ -38,4 +37,4 @@ export const mutations = {
     isLoggedIn() {
         return store.logged_in_id !== null;
     }
-}
+};
