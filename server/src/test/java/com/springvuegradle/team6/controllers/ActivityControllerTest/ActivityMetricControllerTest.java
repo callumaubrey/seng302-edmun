@@ -5,6 +5,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.team6.controllers.TestDataGenerator;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultDistance;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
@@ -56,6 +68,8 @@ public class ActivityMetricControllerTest {
   @Autowired private ActivityHistoryRepository activityHistoryRepository;
 
   @Autowired private MockMvc mvc;
+
+  @Autowired private ObjectMapper mapper;
 
   private int id;
 
@@ -1440,6 +1454,294 @@ public class ActivityMetricControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().is4xxClientError());
+  }
+
+  /**
+   * Creates an activity metric that is associated to a particular activity result Useful to test
+   * get requests to make sure the right amount of results are returned
+   *
+   * @param activity the activity the metric is associated with
+   * @param profile the profile that the result is associated with
+   */
+  private void createDummyMetricAndResult(Activity activity, Profile profile) {
+    ActivityQualificationMetric activityMetrics =
+        TestDataGenerator.createDummyActivityMetric(
+            activity, Unit.Distance, activityQualificationMetricRepository);
+
+    ActivityResultDistance activityResultDistance =
+        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+  }
+
+  @Test
+  void testGetASingleActivityResult() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric =
+        TestDataGenerator.createDummyActivityMetric(
+            activity, Unit.Distance, activityQualificationMetricRepository);
+
+    Profile profile = profileRepository.findById(id);
+
+    ActivityResultDistance activityResultDistance =
+        new ActivityResultDistance(metric, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/result",
+                        profile.getId(),
+                        activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
+
+  @Test
+  void testGetASingleActivityMultipleResults() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    Profile profile = profileRepository.findById(id);
+
+    ActivityQualificationMetric activityMetrics =
+        TestDataGenerator.createDummyActivityMetric(
+            activity, Unit.Distance, activityQualificationMetricRepository);
+
+    ActivityResultDistance activityResultDistance =
+        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+    activityResultRepository.save(activityResultDistance);
+    ActivityResultDistance activityResultDistance2 =
+        new ActivityResultDistance(activityMetrics, profile, 4.0f);
+    activityResultRepository.save(activityResultDistance2);
+
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/result",
+                        profile.getId(),
+                        activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+
+  @Test
+  void testResultReturnedIsNotEmptyList() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/{profileId}/activities/{activityId}/result",
+                        profile.getId(),
+                        activity.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    String activityResult = result.getJSONObject(0).get("result").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("5.2", activityResult);
+  }
+
+  @Test
+  void testCreatorGetActivityResultPrivateActivity() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void testCreatorGetActivityResultRestrictedActivity() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void testAdminGetActivityResultRestrictedActivity() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void testAdminGetActivityResultPrivateActivity() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void testGuestGetActivityResultPrivateActivity() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Private);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void testGuestGetActivityResultRestrictedActivity() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+    Profile profile = profileRepository.findById(id);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void testGetActivityResultRestrictedActivityAuthorised() throws Exception {
+    Profile profile = profileRepository.findById(id);
+    int id2 = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+    Activity activity = activityRepository.findById(activityId).get();
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activityRepository.save(activity);
+    TestDataGenerator.addActivityRole(
+        profileRepository.findById(id2), activity, ActivityRoleType.Access, activityRoleRepository);
+
+    createDummyMetricAndResult(activity, profile);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result", id, activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void testGetActivityResultActivityBadValues() throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result", id, 342425)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isNotFound());
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result", 9999, activityId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testGetActivityResultNoActivities() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+    Profile profile = profileRepository.findById(id);
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testGuestViewPublicActivity() throws Exception {
+    TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+    Activity activity = activityRepository.findById(activityId).get();
+    Profile profile = profileRepository.findById(id);
+    createDummyMetricAndResult(activity, profile);
+
+    mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/{profileId}/activities/{activityId}/result",
+                    profile.getId(),
+                    activity.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is2xxSuccessful());
   }
 
   @Test

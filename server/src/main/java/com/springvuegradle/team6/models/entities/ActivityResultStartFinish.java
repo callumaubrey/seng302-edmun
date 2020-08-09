@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -40,5 +41,19 @@ public class ActivityResultStartFinish extends ActivityResult {
 
   public LocalDateTime getFinish() {
     return this.resultFinish;
+  }
+
+  @JsonProperty("result_finish")
+  public LocalDateTime getResultFinish() {
+    return resultFinish;
+  }
+
+  @JsonProperty("result_start")
+  public LocalDateTime getResultStart() {
+    return resultStart;
+  }
+
+  public String getType() {
+    return "StartFinish";
   }
 }
