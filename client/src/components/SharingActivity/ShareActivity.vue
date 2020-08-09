@@ -1,16 +1,12 @@
 <template>
   <div>
     <div v-if="modal == true">
-      <b-button v-b-modal.modal-1 v-if="visibility == 'Public'" variant="success">{{visibility}}
-      </b-button>
-      <b-button v-b-modal.modal-1 v-if="visibility == 'Restricted'" variant="warning">
+      <b-button id="activity-visibility-button" v-b-modal.modal-1 :variant="visibilityButtonColour">
         {{visibility}}
-      </b-button>
-      <b-button v-b-modal.modal-1 v-if="visibility == 'Private'" variant="danger">{{visibility}}
       </b-button>
 
       <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header
-               @show="updateSelectedValue" body-class="p-0">
+               @show="updateSelectedValue" body-class="p-0" :static="true">
         <b-button-close style="padding: 10px" @click="$bvModal.hide('modal-1')"></b-button-close>
         <b-row>
           <b-col style="color: white; background: #4d4d4d; max-width: 40%; horiz-align: center">
@@ -54,20 +50,21 @@
           </b-col>
           <b-col style="size: auto" v-if="selected == 'Restricted' && !busy">
             <br>
-            <restricted-user-tabs v-on:organisersChanged="updateOrganisers"
-                                  v-on:participantsChanged="updateParticipants"
-                                  v-on:followersChanged="updateFollowers"
-                                  v-on:accessorsChanged="updateAccessors"
-                                  v-on:selectAllOrganisers="selectAll(organisers.users)"
-                                  v-on:selectAllParticipants="selectAll(participants.users)"
-                                  v-on:selectAllFollowers="selectAll(followers.users)"
-                                  v-on:selectAllAccessors="selectAll(accessors.users)"
-                                  v-on:deselectAllOrganisers="deselectAll(organisers.users)"
-                                  v-on:deselectAllParticipants="deselectAll(participants.users)"
-                                  v-on:deselectAllFollowers="deselectAll(followers.users)"
-                                  v-on:deselectAllAccessors="deselectAll(accessors.users)"
-                                  :roles-data="roles_data = {organisers, followers, participants, accessors}"
-                                  v-on:childToParent="updateUsers"></restricted-user-tabs>
+            <restricted-users-tabs id="restricted-users-tabs"
+                                   v-on:organisersChanged="updateOrganisers"
+                                   v-on:participantsChanged="updateParticipants"
+                                   v-on:followersChanged="updateFollowers"
+                                   v-on:accessorsChanged="updateAccessors"
+                                   v-on:selectAllOrganisers="selectAll(organisers.users)"
+                                   v-on:selectAllParticipants="selectAll(participants.users)"
+                                   v-on:selectAllFollowers="selectAll(followers.users)"
+                                   v-on:selectAllAccessors="selectAll(accessors.users)"
+                                   v-on:deselectAllOrganisers="deselectAll(organisers.users)"
+                                   v-on:deselectAllParticipants="deselectAll(participants.users)"
+                                   v-on:deselectAllFollowers="deselectAll(followers.users)"
+                                   v-on:deselectAllAccessors="deselectAll(accessors.users)"
+                                   :roles-data="roles_data = {organisers, followers, participants, accessors}"
+                                   v-on:childToParent="updateUsers"></restricted-users-tabs>
           </b-col>
         </b-row>
       </b-modal>
@@ -78,12 +75,12 @@
 
 <script>
   import api from '@/Api'
-  import RestrictedUserTabs from "./RestrictedUsersTabs";
+  import RestrictedUsersTabs from "./RestrictedUsersTabs";
 
   export default {
 
     name: "ShareActivity",
-    components: {RestrictedUserTabs},
+    components: {RestrictedUsersTabs},
     props: {
       profileId: String,
       activityId: String,
@@ -94,7 +91,7 @@
       return {
         // selectedVisibility: null,
         selected: 'Public',
-        description: 'Reeee',
+        description: '',
         emailInput: '',
         options: [
           {value: 'Private', text: 'Private'},
@@ -123,15 +120,17 @@
         this.selected = this.visibility
         await api.getActivityMembers(this.activityId, 0, 10)
             .then((res) => {
-              this.organisers["users"] = res.data.Organiser;
-              this.participants["users"] = res.data.Participant;
-              this.followers["users"] = res.data.Follower;
-              this.accessors["users"] = res.data.Access;
-              this.reformatUserData(this.organisers["users"], "organiser");
-              this.reformatUserData(this.participants["users"], "participant");
-              this.reformatUserData(this.followers["users"], "follower");
-              this.reformatUserData(this.accessors["users"], "accessor");
-              this.busy = false;
+              if (res.status == 200) {
+                this.organisers["users"] = res.data.Organiser;
+                this.participants["users"] = res.data.Participant;
+                this.followers["users"] = res.data.Follower;
+                this.accessors["users"] = res.data.Access;
+                this.reformatUserData(this.organisers["users"], "organiser");
+                this.reformatUserData(this.participants["users"], "participant");
+                this.reformatUserData(this.followers["users"], "follower");
+                this.reformatUserData(this.accessors["users"], "accessor");
+                this.busy = false;
+              }
             })
             .catch(() => {
               alert("An error has occurred, please refresh the page")
@@ -159,7 +158,6 @@
             .catch(function () {
               alert("An error has occurred, please refresh the page")
             });
-
 
       },
 
@@ -278,6 +276,20 @@
           this.showWarning = true
         } else {
           this.showWarning = false
+        }
+      }
+    },
+    computed: {
+      visibilityButtonColour: function () {
+        switch (this.visibility) {
+          case "Public":
+            return "success";
+          case "Restricted":
+            return "warning";
+          case "Private":
+            return "danger";
+          default:
+            return "primary";
         }
       }
     }
