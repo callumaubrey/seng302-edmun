@@ -4,8 +4,10 @@
         <div v-if="!authorised">
             <ForbiddenMessage></ForbiddenMessage>
         </div>
-        <div v-else class="container">
-            <b-container fluid>
+
+        <b-row v-else class="mb-4">
+            <b-col offset="2" cols="8">
+                <!-- Title -->
                 <b-row align-h="between">
                     <b-col>
                         <b-button @click="goToActivity()" style="float: right;">View activity
@@ -14,184 +16,202 @@
                         <hr>
                     </b-col>
                 </b-row>
-                <b-form @submit.stop.prevent="onSubmit" novalidate>
-                    <b-row>
-                        <b-col>
-                            <b-form-group>
-                                <b-form-radio-group id="duration-type-group" v-model="isContinuous">
-                                    <b-form-radio name="duration-type" value='0'>Continuous</b-form-radio>
-                                    <b-form-radio name="duration-type" value='1'>Duration</b-form-radio>
-                                </b-form-radio-group>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
 
-                    <b-row v-if="isContinuous == '1'">
-                        <b-col>
-                            <b-form-group id="start-date-input-group" label="Start Date" label-for="start-date-input">
-                                <b-form-input
-                                        :state="validateDurationState('startDate')"
-                                        aria-describedby="start-date-feedback"
-                                        id="start-date-input"
-                                        type="date"
-                                        v-model="$v.durationForm.startDate.$model"
-                                ></b-form-input>
-                                <b-form-invalid-feedback id="start-date-feedback">This is a required field. Start date
-                                    must be earlier than end date
-                                </b-form-invalid-feedback>
-                            </b-form-group>
-                        </b-col>
-                        <b-col>
-                            <b-form-group id="end-date-input-group" label="End Date" label-for="end-date-input">
-                                <b-form-input
-                                        :state="validateDurationState('endDate')"
-                                        aria-describedby="end-date-feedback"
-                                        id="end-date-input"
-                                        type="date"
-                                        v-model="$v.durationForm.endDate.$model"
-                                ></b-form-input>
-                                <b-form-invalid-feedback id="end-date-feedback">This is a required field. Start date
-                                    must be earlier than end date
-                                </b-form-invalid-feedback>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+                <b-card no-body>
+                    <b-tabs card>
 
-                    <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;" v-if="isContinuous == '1'">
-                        <b-col>
-                            <b-form-group id="start-time-input-group" label="Start Time" label-for="start-time-input">
-                                <b-form-input
-                                        :state="validateDurationState('startTime')"
-                                        id="start-time-input"
-                                        type="time"
-                                        v-model="$v.durationForm.startTime.$model"
-                                ></b-form-input>
-                            </b-form-group>
-                        </b-col>
-                        <b-col>
-                            <b-form-group id="end-time-input-group" label="End Time" label-for="end-time-input">
-                                <b-form-input
-                                        :state="validateDurationState('endTime')"
-                                        id="end-time-input"
-                                        type="time"
-                                        v-model="$v.durationForm.endTime.$model"
-                                        aria-describedby="end-time-feedback"
-                                ></b-form-input>
-                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as start time.</b-form-invalid-feedback>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+                        <!-- Activity Info Editing -->
+                        <b-tab title="Activity Info" active>
+                            <b-container fluid>
 
-                    <b-row>
-                        <b-col>
+                                <b-form @submit.stop.prevent="onSubmit" novalidate>
+                                    <b-row>
+                                        <b-col>
+                                            <b-form-group>
+                                                <b-form-radio-group id="duration-type-group" v-model="isContinuous">
+                                                    <b-form-radio name="duration-type" value='0'>Continuous</b-form-radio>
+                                                    <b-form-radio name="duration-type" value='1'>Duration</b-form-radio>
+                                                </b-form-radio-group>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
+
+                                    <b-row v-if="isContinuous == '1'">
+                                        <b-col>
+                                            <b-form-group id="start-date-input-group" label="Start Date" label-for="start-date-input">
+                                                <b-form-input
+                                                        :state="validateDurationState('startDate')"
+                                                        aria-describedby="start-date-feedback"
+                                                        id="start-date-input"
+                                                        type="date"
+                                                        v-model="$v.durationForm.startDate.$model"
+                                                ></b-form-input>
+                                                <b-form-invalid-feedback id="start-date-feedback">This is a required field. Start date
+                                                    must be earlier than end date
+                                                </b-form-invalid-feedback>
+                                            </b-form-group>
+                                        </b-col>
+                                        <b-col>
+                                            <b-form-group id="end-date-input-group" label="End Date" label-for="end-date-input">
+                                                <b-form-input
+                                                        :state="validateDurationState('endDate')"
+                                                        aria-describedby="end-date-feedback"
+                                                        id="end-date-input"
+                                                        type="date"
+                                                        v-model="$v.durationForm.endDate.$model"
+                                                ></b-form-input>
+                                                <b-form-invalid-feedback id="end-date-feedback">This is a required field. Start date
+                                                    must be earlier than end date
+                                                </b-form-invalid-feedback>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
+
+                                    <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;" v-if="isContinuous == '1'">
+                                        <b-col>
+                                            <b-form-group id="start-time-input-group" label="Start Time" label-for="start-time-input">
+                                                <b-form-input
+                                                        :state="validateDurationState('startTime')"
+                                                        id="start-time-input"
+                                                        type="time"
+                                                        v-model="$v.durationForm.startTime.$model"
+                                                ></b-form-input>
+                                            </b-form-group>
+                                        </b-col>
+                                        <b-col>
+                                            <b-form-group id="end-time-input-group" label="End Time" label-for="end-time-input">
+                                                <b-form-input
+                                                        :state="validateDurationState('endTime')"
+                                                        id="end-time-input"
+                                                        type="time"
+                                                        v-model="$v.durationForm.endTime.$model"
+                                                        aria-describedby="end-time-feedback"
+                                                ></b-form-input>
+                                                <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same as start time.</b-form-invalid-feedback>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
+
+                                    <b-row>
+                                        <b-col>
                             <span v-if="this.form.selectedActivityTypes.length > 0">
                                 Activity Types:
                                 <b-form-text>Click on the activity type to remove</b-form-text>
                             </span>
-                            <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
-                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes"
-                                                   :key="activityType" v-on:click="deleteActivityType(activityType)"
-                                                   class="clickable">
-                                    {{ activityType }}
-                                </b-list-group-item>
-                            </b-list-group>
-                            <b-form-group id="activity-type-group" label="Add Activity Type" label-for="activity-type">
-                                <b-form-select
-                                        id="activity-type"
-                                        name="activity-type"
-                                        v-model="$v.form.selectedActivityType.$model"
-                                        :state="validateState('selectedActivityType')"
-                                        :options="activityTypes"
-                                        aria-describedby="activity-type-feedback"
-                                        v-on:change="addActivityType()"
-                                ></b-form-select>
-                                <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.
-                                </b-form-invalid-feedback>
-                            </b-form-group>
-                            <hr>
-                        </b-col>
-                    </b-row>
+                                            <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
+                                                <b-list-group-item v-for="activityType in this.form.selectedActivityTypes"
+                                                                   :key="activityType" v-on:click="deleteActivityType(activityType)"
+                                                                   class="clickable">
+                                                    {{ activityType }}
+                                                </b-list-group-item>
+                                            </b-list-group>
+                                            <b-form-group id="activity-type-group" label="Add Activity Type" label-for="activity-type">
+                                                <b-form-select
+                                                        id="activity-type"
+                                                        name="activity-type"
+                                                        v-model="$v.form.selectedActivityType.$model"
+                                                        :state="validateState('selectedActivityType')"
+                                                        :options="activityTypes"
+                                                        aria-describedby="activity-type-feedback"
+                                                        v-on:change="addActivityType()"
+                                                ></b-form-select>
+                                                <b-form-invalid-feedback id="activity-type-feedback">Please select an activity type.
+                                                </b-form-invalid-feedback>
+                                            </b-form-group>
+                                            <hr>
+                                        </b-col>
+                                    </b-row>
 
-                    <b-row>
-                        <b-col>
-                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
-                                       :values="hashtag.values"
-                                       :help-text="'Max 30 hashtags'"
-                                       :input-character-limit="140"
-                                       v-on:emitInput="autocompleteInput"
-                                       v-on:emitTags="manageTags"></SearchTag>
-                        </b-col>
-                    </b-row>
-                    <hr>
+                                    <b-row>
+                                        <b-col>
+                                            <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                                       :values="hashtag.values"
+                                                       :help-text="'Max 30 hashtags'"
+                                                       :input-character-limit="140"
+                                                       v-on:emitInput="autocompleteInput"
+                                                       v-on:emitTags="manageTags"></SearchTag>
+                                        </b-col>
+                                    </b-row>
+                                    <hr>
 
-                    <b-row>
-                        <b-col>
-                            <b-form-group id="name-input-group" label="Name" label-for="name-input">
-                                <b-form-input
-                                        :state="validateState('name')"
-                                        aria-describedby="name-feedback"
-                                        id="name-input"
-                                        name="name-input"
-                                        v-model="$v.form.name.$model"
-                                        maxlength=128
-                                ></b-form-input>
-                                <b-form-invalid-feedback id="name-feedback">This is a required field.
-                                </b-form-invalid-feedback>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+                                    <b-row>
+                                        <b-col>
+                                            <b-form-group id="name-input-group" label="Name" label-for="name-input">
+                                                <b-form-input
+                                                        :state="validateState('name')"
+                                                        aria-describedby="name-feedback"
+                                                        id="name-input"
+                                                        name="name-input"
+                                                        v-model="$v.form.name.$model"
+                                                        maxlength=128
+                                                ></b-form-input>
+                                                <b-form-invalid-feedback id="name-feedback">This is a required field.
+                                                </b-form-invalid-feedback>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
 
-                    <b-row>
-                        <b-col>
-                            <b-form-group id="description-input-group" label="Description"
-                                          label-for="description-input">
-                                <b-form-textarea
-                                        :state="validateState('description')"
-                                        id="description-input"
-                                        name="description-input"
-                                        placeholder="How did it go?"
-                                        v-model="$v.form.description.$model"
-                                        maxlength=2048
-                                ></b-form-textarea>
-                                <b-form-invalid-feedback id="name-feedback">This is a required field.
-                                </b-form-invalid-feedback>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+                                    <b-row>
+                                        <b-col>
+                                            <b-form-group id="description-input-group" label="Description"
+                                                          label-for="description-input">
+                                                <b-form-textarea
+                                                        :state="validateState('description')"
+                                                        id="description-input"
+                                                        name="description-input"
+                                                        placeholder="How did it go?"
+                                                        v-model="$v.form.description.$model"
+                                                        maxlength=2048
+                                                ></b-form-textarea>
+                                                <b-form-invalid-feedback id="name-feedback">This is a required field.
+                                                </b-form-invalid-feedback>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
 
-                    <b-row>
-                        <b-col>
-                            <b-form-group id="location-input-group" label="Location" label-for="location-input"
-                                          description="Please enter the location you want to search for and select from the dropdown"
-                                          invalid-feedback="The location of the activity must be chosen from the drop down">
-                                <b-form-input id="location-input"
-                                              name="location-input"
-                                              placeholder="Search for a city/county"
-                                              autocomplete="off"
-                                              class="form-control"
-                                              type="text"
-                                              v-model="$v.form.location.$model"
-                                              :state="validateState('location')"
-                                              v-on:keyup="getLocationData(form.location)"
-                                              v-on:input="locationData=null">
-                                </b-form-input>
-                                <div v-for="i in locations" :key="i.place_id">
-                                    <b-input class="clickable" v-on:click="selectLocation(i)" type="button"
-                                             :value=i.display_name></b-input>
-                                </div>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
-                    <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
-                    <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
-                        {{activityUpdateMessage}}
-                    </b-form-valid-feedback>
-                    <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
-                        {{activityErrorMessage}}
-                    </b-form-invalid-feedback>
-                </b-form>
-            </b-container>
-        </div>
+                                    <b-row>
+                                        <b-col>
+                                            <b-form-group id="location-input-group" label="Location" label-for="location-input"
+                                                          description="Please enter the location you want to search for and select from the dropdown"
+                                                          invalid-feedback="The location of the activity must be chosen from the drop down">
+                                                <b-form-input id="location-input"
+                                                              name="location-input"
+                                                              placeholder="Search for a city/county"
+                                                              autocomplete="off"
+                                                              class="form-control"
+                                                              type="text"
+                                                              v-model="$v.form.location.$model"
+                                                              :state="validateState('location')"
+                                                              v-on:keyup="getLocationData(form.location)"
+                                                              v-on:input="locationData=null">
+                                                </b-form-input>
+                                                <div v-for="i in locations" :key="i.place_id">
+                                                    <b-input class="clickable" v-on:click="selectLocation(i)" type="button"
+                                                             :value=i.display_name></b-input>
+                                                </div>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
+                                    <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
+                                    <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
+                                        {{activityUpdateMessage}}
+                                    </b-form-valid-feedback>
+                                    <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
+                                        {{activityErrorMessage}}
+                                    </b-form-invalid-feedback>
+                                </b-form>
+                            </b-container>
+                        </b-tab>
+
+                        <!-- Metrics Editor -->
+                        <b-tab title="Activity Metrics">
+                            <ActivityMetricsEditor ref="metric_editor"></ActivityMetricsEditor>
+                        </b-tab>
+                    </b-tabs>
+
+                </b-card>
+            </b-col>
+        </b-row>
     </div>
 </template>
 
@@ -204,10 +224,12 @@
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
+    import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
 
     export default {
         mixins: [validationMixin, locationMixin],
         components: {
+            ActivityMetricsEditor,
             SearchTag,
             NavBar,
             ForbiddenMessage
@@ -381,9 +403,12 @@
                             }
                         }
                         currentObj.hashtag.values.sort();
+
+                        currentObj.$refs.metric_editor.loadMetricData(response.data.metrics);
                     })
                     .catch(function (error) {
                         console.log(error.response);
+                        console.log(error);
                     });
             },
             validateState(name) {
@@ -413,7 +438,7 @@
                 if (this.loggedInIsAdmin) {
                     userId = this.$route.params.id;
                 }
-                if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1) {
+                if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1 || !this.$refs.metric_editor.validateMetricData()) {
                     return;
                 }
                 let currentObj = this;
@@ -424,6 +449,7 @@
                     continuous: true,
                     location: this.locationData,
                     hashtags: this.hashtag.values,
+                    metrics: this.$refs.metric_editor.getMetricData()
                 }
                 if (this.isContinuous == '0') {
                     api.updateActivity(userId, this.activityId, data)
@@ -452,6 +478,7 @@
                         start_time: isoDates[0],
                         end_time: isoDates[1],
                         location: this.form.locationData,
+                        metrics: this.$refs.metric_editor.getMetricData()
                     }
                     api.updateActivity(userId, this.activityId, data)
                         .then(function (response) {
