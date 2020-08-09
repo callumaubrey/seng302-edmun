@@ -10,7 +10,8 @@ server/src/main/resources/application.properties
 server/com.springvuegradle.team6.models.Profile/**
 server/com.springvuegradle.team6.models.entities.Profile/**
 coverage/
-
+client/coverage/
+client/coverage/*
 ### STS ###
 .apt_generated
 .classpath
