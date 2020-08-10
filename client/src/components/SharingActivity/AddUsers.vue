@@ -129,10 +129,15 @@
        */
       addedNotification() {
         if (this.notRegistered.length > 0) {
-          this.makeToast(
-              'The following users are not registered and were not added to the activity: '
-              + this.notRegistered.join('; '), 'warning', 70000);
-          this.makeToast('Registered users were added to the activity', 'success');
+          if (this.added.length > 0) {
+            this.makeToast(
+                'The following users are not registered and were not added to the activity: '
+                + this.notRegistered.join('; '), 'warning', 7000);
+            this.makeToast('Registered users were added to the activity', 'success');
+          } else {
+            this.makeToast(
+                'All emails specified were not registered, no users were added to the activity', 'warning');
+            }
         } else {
           this.makeToast('All specified users were added to the activity', 'success');
         }
