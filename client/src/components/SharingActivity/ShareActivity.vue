@@ -26,7 +26,7 @@
             >You have {{organiserCount}} organisers, {{followerCount}} followers and {{partCount}}
               participants. You are changing visibility type to be more restrictive, are you sure?
             </b-alert>
-            <add-users v-on:usersAdded="addUsers"></add-users>
+            <add-users v-if="selected == 'Restricted'" v-on:usersAdded="addUsers"></add-users>
             <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants
               {{organiserCount}} Organisers</p>
             <b-button style="margin: 15px" @click="submit()">Save changes</b-button>
@@ -71,7 +71,7 @@
   export default {
 
     name: "ShareActivity",
-    components: {RestrictedUserTabs, AddUsers},
+    components: {RestrictedUsersTabs, AddUsers},
     props: {
       profileId: String,
       activityId: String,
