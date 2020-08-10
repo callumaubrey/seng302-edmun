@@ -4,7 +4,7 @@
     <b-input-group>
       <b-input
           name="email"
-          id="emailInput"
+          id="emails-input"
           placeholder="john@example.com mary@example.com"
           v-model="emailInput"
           :state="validInput"
@@ -13,7 +13,7 @@
       ></b-input>
 
       <b-input-group-append>
-        <b-button @click="processInput" variant="primary">Add</b-button>
+        <b-button id="add-users-button" @click="processInput" variant="primary" :disabled="!hasInput">Add</b-button>
       </b-input-group-append>
     </b-input-group>
     <b-form-invalid-feedback :state="validInput">
@@ -160,6 +160,11 @@
         this.invalidEmail = '';
         this.notRegistered = [];
         this.added = [];
+      }
+    },
+    computed: {
+      hasInput() {
+        return this.emailInput != '';
       }
     }
   }
