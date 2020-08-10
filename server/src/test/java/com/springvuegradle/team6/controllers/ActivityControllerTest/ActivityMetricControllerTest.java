@@ -771,15 +771,6 @@ public class ActivityMetricControllerTest {
         .andExpect(status().is4xxClientError());
   }
 
-  private void createDummyMetricAndResult(Activity activity, Profile profile) {
-    ActivityQualificationMetric activityMetrics =
-        TestDataGenerator.createDummyActivityMetric(
-            activity, Unit.Distance, activityQualificationMetricRepository);
-
-    ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
-    activityResultRepository.save(activityResultDistance);
-  }
 
   @Test
   void getAllActivityResultsJustOne() throws Exception {
@@ -808,6 +799,9 @@ public class ActivityMetricControllerTest {
             .getContentAsString();
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+    // Added to make sure result set actually contains data
+    String valueString = result.getJSONObject(0).get("value").toString();
+    Assert.assertEquals("5.2", valueString);
   }
 
   @Test
