@@ -563,10 +563,9 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
     }
 
-    int profileId = (int) id;
-    Profile profile = profileRepository.findById(profileId);
-    if (profile == null) {
-      return new ResponseEntity("Profile does not exist", HttpStatus.NOT_FOUND);
+    Optional<ActivityQualificationMetric> metric = activityQualificationMetricRepository.findById(metricId);
+    if (metric.isEmpty()) {
+      return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
 
     List<ActivityResult> results =

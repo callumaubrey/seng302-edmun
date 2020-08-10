@@ -2371,4 +2371,16 @@ public class ActivityMetricControllerTest {
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
   }
+
+  @Test
+  void getSingleMetricActivityResultMetricNotFoundReturn4xx() throws Exception {
+    mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/activities/{activityId}/result/{metricId}",
+            activityId,
+            10)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
 }
