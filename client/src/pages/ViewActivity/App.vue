@@ -142,7 +142,7 @@
             </b-row>
           </b-tab>
           <b-tab title="Results">
-            <ActivityResults :profile-id="profileId"></ActivityResults>
+            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>

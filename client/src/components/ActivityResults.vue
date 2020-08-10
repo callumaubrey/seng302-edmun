@@ -5,7 +5,7 @@
       <div v-for="result in this.bestResults" :key="result">
         <b-row>
           <b-col>
-            {{result.metric_id.title}}
+            {{ result.metric_id.title }}
           </b-col>
           <b-col>
             result value, might need to be a function to do if statements for which type of value to
@@ -17,10 +17,10 @@
         </b-row>
       </div>
     </b-card>
-    <label>{{this.currentMetric}}</label>
+    <label>{{ this.metricTitles[this.currentMetric - 1] }}</label>
     <b-row>
-      <b-col class="col-tall" >
-        <b-btn >Left</b-btn>
+      <b-col class="col-tall">
+        <b-btn :disabled="this.currentMetric == 1" @click="prevMetric()">Left</b-btn>
       </b-col>
       <b-col cols="10">
         <b-tabs align="center">
@@ -63,62 +63,111 @@
         </b-tabs>
       </b-col>
       <b-col class="col-tall">
-        <b-btn>Right</b-btn>
+        <b-btn :disabled="this.currentMetric == this.metricIds.length" @click="nextMetric()">Right</b-btn>
       </b-col>
     </b-row>
   </div>
 </template>
 
 <script>
-  export default {
-    name: "ActivityResults",
+import api from '@/Api'
 
-    props: {
-      profileId: Number,
+export default {
+  name: "ActivityResults",
+
+  props: {
+    profileId: Number,
+    activityId: Number
+  },
+
+  data() {
+    return {
+      tableIsLoading: true,
+      bestResults: [],
+      currentMetric: "",
+      allResultsFields: [
+        {key: 'user', tdClass: 'smallCol'},
+        {key: 'value', tdClass: 'medCol'},
+        {key: 'ranking', tdClass: 'smallCol'}
+      ],
+      myResultsFields: [
+        {key: 'value', label: 'Value', class: 'medCol'},
+        {key: 'personal ranking', tdStyle: 'smallCol'},
+        {key: 'public ranking', tdClass: 'smallCol'}
+      ],
+      allResults: [],
+      myResults: [],
+      countMetrics: 0,
+      metricIds: [],
+      metricTitles: []
+    }
+  },
+  mounted() {
+    this.loadResults();
+  },
+  methods: {
+    loadResults: function () {
+      // load all results and my results in here i guess
+      this.tableIsLoading = false;
+
+      api.getActivityMetrics(this.profileId, this.activityId)
+        .then((res) => {
+          this.countMetrics = res.data.length;
+          this.currentMetric = res.data[0].id;
+          for (let i = 0; i < res.data.length; i++) {
+            this.metricIds.push(res.data[i].id);
+            this.metricTitles.push(res.data[i].title);
+          }
+        })
+        .catch(err => console.log(err));
+
+        this.getMyResults();
     },
-
-    data() {
-      return {
-        tableIsLoading: true,
-        bestResults: [],
-        currentMetric: "",
-        allResultsFields: [
-          { key: 'user', tdClass:'smallCol'},
-          { key: 'value', tdClass:'medCol'},
-          { key: 'ranking', tdClass:'smallCol'}
-        ],
-        myResultsFields: [
-          { key: 'value', label: 'Value', class:'medCol'},
-          { key: 'personal ranking', tdStyle:'smallCol'},
-          { key: 'public ranking', tdClass:'smallCol'}
-        ],
-        allResults: [],
-        myResults: []
+    nextMetric: function () {
+      let index = this.metricIds.indexOf(this.currentMetric);
+      if (index >= 0 && index < this.metricIds.length - 1) {
+        this.currentMetric = this.metricIds[index + 1];
+        this.getMyResults();
       }
     },
-    mounted() {
-      this.loadResults();
-    },
-    methods: {
-      loadResults: function () {
-        // load all results and my results in here i guess
-        this.tableIsLoading = false;
+    prevMetric: function () {
+      let index = this.metricIds.indexOf(this.currentMetric);
+      if (index > 0 && index < this.metricIds.length) {
+        this.currentMetric = this.metricIds[index - 1];
+        this.getMyResults();
       }
+    },
+    getMyResults: function() {
+      this.myResults = [];
+      api.getAllActivityResultsByProfileId(this.profileId, this.activityId)
+          .then((res) => {
+            for (let i = 0; i < res.data.length; i++) {
+              if (res.data[i].metric_id == this.currentMetric) {
+                this.myResults.push(res.data[i]);
+              }
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          })
     }
   }
+}
 </script>
 
 <style scoped>
 
-  .col-tall{
-    min-height: 100vh;
-    padding-top: 40vh;
-  }
-  .table.smallCol{
-    max-width: 50px
-  }
-  .medCol{
-    max-width: 100px
-  }
+.col-tall {
+  min-height: 100vh;
+  padding-top: 40vh;
+}
+
+.table.smallCol {
+  max-width: 50px
+}
+
+.medCol {
+  max-width: 100px
+}
 
 </style>
