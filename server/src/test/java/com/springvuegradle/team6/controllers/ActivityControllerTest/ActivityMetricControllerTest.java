@@ -2318,6 +2318,330 @@ public class ActivityMetricControllerTest {
   }
 
   @Test
+  void deleteActivityResultIsParticipantReturnOK() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult.getId())
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> activityResults = activityResultRepository.findSingleUsersResultsOnActivity(activityId, profile1.getId());
+    Assert.assertEquals(0, activityResults.size());
+  }
+
+  @Test
+  void deleteActivityResultIsNotParticipantReturn4xxError() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult.getId())
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void deleteActivityResultDoesNotExistReturn4xxError() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Access);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            100)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void deleteActivityResultAsOwnerReturnOk() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult.getId())
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> activityResults = activityResultRepository.findSingleUsersResultsOnActivity(activityId, profile1.getId());
+    Assert.assertEquals(0, activityResults.size());
+  }
+
+  @Test
+  void deleteAnotherProfilesActivityResultReturn4xx() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Johnny");
+    profile2.setLastname("Dong");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("example2@email.com"));
+    profile2.setEmails(email2);
+    profile2.setPassword("Password1");
+    profile2 = profileRepository.save(profile2);
+
+    ActivityRole activityRole1 = new ActivityRole();
+    activityRole1.setActivity(activity);
+    activityRole1.setProfile(profile2);
+    activityRole1.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole1);
+
+    ActivityResultCount countResult1 = new ActivityResultCount(metric, profile1, 20);
+    countResult1 = activityResultRepository.save(countResult1);
+
+    ActivityResultCount countResult2 = new ActivityResultCount(metric, profile2, 30);
+    countResult2 = activityResultRepository.save(countResult2);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult2.getId())
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void deleteActivityResultAsAdminReturnOk() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult.getId())
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> activityResults = activityResultRepository.findSingleUsersResultsOnActivity(activityId, profile1.getId());
+    Assert.assertEquals(0, activityResults.size());
+  }
+
+  @Test
   void getSingleMetricActivityResultsTestReturnsOk() throws Exception {
     Activity activity = activityRepository.findById(activityId).get();
 

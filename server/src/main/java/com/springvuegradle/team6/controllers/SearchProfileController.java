@@ -168,6 +168,8 @@ public class SearchProfileController {
     JSONObject resultsObject = new JSONObject();
     List<SearchProfileResponse> results = new ArrayList<>();
 
+    searchedEmail = searchedEmail.toLowerCase();
+
     Profile profile = null;
     Optional<Email> optionalEmail = emailRepository.findByAddress(searchedEmail);
     if (optionalEmail.isPresent()) {

@@ -26,19 +26,9 @@
             >You have {{organiserCount}} organisers, {{followerCount}} followers and {{partCount}}
               participants. You are changing visibility type to be more restrictive, are you sure?
             </b-alert>
-            <b-form-group v-if="selected =='Restricted'" style="color: white" for="emailInput">
-              <p style="font-size: small">Add multiple members by separating emails by space or
-                semi-colon</p>
-              <label>Input member emails</label>
-              <b-input
-                  name="email"
-                  id="emailInput"
-                  placeholder="john@example.com kevin@example.com"
-                  v-model="emailInput"
-              ></b-input>
-              <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants
-                {{organiserCount}} Organisers</p>
-            </b-form-group>
+            <add-users v-if="selected == 'Restricted'" v-on:usersAdded="addUsers"></add-users>
+            <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants
+              {{organiserCount}} Organisers</p>
             <b-button style="margin: 15px" @click="submit()">Save changes</b-button>
           </b-col>
 
@@ -76,11 +66,12 @@
 <script>
   import api from '@/Api'
   import RestrictedUsersTabs from "./RestrictedUsersTabs";
+  import AddUsers from "./AddUsers";
 
   export default {
 
     name: "ShareActivity",
-    components: {RestrictedUsersTabs},
+    components: {RestrictedUsersTabs, AddUsers},
     props: {
       profileId: String,
       activityId: String,
@@ -91,17 +82,17 @@
       return {
         // selectedVisibility: null,
         selected: 'Public',
-        description: '',
+        description: 'Reeee',
         emailInput: '',
         options: [
           {value: 'Private', text: 'Private'},
           {value: 'Restricted', text: 'Restricted'},
           {value: 'Public', text: 'Public'}
         ],
-        organisers: {},
-        participants: {},
-        accessors: {},
-        followers: {},
+        organisers: [],
+        participants: [],
+        accessors: [],
+        followers: [],
         showWarning: false,
         partCount: null,
         organiserCount: null,
@@ -119,22 +110,22 @@
         this.getCount();
         this.selected = this.visibility
         await api.getActivityMembers(this.activityId, 0, 10)
-            .then((res) => {
-              if (res.status == 200) {
-                this.organisers["users"] = res.data.Organiser;
-                this.participants["users"] = res.data.Participant;
-                this.followers["users"] = res.data.Follower;
-                this.accessors["users"] = res.data.Access;
-                this.reformatUserData(this.organisers["users"], "organiser");
-                this.reformatUserData(this.participants["users"], "participant");
-                this.reformatUserData(this.followers["users"], "follower");
-                this.reformatUserData(this.accessors["users"], "accessor");
-                this.busy = false;
-              }
-            })
-            .catch(() => {
-              alert("An error has occurred, please refresh the page")
-            });
+        .then((res) => {
+          if (res.status == 200) {
+            this.organisers["users"] = res.data.Organiser;
+            this.participants["users"] = res.data.Participant;
+            this.followers["users"] = res.data.Follower;
+            this.accessors["users"] = res.data.Access;
+            this.reformatUserData(this.organisers["users"], "organiser");
+            this.reformatUserData(this.participants["users"], "participant");
+            this.reformatUserData(this.followers["users"], "follower");
+            this.reformatUserData(this.accessors["users"], "accessor");
+            this.busy = false;
+          }
+        })
+        .catch(() => {
+          alert("An error has occurred, please refresh the page")
+        });
         this.showWarning = false
       },
       changeVisibilityType() {
@@ -149,18 +140,17 @@
         this.addUserDataForUpdateVisibility(this.accessors.users, data);
         let vueObj = this;
         api.updateActivityVisibility(this.profileId, this.activityId, data)
-            .then(function () {
-              vueObj.getCount()
-              vueObj.visibility = vueObj.selected
-              vueObj.$bvModal.hide('modal-1');
-              vueObj.notifyParent();
-            })
-            .catch(function () {
-              alert("An error has occurred, please refresh the page")
-            });
+        .then(function () {
+          vueObj.getCount()
+          vueObj.visibility = vueObj.selected
+          vueObj.$bvModal.hide('modal-1');
+          vueObj.notifyParent();
+        })
+        .catch(function () {
+          alert("An error has occurred, please refresh the page")
+        });
 
       },
-
       submit() {
         this.parseEmailInput();
         this.changeVisibilityType();
@@ -181,14 +171,14 @@
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
-            .then(function (response) {
-              currentObj.partCount = response.data.participants
-              currentObj.followerCount = response.data.followers
-              currentObj.organiserCount = response.data.organisers
-            })
-            .catch(function () {
-              alert("An error has occurred, please refresh the page")
-            });
+        .then(function (response) {
+          currentObj.partCount = response.data.participants
+          currentObj.followerCount = response.data.followers
+          currentObj.organiserCount = response.data.organisers
+        })
+        .catch(function () {
+          alert("An error has occurred, please refresh the page")
+        });
       },
       reformatUserData(roleUsers, roleName) {
         let i;
@@ -263,6 +253,9 @@
       notifyParent() {
         console.log("emitted")
         this.$emit("componentUpdate");
+      },
+      addUsers(value) {
+        console.log(value);
       }
     },
     watch: {
