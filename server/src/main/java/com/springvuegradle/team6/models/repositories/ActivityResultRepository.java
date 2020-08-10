@@ -27,37 +27,17 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
       nativeQuery = true)
   List<ActivityResult> findSingleUsersResultsOnActivity(int activityId, int userId);
 
-  @Query(
-          value =
-                  "select * from activity_result a JOIN activity_qualification_metric q on " +
-                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
-                          "and a.metric_id = :metricId",
-          nativeQuery = true)
-  Optional<ActivityResultCount> findUsersCountResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+  @Query(value = "select * from activity_result where id = :resultId", nativeQuery = true)
+  Optional<ActivityResultCount> findSpecificCountResult(int resultId);
 
-  @Query(
-          value =
-                  "select * from activity_result a JOIN activity_qualification_metric q on " +
-                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
-                          "and a.metric_id = :metricId",
-          nativeQuery = true)
-  Optional<ActivityResultDistance> findUsersDistanceResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+  @Query(value = "select * from activity_result where id = :resultId", nativeQuery = true)
+  Optional<ActivityResultDistance> findSpecificDistanceResult(int resultId);
 
-  @Query(
-          value =
-                  "select * from activity_result a JOIN activity_qualification_metric q on " +
-                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
-                          "and a.metric_id = :metricId",
-          nativeQuery = true)
-  Optional<ActivityResultDuration> findUsersDurationResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+  @Query(value = "select * from activity_result where id = :resultId", nativeQuery = true)
+  Optional<ActivityResultDuration> findSpecificDurationResult(int resultId);
 
-  @Query(
-          value =
-                  "select * from activity_result a JOIN activity_qualification_metric q on " +
-                          "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId " +
-                          "and a.metric_id = :metricId",
-          nativeQuery = true)
-  Optional<ActivityResultStartFinish> findUsersStartFinishResultForSpecificActivityAndMetric(int activityId, int userId, int metricId);
+  @Query(value = "select * from activity_result where id = :resultId", nativeQuery = true)
+  Optional<ActivityResultStartFinish> findSpecificStartFinishResult(int resultId);
 
   /**
    * Gets all results for an activity.
