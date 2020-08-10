@@ -548,4 +548,35 @@ public class FollowController {
         activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Access.ordinal()));
     return new ResponseEntity(response, HttpStatus.OK);
   }
+
+  /**
+   * Checks if users is a participant of an activity
+   * @param profileId user in activity
+   * @param activityId activity user may participate in
+   * @param session current http session
+   * @return boolean if user is a participant
+   */
+  @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
+  public ResponseEntity<String> getIsUserParticipantInActivity(
+          @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check if user has access to view activity info
+    ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
+            activityRepository, activityRoleRepository);
+    if(authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    // Check if user is participant
+    JSONObject response = new JSONObject();
+
+    ActivityRole userRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+    if (userRole != null && userRole.getActivityRoleType() == ActivityRoleType.Participant) {
+      response.appendField("participant", true);
+    } else {
+      response.appendField("participant", false);
+    }
+
+    return new ResponseEntity(response, HttpStatus.OK);
+  }
+
 }
