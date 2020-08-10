@@ -244,7 +244,18 @@ export default {
      * Calls POST create activity result API, and also resets the form upon success
      */
     createActivityResult() {
-      this.validateForm();
+      if (this.result.type === 'TimeDuration') {
+        this.$v.$touch()
+        if (this.$v.$anyError) {
+          return;
+        }
+        this.convertToDurationStringFormat();
+      } else {
+        this.$v.result.$touch();
+        if (this.$v.result.$anyError) {
+          return;
+        }
+      }
       let data = {
         metric_id: this.metricTitleDict[this.result.title],
         value: this.result.result,
@@ -269,7 +280,18 @@ export default {
      * Calls PUT activity result endpoint
      */
     editActivityResult() {
-      this.validateForm();
+      if (this.result.type === 'TimeDuration') {
+        this.$v.$touch()
+        if (this.$v.$anyError) {
+          return;
+        }
+        this.convertToDurationStringFormat();
+      } else {
+        this.$v.result.$touch();
+        if (this.$v.result.$anyError) {
+          return;
+        }
+      }
       let data = {
         metric_id: this.metricTitleDict[this.result.title],
         value: this.result.result,
@@ -290,23 +312,6 @@ export default {
         console.log(err.response.data);
         this.resultErrorMessage = err.response.data
       })
-    },
-    /**
-     * Validate form according to metric types
-     */
-    validateForm() {
-      if (this.result.type === 'TimeDuration') {
-        this.$v.$touch()
-        if (this.$v.$anyError) {
-          return;
-        }
-        this.convertToDurationStringFormat();
-      } else {
-        this.$v.result.$touch();
-        if (this.$v.result.$anyError) {
-
-        }
-      }
     },
     /**
      * Combine hour, minute and second variables to form a duration string
