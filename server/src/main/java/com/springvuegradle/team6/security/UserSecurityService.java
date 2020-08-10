@@ -94,4 +94,28 @@ public class UserSecurityService {
     }
     return null;
   }
+
+  /**
+   * Method to check if user is authorised. User is authorised if user is of role (ROLE_ADMIN or
+   * ROLE_USER_ADMIN)
+   *
+   * <p>Checks for admin are implemented through accessing the SecurityContextHolder (the store for
+   * Spring Security to hold principal information of authenticated user in the session) and getting
+   * the SimpleGrantedAuthority collection (Privileges of the authenticated user stored for Spring
+   * Security)
+   *
+   * @return true if user is an admin, otherwise false
+   */
+  public static boolean checkIsAdmin() {
+    Collection<SimpleGrantedAuthority> userRoles =
+        (Collection<SimpleGrantedAuthority>)
+            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+    boolean isAdmin =
+        userRoles.stream()
+            .anyMatch(
+                simpleGrantedAuthority ->
+                    (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
+                        || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
+    return isAdmin;
+  }
 }

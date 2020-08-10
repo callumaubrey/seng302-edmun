@@ -89,9 +89,12 @@ public class TagController {
   }
 
   /**
-   * Find all activities containing the given hashtag that the user has permission to view. User has
-   * permission to view all public activities and private activities that they own. The activities
-   * are returned in descending order of the activities creation date.
+   * Find all activities containing the given hashtag that the user has permission to view. If a
+   * user is of role ROLE_ADMIN or ROLE_USER_ADMIN then activities of any visibility will be
+   * returned which contain the hashtag. If a user is not an admin then all public, private or
+   * restricted activities which contain the hashtag that they own and any public activities which
+   * also contain the hashtag will be returned. The activities are returned in descending order of
+   * the activities creation date.
    *
    * @param hashTag the name of the hashtag
    * @param session the current session logged in
@@ -104,7 +107,7 @@ public class TagController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
     //Check if user is an admin, if so return activities regardless of their visibility.
-    if (true) {
+    if (UserSecurityService.checkIsAdmin()) {
       hashTag = hashTag.toLowerCase();
       List<Activity> activities = activityRepository
           .getActivitiesByHashTagAnyVisibilityType(hashTag, (int) id);

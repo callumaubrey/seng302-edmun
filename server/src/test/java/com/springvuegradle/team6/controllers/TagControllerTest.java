@@ -5,20 +5,25 @@ import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Role;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import java.util.Collection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
+import org.mockito.internal.matchers.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -41,17 +46,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class TagControllerTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private TagRepository tagRepository;
+  @Autowired
+  private TagRepository tagRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private ActivityRoleRepository activityRoleRepository;
+  @Autowired
+  private ActivityRoleRepository activityRoleRepository;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private RoleRepository roleRepository;
+
+  @Autowired
+  private MockMvc mvc;
 
   private MockHttpSession session;
+
+  private Profile adminProfile;
 
   private int id;
 
@@ -59,14 +74,28 @@ public class TagControllerTest {
   void setup() throws Exception {
     session = new MockHttpSession();
 
+    //Create an admin user
+    adminProfile = new Profile();
+    adminProfile.setFirstname("Doe");
+    adminProfile.setLastname("John");
+    adminProfile.setPassword("Password1");
+    Set<Email> email2 = new HashSet<Email>();
+    email2.add(new Email("admin@email.com"));
+    Set<Role> roles = new HashSet<Role>();
+    roles.add(roleRepository.findByName("ROLE_USER_ADMIN"));
+    adminProfile.setEmails(email2);
+    adminProfile.setRoles(roles);
+    adminProfile = profileRepository.save(adminProfile);
+
+    //Create john doe user profile
     String jsonString =
         "{\r\n  \"lastname\": \"Pocket\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"poly@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
 
     mvc.perform(
-            MockMvcRequestBuilders.post("/profiles")
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.post("/profiles")
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isCreated())
         .andDo(print());
 
@@ -82,7 +111,7 @@ public class TagControllerTest {
   void testGetHashtagAutocompleteHashtagLengthLessThanThreeReturnInitialHashtag() throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=co", id).session(session))
+            MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=co", id).session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -147,8 +176,8 @@ public class TagControllerTest {
 
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=is_c", id)
-                    .session(session))
+            MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=is_c", id)
+                .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -185,8 +214,8 @@ public class TagControllerTest {
 
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=number", id)
-                    .session(session))
+            MockMvcRequestBuilders.get("/hashtag/autocomplete?hashtag=number", id)
+                .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -219,9 +248,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -239,9 +268,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -285,9 +314,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/" + cold.getName())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/" + cold.getName())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -324,9 +353,9 @@ public class TagControllerTest {
 
     // Delete activity
     mvc.perform(
-            MockMvcRequestBuilders.delete(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .session(session))
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .session(session))
         .andExpect(status().isOk());
     activity = activityRepository.findById(activityId).get();
     org.junit.jupiter.api.Assertions.assertTrue(activity.isArchived());
@@ -334,9 +363,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -375,9 +404,9 @@ public class TagControllerTest {
 
     // Delete activity
     mvc.perform(
-            MockMvcRequestBuilders.delete(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .session(session))
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .session(session))
         .andExpect(status().isOk());
     activity = activityRepository.findById(activityId).get();
     org.junit.jupiter.api.Assertions.assertTrue(activity.isArchived());
@@ -385,9 +414,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -418,9 +447,9 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
@@ -493,14 +522,161 @@ public class TagControllerTest {
     // Actual MVC response
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities/hashtag/myrun")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
             .getContentAsString();
     JSONArray result = new JSONArray(response);
     org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
+  }
+
+  @Test
+  void testGetActivitiesByHashtagAsUserReturnStatusOkReturnThreeActivities() throws Exception {
+    //Set up data
+    Tag tag = new Tag();
+    tag.setName("myrun");
+    Set<Tag> tags = new HashSet<>();
+    tags.add(tag);
+
+    //Create activities for normal user
+    //Public (should be returned)
+    Activity publicActivity = new Activity();
+    publicActivity.setActivityName("Public User Activity");
+    publicActivity.setTags(tags);
+    publicActivity.setContinuous(false);
+    publicActivity.setVisibilityType(VisibilityType.Public);
+    publicActivity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    publicActivity.setProfile(profile);
+
+    //Private (should be returned as own activity)
+    Activity privateActivity = new Activity();
+    privateActivity.setActivityName("Private User Activity");
+    privateActivity.setTags(tags);
+    privateActivity.setContinuous(false);
+    privateActivity.setVisibilityType(VisibilityType.Private);
+    privateActivity.setDescription("description blah blah");
+    privateActivity.setProfile(profile);
+
+    //Admin made activities
+    //Public (Should be returned)
+    Activity adminPublicActivity = new Activity();
+    adminPublicActivity.setActivityName("Public Admin Activity");
+    adminPublicActivity.setTags(tags);
+    adminPublicActivity.setContinuous(false);
+    adminPublicActivity.setVisibilityType(VisibilityType.Public);
+    adminPublicActivity.setDescription("description blah blah");
+    adminPublicActivity.setProfile(adminProfile);
+
+    //Private (Should not be returned as is a private activity and not admin)
+    Activity adminPrivateActivity = new Activity();
+    adminPrivateActivity.setActivityName("Private Admin Activity");
+    adminPrivateActivity.setTags(tags);
+    adminPrivateActivity.setContinuous(false);
+    adminPrivateActivity.setVisibilityType(VisibilityType.Private);
+    adminPrivateActivity.setDescription("description blah blah");
+    adminPrivateActivity.setProfile(adminProfile);
+
+    tagRepository.save(tag);
+    activityRepository.save(adminPrivateActivity);
+    activityRepository.save(adminPublicActivity);
+    activityRepository.save(privateActivity);
+    activityRepository.save(publicActivity);
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(3, result.length());
+  }
+
+  @Test
+  void testGetActivitiesByHashtagAsAdminReturnStatusOkReturnFourActivities() throws Exception {
+    //Set up data
+    //Create the tag to search by
+    Tag tag = new Tag();
+    tag.setName("myrun");
+    Set<Tag> tags = new HashSet<>();
+    tags.add(tag);
+    tagRepository.save(tag);
+
+    //Login as admin
+    String loginInfo = "{\n" +
+        "\t\"email\" : \"admin@email.com\",\n" +
+        "\t\"password\": \"Password1\"\n" +
+        "}";
+    mvc.perform(MockMvcRequestBuilders
+        .post("/login")
+        .content(loginInfo)
+        .contentType(MediaType.APPLICATION_JSON)
+        .session(session)
+    ).andExpect(status().isOk());
+
+    //Create activities for normal user
+    //Public (should be returned)
+    Activity publicActivity = new Activity();
+    publicActivity.setActivityName("Public User Activity");
+    publicActivity.setTags(tags);
+    publicActivity.setContinuous(false);
+    publicActivity.setVisibilityType(VisibilityType.Public);
+    publicActivity.setDescription("description blah blah");
+    Profile profile = profileRepository.findById(id);
+    publicActivity.setProfile(profile);
+
+    //Private (should be returned)
+    Activity privateActivity = new Activity();
+    privateActivity.setActivityName("Private User Activity");
+    privateActivity.setTags(tags);
+    privateActivity.setContinuous(false);
+    privateActivity.setVisibilityType(VisibilityType.Private);
+    privateActivity.setDescription("description blah blah");
+    privateActivity.setProfile(profile);
+
+    //Admin made activities
+    //Public (Should be returned)
+    Activity adminPublicActivity = new Activity();
+    adminPublicActivity.setActivityName("Public Admin Activity");
+    adminPublicActivity.setTags(tags);
+    adminPublicActivity.setContinuous(false);
+    adminPublicActivity.setVisibilityType(VisibilityType.Public);
+    adminPublicActivity.setDescription("description blah blah");
+    adminPublicActivity.setProfile(adminProfile);
+
+    //Private (Should be returned)
+    Activity adminPrivateActivity = new Activity();
+    adminPrivateActivity.setActivityName("Private Admin Activity");
+    adminPrivateActivity.setTags(tags);
+    adminPrivateActivity.setContinuous(false);
+    adminPrivateActivity.setVisibilityType(VisibilityType.Private);
+    adminPrivateActivity.setDescription("description blah blah");
+    adminPrivateActivity.setProfile(adminProfile);
+
+    activityRepository.save(adminPrivateActivity);
+    activityRepository.save(adminPublicActivity);
+    activityRepository.save(privateActivity);
+    activityRepository.save(publicActivity);
+
+    // Actual MVC response
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities/hashtag/myrun")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(4, result.length());
   }
 }
