@@ -541,4 +541,39 @@ public class ActivityMetricController {
     }
     return new ResponseEntity(results, HttpStatus.OK);
   }
+
+  /**
+   * Gets all a single metrics results for a particular activity
+   *
+   * @param activityId the id of the activity
+   * @param session
+   * @return activity results, if user has no results return 404
+   */
+  @GetMapping("/activities/{activityId}/result/{metricId}")
+  public ResponseEntity getAllActivityResultsForSingleMetric(
+      @PathVariable int activityId, @PathVariable int metricId,  HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    int profileId = (int) id;
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("Profile does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    List<ActivityResult> results =
+        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    if (results.isEmpty()) {
+      return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity(results, HttpStatus.OK);
+  }
 }

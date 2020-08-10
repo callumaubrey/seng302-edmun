@@ -2316,4 +2316,59 @@ public class ActivityMetricControllerTest {
         activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
+
+  @Test
+  void getSingleMetricActivityResultsTestReturnsOk() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric1 = new ActivityQualificationMetric();
+    metric1.setTitle("title");
+    metric1.setActivity(activity);
+    metric1.setUnit(Unit.Count);
+    metric1 = activityQualificationMetricRepository.save(metric1);
+
+    ActivityQualificationMetric metric2 = new ActivityQualificationMetric();
+    metric2.setTitle("title");
+    metric2.setActivity(activity);
+    metric2.setUnit(Unit.Distance);
+    metric2 = activityQualificationMetricRepository.save(metric2);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric1, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    distanceResult = activityResultRepository.save(distanceResult);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/activities/{activityId}/result/{metricId}",
+                activityId,
+                metric1.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONArray result = new JSONArray(response);
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.length());
+  }
 }
