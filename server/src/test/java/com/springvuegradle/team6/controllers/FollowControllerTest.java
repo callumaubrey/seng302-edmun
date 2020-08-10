@@ -1498,4 +1498,75 @@ public class FollowControllerTest {
 
     Assert.assertTrue(response_json.getBoolean("participant"));
   }
+
+  @Test
+  void testUserRemovesParticipantRole() throws Exception {
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(profileRepository.findById(otherId));
+    role.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(role);
+
+    // Remove participant role
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    // Check user is now follower
+    ActivityRole newRole = activityRoleRepository.findByProfile_IdAndActivity_Id(otherId, activityId);
+    Assert.assertEquals(ActivityRoleType.Follower, newRole.getActivityRoleType());
+  }
+
+  @Test
+  void testUserFollowerCannotRemoveParticipantRole() throws Exception {
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(profileRepository.findById(otherId));
+    role.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(role);
+
+    // Remove participant role
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testUserCannotChangeOtherParticipantRole() throws Exception {
+    // Create New Profile
+    Profile newProfile = new Profile();
+    newProfile.setFirstname("Poly");
+    newProfile.setLastname("Pocket");
+    Set<Email> emailSet = new HashSet<>();
+    Email email = new Email("polypo@pocket.com");
+    email.setPrimary(true);
+    emailSet.add(email);
+    newProfile.setEmails(emailSet);
+    newProfile.setDob("2010-01-01");
+    newProfile.setPassword("Password1");
+    newProfile.setGender("female");
+    newProfile = profileRepository.save(newProfile);
+
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(newProfile);
+    role.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(role);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + newProfile.getId() + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
 }
