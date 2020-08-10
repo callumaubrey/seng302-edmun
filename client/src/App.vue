@@ -15,7 +15,7 @@
     export default {
         components: {
             Notification
-        }
+        },
 
         /**
          * This should trigger the first time the website is loaded
