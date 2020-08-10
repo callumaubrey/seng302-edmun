@@ -100,7 +100,7 @@
             if (value.data.results.length > 0) {
               let user = value.data.results[0]
               vueObj.added.push({
-                fullname: user.firstname + " " + user.lastname,
+                full_name: user.firstname + " " + user.lastname,
                 primary_email: user.primary_email,
                 profile_id: user.profile_id
               })

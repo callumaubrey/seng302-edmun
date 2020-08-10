@@ -4,20 +4,25 @@
       <b-button id="activity-visibility-button" v-b-modal.modal-1 :variant="visibilityButtonColour">
         {{visibility}}
       </b-button>
-
       <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header
-               @show="updateSelectedValue" body-class="p-0" :static="true">
+               @show="updateSelectedValue" body-class="p-0" :static="true" ref="modal-1">
         <b-button-close style="padding: 10px" @click="$bvModal.hide('modal-1')"></b-button-close>
         <b-row>
-          <b-col style="color: white; background: #4d4d4d; max-width: 40%; horiz-align: center">
-            <h4>Select Sharing Option</h4>
+          <b-col id="left-container">
+            <b-row>
+              <b-col>
+                <h4 style="margin-top: 2%">Select Sharing Option</h4>
+              </b-col>
+
+            </b-row>
+
             <div style="margin-top: 30%; font-size: small">
               <p v-if="selected == 'Public'">Anyone will be able to view this activity.</p>
               <p v-if="selected == 'Private'">Only you will be able to view this activity.</p>
               <p v-if="selected == 'Restricted'">Only people you allow will be able to view this
                 activity.</p>
             </div>
-            <b-form-select style="margin-bottom: 40%;" v-model="selected" :options="options"
+            <b-form-select style="margin-bottom: 10%;" v-model="selected" :options="options"
                            size="sm"></b-form-select>
             <b-alert
                 :show="showWarning"
@@ -29,7 +34,10 @@
             <add-users v-if="selected == 'Restricted'" v-on:usersAdded="addUsers"></add-users>
             <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants
               {{organiserCount}} Organisers</p>
-            <b-button style="margin: 15px" @click="submit()">Save changes</b-button>
+            <b-button style="margin-right: 2%; margin-bottom: 4%" @click="submit()">Save changes
+            </b-button>
+            <b-button style="margin-bottom: 4%" variant="danger" @click="closeModal()">Cancel
+            </b-button>
           </b-col>
 
           <b-col v-if="selected == 'Restricted' && busy">
@@ -54,9 +62,12 @@
                                    v-on:deselectAllFollowers="deselectAll(followers.users)"
                                    v-on:deselectAllAccessors="deselectAll(accessors.users)"
                                    :roles-data="roles_data = {organisers, followers, participants, accessors}"
-                                   v-on:childToParent="updateUsers"></restricted-users-tabs>
+                                   v-on:childToParent="updateUsers"
+                                   :key="restrictedUsersTabsKey"></restricted-users-tabs>
           </b-col>
         </b-row>
+        <b-row></b-row>
+
       </b-modal>
     </div>
 
@@ -98,7 +109,8 @@
         organiserCount: null,
         followerCount: null,
         moreRestrictive: false,
-        busy: true
+        busy: true,
+        restrictedUsersTabsKey: 0
       }
     },
     methods: {
@@ -106,26 +118,27 @@
         this.$emit('emitInput', this.selected);
       },
       async updateSelectedValue() {
+        this.busy = true;
         this.emailInput = "";
         this.getCount();
         this.selected = this.visibility
         await api.getActivityMembers(this.activityId, 0, 10)
-        .then((res) => {
-          if (res.status == 200) {
-            this.organisers["users"] = res.data.Organiser;
-            this.participants["users"] = res.data.Participant;
-            this.followers["users"] = res.data.Follower;
-            this.accessors["users"] = res.data.Access;
-            this.reformatUserData(this.organisers["users"], "organiser");
-            this.reformatUserData(this.participants["users"], "participant");
-            this.reformatUserData(this.followers["users"], "follower");
-            this.reformatUserData(this.accessors["users"], "accessor");
-            this.busy = false;
-          }
-        })
-        .catch(() => {
-          alert("An error has occurred, please refresh the page")
-        });
+            .then((res) => {
+              if (res.status == 200) {
+                this.organisers["users"] = res.data.Organiser;
+                this.participants["users"] = res.data.Participant;
+                this.followers["users"] = res.data.Follower;
+                this.accessors["users"] = res.data.Access;
+                this.reformatUserData(this.organisers["users"], "organiser");
+                this.reformatUserData(this.participants["users"], "participant");
+                this.reformatUserData(this.followers["users"], "follower");
+                this.reformatUserData(this.accessors["users"], "accessor");
+                this.busy = false;
+              }
+            })
+            .catch(() => {
+              alert("An error has occurred, please refresh the page")
+            });
         this.showWarning = false
       },
       changeVisibilityType() {
@@ -134,22 +147,30 @@
           visibility: this.selected.toLowerCase(),
           accessors: []
         }
-        this.addUserDataForUpdateVisibility(this.organisers.users, data);
-        this.addUserDataForUpdateVisibility(this.participants.users, data);
-        this.addUserDataForUpdateVisibility(this.followers.users, data);
-        this.addUserDataForUpdateVisibility(this.accessors.users, data);
+        switch (data.visibility) {
+          case("public"):
+            break;
+          case("restricted"):
+            this.addUserDataForUpdateVisibility(this.organisers.users, data);
+            this.addUserDataForUpdateVisibility(this.participants.users, data);
+            this.addUserDataForUpdateVisibility(this.followers.users, data);
+            this.addUserDataForUpdateVisibility(this.accessors.users, data);
+            break;
+          case("private"):
+            break;
+        }
+
         let vueObj = this;
         api.updateActivityVisibility(this.profileId, this.activityId, data)
-        .then(function () {
-          vueObj.getCount()
-          vueObj.visibility = vueObj.selected
-          vueObj.$bvModal.hide('modal-1');
-          vueObj.notifyParent();
-        })
-        .catch(function () {
-          alert("An error has occurred, please refresh the page")
-        });
-
+            .then(function () {
+              vueObj.getCount()
+              vueObj.visibility = vueObj.selected
+              vueObj.$bvModal.hide('modal-1');
+              vueObj.notifyParent();
+            })
+            .catch(function () {
+              alert("An error has occurred, please refresh the page")
+            });
       },
       submit() {
         this.parseEmailInput();
@@ -171,22 +192,22 @@
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
-        .then(function (response) {
-          currentObj.partCount = response.data.participants
-          currentObj.followerCount = response.data.followers
-          currentObj.organiserCount = response.data.organisers
-        })
-        .catch(function () {
-          alert("An error has occurred, please refresh the page")
-        });
+            .then(function (response) {
+              currentObj.partCount = response.data.participants
+              currentObj.followerCount = response.data.followers
+              currentObj.organiserCount = response.data.organisers
+            })
+            .catch(function () {
+              alert("An error has occurred, please refresh the page")
+            });
       },
       reformatUserData(roleUsers, roleName) {
         let i;
         let n = roleUsers.length;
         for (i = 0; i < n; i++) {
           let user = roleUsers[i];
-          user["selected"] = false;
-          user["_rowVariant"] = "danger";
+          user["selected"] = true;
+          user["_rowVariant"] = "none";
           user["role"] = roleName;
         }
       },
@@ -251,12 +272,24 @@
         }
       },
       notifyParent() {
-        console.log("emitted")
-        this.$emit("componentUpdate");
+        this.$emit("componentUpdate", this.visibility);
       },
-      addUsers(value) {
-        console.log(value);
+      addUsers(users) {
+        for (let user of users) {
+          user.role = "access"
+          user.selected = true;
+          user._rowVariant = 'none';
+          this.accessors.users.push(user)
+        }
+        this.forceRerender();
+      },
+      forceRerender() {
+        this.restrictedUsersTabsKey += 1;
+      },
+      closeModal() {
+        this.$refs['modal-1'].hide()
       }
+
     },
     watch: {
       selected: function () {
@@ -274,12 +307,12 @@
     },
     computed: {
       visibilityButtonColour: function () {
-        switch (this.visibility) {
-          case "Public":
+        switch (this.visibility.toLowerCase()) {
+          case "public":
             return "success";
-          case "Restricted":
+          case "restricted":
             return "warning";
-          case "Private":
+          case "private":
             return "danger";
           default:
             return "primary";
@@ -288,3 +321,14 @@
     }
   }
 </script>
+
+<style scoped>
+  #left-container {
+    color: white;
+    background: #4d4d4d;
+    max-width: 40%;
+    horiz-align: center;
+    border-radius: 3px 0px 0px 3px;
+  }
+
+</style>
