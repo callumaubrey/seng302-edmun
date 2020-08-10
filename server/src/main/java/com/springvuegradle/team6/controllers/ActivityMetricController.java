@@ -541,4 +541,107 @@ public class ActivityMetricController {
     }
     return new ResponseEntity(results, HttpStatus.OK);
   }
+
+  /**
+   * Gets all a single metrics results for a particular activity
+   *
+   * @param activityId the id of the activity
+   * @param session
+   * @return activity results, if user has no results return 404
+   */
+  @GetMapping("/activities/{activityId}/result/{metricId}")
+  public ResponseEntity getAllActivityResultsForSingleMetric(
+      @PathVariable int activityId, @PathVariable int metricId,  HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<ActivityQualificationMetric> metric = activityQualificationMetricRepository.findById(metricId);
+    if (metric.isEmpty()) {
+      return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    List<ActivityResult> results =
+        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    if (results.isEmpty()) {
+      return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity(results, HttpStatus.OK);
+  }
+
+  /**
+   * Deletes an activity result based on the resultId
+   * A owner, participant and admin can delete result
+   * @param profileId owner of activity
+   * @param activityId activityId
+   * @param resultId activity result ID
+   * @param session the HttpSession
+   * @return
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/result/{resultId}")
+  public ResponseEntity deleteActivityResult(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @PathVariable int resultId,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile loggedInProfile = profileRepository.findById((int) id);
+
+    Profile ownerProfile = profileRepository.findById(profileId);
+    if (ownerProfile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+    if (!activity.getProfile().getId().equals(ownerProfile.getId())) {
+      return new ResponseEntity("ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
+    }
+
+    Optional<ActivityResult> activityResultOptional = activityResultRepository.findById(resultId);
+    if (activityResultOptional.isEmpty()) {
+      return new ResponseEntity("Activity result does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityResult activityResult = activityResultOptional.get();
+
+    boolean isAdminOrCreator =
+        UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
+    if (!isAdminOrCreator) {
+      if (!loggedInProfile.getId().equals(activityResult.getUserId())) {
+        return new ResponseEntity("You cannot delete another users result", HttpStatus.UNAUTHORIZED);
+      }
+
+      // Then participant is removing result
+      List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      } else {
+        if (!activityRoles.get(0).getActivityRoleType().equals(ActivityRoleType.Participant)) {
+          return new ResponseEntity("You are not a participant of this activity", HttpStatus.UNAUTHORIZED);
+        }
+      }
+    }
+
+    activityResultRepository.delete(activityResult);
+
+    return new ResponseEntity("Activity result deleted", HttpStatus.OK);
+  }
 }

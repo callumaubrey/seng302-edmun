@@ -27,6 +27,13 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
       nativeQuery = true)
   List<ActivityResult> findSingleUsersResultsOnActivity(int activityId, int userId);
 
+  @Query(
+      value =
+          "select * from activity_result a LEFT JOIN activity_qualification_metric q on "
+              + "a.metric_id = q.id where q.activity_id = :activityId and q.id = :metricId ",
+      nativeQuery = true)
+  List<ActivityResult> findSingleMetricResultsOnActivity(int activityId, int metricId);
+
   @Query(value = "select * from activity_result where id = :resultId", nativeQuery = true)
   Optional<ActivityResultCount> findSpecificCountResult(int resultId);
 
