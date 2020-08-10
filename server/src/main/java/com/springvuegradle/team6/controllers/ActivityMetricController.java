@@ -225,10 +225,11 @@ public class ActivityMetricController {
    * @param session the HttpSession
    * @return
    */
-  @PutMapping("/profiles/{profileId}/activities/{activityId}/result")
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/result/{resultId}")
   public ResponseEntity editActivityResult(
       @PathVariable int profileId,
       @PathVariable int activityId,
+      @PathVariable int resultId,
       @RequestBody @Valid EditActivityResultRequest request,
       HttpSession session) {
 
@@ -341,8 +342,7 @@ public class ActivityMetricController {
 
     if (metricUnit.equals(Unit.Count)) {
       Optional<ActivityResultCount> optionalResult =
-          activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificCountResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -353,8 +353,7 @@ public class ActivityMetricController {
       message += "count: " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       Optional<ActivityResultDistance> optionalResult =
-          activityResultRepository.findUsersDistanceResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificDistanceResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -366,8 +365,7 @@ public class ActivityMetricController {
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
       Optional<ActivityResultDuration> optionalResult =
-          activityResultRepository.findUsersDurationResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificDurationResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -381,8 +379,7 @@ public class ActivityMetricController {
       message += "duration: " + durationString;
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
-          activityResultRepository.findUsersStartFinishResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificStartFinishResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
