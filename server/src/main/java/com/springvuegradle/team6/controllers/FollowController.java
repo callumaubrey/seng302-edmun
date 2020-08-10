@@ -20,6 +20,8 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * This controller contains all end points related to adding subscriptions to the activity and
  * changing roles of users of the activity.
@@ -579,4 +581,65 @@ public class FollowController {
     return new ResponseEntity(response, HttpStatus.OK);
   }
 
+  /**
+   * Sets a user to a participant in an activity if they have correct permissions and are not a
+   * creator or organiser.
+   * @param profileId user to set to a participant
+   * @param activityId activity to set the role for
+   * @param session current http session
+   * @return 200 on success otherwise 4xx error for unauthorised or activity not found.
+   */
+  @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
+  public ResponseEntity<String> setUserToParticipantInActivity(
+          @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check if user has access to activity info
+    ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
+            activityRepository, activityRoleRepository);
+    if(authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    // Get Activity
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if(optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity not found", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    // Get Profile
+    Profile profile = profileRepository.findById(profileId);
+    if(profile == null) {
+      return new ResponseEntity<>("Profile not found", HttpStatus.NOT_FOUND);
+    }
+
+    // Check if user is allowed to set to participant, either admin, creator or logged user
+    // The session id is implicit from previous check
+    Integer sessionId = (Integer) session.getAttribute("id");
+    if(!(UserSecurityService.checkIsAdminOrCreator(sessionId, profileId)
+            || sessionId.equals(activity.getProfile().getId()))) {
+      return new ResponseEntity<>("Not allowed to modify another users role", HttpStatus.UNAUTHORIZED);
+    }
+
+    // Check users current role is not Creator or Organiser
+    ActivityRole userRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+    if(userRole != null && (userRole.getActivityRoleType() == ActivityRoleType.Creator
+            || userRole.getActivityRoleType() == ActivityRoleType.Organiser))
+    {
+      return new ResponseEntity<>(String.format("A %s cannot be a participant", userRole.toString()), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    // Set user as a participant
+    if(userRole != null) {
+      userRole.setActivityRoleType(ActivityRoleType.Participant);
+      activityRoleRepository.save(userRole);
+    } else {
+      ActivityRole newRole = new ActivityRole();
+      newRole.setActivity(activity);
+      newRole.setProfile(profileRepository.findById(profileId));
+      newRole.setActivityRoleType(ActivityRoleType.Participant);
+      activityRoleRepository.save(newRole);
+    }
+
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 }
