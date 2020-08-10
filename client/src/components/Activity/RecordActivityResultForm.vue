@@ -1,5 +1,6 @@
 <template>
 
+  <!-- This block displays activity result -->
   <div v-if="!result.isEditMode">
     <b-row>
       <b-col sm="3">
@@ -18,9 +19,11 @@
           <h6> End time: {{ result.result_finish }} </h6>
         </div>
       </b-col>
+
       <b-col sm="2">
-        <p style="font-style: italic; color: crimson">{{ result.special_metric }}</p>
+        <p style="font-style: italic; color: crimson">{{ specialMetricTitle }}</p>
       </b-col>
+
       <b-col sm="1">
         <b-button-group>
           <b-button @click="result.isEditMode=true" class="button-group" id="edit-result-button"
@@ -32,6 +35,7 @@
     </b-row>
   </div>
 
+  <!-- This block manages create/edit activity result form -->
   <div v-else>
     <b-row>
       <b-col sm="4">
@@ -44,10 +48,9 @@
 
         <label>Special Metric: </label>
         <b-form-select :options="Object.keys(specialMetricDict)" id="select-special-metric"
-                       v-model="result.special_metric"></b-form-select>
-
-
+                       v-model="specialMetricTitle"></b-form-select>
       </b-col>
+
       <b-col sm="6">
         <label v-if="result.type!=='TimeStartFinish'">Result: </label>
         <b-form-input id="result-feedback" placeholder="Enter your result"
@@ -80,7 +83,11 @@
           </b-row>
         </b-input-group>
         <p style="color: crimson" v-if="resultErrorMessage!=null">{{ resultErrorMessage }}</p>
+        <p style="color: mediumseagreen" v-if="resultSuccessMessage != null">{{
+            resultSuccessMessage
+          }}</p>
       </b-col>
+
       <b-col sm="1">
         <b-button @click="createActivityResult" id="create-result-button" v-if="isCreateResult">
           Create
@@ -91,7 +98,6 @@
             Cancel
           </b-button>
         </b-button-group>
-
       </b-col>
     </b-row>
   </div>
@@ -100,21 +106,23 @@
 <script>
 import api from "@/Api";
 import {validationMixin} from "vuelidate";
-// import {required} from 'vuelidate/lib/validators';
+
+let durationRegex = /(\d+)h (\d+)m (\d+)s/;
 
 export default {
   name: "RecordActivityResultForm",
   mixins: [validationMixin],
-  props: ['result', 'metricDict', 'isCreateResult', 'userId', 'activityId'],
+  props: ['result', 'metricDict', 'isCreateResult'],
   data() {
     return {
+      // key (special metric title), value (special metric enum)
       specialMetricDict: {
         "Did not finish": "DidNotFinish",
         "Disqualified": "Disqualified",
-        "Technical Failure": "Technical Failure"
+        "Technical Failure": "TechnicalFailure"
       },
       resultErrorMessage: null,
-      resultStartFinishErrorMessage: null,
+      resultSuccessMessage: null,
       hour: null,
       minute: null,
       second: null
@@ -187,7 +195,6 @@ export default {
         }
       },
       result_start: {
-        // required
       },
       result_finish: {
         resultFinishValidate(val) {
@@ -202,21 +209,35 @@ export default {
     }
   },
   computed: {
+    // key (metric title) value (metric id)
     metricTitleDict() {
       let metricTitleDict = {}
       for (let metricId in this.metricDict) {
         metricTitleDict[this.metricDict[metricId].title] = metricId;
       }
-
       return metricTitleDict
+    },
+    // compute special metric title by using special metric enum and specialMetricDict
+    specialMetricTitle() {
+      if (this.result.special_metric !== null) {
+        for (let specialMetricTitle in this.specialMetricDict) {
+          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
+            return specialMetricTitle
+          }
+        }
+      }
+      return null;
     }
   },
   methods: {
+    /**
+     * Update result type and description to interchange input group
+     * @param val, metric title
+     */
     updateInputGroup(val) {
       this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
       this.result.description = this.metricDict[this.metricTitleDict[val]].description;
       this.resultErrorMessage = null
-      console.log(this.result.type)
     },
     validateResultState(name) {
       const {$dirty, $error} = this.$v.result[name];
@@ -226,6 +247,9 @@ export default {
       const {$dirty, $error} = this.$v[name];
       return $dirty ? !$error : null;
     },
+    /**
+     * Calls POST create activity result API, and also resets the form upon success
+     */
     createActivityResult() {
       this.$v.result.$touch();
       this.$v.$touch();
@@ -250,21 +274,59 @@ export default {
         value: this.result.result,
         start: this.result.result_start,
         end: this.result.result_finish,
-        special_metric: this.specialMetricDict[this.result.special_metric]
+        special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
       console.log(data);
       api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
       .then(() => {
-
+        this.resultSuccessMessage = "Activity result is created"
+        this.$emit('child-to-parent')
+        this.resetForm();
       })
       .catch((err) => {
+        this.resultErrorMessage = err.response.data
         console.log(err.response.data);
       })
-      this.$emit('child-to-parent')
+    },
+    /**
+     * Parse example of '1h 2m 3s' string into its respective variables
+     */
+    parseDurationStringIntoHMS() {
+      if (this.result.type === 'TimeDuration' && this.result.result !== null) {
+        let matches = this.result.result.match(durationRegex);
+        if (matches) {
+          this.hour = matches[1] === undefined ? 0 : matches[1]
+          this.minute = matches[2] === undefined ? 0 : matches[2]
+          this.second = matches[3] === undefined ? 0 : matches[3]
+        }
+      }
+    },
+    /**
+     * Reset create activity result form
+     */
+    resetForm() {
+      this.result.metric_id = null;
+      this.result.user_id = null;
+      this.result.special_metric = null;
+      this.result.result = null;
+      this.result.result_finish = null;
+      this.result.result_start = null;
+      this.result.type = null
+      this.result.isEditMode = true;
+      this.result.title = null;
+      this.result.description = null;
+      this.$v.result.$reset();
+
+      this.hour = null;
+      this.minute = null;
+      this.second = null;
+      this.$v.$reset();
     }
+  },
+  mounted() {
+    this.parseDurationStringIntoHMS();
   }
 }
-
 </script>
 
 <style>
