@@ -488,7 +488,7 @@ public class ActivityMetricController {
   }
 
   /**
-   * Deletes an activity result from result ID
+   * Deletes an activity result based on the resultId
    * A owner, participant and admin can delete result
    * @param profileId owner of activity
    * @param activityId activityId
@@ -508,11 +508,7 @@ public class ActivityMetricController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    int loggedInId = (Integer) id;
-    Profile loggedInProfile = profileRepository.findById(loggedInId);
-    if (loggedInProfile == null) {
-      return new ResponseEntity("Logged in use dosen't exist", HttpStatus.NOT_FOUND);
-    }
+    Profile loggedInProfile = profileRepository.findById((int) id);
 
     Profile ownerProfile = profileRepository.findById(profileId);
     if (ownerProfile == null) {
