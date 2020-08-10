@@ -529,19 +529,29 @@ public class ActivityMetricController {
       return new ResponseEntity("ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
     }
 
-    ActivityResult activityResult = activityResultRepository.getOne(resultId);
-    if (activityResult == null) {
+    Optional<ActivityResult> activityResultOptional = activityResultRepository.findById(resultId);
+    if (activityResultOptional.isEmpty()) {
       return new ResponseEntity("Activity result does not exist", HttpStatus.NOT_FOUND);
     }
+
+    ActivityResult activityResult = activityResultOptional.get();
 
     boolean isAdminOrCreator =
         UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
     if (!isAdminOrCreator) {
+      if (!loggedInProfile.getId().equals(activityResult.getUserId())) {
+        return new ResponseEntity("You cannot delete another users result", HttpStatus.UNAUTHORIZED);
+      }
+
       // Then participant is removing result
       List<ActivityRole> activityRoles =
         activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
       if (activityRoles.isEmpty()) {
         return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      } else {
+        if (!activityRoles.get(0).getActivityRoleType().equals(ActivityRoleType.Participant)) {
+          return new ResponseEntity("You are not a participant of this activity", HttpStatus.UNAUTHORIZED);
+        }
       }
     }
 
