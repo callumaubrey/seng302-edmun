@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <b-button @click="$bvModal.show('record-result-modal')">Record Activity Result</b-button>
+    <!-- this block deals with create activity result form -->
+    <b-button @click="$bvModal.show('record-result-modal')" id="activity-result-modal-button">Record
+      Activity Result
+    </b-button>
 
     <b-modal hide-footer id="record-result-modal" size="xl" title="Record Activity Result">
       <RecordActivityResultForm :is-create-result="true" :metric-dict="metricDict"
@@ -9,14 +12,15 @@
 
       <hr>
       <h5>Current Activity Results</h5>
+
       <!-- this block displays 'user has no activity result message' -->
       <div v-if="userHasNoResultsMessage !== null">
-        <b-card>
+        <b-card id="user-no-result-message">
           {{ this.userHasNoResultsMessage }}
         </b-card>
       </div>
 
-      <!-- this block iterates through user's activity result and display them in b-cards -->
+      <!-- this block iterates through user's activity result and display them in b-cards for editing and deleting -->
       <div v-else>
         <b-card-group :key="index" v-for="(result, index) in resultList">
           <b-card>
@@ -64,7 +68,7 @@ export default {
   },
   methods: {
     /**
-     * Calls GET all activity results of user API
+     * Calls GET all activity results of user endpoint
      */
     getActivityResultsForUser() {
       api.getUserActivityResults(this.profileId, this.activityId).then((res) => {
@@ -84,7 +88,7 @@ export default {
       })
     },
     /**
-     * Calls GET get all metrics for the activity API
+     * Calls GET all metrics of activity endpoint
      */
     getAllMetricsForActivity() {
       api.getActivityMetrics(this.loggedInId, this.activityId).then((res) => {
@@ -94,13 +98,10 @@ export default {
         }
         this.getActivityResultsForUser();
       })
-      .catch((err) => {
-        console.log(err);
-      })
     },
     /**
      * Convert Duration type string to readable '1h 2m 3s' format
-     * @param val Duration type string
+     * @param val duration type string
      * @returns readable duration format string
      */
     convertToReadableDurationFormat(val) {
@@ -112,12 +113,11 @@ export default {
       return hours + 'h ' + minutes + 'm ' + seconds + 's';
     },
     /**
-     * Calls GET metric and activity results API and force the component to rerender
+     * Calls GET metric and activity results endpoint and creates notification based on the event listened
      */
     refreshComponent(val) {
       this.resultList = []
       this.getAllMetricsForActivity();
-      // this.$forceUpdate();
       if (val == 'delete') {
         this.makeToast("Selected activity result is successfully deleted", 'success')
       } else if (val == 'edit') {

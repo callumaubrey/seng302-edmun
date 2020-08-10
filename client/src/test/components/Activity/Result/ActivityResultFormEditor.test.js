@@ -10,18 +10,34 @@ beforeEach(() => {
   wrapper = mount(Component, {
     propsData: {
       result: {
-        title: null,
-        type: null,
-        result: null,
-        resultStart: null,
-        resultEnd: null,
-        isEditMode: false
+        metric_id: 1,
+        user_id: 2,
+        special_metric: "DidNotFinish",
+        result: 1,
+        result_finish: "2020-08-10T21:50:00",
+        result_start: "2020-08-10T21:50:00",
+        type: "Count",
+        isEditMode: false,
+        title: "Eggs Collected",
+        description: "A description"
       },
       metricDict: {
-        "Eggs collected": "Count",
-        "Distance flown": "Distance",
-        "Duration spent trippin": "Duration",
-        "Time to 10km": "StartFinish"
+        1: {
+          id: 1,
+          title: "Eggs Collected",
+          description: "A description",
+          activity_id: 2,
+          rank_asc: 0,
+          unit: 1
+        },
+        2: {
+          id: 2,
+          title: "Distance travelled",
+          description: "A description",
+          activity_id: 2,
+          rank_asc: 0,
+          unit: 2
+        }
       },
       isCreateResult: false
     },
@@ -49,4 +65,10 @@ describe('RecordActivityResultForm.vue', () => {
     expect(wrapper.vm.result.isEditMode).toBe(true)
   });
 
+  test('Delete button exists and is clickable', async () => {
+    expect(wrapper.find('#delete-result-button').exists()).toBe(true);
+    const editResultButton = wrapper.find('#delete-result-button');
+    await editResultButton.trigger('click');
+    await wrapper.vm.$nextTick();
+  });
 })

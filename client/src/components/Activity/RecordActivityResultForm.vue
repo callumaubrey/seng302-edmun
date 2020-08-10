@@ -29,7 +29,8 @@
           <b-button @click="result.isEditMode=true" class="button-group" id="edit-result-button"
                     variant="success">Edit
           </b-button>
-          <b-button @click="removeActivityResult" class="button-group" variant="danger">Delete
+          <b-button @click="removeActivityResult" class="button-group" id="delete-result-button"
+                    variant="danger">Delete
           </b-button>
         </b-button-group>
       </b-col>
@@ -54,7 +55,7 @@
 
       <b-col sm="6">
         <label v-if="result.type!=='TimeStartFinish'">Result: </label>
-        <b-form-input id="result-feedback" placeholder="Enter your result"
+        <b-form-input id="result-input" placeholder="Enter your result"
                       :state="validateResultState('result')"
                       v-if="result.type==='Count' || result.type==='Distance'"
                       v-model="$v.result.result.$model"></b-form-input>
@@ -124,7 +125,6 @@ export default {
       minute: null,
       second: null,
       specialMetricTitle: null,
-
     }
   },
   validations: {
@@ -209,7 +209,7 @@ export default {
     }
   },
   computed: {
-    // key (metric title) value (metric id)
+    // key (metric title), value (metric id)
     metricTitleDict() {
       let metricTitleDict = {}
       for (let metricId in this.metricDict) {
@@ -221,8 +221,10 @@ export default {
   },
   methods: {
     /**
-     * Update result type and description to interchange input group
-     * @param val, metric title
+     * Update result type and description to interchange input group,
+     * Reset validation highlights,
+     * Reset user input
+     * @param val metric title
      */
     updateInputGroup(val) {
       this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
@@ -245,7 +247,7 @@ export default {
       return $dirty ? !$error : null;
     },
     /**
-     * Calls POST create activity result API, and also resets the form upon success
+     * Calls POST activity result endpoint, and also resets the form upon success
      */
     createActivityResult() {
       if (this.result.type === 'TimeDuration') {
@@ -267,7 +269,6 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      console.log(data);
       api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
       .then((res) => {
         this.resultErrorMessage = null;
@@ -302,7 +303,6 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      console.log(data);
       api.updateActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id,
           data)
       .then(() => {
@@ -315,6 +315,9 @@ export default {
         this.makeToast("Selected activity result could not be deleted", 'danger')
       })
     },
+    /**
+     * Calls DELETE activity result endpoint
+     */
     removeActivityResult() {
       api.deleteActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id)
       .then(() => {
