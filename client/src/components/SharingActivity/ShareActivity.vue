@@ -70,37 +70,37 @@
 
   export default {
 
-        name: "ShareActivity",
+    name: "ShareActivity",
     components: {RestrictedUserTabs, AddUsers},
-        props: {
-            profileId: String,
-            activityId: String,
-            modal: Boolean,
-            visibility: String,
-        },
-        data() {
-            return {
-                // selectedVisibility: null,
-                selected: 'Public',
-                description: 'Reeee',
-                emailInput: '',
-                options: [
-                    { value: 'Private', text: 'Private' },
-                     { value: 'Restricted', text: 'Restricted' },
-                    { value: 'Public', text: 'Public' }
-                ],
-                organisers: [],
-                participants: [],
-                accessors: [],
-                followers: [],
-                showWarning:false,
-                partCount:null,
-                organiserCount:null,
-                followerCount:null,
-                moreRestrictive: false,
-                busy: true
-            }
-        },
+    props: {
+      profileId: String,
+      activityId: String,
+      modal: Boolean,
+      visibility: String,
+    },
+    data() {
+      return {
+        // selectedVisibility: null,
+        selected: 'Public',
+        description: 'Reeee',
+        emailInput: '',
+        options: [
+          {value: 'Private', text: 'Private'},
+          {value: 'Restricted', text: 'Restricted'},
+          {value: 'Public', text: 'Public'}
+        ],
+        organisers: [],
+        participants: [],
+        accessors: [],
+        followers: [],
+        showWarning: false,
+        partCount: null,
+        organiserCount: null,
+        followerCount: null,
+        moreRestrictive: false,
+        busy: true
+      }
+    },
     methods: {
       emitInputToParent() {
         this.$emit('emitInput', this.selected);
@@ -151,23 +151,23 @@
         });
 
       },
-            submit() {
-                this.parseEmailInput();
-                this.changeVisibilityType();
-            },
-            parseEmailInput() {
-                var entryArray
-                let data = this.emailInput
-                if (data.includes(";")){
-                    entryArray = data.split(';')
-                } else {
-                    entryArray = data.split(' ')
-                }
-                this.email = entryArray
-            },
-            beforeMount() {
-                this.updateSelectedValue()
-            },
+      submit() {
+        this.parseEmailInput();
+        this.changeVisibilityType();
+      },
+      parseEmailInput() {
+        var entryArray
+        let data = this.emailInput
+        if (data.includes(";")) {
+          entryArray = data.split(';')
+        } else {
+          entryArray = data.split(' ')
+        }
+        this.email = entryArray
+      },
+      beforeMount() {
+        this.updateSelectedValue()
+      },
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
@@ -180,113 +180,111 @@
           alert("An error has occurred, please refresh the page")
         });
       },
-
-    },
-    reformatUserData(roleUsers, roleName) {
-      let i;
-      let n = roleUsers.length;
-      for (i = 0; i < n; i++) {
-        let user = roleUsers[i];
-        user["selected"] = false;
-        user["_rowVariant"] = "danger";
-        user["role"] = roleName;
-      }
-    },
-    addUserDataForUpdateVisibility(roleUsers, data) {
-      let i;
-      let n = roleUsers.length;
-      for (i = 0; i < n; i++) {
-        let user = roleUsers[i];
-        if (user.selected == true) {
-          let emailRolePair = {
-            "email": user.primary_email,
-            "role": user.role
-          }
-          data.accessors.push(emailRolePair)
+      reformatUserData(roleUsers, roleName) {
+        let i;
+        let n = roleUsers.length;
+        for (i = 0; i < n; i++) {
+          let user = roleUsers[i];
+          user["selected"] = false;
+          user["_rowVariant"] = "danger";
+          user["role"] = roleName;
         }
+      },
+      addUserDataForUpdateVisibility(roleUsers, data) {
+        let i;
+        let n = roleUsers.length;
+        for (i = 0; i < n; i++) {
+          let user = roleUsers[i];
+          if (user.selected == true) {
+            let emailRolePair = {
+              "email": user.primary_email,
+              "role": user.role
+            }
+            data.accessors.push(emailRolePair)
+          }
 
-      }
-    },
-    updateUsers(value) {
-      this.organisers = value.organisers;
-      this.participants = value.participants;
-      this.followers = value.followers;
-      this.accessors = value.accessors;
+        }
+      },
+      updateUsers(value) {
+        this.organisers = value.organisers;
+        this.participants = value.participants;
+        this.followers = value.followers;
+        this.accessors = value.accessors;
 
-    },
-    updateOrganisers(value) {
-      this.organisers.users[value.index] = value.item;
-    },
-    updateParticipants(value) {
-      this.participants.users[value.index] = value.item;
-    },
-    updateFollowers(value) {
-      this.followers.users[value.index] = value.item;
-    },
-    updateAccessors(value) {
-      this.accessors.users[value.index] = value.item;
-    },
-    /**
-     * Checks the selected check box for all users
-     * @param users all the users in the table
-     */
-    selectAll: function (users) {
-      let i;
-      let len = users.length
-      for (i = 0; i < len; i++) {
-        let user = users[i]
-        user.selected = true;
-        user._rowVariant = 'none';
+      },
+      updateOrganisers(value) {
+        this.organisers.users[value.index] = value.item;
+      },
+      updateParticipants(value) {
+        this.participants.users[value.index] = value.item;
+      },
+      updateFollowers(value) {
+        this.followers.users[value.index] = value.item;
+      },
+      updateAccessors(value) {
+        this.accessors.users[value.index] = value.item;
+      },
+      /**
+       * Checks the selected check box for all users
+       * @param users all the users in the table
+       */
+      selectAll: function (users) {
+        let i;
+        let len = users.length
+        for (i = 0; i < len; i++) {
+          let user = users[i]
+          user.selected = true;
+          user._rowVariant = 'none';
+        }
+      },
+      /**
+       * Unchecks the selected check box for all users
+       * @param users all the users in the table
+       */
+      deselectAll: function (users) {
+        let i;
+        let len = users.length
+        for (i = 0; i < len; i++) {
+          let user = users[i]
+          user.selected = false;
+          user._rowVariant = 'danger';
+        }
+      },
+      notifyParent() {
+        console.log("emitted")
+        this.$emit("componentUpdate");
+      },
+      addUsers(value) {
+        console.log(value);
       }
     },
-    /**
-     * Unchecks the selected check box for all users
-     * @param users all the users in the table
-     */
-    deselectAll: function (users) {
-      let i;
-      let len = users.length
-      for (i = 0; i < len; i++) {
-        let user = users[i]
-        user.selected = false;
-        user._rowVariant = 'danger';
+    watch: {
+      selected: function () {
+        if (this.organiserCount === 0 && this.partCount === 0 && this.followerCount === 0) {
+          this.showWarning = false
+          return
+        }
+        if (this.visibility === "Restricted" && this.selected === "Private" || (this.visibility
+            === "Public" && this.selected !== "Public")) {
+          this.showWarning = true
+        } else {
+          this.showWarning = false
+        }
       }
     },
-    notifyParent() {
-      console.log("emitted")
-      this.$emit("componentUpdate");
-    },
-    addUsers(value) {
-      console.log(value);
+    computed: {
+      visibilityButtonColour: function () {
+        switch (this.visibility) {
+          case "Public":
+            return "success";
+          case "Restricted":
+            return "warning";
+          case "Private":
+            return "danger";
+          default:
+            return "primary";
+        }
+      }
     }
-  },
-  watch: {
-    selected: function () {
-      if (this.organiserCount === 0 && this.partCount === 0 && this.followerCount === 0) {
-        this.showWarning = false
-        return
-      }
-      if (this.visibility === "Restricted" && this.selected === "Private" || (this.visibility
-          === "Public" && this.selected !== "Public")) {
-        this.showWarning = true
-      } else {
-        this.showWarning = false
-      }
-    }
-  },
-  computed: {
-    visibilityButtonColour: function () {
-      switch (this.visibility) {
-        case "Public":
-          return "success";
-        case "Restricted":
-          return "warning";
-        case "Private":
-          return "danger";
-        default:
-          return "primary";
-      }
-    }
-  }
   }
 </script>
