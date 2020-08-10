@@ -486,4 +486,67 @@ public class ActivityMetricController {
     }
     return new ResponseEntity(results, HttpStatus.OK);
   }
+
+  /**
+   * Deletes an activity result from result ID
+   * A owner, participant and admin can delete result
+   * @param profileId owner of activity
+   * @param activityId activityId
+   * @param resultId activity result ID
+   * @param session the HttpSession
+   * @return
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/result/{resultId}")
+  public ResponseEntity deleteActivityResult(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @PathVariable int resultId,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    int loggedInId = (Integer) id;
+    Profile loggedInProfile = profileRepository.findById(loggedInId);
+    if (loggedInProfile == null) {
+      return new ResponseEntity("Logged in use dosen't exist", HttpStatus.NOT_FOUND);
+    }
+
+    Profile ownerProfile = profileRepository.findById(profileId);
+    if (ownerProfile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+    if (!activity.getProfile().getId().equals(ownerProfile.getId())) {
+      return new ResponseEntity("ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
+    }
+
+    ActivityResult activityResult = activityResultRepository.getOne(resultId);
+    if (activityResult == null) {
+      return new ResponseEntity("Activity result does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    boolean isAdminOrCreator =
+        UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
+    if (!isAdminOrCreator) {
+      // Then participant is removing result
+      List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      }
+    }
+
+    activityResultRepository.delete(activityResult);
+
+    return new ResponseEntity("Activity result deleted", HttpStatus.OK);
+  }
 }

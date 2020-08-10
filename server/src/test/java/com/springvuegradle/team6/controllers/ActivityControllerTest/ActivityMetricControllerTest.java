@@ -2054,4 +2054,46 @@ public class ActivityMetricControllerTest {
         activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
+
+  @Test
+  void deleteActivityResultIsParticipantReturnOK() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
+    countResult = activityResultRepository.save(countResult);
+
+    mvc.perform(
+        MockMvcRequestBuilders.delete(
+            "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+            activity.getProfile().getId(),
+            activity.getId(),
+            countResult.getId())
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> activityResults = activityResultRepository.findSingleUsersResultsOnActivity(activityId, profile1.getId());
+    Assert.assertEquals(0, activityResults.size());
+  }
 }
