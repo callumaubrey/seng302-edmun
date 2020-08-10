@@ -31,7 +31,7 @@
             >You have {{organiserCount}} organisers, {{followerCount}} followers and {{partCount}}
               participants. You are changing visibility type to be more restrictive, are you sure?
             </b-alert>
-            <add-users v-if="selected == 'Restricted'" v-on:usersAdded="addUsers"></add-users>
+            <add-users v-if="selected == 'Restricted'" v-on:usersAdded="addUsers" :allUsersIds="allUsersIds" :activityId="activityId"></add-users>
             <p style="color: #cc9a9a">{{followerCount}} Followers {{partCount}} Participants
               {{organiserCount}} Organisers</p>
             <b-button style="margin-right: 2%; margin-bottom: 4%" @click="submit()">Save changes
@@ -110,7 +110,8 @@
         followerCount: null,
         moreRestrictive: false,
         busy: true,
-        restrictedUsersTabsKey: 0
+        restrictedUsersTabsKey: 0,
+        allUsersIds: []
       }
     },
     methods: {
@@ -122,7 +123,7 @@
         this.emailInput = "";
         this.getCount();
         this.selected = this.visibility
-        await api.getActivityMembers(this.activityId, 0, 10)
+        await api.getActivityMembers(this.activityId, 0, 10000)
             .then((res) => {
               if (res.status == 200) {
                 this.organisers["users"] = res.data.Organiser;
@@ -132,7 +133,7 @@
                 this.reformatUserData(this.organisers["users"], "organiser");
                 this.reformatUserData(this.participants["users"], "participant");
                 this.reformatUserData(this.followers["users"], "follower");
-                this.reformatUserData(this.accessors["users"], "accessor");
+                this.reformatUserData(this.accessors["users"], "access");
                 this.busy = false;
               }
             })
@@ -140,6 +141,26 @@
               alert("An error has occurred, please refresh the page")
             });
         this.showWarning = false
+        this.computeUserIds();
+      },
+      /**
+       * Gets all the user ids from all the different roles and place them into the array allUsersIds
+       * This array is used by the AddUsers.vue component to check to make sure the creator doesn't
+       * add users that are already in the activity to the activity.
+       */
+      computeUserIds() {
+        for (let user of this.organisers.users) {
+          this.allUsersIds.push(user.profile_id)
+        }
+        for (let user of this.participants.users) {
+          this.allUsersIds.push(user.profile_id)
+        }
+        for (let user of this.followers.users) {
+          this.allUsersIds.push(user.profile_id)
+        }
+        for (let user of this.accessors.users) {
+          this.allUsersIds.push(user.profile_id)
+        }
       },
       changeVisibilityType() {
 
@@ -281,6 +302,7 @@
           user._rowVariant = 'none';
           this.accessors.users.push(user)
         }
+        this.computeUserIds();
         this.forceRerender();
       },
       forceRerender() {

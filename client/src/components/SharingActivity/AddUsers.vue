@@ -13,11 +13,13 @@
       ></b-input>
 
       <b-input-group-append>
-        <b-button id="add-users-button" @click="processInput" variant="primary" :disabled="!hasInput">Add</b-button>
+        <b-button id="add-users-button" @click="processInput" variant="primary"
+                  :disabled="!hasInput">Add
+        </b-button>
       </b-input-group-append>
     </b-input-group>
     <b-form-invalid-feedback :state="validInput">
-      {{invalidEmail}} is not an email
+      {{invalidMessage}}
     </b-form-invalid-feedback>
 
     <p style="color: floralwhite; font-size: 12px">Add multiple users by separating emails by space
@@ -30,6 +32,7 @@
 
   export default {
     name: "AddEmails",
+    props: ["allUsersIds", "activityId"],
     data() {
       return {
         emailInput: '',
@@ -37,7 +40,11 @@
         validInput: null,
         invalidEmail: '',
         notRegistered: [],
-        added: []
+        added: [],
+        creatorId: null,
+        creatorEmails: [],
+        invalidMessage: 'An error has occurred',
+        alreadyAdded: []
       }
     },
     methods: {
@@ -60,6 +67,9 @@
         const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
       },
+      creatorEmail(email) {
+        return this.creatorEmails.includes(email);
+      },
       /**
        * Validates all the emails in the emailsArray and set validInput to false if any if invalid.
        * A error message will display with the first email that is invalid which is why invalidEmail is set as email.
@@ -69,6 +79,12 @@
           if (!this.validateEmail(email)) {
             this.validInput = false;
             this.invalidEmail = email;
+            this.invalidMessage = email + " is not a valid email"
+          }
+          if (this.creatorEmail(email)) {
+            this.validInput = false;
+            this.invalidEmail = email;
+            this.invalidMessage = "You cannot add the creators email: " + email;
           }
         }
       },
@@ -96,15 +112,19 @@
         let registered = [];
         let vueObj = this;
         await Promise.all(promiseArray).then((values) => {
-          for (let value of values) {
-            if (value.data.results.length > 0) {
-              let user = value.data.results[0]
-              vueObj.added.push({
-                full_name: user.firstname + " " + user.lastname,
-                primary_email: user.primary_email,
-                profile_id: user.profile_id
-              })
-              registered.push(user.primary_email)
+          for (let i = 0; i < values.length; i++) {
+            if (values[i].data.results.length > 0) {
+              let user = values[i].data.results[0]
+              if (this.allUsersIds.includes(user.profile_id)) {
+                this.alreadyAdded.push(this.emailsArray[i])
+              } else {
+                vueObj.added.push({
+                  full_name: user.firstname + " " + user.lastname,
+                  primary_email: user.primary_email,
+                  profile_id: user.profile_id
+                })
+              }
+              registered.push(this.emailsArray[i])
             }
           }
         })
@@ -116,6 +136,7 @@
       resetValidity() {
         this.validInput = null;
         this.invalidEmail = '';
+        this.invalidMessage = 'An error has occurred';
       },
       /**
        * Emits the final list of users' data to the parent based on the emails that were inputted
@@ -131,15 +152,20 @@
         if (this.notRegistered.length > 0) {
           if (this.added.length > 0) {
             this.makeToast(
-                'The following users are not registered and were not added to the activity: '
+                'The following emails are not registered and users were not added: '
                 + this.notRegistered.join('; '), 'warning', 7000);
-            this.makeToast('Registered users were added to the activity', 'success');
+            this.makeToast('Registered users with the specified emails were added', 'success');
           } else {
             this.makeToast(
-                'All emails specified were not registered, no users were added to the activity', 'warning');
-            }
+                'All emails specified were not registered or were already apart of the activity, no users were added',
+                'warning');
+          }
+
         } else {
-          this.makeToast('All specified users were added to the activity', 'success');
+          this.makeToast('All users with specified emails were added', 'success');
+        }
+        if (this.alreadyAdded.length > 0) {
+          this.makeToast('The following users with specified emails were already apart of the activity: ' + this.alreadyAdded.join('; '), 'success', 7000 )
         }
       },
       /**
@@ -165,12 +191,33 @@
         this.invalidEmail = '';
         this.notRegistered = [];
         this.added = [];
+        this.invalidMessage = 'An error has occurred';
+        this.alreadyAdded = [];
+      },
+      async getCreatorEmails() {
+        await api.getProfileEmails(this.loggedInId)
+            .then((res) => {
+                  let emails = res.data.emails;
+                  for (let email of emails) {
+                    this.creatorEmails.push(email.address);
+                  }
+                }
+            )
+            .catch(() => {
+              alert("An error has occurred, please refresh the page")
+            })
       }
     },
     computed: {
       hasInput() {
         return this.emailInput != '';
       }
+    },
+    mounted: async function () {
+      await api.getActivityCreatorId(this.activityId).then((res) => {
+        this.creatorId = res.data;
+      })
+      await this.getCreatorEmails();
     }
   }
 </script>
