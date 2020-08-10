@@ -208,10 +208,7 @@ public class FollowController {
    * @return null if everything is OK. ResponseEntity if not
    */
   private ResponseEntity<String> checkUserIsAuthorAndExists(
-      int profileId,
-      int activityId,
-      String email,
-      HttpSession session) {
+      int profileId, int activityId, String email, HttpSession session) {
     Profile creatorProfile = profileRepository.findById(profileId);
     if (creatorProfile == null) {
       return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
@@ -445,7 +442,7 @@ public class FollowController {
    * @return Lists with users associated to a specific role
    */
   @GetMapping("activities/{activityId}/members")
-  public ResponseEntity<String> getConnectedUsers(
+  public ResponseEntity<String> getActivityUsers(
       @PathVariable int activityId,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
