@@ -110,5 +110,7 @@ export default {
 
     getActivityMetrics: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
 
-    getAllActivityResultsByProfileId: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/result')
+    getAllActivityResultsByProfileId: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/result'),
+
+    getAllActivityResultsByMetricId: (activityId, metricId) => instance.get('/activities/' + activityId + '/result/' + metricId)
 }
