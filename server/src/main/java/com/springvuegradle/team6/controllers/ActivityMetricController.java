@@ -1,5 +1,31 @@
 package com.springvuegradle.team6.controllers;
 
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
+import com.springvuegradle.team6.models.entities.ActivityResultDistance;
+import com.springvuegradle.team6.models.entities.ActivityResultDuration;
+import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
@@ -14,6 +40,14 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(
@@ -186,6 +220,54 @@ public class ActivityMetricController {
   }
 
   /**
+   * Gets and returns all the results for all users for a specific activity
+   *
+   * @param activityId the id of the activity with the desired results
+   * @param session current http session
+   * @return response entity containing list of all results for activity
+   */
+  @GetMapping("/profiles/activities/{activityId}/result")
+  public ResponseEntity getAllResultsForActivity(
+      @PathVariable int activityId, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Profile> optionalLoggedInProfile = profileRepository.findById((Integer) id);
+    if (!optionalLoggedInProfile.isPresent()) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile loggedInProfile = optionalLoggedInProfile.get();
+    Activity activity = optionalActivity.get();
+
+    boolean isAdminOrCreator =
+        UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId());
+
+    if (!isAdminOrCreator) {
+      if (activity.getVisibilityType() != VisibilityType.Public) {
+        List<ActivityRole> activityRoles =
+            activityRoleRepository.findByActivity_IdAndProfile_Id(
+                activityId, loggedInProfile.getId());
+        if (activityRoles.isEmpty()) {
+          return new ResponseEntity("You don't have access", HttpStatus.FORBIDDEN);
+        }
+      }
+    }
+
+    List<ActivityResult> results = activityResultRepository.findAllResultsForAnActivity(activityId);
+
+    return new ResponseEntity(results, HttpStatus.OK);
+  }
+
+  /**
    * This endpoint edits an activity result for a Participant of an activity An admin can edit an
    * activity result for an owner and a participant An owner or organiser can edit an activity
    * result for a participant
@@ -196,10 +278,11 @@ public class ActivityMetricController {
    * @param session the HttpSession
    * @return
    */
-  @PutMapping("/profiles/{profileId}/activities/{activityId}/result")
+  @PutMapping("/profiles/{profileId}/activities/{activityId}/result/{resultId}")
   public ResponseEntity editActivityResult(
       @PathVariable int profileId,
       @PathVariable int activityId,
+      @PathVariable int resultId,
       @RequestBody @Valid EditActivityResultRequest request,
       HttpSession session) {
 
@@ -312,8 +395,7 @@ public class ActivityMetricController {
 
     if (metricUnit.equals(Unit.Count)) {
       Optional<ActivityResultCount> optionalResult =
-          activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificCountResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -324,8 +406,7 @@ public class ActivityMetricController {
       message += "count: " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       Optional<ActivityResultDistance> optionalResult =
-          activityResultRepository.findUsersDistanceResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificDistanceResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -337,8 +418,7 @@ public class ActivityMetricController {
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
       Optional<ActivityResultDuration> optionalResult =
-          activityResultRepository.findUsersDurationResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificDurationResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -352,8 +432,7 @@ public class ActivityMetricController {
       message += "duration: " + durationString;
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
-          activityResultRepository.findUsersStartFinishResultForSpecificActivityAndMetric(
-              activityId, profileId, request.getMetricId());
+          activityResultRepository.findSpecificStartFinishResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
@@ -415,5 +494,154 @@ public class ActivityMetricController {
     } catch (Exception e) {
       return new ResponseEntity<>("Activity Metrics do not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Gets all an activities results for a particular user
+   *
+   * @param profileId the id of the user who has the results
+   * @param activityId the id of the activity
+   * @param session
+   * @return activity results, if user has no results return 404
+   */
+  @GetMapping("/profiles/{profileId}/activities/{activityId}/result")
+  public ResponseEntity getAllActivityResultsForSingleUser(
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    boolean authorised =
+        UserSecurityService.checkIsAdminOrCreator((int) id, activity.getProfile().getId());
+
+    if (activity.getVisibilityType() != VisibilityType.Public && !authorised) {
+      List<ActivityRole> activityRoles =
+          activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, (int) id);
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      }
+    }
+    List<ActivityResult> results =
+        activityResultRepository.findSingleUsersResultsOnActivity(activityId, profileId);
+    if (results.isEmpty()) {
+      return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity(results, HttpStatus.OK);
+  }
+
+  /**
+   * Gets all a single metrics results for a particular activity
+   *
+   * @param activityId the id of the activity
+   * @param session
+   * @return activity results, if user has no results return 404
+   */
+  @GetMapping("/activities/{activityId}/result/{metricId}")
+  public ResponseEntity getAllActivityResultsForSingleMetric(
+      @PathVariable int activityId, @PathVariable int metricId,  HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<ActivityQualificationMetric> metric = activityQualificationMetricRepository.findById(metricId);
+    if (metric.isEmpty()) {
+      return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    List<ActivityResult> results =
+        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    if (results.isEmpty()) {
+      return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity(results, HttpStatus.OK);
+  }
+
+  /**
+   * Deletes an activity result based on the resultId
+   * A owner, participant and admin can delete result
+   * @param profileId owner of activity
+   * @param activityId activityId
+   * @param resultId activity result ID
+   * @param session the HttpSession
+   * @return
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/result/{resultId}")
+  public ResponseEntity deleteActivityResult(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @PathVariable int resultId,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Profile loggedInProfile = profileRepository.findById((int) id);
+
+    Profile ownerProfile = profileRepository.findById(profileId);
+    if (ownerProfile == null) {
+      return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+    if (!activity.getProfile().getId().equals(ownerProfile.getId())) {
+      return new ResponseEntity("ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
+    }
+
+    Optional<ActivityResult> activityResultOptional = activityResultRepository.findById(resultId);
+    if (activityResultOptional.isEmpty()) {
+      return new ResponseEntity("Activity result does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    ActivityResult activityResult = activityResultOptional.get();
+
+    boolean isAdminOrCreator =
+        UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
+    if (!isAdminOrCreator) {
+      if (!loggedInProfile.getId().equals(activityResult.getUserId())) {
+        return new ResponseEntity("You cannot delete another users result", HttpStatus.UNAUTHORIZED);
+      }
+
+      // Then participant is removing result
+      List<ActivityRole> activityRoles =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+      if (activityRoles.isEmpty()) {
+        return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
+      } else {
+        if (!activityRoles.get(0).getActivityRoleType().equals(ActivityRoleType.Participant)) {
+          return new ResponseEntity("You are not a participant of this activity", HttpStatus.UNAUTHORIZED);
+        }
+      }
+    }
+
+    activityResultRepository.delete(activityResult);
+
+    return new ResponseEntity("Activity result deleted", HttpStatus.OK);
   }
 }

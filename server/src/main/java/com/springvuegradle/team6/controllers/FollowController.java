@@ -208,10 +208,7 @@ public class FollowController {
    * @return null if everything is OK. ResponseEntity if not
    */
   private ResponseEntity<String> checkUserIsAuthorAndExists(
-      int profileId,
-      int activityId,
-      String email,
-      HttpSession session) {
+      int profileId, int activityId, String email, HttpSession session) {
     Profile creatorProfile = profileRepository.findById(profileId);
     if (creatorProfile == null) {
       return new ResponseEntity("No such user", HttpStatus.NOT_FOUND);
@@ -445,7 +442,7 @@ public class FollowController {
    * @return Lists with users associated to a specific role
    */
   @GetMapping("activities/{activityId}/members")
-  public ResponseEntity<String> getConnectedUsers(
+  public ResponseEntity<String> getActivityUsers(
       @PathVariable int activityId,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
@@ -551,4 +548,35 @@ public class FollowController {
         activityRoleRepository.findMembersCount(activityId, ActivityRoleType.Access.ordinal()));
     return new ResponseEntity(response, HttpStatus.OK);
   }
+
+  /**
+   * Checks if users is a participant of an activity
+   * @param profileId user in activity
+   * @param activityId activity user may participate in
+   * @param session current http session
+   * @return boolean if user is a participant
+   */
+  @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
+  public ResponseEntity<String> getIsUserParticipantInActivity(
+          @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check if user has access to view activity info
+    ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
+            activityRepository, activityRoleRepository);
+    if(authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    // Check if user is participant
+    JSONObject response = new JSONObject();
+
+    ActivityRole userRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+    if (userRole != null && userRole.getActivityRoleType() == ActivityRoleType.Participant) {
+      response.appendField("participant", true);
+    } else {
+      response.appendField("participant", false);
+    }
+
+    return new ResponseEntity(response, HttpStatus.OK);
+  }
+
 }
