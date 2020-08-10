@@ -559,14 +559,12 @@ public class FollowController {
   @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
   public ResponseEntity<String> getIsUserParticipantInActivity(
           @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
-
     // Check if user has access to view activity info
     ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
             activityRepository, activityRoleRepository);
     if(authorisedResponse != null) {
       return authorisedResponse;
     }
-
 
     // Check if user is participant
     JSONObject response = new JSONObject();
