@@ -1,7 +1,13 @@
 package com.springvuegradle.team6.security;
 
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import java.util.Collection;
+import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,6 +98,50 @@ public class UserSecurityService {
     if (!repository.existsById(requestId)) {
       return new ResponseEntity<>("No such user", HttpStatus.NOT_FOUND);
     }
+    return null;
+  }
+
+  /**
+   * Checks if user is authorised to view a requested activity. The user is authorised if they are logged in,
+   * the activity exists, and they are either an admin, creator or have permission to restricted profile.
+   * @param activity_id the activity the user is trying to view
+   * @param session Http Session
+   * @param activityRepository activity repository
+   * @param roleRepository activity role repository
+   * @return null on success otherwise 404 on activity not found or a 401 with message why.
+   */
+  public static ResponseEntity<String> checkActivityViewingPermission(Integer activity_id, HttpSession session, ActivityRepository activityRepository, ActivityRoleRepository roleRepository) {
+    Integer id = (Integer) session.getAttribute("id");
+
+    // Check if logged in
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    // Check if activity exists
+    Optional<Activity> optionalActivity = activityRepository.findById(activity_id);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("No such activity", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    // Check if admin
+    if (checkIsAdminOrCreator(id, activity.getProfile().getId())) {
+      return null;
+    }
+
+    // Check if user has rights to view it
+    if (activity.getVisibilityType() == VisibilityType.Private) {
+      return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (activity.getVisibilityType() == VisibilityType.Restricted) {
+      ActivityRole activityRoles = roleRepository.findByProfile_IdAndActivity_Id(id, activity_id);
+      if (activityRoles == null) {
+        return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+      }
+    }
+
     return null;
   }
 }
