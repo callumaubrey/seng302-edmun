@@ -953,13 +953,14 @@ public class ActivityMetricControllerTest {
     LocalDateTime start = LocalDateTime.parse("2015-08-04T10:11:30");
     LocalDateTime end = LocalDateTime.parse("2015-08-04T10:11:40");
     ActivityResultStartFinish result = new ActivityResultStartFinish(metric, profile1, start, end);
-    activityResultRepository.save(result);
+    result = activityResultRepository.save(result);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    result.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -969,8 +970,7 @@ public class ActivityMetricControllerTest {
     LocalDateTime expectedStart = LocalDateTime.parse("2019-06-06T14:00:00");
     LocalDateTime expectedEnd = LocalDateTime.parse("2019-06-06T16:00:00");
     Optional<ActivityResultStartFinish> result1 =
-        activityResultRepository.findUsersStartFinishResultForSpecificActivityAndMetric(
-            activity.getId(), profile1.getId(), metric.getId());
+        activityResultRepository.findSpecificStartFinishResult(result.getId());
     Assert.assertEquals(expectedStart, result1.get().getStart());
     Assert.assertEquals(expectedEnd, result1.get().getFinish());
   }
@@ -1027,13 +1027,14 @@ public class ActivityMetricControllerTest {
     Duration duration = Duration.parse("PT20.345S");
     Duration expectedDuration = Duration.parse("PT1H");
     ActivityResultDuration result = new ActivityResultDuration(metric, profile1, duration);
-    activityResultRepository.save(result);
+    result = activityResultRepository.save(result);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    result.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -1041,8 +1042,7 @@ public class ActivityMetricControllerTest {
         .andDo(print());
 
     Optional<ActivityResultDuration> result1 =
-        activityResultRepository.findUsersDurationResultForSpecificActivityAndMetric(
-            activity.getId(), profile1.getId(), metric.getId());
+        activityResultRepository.findSpecificDurationResult(result.getId());
     Assert.assertEquals(expectedDuration, result1.get().getValue());
   }
 
@@ -1091,13 +1091,14 @@ public class ActivityMetricControllerTest {
         .andDo(print());
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 10);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -1134,13 +1135,14 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 10);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{result}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -1177,21 +1179,21 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
 
     Optional<ActivityResultCount> result1 =
-        activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-            activity.getId(), profile1.getId(), metric.getId());
+        activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
 
@@ -1221,21 +1223,21 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{result}",
                     profile.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
 
     Optional<ActivityResultCount> result1 =
-        activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-            activity.getId(), profile.getId(), metric.getId());
+        activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
 
@@ -1268,21 +1270,21 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
 
     Optional<ActivityResultCount> result1 =
-        activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-            activity.getId(), profile.getId(), metric.getId());
+        activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
 
@@ -1319,21 +1321,21 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
 
     Optional<ActivityResultCount> result1 =
-        activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-            activity.getId(), profile1.getId(), metric.getId());
+        activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
 
@@ -1370,13 +1372,14 @@ public class ActivityMetricControllerTest {
         "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile1, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile1.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -1443,13 +1446,14 @@ public class ActivityMetricControllerTest {
         .andDo(print());
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile2, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile2.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -1959,13 +1963,14 @@ public class ActivityMetricControllerTest {
         .andDo(print());
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile2, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile2.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
@@ -2032,21 +2037,21 @@ public class ActivityMetricControllerTest {
         .andDo(print());
 
     ActivityResultCount countResult = new ActivityResultCount(metric, profile2, 20);
-    activityResultRepository.save(countResult);
+    countResult = activityResultRepository.save(countResult);
 
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}/result",
+                    "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
                     profile2.getId(),
-                    activity.getId())
+                    activity.getId(),
+                    countResult.getId())
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
 
     Optional<ActivityResultCount> result1 =
-        activityResultRepository.findUsersCountResultForSpecificActivityAndMetric(
-            activity.getId(), profile2.getId(), metric.getId());
+        activityResultRepository.findSpecificCountResult(countResult.getId());
     Assert.assertEquals(10, result1.get().getValue());
   }
 }
