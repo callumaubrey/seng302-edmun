@@ -4,7 +4,8 @@
 
     <b-modal hide-footer id="record-result-modal" size="xl" title="Record Activity Result">
       <RecordActivityResultForm :is-create-result="true" :metric-dict="metricDict"
-                                :result="createResultForm"></RecordActivityResultForm>
+                                :result="createResultForm"
+                                v-on:child-to-parent="refreshComponent"></RecordActivityResultForm>
 
       <hr>
       <h5>Current Activity Results</h5>
@@ -21,7 +22,7 @@
           <b-card>
             <RecordActivityResultForm :is-create-result="false"
                                       :metric-dict="metricDict" :result="result"
-                                      @child-to-parent="forceUpdateComponent"></RecordActivityResultForm>
+                                      v-on:child-to-parent="refreshComponent"></RecordActivityResultForm>
           </b-card>
         </b-card-group>
       </div>
@@ -58,7 +59,7 @@ export default {
       userHasNoResultsMessage: null,
       // key (metric id), value (metric json)
       metricDict: {},
-      resultList: []
+      resultList: [],
     }
   },
   methods: {
@@ -77,7 +78,6 @@ export default {
           }
           this.resultList.push(result)
         }
-        console.log(this.resultList)
       })
       .catch(() => {
         this.userHasNoResultsMessage = "User has no activity results";
@@ -98,11 +98,6 @@ export default {
         console.log(err);
       })
     },
-    forceUpdateComponent() {
-      this.$on('child-to-parent', this.getAllMetricsForActivity)
-      console.log("HOO")
-      this.$forceUpdate();
-    },
     /**
      * Convert Duration type string to readable '1h 2m 3s' format
      * @param val Duration type string
@@ -115,6 +110,14 @@ export default {
       let minutes = matches[3] === undefined ? 0 : matches[3];
       let seconds = matches[4] === undefined ? 0 : matches[4];
       return hours + 'h ' + minutes + 'm ' + seconds + 's';
+    },
+    /**
+     * Calls GET metric and activity results API and force the component to rerender
+     */
+    refreshComponent() {
+      this.resultList = []
+      this.getAllMetricsForActivity();
+      this.$forceUpdate();
     }
   },
   mounted() {

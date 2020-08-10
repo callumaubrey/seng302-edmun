@@ -93,7 +93,7 @@
           Create
         </b-button>
         <b-button-group v-else>
-          <b-button @click="result.isEditMode=false" id="save-result-button">Save</b-button>
+          <b-button @click="editActivityResult" id="save-result-button">Save</b-button>
           <b-button @click="result.isEditMode=false" id="cancel-result-button" variant="danger">
             Cancel
           </b-button>
@@ -125,7 +125,8 @@ export default {
       resultSuccessMessage: null,
       hour: null,
       minute: null,
-      second: null
+      second: null,
+      specialMetricTitle: null
     }
   },
   validations: {
@@ -201,6 +202,7 @@ export default {
           let startTime = new Date(this.result.result_start);
           let endTime = new Date(val);
           if (endTime < startTime) {
+            this.resultErrorMessage = "End date time should be after start date time"
             return false;
           }
           return true;
@@ -217,17 +219,7 @@ export default {
       }
       return metricTitleDict
     },
-    // compute special metric title by using special metric enum and specialMetricDict
-    specialMetricTitle() {
-      if (this.result.special_metric !== null) {
-        for (let specialMetricTitle in this.specialMetricDict) {
-          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
-            return specialMetricTitle
-          }
-        }
-      }
-      return null;
-    }
+
   },
   methods: {
     /**
@@ -238,6 +230,7 @@ export default {
       this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
       this.result.description = this.metricDict[this.metricTitleDict[val]].description;
       this.resultErrorMessage = null
+      this.resultSuccessMessage = null
     },
     validateResultState(name) {
       const {$dirty, $error} = this.$v.result[name];
@@ -251,24 +244,7 @@ export default {
      * Calls POST create activity result API, and also resets the form upon success
      */
     createActivityResult() {
-      this.$v.result.$touch();
-      this.$v.$touch();
-      if (this.$v.result.$anyError) {
-        console.log("I was here")
-        return;
-      }
-      if (this.result.type === 'TimeDuration') {
-        if (this.hour.length === 1) {
-          this.hour = '0' + this.hour;
-        }
-        if (this.minute.length === 1) {
-          this.minute = '0' + this.minute;
-        }
-        if (this.second.length === 1) {
-          this.second = '0' + this.second;
-        }
-        this.result.result = this.hour + ':' + this.minute + ':' + this.second
-      }
+      this.validateForm();
       let data = {
         metric_id: this.metricTitleDict[this.result.title],
         value: this.result.result,
@@ -278,15 +254,74 @@ export default {
       }
       console.log(data);
       api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
-      .then(() => {
+      .then((res) => {
+        this.result.id = res.data;
         this.resultSuccessMessage = "Activity result is created"
-        this.$emit('child-to-parent')
         this.resetForm();
+        this.$emit('child-to-parent')
       })
       .catch((err) => {
-        this.resultErrorMessage = err.response.data
         console.log(err.response.data);
+        this.resultErrorMessage = err.response.data
       })
+    },
+    /**
+     * Calls PUT activity result endpoint
+     */
+    editActivityResult() {
+      this.validateForm();
+      let data = {
+        metric_id: this.metricTitleDict[this.result.title],
+        value: this.result.result,
+        start: this.result.result_start,
+        end: this.result.result_finish,
+        special_metric: this.specialMetricDict[this.specialMetricTitle]
+      }
+      console.log(data);
+      api.updateActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id,
+          data)
+      .then(() => {
+        this.result.isEditMode = false
+        this.$v.result.$reset();
+        this.$v.$reset();
+        this.$emit('child-to-parent')
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+        this.resultErrorMessage = err.response.data
+      })
+    },
+    /**
+     * Validate form according to metric types
+     */
+    validateForm() {
+      if (this.result.type === 'TimeDuration') {
+        this.$v.$touch()
+        if (this.$v.$anyError) {
+          return;
+        }
+        this.convertToDurationStringFormat();
+      } else {
+        this.$v.result.$touch();
+        if (this.$v.result.$anyError) {
+
+        }
+      }
+    },
+    /**
+     * Combine hour, minute and second variables to form a duration string
+     */
+    convertToDurationStringFormat() {
+      if (this.hour.length === 1) {
+        this.hour = '0' + this.hour;
+      }
+      if (this.minute.length === 1) {
+        this.minute = '0' + this.minute;
+      }
+      if (this.second.length === 1) {
+        this.second = '0' + this.second;
+      }
+      this.result.result = this.hour + ':' + this.minute + ':' + this.second
     },
     /**
      * Parse example of '1h 2m 3s' string into its respective variables
@@ -321,9 +356,24 @@ export default {
       this.minute = null;
       this.second = null;
       this.$v.$reset();
+    },
+    /**
+     * Compute special metric title by using special metric enum and specialMetricDict
+     * @returns {null}
+     */
+    parseToSpecialMetricTitle() {
+      if (this.result.special_metric !== null) {
+        for (let specialMetricTitle in this.specialMetricDict) {
+          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
+            this.specialMetricTitle = specialMetricTitle;
+          }
+        }
+      }
+      return null;
     }
   },
   mounted() {
+    this.parseToSpecialMetricTitle();
     this.parseDurationStringIntoHMS();
   }
 }

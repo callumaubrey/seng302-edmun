@@ -128,19 +128,31 @@ export default {
     updatePasswordWithAdmin: (profileId, data) => instance.put(
         '/admin/profiles/' + profileId + '/password', data),
 
-    updateRole: (profileId, activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', data),
+    updateRole: (profileId, activityId, data) => instance.put(
+        '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
+        data),
 
-    updateActivityVisibility: (profileId,activityId, data) => instance.put('/profiles/' + profileId + '/activities/' + activityId + '/visibility', data),
+    updateActivityVisibility: (profileId, activityId, data) => instance.put(
+        '/profiles/' + profileId + '/activities/' + activityId + '/visibility',
+        data),
 
+    updateActivityResult: (profileId, activityId, resultId,
+        data) => instance.put(
+        "/profiles/" + profileId + '/activities/' + activityId + '/result/'
+        + resultId, data),
     // (D)elete
 
     removeForId: (id) => instance.delete('students/' + id),
 
-    deleteActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/activities/' + activityId),
+    deleteActivity: (profileId, activityId) => instance.delete(
+        '/profiles/' + profileId + '/activities/' + activityId),
 
-    removeRole: (profileId, activityId, data) => instance.delete('/profiles/' + profileId + '/activities/' + activityId + '/subscriber', {data}),
+    removeRole: (profileId, activityId, data) => instance.delete(
+        '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
+        {data}),
 
-    removeLocation: (profileId) => instance.delete('/profiles/' + profileId + '/location'),
+    removeLocation: (profileId) => instance.delete(
+        '/profiles/' + profileId + '/location'),
     
     unsubscribeToActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/subscriptions/activities/' + activityId),
 
