@@ -1,6 +1,6 @@
 <template>
 
-  <!-- This block displays activity result -->
+  <!-- This block displays the activity result -->
   <div v-if="!result.isEditMode">
     <b-row>
       <b-col sm="3">
@@ -29,13 +29,14 @@
           <b-button @click="result.isEditMode=true" class="button-group" id="edit-result-button"
                     variant="success">Edit
           </b-button>
-          <b-button class="button-group" variant="danger">Delete</b-button>
+          <b-button @click="removeActivityResult" class="button-group" variant="danger">Delete
+          </b-button>
         </b-button-group>
       </b-col>
     </b-row>
   </div>
 
-  <!-- This block manages create/edit activity result form -->
+  <!-- This block deals with the creating/editing activity result form -->
   <div v-else>
     <b-row>
       <b-col sm="4">
@@ -83,9 +84,6 @@
           </b-row>
         </b-input-group>
         <p style="color: crimson" v-if="resultErrorMessage!=null">{{ resultErrorMessage }}</p>
-        <p style="color: mediumseagreen" v-if="resultSuccessMessage != null">{{
-            resultSuccessMessage
-          }}</p>
       </b-col>
 
       <b-col sm="1">
@@ -122,11 +120,11 @@ export default {
         "Technical Failure": "TechnicalFailure"
       },
       resultErrorMessage: null,
-      resultSuccessMessage: null,
       hour: null,
       minute: null,
       second: null,
-      specialMetricTitle: null
+      specialMetricTitle: null,
+
     }
   },
   validations: {
@@ -229,8 +227,14 @@ export default {
     updateInputGroup(val) {
       this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
       this.result.description = this.metricDict[this.metricTitleDict[val]].description;
-      this.resultErrorMessage = null
-      this.resultSuccessMessage = null
+
+      this.$v.result.$reset();
+      this.$v.$reset();
+
+      this.resultErrorMessage = null;
+      this.result.result = null;
+      this.result.result_start = null;
+      this.result.result_finish = null;
     },
     validateResultState(name) {
       const {$dirty, $error} = this.$v.result[name];
@@ -266,14 +270,13 @@ export default {
       console.log(data);
       api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
       .then((res) => {
+        this.resultErrorMessage = null;
         this.result.id = res.data;
-        this.resultSuccessMessage = "Activity result is created"
         this.resetForm();
-        this.$emit('child-to-parent')
+        this.$emit('child-to-parent', 'create')
       })
-      .catch((err) => {
-        console.log(err.response.data);
-        this.resultErrorMessage = err.response.data
+      .catch(() => {
+        this.makeToast("Activity result could not be created", 'danger')
       })
     },
     /**
@@ -306,11 +309,31 @@ export default {
         this.result.isEditMode = false
         this.$v.result.$reset();
         this.$v.$reset();
-        this.$emit('child-to-parent')
+        this.$emit('child-to-parent', 'edit')
       })
-      .catch((err) => {
-        console.log(err.response.data);
-        this.resultErrorMessage = err.response.data
+      .catch(() => {
+        this.makeToast("Selected activity result could not be deleted", 'danger')
+      })
+    },
+    removeActivityResult() {
+      api.deleteActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id)
+      .then(() => {
+        this.$emit('child-to-parent', 'delete')
+      }).catch(() => {
+        this.makeToast("Activity result could not be deleted", 'danger')
+      })
+    },
+    /**
+     * Makes a toast notification
+     * @param message the notification message
+     * @param variant the colour of the notification based on variant (see Bootstrap Vue variants)
+     * @param delay the milliseconds that the toast would stay on the screen
+     */
+    makeToast(message = 'EDMUN', variant = null, delay = 5000,) {
+      this.$bvToast.toast(message, {
+        variant: variant,
+        solid: true,
+        autoHideDelay: delay
       })
     },
     /**
@@ -329,7 +352,7 @@ export default {
       this.result.result = this.hour + ':' + this.minute + ':' + this.second
     },
     /**
-     * Parse example of '1h 2m 3s' string into its respective variables
+     * Parse an example of '1h 2m 3s' string into its respective variables
      */
     parseDurationStringIntoHMS() {
       if (this.result.type === 'TimeDuration' && this.result.result !== null) {
@@ -360,6 +383,7 @@ export default {
       this.hour = null;
       this.minute = null;
       this.second = null;
+      this.specialMetricTitle = null;
       this.$v.$reset();
     },
     /**
@@ -374,7 +398,6 @@ export default {
           }
         }
       }
-      return null;
     }
   },
   mounted() {

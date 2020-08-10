@@ -114,11 +114,31 @@ export default {
     /**
      * Calls GET metric and activity results API and force the component to rerender
      */
-    refreshComponent() {
+    refreshComponent(val) {
       this.resultList = []
       this.getAllMetricsForActivity();
-      this.$forceUpdate();
-    }
+      // this.$forceUpdate();
+      if (val == 'delete') {
+        this.makeToast("Selected activity result is successfully deleted", 'success')
+      } else if (val == 'edit') {
+        this.makeToast("Selected activity result is successfully updated", 'success')
+      } else {
+        this.makeToast("Activity result is successfully created", 'success')
+      }
+    },
+    /**
+     * Makes a toast notification
+     * @param message the notification message
+     * @param variant the colour of the notification based on variant (see Bootstrap Vue variants)
+     * @param delay the milliseconds that the toast would stay on the screen
+     */
+    makeToast(message = 'EDMUN', variant = null, delay = 5000,) {
+      this.$bvToast.toast(message, {
+        variant: variant,
+        solid: true,
+        autoHideDelay: delay
+      })
+    },
   },
   mounted() {
     this.getAllMetricsForActivity();
