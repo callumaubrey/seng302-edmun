@@ -113,24 +113,7 @@ public class ActivitySharingFeatureSteps {
 
   @When("user {string} views {string}")
   public void user_views(String email, String activityName) throws Exception {
-    String password = "Johnnypwd1";
-    jsonString =
-            "{\r\n  \"lastname\": \"Test\",\r\n  \"firstname\": \"Cucumber\",\r\n  \"middlename\": \"Z\",\r\n  \"nickname\": \"BigTest\",\r\n  \"primary_email\": \""
-                    + email
-                    + "\",\r\n  \"password\": \""
-                    + password
-                    + "\",\r\n  \"bio\": \"Test is plain\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"nonbinary\"\r\n}";
-    String createProfileUrl = "/profiles";
-    String profileId =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(createProfileUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
+    String password = "Password1";
     MockHttpSession session = new MockHttpSession();
     jsonString =
             "{\n"
@@ -147,7 +130,8 @@ public class ActivitySharingFeatureSteps {
                     MockMvcRequestBuilders.post(loginUrl)
                             .content(jsonString)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .session(session));
+                            .session(session))
+    .andExpect(status().isOk());
 
     mvcResponse =
             mvc.perform(
