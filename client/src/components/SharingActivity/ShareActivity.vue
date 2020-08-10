@@ -104,16 +104,16 @@
         this.getCount();
         this.selected = this.visibility
         await api.getActivityMembers(this.activityId, 0, 10)
-            .then((res) => {
-              this.organisers = res.data.Organiser;
-              this.participants = res.data.Participant;
-              this.accessors = res.data.Access;
-              this.followers = res.data.Follower;
-              console.log(this.organisers.length)
-            })
-            .catch(err => {
-              console.log(err)
-            });
+        .then((res) => {
+          this.organisers = res.data.Organiser;
+          this.participants = res.data.Participant;
+          this.accessors = res.data.Access;
+          this.followers = res.data.Follower;
+          console.log(this.organisers.length)
+        })
+        .catch(err => {
+          console.log(err)
+        });
         this.showWarning = false
       },
 
@@ -127,13 +127,13 @@
         }
         const currentObj = this;
         api.updateActivityVisibility(this.profileId, this.activityId, data)
-            .then(function () {
-              currentObj.visibility = currentObj.selected
-              currentObj.$bvModal.hide('modal-1')
-            })
-            .catch(function (error) {
-              alert(error.response.data)
-            });
+        .then(function () {
+          currentObj.visibility = currentObj.selected
+          currentObj.$bvModal.hide('modal-1')
+        })
+        .catch(function (error) {
+          alert(error.response.data)
+        });
 
       },
       submit() {
@@ -156,14 +156,14 @@
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
-            .then(function (response) {
-              currentObj.partCount = response.data.participants
-              currentObj.followerCount = response.data.followers
-              currentObj.organiserCount = response.data.organisers
-            })
-            .catch(function (error) {
-              console.log(error)
-            });
+        .then(function (response) {
+          currentObj.partCount = response.data.participants
+          currentObj.followerCount = response.data.followers
+          currentObj.organiserCount = response.data.organisers
+        })
+        .catch(function (error) {
+          console.log(error)
+        });
       },
       addUsers(value) {
         console.log(value);
