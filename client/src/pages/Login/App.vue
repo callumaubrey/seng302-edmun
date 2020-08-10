@@ -60,6 +60,7 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import api from '@/Api';
+    import {mutations} from "../../store";
 
     export default {
         components: {
@@ -107,13 +108,15 @@
                 if (this.emailState != false && this.passwordState != false) {
                     let currentObj = this;
                     api.login(this.email, this.password)
-                        .then(function () {
+                        .then(function (response) {
                             let adminPattern = new RegExp("Admin");
                             if (adminPattern.test(currentObj.output)) {
                                 currentObj.$router.push('/admin');
                             } else {
                                 currentObj.$router.push('/home')
                             }
+
+                            mutations.setLoggedInUser(response.data);
                         })
                         .catch(function (error) {
                             console.log(error)

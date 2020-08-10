@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
@@ -186,6 +187,7 @@ public class Profile {
     return subscriptions;
   }
 
+  @JsonIgnore
   public Set<Email> getAllEmails() {
     return this.emails;
   }

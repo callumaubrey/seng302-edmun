@@ -145,6 +145,14 @@ public class FollowControllerTest {
     otherId = Integer.parseInt(body);
   }
 
+  void addRoleToActivity(Profile profile, Activity activity, ActivityRoleType roleType) {
+    ActivityRole role = new ActivityRole();
+    role.setProfile(profile);
+    role.setActivityRoleType(roleType);
+    role.setActivity(activity);
+    activityRoleRepository.save(role);
+  }
+
   @Test
   void isSubscribedToActivityFalse() throws Exception {
     String response =
@@ -712,7 +720,7 @@ public class FollowControllerTest {
   }
 
   @Test
-  void getJustParticipants() throws Exception {
+  void testGetActivityUsersParticipantsReturnParticipants() throws Exception {
     ActivityRole activityRole = new ActivityRole();
     activityRole.setProfile(profileRepository.getOne(id));
     activityRole.setActivity(activityRepository.getOne(activityId));
@@ -730,16 +738,15 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject(
-            "{\"Participant\":[{\"PROFILE_ID\":" + id + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    JSONArray arr = obj.getJSONArray("Participant");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   @Test
-  void getJustAccessors() throws Exception {
+  void testGetActivityUsersAccessorsReturnAccessors() throws Exception {
     ActivityRole activityRole = new ActivityRole();
-    activityRole.setProfile(profileRepository.getOne(id));
+    Profile profile = profileRepository.findById(id);
+    activityRole.setProfile(profile);
     activityRole.setActivity(activityRepository.getOne(activityId));
     activityRole.setActivityRoleType(ActivityRoleType.Access);
     activityRoleRepository.save(activityRole);
@@ -754,13 +761,12 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject("{\"Access\":[{\"PROFILE_ID\":" + id + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    JSONArray arr = obj.getJSONArray("Access");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   @Test
-  void getJustFollowers() throws Exception {
+  void getActivityUsersFollowerReturnFollower() throws Exception {
     ActivityRole activityRole = new ActivityRole();
     activityRole.setProfile(profileRepository.getOne(id));
     activityRole.setActivity(activityRepository.getOne(activityId));
@@ -777,14 +783,12 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject(
-            "{\"Follower\":[{\"PROFILE_ID\":" + id + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    JSONArray arr = obj.getJSONArray("Follower");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   @Test
-  void getJustCreators() throws Exception {
+  void getActivityUsersCreatorReturnCreator() throws Exception {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get("/activities/" + activityId + "/members?type=creator")
@@ -795,13 +799,12 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject("{\"Creator\":[{\"PROFILE_ID\":" + id + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    JSONArray arr = obj.getJSONArray("Creator");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   @Test
-  void getJustOrganisers() throws Exception {
+  void getActivityUsersOrganisersReturnOrganisers() throws Exception {
     ActivityRole activityRole = new ActivityRole();
     activityRole.setProfile(profileRepository.getOne(id));
     activityRole.setActivity(activityRepository.getOne(activityId));
@@ -818,10 +821,8 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject(
-            "{\"Organiser\":[{\"PROFILE_ID\":" + id + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(obj.toString(), answer.toString());
+    JSONArray arr = obj.getJSONArray("Organiser");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   public void createData() throws Exception {
@@ -860,12 +861,41 @@ public class FollowControllerTest {
   }
 
   @Test
-  void testPaginationThreeElements() throws Exception {
-    createData();
+  void testGetActivityUsersLimitWorksReturnOneUser() throws Exception {
+    Set<Email> emails1 = new HashSet<>();
+    Email email1 = new Email("polypo@pocket.com");
+    email1.setPrimary(true);
+    emails1.add(email1);
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Poly");
+    profile1.setLastname("Pocket");
+    profile1.setEmails(emails1);
+    profile1.setDob("2010-01-01");
+    profile1.setPassword("Password1");
+    profile1.setGender("female");
+    profile1 = profileRepository.save(profile1);
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("david@pocket.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Davod");
+    profile2.setLastname("Pocket");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2 = profileRepository.save(profile2);
+
+    Activity activity = activityRepository.findById(activityId).get();
+    addRoleToActivity(profile1, activity, ActivityRoleType.Participant);
+    addRoleToActivity(profile2, activity, ActivityRoleType.Participant);
+
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/activities/" + activityId + "/members?type=participant&offset=4&limit=3")
+                        "/activities/" + activityId + "/members?type=participant&offset=0&limit=1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -873,16 +903,9 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject(
-            "{\"Participant\":[{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":"
-                + id
-                + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+    System.out.println(obj);
+    JSONArray arr = obj.getJSONArray("Participant");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
   @Test
@@ -997,7 +1020,7 @@ public class FollowControllerTest {
   }
 
   @Test
-  void testPaginationNoValuesShouldDefaultToFirstTen() throws Exception {
+  void testGetActivityUsersPaginationNoValuesShouldDefaultToFirstTen() throws Exception {
     createData();
     String response =
         mvc.perform(
@@ -1010,47 +1033,48 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-
-    JSONObject answer =
-        new JSONObject(
-            "{\"Participant\":[{\"PROFILE_ID\":"
-                + id
-                + ",\"FULL_NAME\":\"Poly Pocket\"},"
-                + "{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},"
-                + "{\"PROFILE_ID\":"
-                + id
-                + ",\"FULL_NAME\":\"Poly Pocket\"},{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},"
-                + "{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":"
-                + id
-                + ",\"FULL_NAME\":\"Poly Pocket\"},"
-                + "{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},"
-                + "{\"PROFILE_ID\":"
-                + id
-                + ",\"FULL_NAME\":\"Poly Pocket\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+    JSONArray arr = obj.getJSONArray("Participant");
+    org.junit.jupiter.api.Assertions.assertEquals(10, arr.length());
   }
 
   @Test
-  void testPaginationPastMaxValue() throws Exception {
-    createData();
+  void testGetActivityUsersOffsetWorksReturnOneUser() throws Exception {
+    Set<Email> emails1 = new HashSet<>();
+    Email email1 = new Email("polypo@pocket.com");
+    email1.setPrimary(true);
+    emails1.add(email1);
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Poly");
+    profile1.setLastname("Pocket");
+    profile1.setEmails(emails1);
+    profile1.setDob("2010-01-01");
+    profile1.setPassword("Password1");
+    profile1.setGender("female");
+    profile1 = profileRepository.save(profile1);
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("david@pocket.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("Davod");
+    profile2.setLastname("Pocket");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2 = profileRepository.save(profile2);
+
+    Activity activity = activityRepository.findById(activityId).get();
+    addRoleToActivity(profile1, activity, ActivityRoleType.Participant);
+    addRoleToActivity(profile2, activity, ActivityRoleType.Participant);
+
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
                         "/activities/"
                             + activityId
-                            + "/members?type=participant&limit=200&offset=13")
+                            + "/members?type=participant&limit=200&offset=1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
             .andExpect(status().is2xxSuccessful())
@@ -1058,15 +1082,7 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    JSONObject answer =
-        new JSONObject(
-            "{\"Participant\":[{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"},"
-                + "{\"PROFILE_ID\":"
-                + profile2Id
-                + ",\"FULL_NAME\":\"John Doe\"}]}");
-    org.junit.jupiter.api.Assertions.assertEquals(answer.toString(), obj.toString());
+    org.junit.jupiter.api.Assertions.assertEquals(1, obj.length());
   }
 
   @Test
@@ -1204,7 +1220,8 @@ public class FollowControllerTest {
     JSONObject result = new JSONObject(response);
     Assert.assertEquals("organiser", result.getString("role"));
 
-    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    List<SubscriptionHistory> active =
+        subscriptionHistoryRepository.findActive(activityId, profile1.getId());
     Assert.assertEquals(1, active.size());
   }
 
@@ -1277,7 +1294,8 @@ public class FollowControllerTest {
 
     Assert.assertEquals("User is not subscribed", response);
 
-    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    List<SubscriptionHistory> active =
+        subscriptionHistoryRepository.findActive(activityId, profile1.getId());
     Assert.assertEquals(0, active.size());
   }
 
@@ -1351,7 +1369,8 @@ public class FollowControllerTest {
     JSONObject result = new JSONObject(response);
     Assert.assertEquals("participant", result.getString("role"));
 
-    List<SubscriptionHistory> active = subscriptionHistoryRepository.findActive(activityId, profile1.getId());
+    List<SubscriptionHistory> active =
+        subscriptionHistoryRepository.findActive(activityId, profile1.getId());
     Assert.assertEquals(1, active.size());
   }
 

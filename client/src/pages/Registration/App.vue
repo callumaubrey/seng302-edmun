@@ -134,6 +134,7 @@
     import NavBar from '@/components/NavBar.vue';
     import {alphaNum, email, helpers, required, sameAs} from 'vuelidate/lib/validators'
     import api from '@/Api'
+    import {mutations} from "../../store";
 
     const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -223,7 +224,8 @@
                 api.register(registerData)
                     .then(function (response) {
                         const profileId = response.data.toString();
-                        currentObj.$router.push('/profiles/' + profileId)
+                        currentObj.$router.push('/profiles/' + profileId);
+                        mutations.setLoggedInUser(profileId);
                     })
                     .catch(function (error) {
                         currentObj.emailErrMsg = error.response.data;
