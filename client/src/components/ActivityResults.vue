@@ -37,6 +37,10 @@
                 </div>
               </template>
             </b-table>
+            <b-col>
+              <b-pagination
+              ></b-pagination>
+            </b-col>
           </b-tab>
           <b-tab title="My Results">
             <b-table hover
@@ -51,6 +55,10 @@
                 </div>
               </template>
             </b-table>
+            <b-col>
+              <b-pagination
+              ></b-pagination>
+            </b-col>
           </b-tab>
         </b-tabs>
       </b-col>
