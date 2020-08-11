@@ -97,7 +97,7 @@ export default {
       currentMetric: "",
       currentMetricIndex: 0,
       allResultsFields: [
-        {key: 'user', tdClass: 'smallCol'},
+        {key: 'firstname', tdClass: 'smallCol'},
         {key: 'value', tdClass: 'medCol'},
         {key: 'ranking', tdClass: 'smallCol'}
       ],
@@ -111,6 +111,7 @@ export default {
       countMetrics: 0,
       metricIds: [],
       metricTitles: [],
+      metricTypes: [],
       perPageAll: 0,
       currentPageAll: 1,
       rowsAll: 0,
@@ -134,6 +135,7 @@ export default {
           for (let i = 0; i < res.data.length; i++) {
             this.metricIds.push(res.data[i].id);
             this.metricTitles.push(res.data[i].title);
+            this.metricTypes.push(res.data[i].type);
           }
 
           this.getAllResults();
@@ -165,6 +167,23 @@ export default {
           .then((res) => {
             for (let i = 0; i < res.data.length; i++) {
               if (res.data[i].metric_id == this.currentMetric) {
+                if (res.data[i].type == "StartFinish") {
+                  this.myResultsFields = [
+                    {key: 'result_start', label: 'Start', class: 'medCol'},
+                    {key: 'result_finish', label: 'End', class: 'medCol'},
+                    {key: 'personal ranking', tdStyle: 'smallCol'},
+                    {key: 'public ranking', tdClass: 'smallCol'}
+                  ];
+                } else {
+                  if (res.data[i].type == "Duration") {
+                    res.data[i].value = res.data[i].pretty_result;
+                  }
+                  this.myResultsFields = [
+                    {key: 'value', label: 'Value', class: 'medCol'},
+                    {key: 'personal ranking', tdStyle: 'smallCol'},
+                    {key: 'public ranking', tdClass: 'smallCol'}
+                  ]
+                }
                 this.myResults.push(res.data[i]);
               }
 
@@ -182,16 +201,25 @@ export default {
       api.getAllActivityResultsByMetricId(this.activityId, this.currentMetric)
         .then((res) => {
           for (let i = 0; i < res.data.length; i++) {
-            let profileId = res.data[i].user_id;
-            let _this = this;
-            api.getProfile(profileId)
-              .then((res2) => {
-                _this.allResults.push({
-                  "user": res2.data.firstname + " " + res2.data.lastname,
-                  "value": res.data[i].value
-                });
-              })
-              .catch((err) => console.log(err));
+            if (res.data[i].type == "StartFinish") {
+              this.allResultsFields = [
+                {key: 'fullname', tdClass: 'smallCol'},
+                {key: 'result_start', label: 'Start', class: 'medCol'},
+                {key: 'result_finish', label: 'End', class: 'medCol'},
+                {key: 'ranking', tdStyle: 'smallCol'}
+              ];
+            } else {
+              this.allResultsFields = [
+                {key: 'fullname', tdClass: 'smallCol'},
+                {key: 'value', tdClass: 'medCol'},
+                {key: 'ranking', tdClass: 'smallCol'}
+              ];
+              if (res.data[i].type == "Duration") {
+                res.data[i].value = res.data[i].pretty_result;
+              }
+            }
+            res.data[i].ranking = i + 1;
+            this.allResults = res.data;
             if (i == res.data.length - 1) {
               this.rowsAll = this.allResults.length;
             }
