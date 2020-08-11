@@ -93,7 +93,7 @@
         </b-button>
         <b-button-group v-else>
           <b-button @click="editActivityResult" id="save-result-button">Save</b-button>
-          <b-button @click="result.isEditMode=false" id="cancel-result-button" variant="danger">
+          <b-button @click="onCancelButtonClick" id="cancel-result-button" variant="danger">
             Cancel
           </b-button>
         </b-button-group>
@@ -401,6 +401,13 @@ export default {
           }
         }
       }
+    },
+    /**
+     * On 'Cancel' button click, edit mode is turned off, and modal is refreshed to get the unchanged data
+     */
+    onCancelButtonClick() {
+      this.result.isEditMode = false;
+      this.$emit('child-to-parent');
     }
   },
   mounted() {

@@ -118,11 +118,11 @@ export default {
     refreshComponent(val) {
       this.resultList = []
       this.getAllMetricsForActivity();
-      if (val == 'delete') {
+      if (val === 'delete') {
         this.makeToast("Selected activity result is successfully deleted", 'success')
-      } else if (val == 'edit') {
+      } else if (val === 'edit') {
         this.makeToast("Selected activity result is successfully updated", 'success')
-      } else {
+      } else if (val === 'create') {
         this.makeToast("Activity result is successfully created", 'success')
       }
     },
