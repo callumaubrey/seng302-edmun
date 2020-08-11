@@ -1,6 +1,6 @@
 <template>
     <b-col>
-        <b-input v-model="searchQuery" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
+        <b-input id="name-input-field" v-model="searchQuery" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
     </b-col>
 </template>
 
