@@ -195,7 +195,7 @@
         this.alreadyAdded = [];
       },
       async getCreatorEmails() {
-        await api.getProfileEmails(this.loggedInId)
+        await api.getProfileEmails(this.creatorId)
             .then((res) => {
                   let emails = res.data.emails;
                   for (let email of emails) {
