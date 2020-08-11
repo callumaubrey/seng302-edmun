@@ -2,7 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.security.UserSecurityService;
+import java.security.Security;
 import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.PageRequest;
@@ -18,19 +22,19 @@ import java.util.Map;
 
 @CrossOrigin(
     origins = {
-      "http://localhost:9000",
-      "http://localhost:9500",
-      "https://csse-s302g7.canterbury.ac.nz/test",
-      "https://csse-s302g7.canterbury.ac.nz/prod"
+        "http://localhost:9000",
+        "http://localhost:9500",
+        "https://csse-s302g7.canterbury.ac.nz/test",
+        "https://csse-s302g7.canterbury.ac.nz/prod"
     },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
-      RequestMethod.GET,
-      RequestMethod.POST,
-      RequestMethod.DELETE,
-      RequestMethod.PUT,
-      RequestMethod.PATCH
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.DELETE,
+        RequestMethod.PUT,
+        RequestMethod.PATCH
     })
 @RestController
 @RequestMapping("")
@@ -85,9 +89,12 @@ public class TagController {
   }
 
   /**
-   * Find all activities containing the given hashtag that the user has permission to view. User has
-   * permission to view all public activities and private activities that they own. The activities
-   * are returned in descending order of the activities creation date.
+   * Find all activities containing the given hashtag that the user has permission to view. If a
+   * user is of role ROLE_ADMIN or ROLE_USER_ADMIN then activities of any visibility will be
+   * returned which contain the hashtag. If a user is not an admin then all public, private or
+   * restricted activities which contain the hashtag that they own and any public activities which
+   * also contain the hashtag will be returned. The activities are returned in descending order of
+   * the activities creation date.
    *
    * @param hashTag the name of the hashtag
    * @param session the current session logged in
@@ -99,8 +106,16 @@ public class TagController {
     if (id == null) {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
-    hashTag = hashTag.toLowerCase();
-    List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
-    return new ResponseEntity(activities, HttpStatus.OK);
+    //Check if user is an admin, if so return activities regardless of their visibility.
+    if (UserSecurityService.checkIsAdmin()) {
+      hashTag = hashTag.toLowerCase();
+      List<Activity> activities = activityRepository
+          .getActivitiesByHashTagAnyVisibilityType(hashTag, (int) id);
+      return new ResponseEntity(activities, HttpStatus.OK);
+    } else {
+      hashTag = hashTag.toLowerCase();
+      List<Activity> activities = activityRepository.getActivitiesByHashTag(hashTag, (Integer) id);
+      return new ResponseEntity(activities, HttpStatus.OK);
+    }
   }
 }
