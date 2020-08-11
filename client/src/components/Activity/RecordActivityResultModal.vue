@@ -6,11 +6,23 @@
     </b-button>
 
     <b-modal hide-footer id="record-result-modal" size="xl" title="Record Activity Result">
-      <RecordActivityResultForm :is-create-result="true" :metric-dict="metricDict"
-                                :result="createResultForm"
-                                v-on:child-to-parent="refreshComponent"></RecordActivityResultForm>
+
+      <div v-if="this.activityHasNoMetricsMessage == null">
+        <RecordActivityResultForm :is-create-result="true" :metric-dict="metricDict"
+                                  :result="createResultForm"
+                                  v-on:child-to-parent="refreshComponent"></RecordActivityResultForm>
+      </div>
+
+      <div v-else>
+        <b-card>
+          {{ this.activityHasNoMetricsMessage }}
+        </b-card>
+      </div>
+
 
       <hr>
+
+
       <h5>Current Activity Results</h5>
 
       <!-- this block displays 'user has no activity result message' -->
@@ -61,9 +73,10 @@ export default {
         description: null
       },
       userHasNoResultsMessage: null,
+      activityHasNoMetricsMessage: null,
       // key (metric id), value (metric json)
       metricDict: {},
-      resultList: [],
+      resultList: []
     }
   },
   methods: {
@@ -95,6 +108,9 @@ export default {
         let metric;
         for (metric of res.data) {
           this.metricDict[metric.id] = metric;
+        }
+        if (res.data.length === 0) {
+          this.activityHasNoMetricsMessage = "Activity does not have any metrics."
         }
         this.getActivityResultsForUser();
       })
