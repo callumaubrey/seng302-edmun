@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -177,7 +178,7 @@ public class UserProfileController {
    *     logged in
    */
   @GetMapping("/firstname")
-  public ResponseEntity getProfileFirstName(HttpSession session) throws JsonProcessingException {
+  public ResponseEntity getProfileFirstName(HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
@@ -188,13 +189,34 @@ public class UserProfileController {
   }
 
   /**
+   * Return all emails based on the profileId
+   * Can be used by any logged in user
+   * @param session The logged in session
+   * @param profileId The profileId of emails that you want
+   * @return
+   */
+  @GetMapping("/{profileId}/emails")
+  public ResponseEntity getProfileEmails(HttpSession session, @PathVariable Integer profileId) {
+    Object id = session.getAttribute("id");
+    ResponseEntity permissionResponse =
+        UserSecurityService.checkViewingPermission(profileId, session, repository);
+    if (permissionResponse != null) {
+      return permissionResponse;
+    }
+    List<Email> emails = emailRepository.getEmailsByProfileId(profileId);
+    JSONObject resultsObject = new JSONObject();
+    resultsObject.put("emails", emails);
+    return ResponseEntity.ok(resultsObject);
+  }
+
+  /**
    * Get request to return the id of the current user logged into the session
    *
    * @param session the current Http session
    * @return response entity with the current logged in user id
    */
   @GetMapping("/id")
-  public ResponseEntity<String> getUserId(HttpSession session) throws JsonProcessingException {
+  public ResponseEntity<String> getUserId(HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);

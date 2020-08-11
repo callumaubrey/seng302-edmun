@@ -72,6 +72,10 @@ export default {
 
     getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
 
+    getActivityMetrics: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
+
+    getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
@@ -107,6 +111,4 @@ export default {
     removeLocation: (profileId) => instance.delete('/profiles/' + profileId + '/location'),
     
     unsubscribeToActivity: (profileId, activityId) => instance.delete('/profiles/' + profileId + '/subscriptions/activities/' + activityId),
-
-    getActivityMetrics: (profileId, activityId) => instance.get('/profiles/' + profileId + '/activities/' + activityId + '/metrics')
 }
