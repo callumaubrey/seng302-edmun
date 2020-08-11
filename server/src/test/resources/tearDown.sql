@@ -15,21 +15,23 @@ These are the following:
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Please list tables in alphabetical order
-TRUNCATE TABLE `activity`;
-TRUNCATE TABLE `activity_activity_types`;
-TRUNCATE TABLE `activity_history`;
-TRUNCATE TABLE `activity_role`;
-TRUNCATE TABLE `activity_tags`;
-TRUNCATE TABLE `email`;
-TRUNCATE TABLE `named_location`;
-TRUNCATE TABLE `profile`;
-TRUNCATE TABLE `profile_activity_types`;
-TRUNCATE TABLE `profile_emails`;
-TRUNCATE TABLE `profile_subscriptions`;
-TRUNCATE TABLE `subscription_history`;
-TRUNCATE TABLE `tag`;
-TRUNCATE TABLE `users_countries`;
-TRUNCATE TABLE `users_roles`;
+truncate table `activity`;
+truncate table `activity_activity_types`;
+truncate table `activity_history`;
+truncate table `activity_qualification_metric`;
+truncate table `activity_result`;
+truncate table `activity_role`;
+truncate table `activity_tags`;
+truncate table `email`;
+truncate table `named_location`;
+truncate table `profile`;
+truncate table `profile_activity_types`;
+truncate table `profile_emails`;
+truncate table `profile_subscriptions`;
+truncate table `subscription_history`;
+truncate table `tag`;
+truncate table `users_countries`;
+truncate table `users_roles`;
 
 -- Enables foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

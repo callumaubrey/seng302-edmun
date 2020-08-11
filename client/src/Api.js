@@ -102,6 +102,9 @@ export default {
     getActivityMetrics: (profileId, activityId) => instance.get(
         '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
 
+
+    getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
