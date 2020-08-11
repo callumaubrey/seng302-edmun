@@ -13,6 +13,14 @@ api.getProfileByEmailAsync = jest.fn(() => {
   return Promise.resolve({data: {results: []}, status: 200})
 })
 
+api.getActivityCreatorId = jest.fn(() => {
+  return Promise.resolve({data: 1, status: 200})
+})
+
+api.getProfileEmails = jest.fn(() => {
+  return Promise.resolve({data: {emails: [{address:"poly@pocket.com", primary: true}]}, status: 200})
+})
+
 beforeEach(() => {
   wrapper = mount(Component, {
     propsData: {},
@@ -46,9 +54,9 @@ describe('AddUsers.vue', () => {
     expect(wrapper.find('#add-users-button').exists()).toBe(true);
     expect(wrapper.find('#emails-input').exists()).toBe(true);
     await wrapper.setData(
-        {emailInput: "poly@pocket.com jackie@gmail.com;don@hotmail.com",})
+        {emailInput: "john@pocket.com jackie@gmail.com;don@hotmail.com",})
     expect(wrapper.find('#emails-input').element.value).toBe(
-        "poly@pocket.com jackie@gmail.com;don@hotmail.com");
+        "john@pocket.com jackie@gmail.com;don@hotmail.com");
     await wrapper.find('#add-users-button').trigger('click');
     expect(wrapper.vm.validInput).toBe(null);
     await wrapper.vm.$nextTick();
@@ -56,12 +64,25 @@ describe('AddUsers.vue', () => {
     expect(wrapper.emitted().usersAdded).toBeTruthy();
   })
 
-  test('data not emitted when input is incorrect', async () => {
+  test('data not emitted when email does not exist', async () => {
     expect(wrapper.find('#add-users-button').exists()).toBe(true);
     expect(wrapper.find('#emails-input').exists()).toBe(true);
-    await wrapper.setData({emailInput: "poly@pocket.com jackiegmail.com",})
+    await wrapper.setData({emailInput: "jackiegmail.com",})
     expect(wrapper.find('#emails-input').element.value).toBe(
-        "poly@pocket.com jackiegmail.com");
+        "jackiegmail.com");
+    await wrapper.find('#add-users-button').trigger('click');
+    expect(wrapper.vm.validInput).toBe(false);
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted().usersAdded).toBeFalsy();
+  })
+
+  test('data not emitted when email is owned by the creator', async () => {
+    expect(wrapper.find('#add-users-button').exists()).toBe(true);
+    expect(wrapper.find('#emails-input').exists()).toBe(true);
+    await wrapper.setData({emailInput: "poly@pocket.com",})
+    expect(wrapper.find('#emails-input').element.value).toBe(
+        "poly@pocket.com");
     await wrapper.find('#add-users-button').trigger('click');
     expect(wrapper.vm.validInput).toBe(false);
     await wrapper.vm.$nextTick();

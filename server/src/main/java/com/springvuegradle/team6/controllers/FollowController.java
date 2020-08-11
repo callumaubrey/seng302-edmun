@@ -579,4 +579,51 @@ public class FollowController {
     return new ResponseEntity(response, HttpStatus.OK);
   }
 
+  /**
+   * Demotes a user in an activity to follower if participant. Otherwise return 4xx error.
+   * @param profileId Profile to demote
+   * @param activityId Activity to demote user in
+   * @param session current http session
+   * @return 200 on success otherwise 4xx. 404 on user or activity not found. 401 on unauthorized.
+   */
+  @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
+  public ResponseEntity<String> removeUserAsParticipantInActivity(
+          @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+    // Check if user has access to view activity info
+    ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
+            activityRepository, activityRoleRepository);
+    if(authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    // Get Activity
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if(optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity not found", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+
+    // Check if user is allowed to set to participant, either admin, creator or logged user
+    // The session id is implicit from previous check
+    Integer sessionId = (Integer) session.getAttribute("id");
+    if(!(UserSecurityService.checkIsAdminOrCreator(sessionId, profileId)
+            || sessionId.equals(activity.getProfile().getId()))) {
+      return new ResponseEntity<>("Not allowed to modify another users role", HttpStatus.UNAUTHORIZED);
+    }
+
+    ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+
+    // Check user has a role in the activity
+    if (role == null || !role.getActivityRoleType().equals(ActivityRoleType.Participant)) {
+      return new ResponseEntity<>("User is not a participant", HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    // Demote user to profile to follower
+    role.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(role);
+
+    return new ResponseEntity("Success", HttpStatus.OK);
+  }
+
 }
