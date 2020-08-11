@@ -146,6 +146,9 @@
             </b-row>
           </b-tab>
           <b-tab title="Results">
+            <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                       :logged-in-id="loggedInId"
+                                       :profile-id="profileId"></RecordActivityResultModal>
             <ActivityResults :profile-id="profileId"></ActivityResults>
           </b-tab>
         </b-tabs>
@@ -155,47 +158,49 @@
 </template>
 
 <script>
-  import NavBar from "@/components/NavBar.vue";
-  import FollowUnfollow from "@/components/FollowUnfollow.vue";
-  import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
-  import FollowerUserList from "../../components/Activity/FollowerUserList";
-  import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
-  import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
-  import api from '@/Api'
-  import AdminMixin from "../../mixins/AdminMixin";
-  import ActivityResults from "../../components/ActivityResults";
+import NavBar from "@/components/NavBar.vue";
+import FollowUnfollow from "@/components/FollowUnfollow.vue";
+import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
+import FollowerUserList from "../../components/Activity/FollowerUserList";
+import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
+import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
+import RecordActivityResultModal from "@/components/Activity/RecordActivityResultModal";
+import api from '@/Api'
+import AdminMixin from "../../mixins/AdminMixin";
+import ActivityResults from "../../components/ActivityResults";
 
-  const App = {
-    name: "App",
-    components: {
-      ActivityResults,
-      NavBar,
-      FollowUnfollow,
-      FollowerUserList,
-      FollowerSummary,
-      ShareActivity,
-      ForbiddenMessage
-    },
-    data: function () {
-      return {
-        //isActivityOwner: false,
-        userData: "",
-        isLoggedIn: false,
-        userName: "",
-        loggedInId: null,
-        profileId: null,
-        activityName: "",
-        description: "",
-        activityTypes: [],
-        continuous: false,
-        startTime: "",
-        endTime: "",
-        location: null,
-        hashtags: [],
-        activityOwner: null,
-        locationString: "",
-        locationDataLoading: true,
-        archived: false,
+const App = {
+  name: "App",
+  components: {
+    ActivityResults,
+    NavBar,
+    FollowUnfollow,
+    FollowerUserList,
+    FollowerSummary,
+    ShareActivity,
+    ForbiddenMessage,
+    RecordActivityResultModal
+  },
+  data: function () {
+    return {
+      //isActivityOwner: false,
+      userData: "",
+      isLoggedIn: false,
+      userName: "",
+      loggedInId: null,
+      profileId: null,
+      activityName: "",
+      description: "",
+      activityTypes: [],
+      continuous: false,
+      startTime: "",
+      endTime: "",
+      location: null,
+      hashtags: [],
+      activityOwner: null,
+      locationString: "",
+      locationDataLoading: true,
+      archived: false,
         notFound: false,
         visibility: null,
         loggedInIsAdmin: false,

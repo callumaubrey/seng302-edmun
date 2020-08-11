@@ -36,6 +36,6 @@ public class ActivityResultDuration extends ActivityResult {
   }
 
   public String getType() {
-    return "Duration";
+    return "TimeDuration";
   }
 }
