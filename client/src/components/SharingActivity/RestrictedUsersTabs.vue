@@ -8,7 +8,7 @@
                                   v-on:deselectAll="deselectAllOrganisers"
                                   :role-data="rolesData.organisers"
                                   :activity-roles="activityRoles"
-                                  :fields="organiserParticipantFields"></restricted-users-table>
+                                  :fields="fields"></restricted-users-table>
         </b-tab>
 
         <b-tab key="Participants" title="Participants">
@@ -17,7 +17,7 @@
                                   v-on:deselectAll="deselectAllParticipants"
                                   :role-data="rolesData.participants"
                                   :activity-roles="activityRoles"
-                                  :fields="organiserParticipantFields"></restricted-users-table>
+                                  :fields="fields"></restricted-users-table>
         </b-tab>
 
         <b-tab key="Followers" title="Followers">
@@ -26,7 +26,7 @@
                                   v-on:deselectAll="deselectAllFollowers"
                                   :role-data="rolesData.followers"
                                   :activity-roles="activityRoles"
-                                  :fields="followerAccessorFields"></restricted-users-table>
+                                  :fields="fields"></restricted-users-table>
         </b-tab>
 
         <b-tab key="Accessors" title="Accessors">
@@ -35,7 +35,7 @@
                                   v-on:deselectAll="deselectAllAccessors"
                                   :role-data="rolesData.accessors"
                                   :activity-roles="activityRoles"
-                                  :fields="followerAccessorFields"></restricted-users-table>
+                                  :fields="fields"></restricted-users-table>
         </b-tab>
       </b-tabs>
     </b-card>
@@ -56,10 +56,12 @@
       return {
         activityRoles: [
           {value: "organiser", text: "Organiser"},
-          {value: "participant", text: "Participant"}
+          {value: "participant", text: "Participant"},
+          {value: "follower", text: "Follower"},
+          {value: "access", text: "Access"}
         ],
         data: null,
-        organiserParticipantFields: [
+        fields: [
           {
             key: 'full_name',
             label: 'Name',
@@ -72,21 +74,6 @@
           },
           {
             key: 'role'
-          },
-          {
-            key: 'selected'
-          }
-        ],
-        followerAccessorFields: [
-          {
-            key: 'full_name',
-            label: 'Name',
-            sortable: true
-          },
-          {
-            key: 'primary_email',
-            label: 'Primary Email',
-            sortable: true
           },
           {
             key: 'selected'
