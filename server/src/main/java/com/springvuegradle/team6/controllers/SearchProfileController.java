@@ -54,7 +54,6 @@ public class SearchProfileController {
    * @return the results of the search containing profiles that match the full name roughly
    */
   @GetMapping()
-  //@RequestMapping(params = "fullname")
   public ResponseEntity getProfileByFullName(
       @RequestParam(name = "fullname", required = false) String fullName,
       @RequestParam(name = "activity", required = false) String activityType,

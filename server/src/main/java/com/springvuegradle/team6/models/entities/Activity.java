@@ -20,8 +20,39 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Size;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
+import org.apache.lucene.analysis.ngram.NGramFilterFactory;
+import org.apache.lucene.analysis.standard.StandardFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Parameter;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
 
+@Indexed
 @Entity
+@AnalyzerDef(
+    name = "activityAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(
+          factory = EdgeNGramFilterFactory.class,
+          params = {
+            @Parameter(name = "minGramSize", value = "2"),
+            @Parameter(name = "maxGramSize", value = "5")
+          })
+    })
 public class Activity {
 
   // Constants
@@ -42,7 +73,13 @@ public class Activity {
   }
 
   @Size(max = NAME_MAX_LENGTH)
-  @Column(length = NAME_MAX_LENGTH)
+  @Column(length = NAME_MAX_LENGTH, name = "activity_name")
+  @Field(
+      index = Index.YES,
+      analyze = Analyze.YES,
+      store = Store.NO,
+      name = "activity_name",
+      analyzer = @Analyzer(definition = "activityAnalyzer"))
   private String activityName;
 
   @Id
@@ -53,6 +90,7 @@ public class Activity {
   @ManyToOne
   @JoinColumn(name = "author_id", nullable = false)
   private Profile profile;
+
   @Size(max = DESCRIPTION_MAX_LENGTH)
   @Column(length = DESCRIPTION_MAX_LENGTH)
   private String description;
@@ -82,15 +120,20 @@ public class Activity {
     }
   }
 
+  @IndexedEmbedded
+  @Field(analyze = Analyze.YES, store = Store.NO)
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
+  @IndexedEmbedded
+  @Field(analyze = Analyze.YES, store = Store.NO)
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "activity_tags",
       joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  @FieldBridge(impl = BuiltinIterableBridge.class)
   private Set<Tag> tags;
 
   private boolean continuous;
