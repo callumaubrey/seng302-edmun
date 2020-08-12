@@ -1,10 +1,16 @@
 package com.springvuegradle.team6.steps;
 
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.beans.Introspector;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -22,6 +28,9 @@ public class ActivitySharingFeatureSteps {
   private ProfileRepository profileRepository;
 
   @Autowired private ActivityRepository activityRepository;
+
+  @Autowired
+  private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -148,20 +157,16 @@ public class ActivitySharingFeatureSteps {
 
   @Given("user {string} has role {string} on activity {string}")
   public void user_has_role_on_activity(String string, String string2, String string3) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
+    Activity activity = activityRepository.findByActivityName(string3);
+    Profile profile = profileRepository.findByEmails_address(string);
+    List<ActivityRole> activityRole = activityRoleRepository.findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
+    ActivityRole activityRoleFound = activityRole.get(0);
+    org.junit.jupiter.api.Assertions.assertEquals(string2, Introspector.decapitalize(activityRoleFound.getActivityRoleType().toString()));
   }
 
   @When("user {string} adds user roles")
   public void user_adds_user_roles(String string, io.cucumber.datatable.DataTable dataTable) {
-    // Write code here that turns the phrase above into concrete actions
-    // For automatic transformation, change DataTable to one of
-    // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-    // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-    // Double, Byte, Short, Long, BigInteger or BigDecimal.
-    //
-    // For other transformations you can register a DataTableType.
-    throw new io.cucumber.java.PendingException();
+
   }
 
   @Then("user {string} gets users of role {string} for activity {string} should show")
