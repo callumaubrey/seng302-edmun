@@ -129,7 +129,8 @@
                                                        :help-text="'Max 30 hashtags'"
                                                        :input-character-limit="140"
                                                        v-on:emitInput="autocompleteInput"
-                                                       v-on:emitTags="manageTags"></SearchTag>
+                                                       v-on:emitTags="manageTags"
+                                                       ></SearchTag>
                                         </b-col>
                                     </b-row>
                                     <hr>
