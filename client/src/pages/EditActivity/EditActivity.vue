@@ -129,7 +129,20 @@
                                                        :help-text="'Max 30 hashtags'"
                                                        :input-character-limit="140"
                                                        v-on:emitInput="autocompleteInput"
-                                                       v-on:emitTags="manageTags"></SearchTag>
+                                                       v-on:emitTags="manageTags"
+                                                       ></SearchTag>
+                                        </b-col>
+                                    </b-row>
+                                    <b-row>
+                                        <b-col>
+                                            <SearchActivityTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
+                                                       :values="hashtag.values"
+                                                       :help-text="'Max 30 hashtags'"
+                                                       :input-character-limit="140"
+                                                               :search-method="hashtag.searchMethod"
+                                                       v-on:emitInput="autocompleteInput"
+                                                       v-on:emitTags="manageTags"
+                                                               v-on:emitSearchMethod="manageHashtagMethod"></SearchActivityTag>
                                         </b-col>
                                     </b-row>
                                     <hr>
@@ -218,6 +231,7 @@
 <script>
     import NavBar from "@/components/NavBar.vue";
     import SearchTag from "../../components/SearchTag";
+    import SearchActivityTag from "../../components/Activity/SearchActivityTag";
     import ForbiddenMessage from "../../components/ForbiddenMessage";
     import {validationMixin} from "vuelidate";
     import {required} from 'vuelidate/lib/validators';
@@ -229,6 +243,7 @@
     export default {
         mixins: [validationMixin, locationMixin],
         components: {
+            SearchActivityTag,
             ActivityMetricsEditor,
             SearchTag,
             NavBar,
@@ -263,7 +278,8 @@
                 loggedInIsAdmin: false,
                 hashtag: {
                     options: [],
-                    values: []
+                    values: [],
+                    searchMethod: 'AND'
                 },
                 authorised: true
             }
@@ -343,6 +359,10 @@
             }
         },
         methods: {
+            manageHashtagMethod: function (method) {
+                console.log(method);
+                this.hashtag.searchMethod = method;
+            },
             manageTags: function (value) {
                 this.hashtag.values = value;
                 this.hashtag.options = [];
@@ -431,6 +451,7 @@
                 this.form.selectedActivityTypes.splice(index, 1);
             },
             onSubmit() {
+                console.log(this.hashtag.searchMethod);
                 this.activityErrorMessage = "";
                 this.activityUpdateMessage = "";
                 this.$v.form.$touch();
