@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource
-public interface ActivityResultRepository extends JpaRepository<ActivityResult, Integer> {
+public interface ActivityResultRepository extends JpaRepository<ActivityResult, Integer>, CustomizedActivityResultRepository {
 
   /**
    * Gets all a particular users results for an activity.

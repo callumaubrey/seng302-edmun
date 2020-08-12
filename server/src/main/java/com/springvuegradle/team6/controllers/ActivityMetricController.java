@@ -19,15 +19,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.entities.*;
-import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.requests.EditActivityResultRequest;
@@ -76,6 +68,7 @@ public class ActivityMetricController {
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
+  private final CustomizedActivityResultRepositoryImpl customizedActivityResultRepository;
 
   ActivityMetricController(
       ProfileRepository profileRepository,
@@ -83,13 +76,15 @@ public class ActivityMetricController {
       ActivityRoleRepository activityRoleRepository,
       ActivityQualificationMetricRepository activityQualificationMetricRepository,
       ActivityResultRepository activityResultRepository,
-      ActivityHistoryRepository activityHistoryRepository) {
+      ActivityHistoryRepository activityHistoryRepository,
+      CustomizedActivityResultRepositoryImpl customizedActivityResultRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
     this.activityHistoryRepository = activityHistoryRepository;
+    this.customizedActivityResultRepository = customizedActivityResultRepository;
   }
 
   /**
@@ -568,11 +563,12 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
 
-    List<ActivityResult> results =
+    /*List<ActivityResult> results =
         activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
-    }
+    }*/
+    List<Object[]> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
     return new ResponseEntity(results, HttpStatus.OK);
   }
 
