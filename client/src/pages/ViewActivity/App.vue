@@ -27,7 +27,7 @@
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
-          <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility"
+          <ShareActivity :modal="profileId === activityOwner.id" :visibility="visibility"
                          :profileId="profileId"
                          :activityId="$route.params.activityId"
                          v-on:componentUpdate="forceRerender"
@@ -41,7 +41,7 @@
                           v-bind:loggedInId="loggedInId"></FollowUnfollow>
         </b-row>
         <b-row align-h="center">
-          <b-dropdown v-if="profileId == loggedInId || loggedInIsAdmin" text="Actions"
+          <b-dropdown text="Actions" v-if="profileId === loggedInId || loggedInIsAdmin"
                       class="m-md-2">
             <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
             <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
@@ -63,15 +63,15 @@
                   <div v-else>
                     <b-row>
                       <b-col cols="3"><b>Activity Type(s):</b></b-col>
-                      <b-col><p>{{activityTypes}}</p></b-col>
+                      <b-col><p>{{ activityTypes }}</p></b-col>
                     </b-row>
                     <b-row v-if="!continuous">
                       <b-col cols="3"><b>Start:</b></b-col>
-                      <b-col><p>{{startTime}}</p></b-col>
+                      <b-col><p>{{ startTime }}</p></b-col>
                     </b-row>
                     <b-row v-if="!continuous">
                       <b-col cols="3"><b>End:</b></b-col>
-                      <b-col><p>{{endTime}}</p></b-col>
+                      <b-col><p>{{ endTime }}</p></b-col>
                     </b-row>
                     <b-row v-if="location==null">
                       <b-col cols="3"><b>Location:</b></b-col>
@@ -79,11 +79,11 @@
                     </b-row>
                     <b-row v-if="location!=null">
                       <b-col cols="3"><b>Location:</b></b-col>
-                      <b-col><p>{{locationString}}</p></b-col>
+                      <b-col><p>{{ locationString }}</p></b-col>
                     </b-row>
                     <b-row>
                       <b-col cols="3"><b>Description:</b></b-col>
-                      <b-col><p>{{description}}</p></b-col>
+                      <b-col><p>{{ description }}</p></b-col>
                     </b-row>
                     <b-row>
                       <b-col cols="3"><b>Hashtags:</b></b-col>
@@ -201,198 +201,201 @@ const App = {
       locationString: "",
       locationDataLoading: true,
       archived: false,
-        notFound: false,
-        visibility: null,
-        loggedInIsAdmin: false,
-        isAuthorized: true,
-        metrics: [],
-        followSummaryKey:  0,
-        shareActivityKey: 0
-      }
+      notFound: false,
+      visibility: null,
+      loggedInIsAdmin: false,
+      isAuthorized: true,
+      metrics: [],
+      followSummaryKey: 0,
+      shareActivityKey: 0
+    }
+  },
+  mounted() {
+    this.getUserName();
+    this.getActivityData();
+    this.getLoggedInId();
+    this.setProfileId();
+    this.checkIsAdmin();
+  },
+  methods: {
+    getUserName: function () {
+      let vueObj = this;
+
+      api.getFirstName()
+      .then((res) => {
+        vueObj.userName = res.data;
+      })
+      .catch(() => {
+        vueObj.isLoggedIn = false;
+        vueObj.$router.push('/login');
+      });
     },
-    mounted() {
-      this.getUserName();
-      this.getActivityData();
-      this.getLoggedInId();
-      this.setProfileId();
-      this.checkIsAdmin();
+    getLoggedInId: function () {
+      let vueObj = this;
+
+      api.getProfileId()
+      .then((res) => {
+        vueObj.loggedInId = res.data;
+        vueObj.isLoggedIn = true;
+      }).catch(() => {
+        vueObj.isLoggedIn = false;
+        vueObj.$router.push('/login');
+      })
     },
-    methods: {
-      getUserName: function () {
-        let vueObj = this;
-
-        api.getFirstName()
-            .then((res) => {
-              vueObj.userName = res.data;
-            })
-            .catch(() => {
-              vueObj.isLoggedIn = false;
-              vueObj.$router.push('/login');
-            });
-      },
-      getLoggedInId: function () {
-        let vueObj = this;
-
-        api.getProfileId()
-            .then((res) => {
-              vueObj.loggedInId = res.data;
-              vueObj.isLoggedIn = true;
-            }).catch(() => {
-          vueObj.isLoggedIn = false;
-          vueObj.$router.push('/login');
-        })
-      },
-      setProfileId: function () {
-        let vueObj = this;
-        vueObj.profileId = this.$route.params.id;
-      },
-      deleteActivity() {
-        // double check for if user clicks button when hidden.
-        if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
-          if (!confirm("Are you sure you want to delete this activity?")) {
-            return;
-          }
-
-          let profileId = this.$route.params.id;
-          let activityId = this.$route.params.activityId;
-          api.deleteActivity(profileId, activityId)
-              .then(() => {
-                this.$router.push("/profiles/" + profileId + "/activities/");
-              })
-              .catch(err => alert(err));
+    setProfileId: function () {
+      let vueObj = this;
+      vueObj.profileId = this.$route.params.id;
+    },
+    deleteActivity() {
+      // double check for if user clicks button when hidden.
+      if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
+        if (!confirm("Are you sure you want to delete this activity?")) {
+          return;
         }
-      },
-      editActivity() {
+
         let profileId = this.$route.params.id;
         let activityId = this.$route.params.activityId;
-
-        if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
-          this.$router.push(
-              "/profiles/" + profileId + "/activities/" + activityId + "/edit"
-          );
-        }
-      },
-      getActivityData() {
-        let vueObj = this;
-        let activityId = this.$route.params.activityId;
-
-        api.getActivity(activityId)
-            .then((res) => {
-              if (res.data == "Activity is archived") {
-                this.archived = true;
-              } else {
-                vueObj.activityOwner = res.data.profile;
-                vueObj.activityName = res.data.activityName;
-                vueObj.description = res.data.description;
-                vueObj.activityTypes = res.data.activityTypes;
-                vueObj.continuous = res.data.continuous;
-                vueObj.startTime = res.data.startTime;
-                vueObj.endTime = res.data.endTime;
-                vueObj.location = res.data.location;
-                vueObj.visibility = res.data.visibilityType;
-                if (res.data.visibilityType == null) {
-                  vueObj.visibility = "Public"
-                }
-                if (vueObj.location != null) {
-                  vueObj.locationString = vueObj.location.city + ", ";
-                  if (vueObj.location.state) {
-                    vueObj.locationString += vueObj.location.state + ", ";
-                  }
-                  vueObj.locationString += vueObj.location.country;
-                }
-                if (res.data.tags.length > 0) {
-                  for (var i = 0; i < res.data.tags.length; i++) {
-                    vueObj.hashtags.push("#" + res.data.tags[i].name);
-                  }
-                }
-                if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
-                  vueObj.$router.push('/profiles/' + this.profileId);
-                }
-                vueObj.hashtags.sort();
-                if (!vueObj.continuous) {
-                  this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
-                }
-                this.getActivityTypeDisplay(vueObj);
-                this.getMetrics(res.data.profile.id);
-              }
-              vueObj.locationDataLoading = false;
-            }).catch((err) => {
-          if (err.response && err.response.status == 404) {
-            this.notFound = true;
-          } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
-            this.isAuthorized = false;
-          } else {
-            let profileId = this.$route.params.id;
-            vueObj.$router.push("/profiles/" + profileId);
-          }
-        });
-      },
-      getMetrics(ownerId) {
-        let activityId = this.$route.params.activityId;
-        api.getActivityMetrics(ownerId, activityId)
-            .then((res) => {
-              this.metrics = res.data;
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-      },
-      checkIsAdmin: async function () {
-        this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
-      },
-      getCorrectDateFormat: function (start, end, currentObj) {
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-        currentObj.startTime = startDate.toString();
-        currentObj.endTime = endDate.toString();
-      },
-      getActivityTypeDisplay: function (currentObj) {
-        let result = "";
-        for (let i = 0; i < currentObj.activityTypes.length; i++) {
-          result += currentObj.activityTypes[i];
-          if (i + 1 < currentObj.activityTypes.length) {
-            result += ", ";
-          }
-        }
-        currentObj.activityTypes = result;
-      },
-      clickHashtag(hashtag) {
-        hashtag = hashtag.substring(1);
-        this.$router.push("/hashtag/" + hashtag);
-      },
-      forceRerender(value) {
-        this.visibility = value;
-        this.shareActivityKey += 1;
-        this.followSummaryKey += 1;
+        api.deleteActivity(profileId, activityId)
+        .then(() => {
+          this.$router.push("/profiles/" + profileId + "/activities/");
+        })
+        .catch(err => alert(err));
       }
+    },
+    editActivity() {
+      let profileId = this.$route.params.id;
+      let activityId = this.$route.params.activityId;
 
+      if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
+        this.$router.push(
+            "/profiles/" + profileId + "/activities/" + activityId + "/edit"
+        );
+      }
+    },
+    getActivityData() {
+      let vueObj = this;
+      let activityId = this.$route.params.activityId;
+
+      api.getActivity(activityId)
+      .then((res) => {
+        if (res.data == "Activity is archived") {
+          this.archived = true;
+        } else {
+          vueObj.activityOwner = res.data.profile;
+          vueObj.activityName = res.data.activityName;
+          vueObj.description = res.data.description;
+          vueObj.activityTypes = res.data.activityTypes;
+          vueObj.continuous = res.data.continuous;
+          vueObj.startTime = res.data.startTime;
+          vueObj.endTime = res.data.endTime;
+          vueObj.location = res.data.location;
+          vueObj.visibility = res.data.visibilityType;
+          if (res.data.visibilityType == null) {
+            vueObj.visibility = "Public"
+          }
+          if (vueObj.location != null) {
+            vueObj.locationString = vueObj.location.city + ", ";
+            if (vueObj.location.state) {
+              vueObj.locationString += vueObj.location.state + ", ";
+            }
+            vueObj.locationString += vueObj.location.country;
+          }
+          if (res.data.tags.length > 0) {
+            for (var i = 0; i < res.data.tags.length; i++) {
+              vueObj.hashtags.push("#" + res.data.tags[i].name);
+            }
+          }
+          if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
+            vueObj.$router.push('/profiles/' + this.profileId);
+          }
+          vueObj.hashtags.sort();
+          if (!vueObj.continuous) {
+            this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
+          }
+          this.getActivityTypeDisplay(vueObj);
+          this.getMetrics(res.data.profile.id);
+        }
+        vueObj.locationDataLoading = false;
+      }).catch((err) => {
+        if (err.response && err.response.status == 404) {
+          this.notFound = true;
+        } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
+          this.isAuthorized = false;
+        } else {
+          let profileId = this.$route.params.id;
+          vueObj.$router.push("/profiles/" + profileId);
+        }
+      });
+    },
+    getMetrics(ownerId) {
+      let activityId = this.$route.params.activityId;
+      api.getActivityMetrics(ownerId, activityId)
+      .then((res) => {
+        this.metrics = res.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    },
+    checkIsAdmin: async function () {
+      this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+    },
+    getCorrectDateFormat: function (start, end, currentObj) {
+      const startDate = new Date(start.substring(0, 10)).toDateString();
+      const endDate = new Date(end.substring(0, 10)).toDateString();
+
+      currentObj.startTime = startDate + ' ' + start.substring(11, 19) + ' ' + 'GMT'
+          + start.substring(19, start.length) + ' (New Zealand Standard Time)';
+      currentObj.endTime = endDate + ' ' + end.substring(11, 19) + ' ' + 'GMT' + end.substring(19,
+          end.length) + ' (New Zealand Standard Time)';
+    },
+    getActivityTypeDisplay: function (currentObj) {
+      let result = "";
+      for (let i = 0; i < currentObj.activityTypes.length; i++) {
+        result += currentObj.activityTypes[i];
+        if (i + 1 < currentObj.activityTypes.length) {
+          result += ", ";
+        }
+      }
+      currentObj.activityTypes = result;
+    },
+    clickHashtag(hashtag) {
+      hashtag = hashtag.substring(1);
+      this.$router.push("/hashtag/" + hashtag);
+    },
+    forceRerender(value) {
+      this.visibility = value;
+      this.shareActivityKey += 1;
+      this.followSummaryKey += 1;
     }
-  };
-  export default App;
+
+  }
+};
+export default App;
 </script>
 
 <style>
-  .horizontal-scroll {
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    overflow: auto;
-    margin-left: 15px;
-    margin-right: 15px;
-  }
+.horizontal-scroll {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: auto;
+  margin-left: 15px;
+  margin-right: 15px;
+}
 
-  .metric-card {
-    width: 250px;
-    margin-right: 10px;
-  }
+.metric-card {
+  width: 250px;
+  margin-right: 10px;
+}
 
-  .metric-card .card-body {
-    white-space: pre-line;
-    padding: 10px;
-  }
+.metric-card .card-body {
+  white-space: pre-line;
+  padding: 10px;
+}
 
-  .metric-card .card-title {
-    font-size: 18px;
-    margin-left: 7px;
-  }
+.metric-card .card-title {
+  font-size: 18px;
+  margin-left: 7px;
+}
 </style>
 
