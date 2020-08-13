@@ -31,6 +31,10 @@ export default {
 
     createActivityResult: (userId, activityId, data) => instance.post(
         'profiles/' + userId + '/activities/' + activityId + '/result', data),
+
+    setActivityRoleParticipant: (userId, activityId, data) => instance.post(
+        'profiles/' + userId + '/subscriptions/activities/' + activityId + '/participate', data),
+
     // (R)ead
 
     getProfileRoles: () => instance.get('/profiles/role'),
@@ -68,7 +72,7 @@ export default {
 
     getProfile: (id) => instance.get('/profiles/' + id),
 
-    getProfileByEmailAsync: async (email) => instance.get('/profiles?email='+ email),
+    getProfileByEmailAsync: async (email) => instance.get('/profiles?email=' + email),
 
     getFirstName: () => instance.get('/profiles/firstname'),
 
@@ -93,6 +97,9 @@ export default {
     getIsSubscribed: (userId, activityId) => instance.get(
         '/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
+    getIsParticipating: (profileId, activityId) => instance.get(
+        '/profiles/' + profileId + '/subscriptions/activities/' + activityId + '/participate'),
+
     getActivityMemberCounts: (activityId) => instance.get(
         '/activities/' + activityId + '/membercount'),
 
@@ -101,7 +108,6 @@ export default {
 
     getActivityMetrics: (profileId, activityId) => instance.get(
         '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
-
 
     getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
 
@@ -142,7 +148,7 @@ export default {
         data),
 
     updateActivityResult: (profileId, activityId, resultId,
-        data) => instance.put(
+                           data) => instance.put(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
         + resultId, data),
     // (D)elete
@@ -164,6 +170,10 @@ export default {
 
     deleteActivityResult: (profileId, activityId, resultId) => instance.delete(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
-        + resultId)
+        + resultId),
+
+    deleteActivityRoleParticipant: (profileId, activityId) => instance.delete(
+        "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate")
+
 
 }
