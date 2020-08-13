@@ -1,5 +1,7 @@
 package com.springvuegradle.team6.steps;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.Profile;
@@ -9,7 +11,6 @@ import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.beans.Introspector;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONArray;
@@ -22,8 +23,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DirtiesContext
 public class ActivitySharingFeatureSteps {
@@ -160,13 +159,36 @@ public class ActivitySharingFeatureSteps {
   }
 
   @Given("user {string} has role {string} on activity {string}")
-  public void user_has_role_on_activity(String string, String string2, String string3) {
-    Activity activity = activityRepository.findByActivityName(string3);
-    Profile profile = profileRepository.findByEmails_address(string);
-    List<ActivityRole> activityRole = activityRoleRepository.findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
+  public void user_has_role_on_activity(String email, String role, String activityName)
+      throws Exception {
+    Activity activity = activityRepository.findByActivityName(activityName);
+    Profile profile = profileRepository.findByEmails_address(email);
+
+    // Creator assigns user 'Access' role
+    String jsonString =
+        "{\n"
+            + "  \"subscriber\": { \n"
+            + "  \"email\": \"" + email + "\",\n"
+            + "  \"role\": \"" + role + "\"\n"
+            + "  }\n"
+            + "}";
+
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                "/profiles/"
+                    + loginSteps.profileId
+                    + "/activities/"
+                    + activity.getId()
+                    + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session));
+
+    List<ActivityRole> activityRole = activityRoleRepository
+        .findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
     ActivityRole activityRoleFound = activityRole.get(0);
-    System.out.print(activityRoleFound.getActivityRoleType());
-    Assert.assertEquals(string2, activityRoleFound.getActivityRoleType().toString());
+    Assert.assertEquals(role, activityRoleFound.getActivityRoleType().toString());
   }
 
   @When("user {string} adds user roles")
@@ -475,8 +497,8 @@ public class ActivitySharingFeatureSteps {
   }
 
   @Then("the activity {string} should have description {string}")
-  public void the_activity_should_have_description(String string, String string2) {
-    Activity activity = activityRepository.findByActivityName(string);
-    Assert.assertEquals(string2, activity.getDescription());
+  public void the_activity_should_have_description(String activityName, String description) {
+    Activity activity = activityRepository.findByActivityName(activityName);
+    Assert.assertEquals(description, activity.getDescription());
   }
 }
