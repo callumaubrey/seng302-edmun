@@ -1,22 +1,5 @@
 <template>
   <div>
-    <b-card>
-      <label>Your Best Results:</label>
-      <div v-for="result in this.bestResults" :key="result">
-        <b-row>
-          <b-col>
-            {{ result.metric_id.title }}
-          </b-col>
-          <b-col>
-            result value, might need to be a function to do if statements for which type of value to
-            show
-          </b-col>
-          <b-col>
-            Ranking of result compared to all results for that metric
-          </b-col>
-        </b-row>
-      </div>
-    </b-card>
     <label>{{ this.metricTitles[this.currentMetricIndex] }}</label>
     <b-row>
       <b-col class="col-tall">
@@ -108,7 +91,6 @@ export default {
       myResultsFields: [
         {key: 'value', label: 'Value', class: 'medCol'},
         {key: 'personal ranking', tdStyle: 'smallCol'},
-        {key: 'public ranking', tdClass: 'smallCol'}
       ],
       allResults: [],
       myResults: [],
@@ -116,10 +98,10 @@ export default {
       metricIds: [],
       metricTitles: [],
       metricTypes: [],
-      perPageAll: 0,
+      perPageAll: 2,
       currentPageAll: 1,
       rowsAll: 0,
-      perPageOwn: 0,
+      perPageOwn: 2,
       currentPageOwn: 1,
       rowsOwn: 0
     }
@@ -174,8 +156,8 @@ export default {
                   {key: 'result_start', label: 'Start', class: 'medCol'},
                   {key: 'result_finish', label: 'End', class: 'medCol'},
                   {key: 'personal_ranking', tdStyle: 'smallCol'},
-                  {key: 'public_ranking', tdClass: 'smallCol'}
                 ];
+
               } else {
                 if (res.data[i].type == "Duration") {
                   res.data[i].value = res.data[i].pretty_result;
@@ -183,17 +165,14 @@ export default {
                 this.myResultsFields = [
                   {key: 'value', label: 'Value', class: 'medCol'},
                   {key: 'personal_ranking', tdStyle: 'smallCol'},
-                  {key: 'public_ranking', tdClass: 'smallCol'}
                 ]
               }
 
               res.data[i].personal_ranking = i + 1;
               this.myResults = res.data;
-
-              if (i == res.data.length - 1) {
-                this.rowsOwn = this.allResults.length;
-              }
             }
+
+            this.rowsOwn = res.data.length;
           })
           .catch((err) => {
             console.log(err);
@@ -223,11 +202,8 @@ export default {
 
             res.data[i].ranking = i + 1;
             this.allResults = res.data;
-
-            if (i == res.data.length - 1) {
-              this.rowsAll = this.allResults.length;
-            }
           }
+          this.rowsAll = res.data.length;
         })
       .catch((err) => console.log(err));
     }
