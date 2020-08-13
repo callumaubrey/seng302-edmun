@@ -1461,7 +1461,7 @@ public class FollowControllerTest {
   }
 
   @Test
-  void testUserIsNotParticipantInActivity() throws Exception {
+  void testUserIsCreatorInActivity() throws Exception {
     String response = mvc.perform(
             MockMvcRequestBuilders.get(
                     "/profiles/" + id + "/subscriptions/activities/" + activityId + "/participate")
@@ -1472,20 +1472,52 @@ public class FollowControllerTest {
             .getContentAsString();
 
     JSONObject response_json = new JSONObject(response);
+    String result = response_json.getString("participant");
 
-    Assert.assertFalse(response_json.getBoolean("participant"));
+    Assert.assertEquals("null", result);
+  }
+
+  @Test
+  void testUserNotParticipantInActivity() throws Exception {
+    String response = mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+            .accept(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    JSONObject response_json = new JSONObject(response);
+    String result = response_json.getString("participant");
+
+    Assert.assertEquals("false", result);
   }
 
   @Test
   void testUserIsParticipantInActivity() throws Exception {
     // Set user to participant in activity
+    String response = mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+            .accept(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    JSONObject response_json = new JSONObject(response);
+    String result = response_json.getString("participant");
+
+    Assert.assertEquals("false", result);
+
     ActivityRole role = new ActivityRole();
     role.setActivity(activityRepository.findById(activityId).get());
     role.setProfile(profileRepository.findById(otherId));
     role.setActivityRoleType(ActivityRoleType.Participant);
     activityRoleRepository.save(role);
 
-    String response = mvc.perform(
+    response = mvc.perform(
             MockMvcRequestBuilders.get(
                     "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
                     .accept(MediaType.APPLICATION_JSON)
@@ -1494,8 +1526,9 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
 
-    JSONObject response_json = new JSONObject(response);
+    response_json = new JSONObject(response);
+    result = response_json.getString("participant");
 
-    Assert.assertTrue(response_json.getBoolean("participant"));
+    Assert.assertEquals("true", result);
   }
 }
