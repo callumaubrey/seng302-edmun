@@ -162,30 +162,29 @@ export default {
       }
     },
     getMyResults: function() {
-      this.myResults = [];
-      api.getAllActivityResultsByProfileId(this.profileId, this.activityId)
+      api.getAllActivityResultsByProfileId(this.profileId, this.activityId, this.currentMetric)
           .then((res) => {
             for (let i = 0; i < res.data.length; i++) {
-              if (res.data[i].metric_id == this.currentMetric) {
-                if (res.data[i].type == "StartFinish") {
-                  this.myResultsFields = [
-                    {key: 'result_start', label: 'Start', class: 'medCol'},
-                    {key: 'result_finish', label: 'End', class: 'medCol'},
-                    {key: 'personal ranking', tdStyle: 'smallCol'},
-                    {key: 'public ranking', tdClass: 'smallCol'}
-                  ];
-                } else {
-                  if (res.data[i].type == "Duration") {
-                    res.data[i].value = res.data[i].pretty_result;
-                  }
-                  this.myResultsFields = [
-                    {key: 'value', label: 'Value', class: 'medCol'},
-                    {key: 'personal ranking', tdStyle: 'smallCol'},
-                    {key: 'public ranking', tdClass: 'smallCol'}
-                  ]
+              if (res.data[i].type == "StartFinish") {
+                this.myResultsFields = [
+                  {key: 'result_start', label: 'Start', class: 'medCol'},
+                  {key: 'result_finish', label: 'End', class: 'medCol'},
+                  {key: 'personal_ranking', tdStyle: 'smallCol'},
+                  {key: 'public_ranking', tdClass: 'smallCol'}
+                ];
+              } else {
+                if (res.data[i].type == "Duration") {
+                  res.data[i].value = res.data[i].pretty_result;
                 }
-                this.myResults.push(res.data[i]);
+                this.myResultsFields = [
+                  {key: 'value', label: 'Value', class: 'medCol'},
+                  {key: 'personal_ranking', tdStyle: 'smallCol'},
+                  {key: 'public_ranking', tdClass: 'smallCol'}
+                ]
               }
+
+              res.data[i].personal_ranking = i + 1;
+              this.myResults = res.data;
 
               if (i == res.data.length - 1) {
                 this.rowsOwn = this.allResults.length;
@@ -197,7 +196,6 @@ export default {
           })
     },
     getAllResults: function() {
-      this.allResults = [];
       api.getAllActivityResultsByMetricId(this.activityId, this.currentMetric)
         .then((res) => {
           for (let i = 0; i < res.data.length; i++) {
@@ -218,8 +216,10 @@ export default {
                 res.data[i].value = res.data[i].pretty_result;
               }
             }
+
             res.data[i].ranking = i + 1;
             this.allResults = res.data;
+
             if (i == res.data.length - 1) {
               this.rowsAll = this.allResults.length;
             }
