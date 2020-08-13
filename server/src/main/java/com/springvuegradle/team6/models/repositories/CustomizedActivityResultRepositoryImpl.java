@@ -48,9 +48,13 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
    * @param sort_expression sort expression for the sort unit
    * @return SQL query sort cases
    */
-  private String getResultSortCases(Unit unit, String sort_expression) {
-    return    "CASE WHEN :sortingUnit="+unit+" AND :sortingDirection=1 THEN "+sort_expression+" ELSE 0 END ASC, "
-            + "CASE WHEN :sortingUnit="+unit+" AND :sortingDirection=0 THEN "+sort_expression+" ELSE 0 END DESC ";
+  private String getResultSortCases(Unit unit, String sort_expression, boolean isLast) {
+    if (isLast) {
+      return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sort_expression+" ELSE 0 END ASC, "
+          + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sort_expression+" ELSE 0 END DESC";
+    }
+    return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sort_expression+" ELSE 0 END ASC, "
+            + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sort_expression+" ELSE 0 END DESC, ";
   }
 
   /**
@@ -75,10 +79,12 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
 
     // Add Sorting
     queryStr.append("ORDER BY ");
-    queryStr.append(getResultSortCases(Unit.Count, ActivityResultCount.SQL_SORT_EXPRESSION));
-    queryStr.append(getResultSortCases(Unit.Distance, ActivityResultDistance.SQL_SORT_EXPRESSION));
-    queryStr.append(getResultSortCases(Unit.TimeDuration, ActivityResultDuration.SQL_SORT_EXPRESSION));
-    queryStr.append(getResultSortCases(Unit.TimeStartFinish, ActivityResultStartFinish.SQL_SORT_EXPRESSION));
+    queryStr.append(getResultSortCases(Unit.Count, ActivityResultCount.SQL_SORT_EXPRESSION, false));
+    queryStr.append(getResultSortCases(Unit.Distance, ActivityResultDistance.SQL_SORT_EXPRESSION, false));
+    queryStr.append(getResultSortCases(Unit.TimeDuration, ActivityResultDuration.SQL_SORT_EXPRESSION, false));
+    queryStr.append(getResultSortCases(Unit.TimeStartFinish, ActivityResultStartFinish.SQL_SORT_EXPRESSION, true));
+
+    System.out.println(queryStr.toString());
 
     Query query = this.entityManager.createNativeQuery(queryStr.toString(), ActivityResult.class);
     query.setParameter("metricId", metric.getId());
