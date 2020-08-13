@@ -1537,6 +1537,48 @@ public class FollowControllerTest {
   }
 
   @Test
+  void testUserUpdateRoleToParticipantAndIsSubscribed() throws Exception {
+    // Create Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Fun Activity");
+    activity.setDescription("Very Fun");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity = activityRepository.save(activity);
+    int participantActivityId = activity.getId();
+
+    // Check 200 on participate
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    // Check user is now a participant
+    String response = mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject response_json = new JSONObject(response);
+
+    Assert.assertTrue(response_json.getBoolean("participant"));
+
+    // Check User is subscribed
+    List<SubscriptionHistory> subscription = subscriptionHistoryRepository.findActive(participantActivityId, otherId);
+    Assert.assertFalse("User has no subscription to activity", subscription.isEmpty());
+  }
+
+
+  @Test
   void testUserUnauthorisedToUpdateRoleToParticipantOnRestricted() throws Exception {
     // Create Restricted Activity
     Activity activity = new Activity();

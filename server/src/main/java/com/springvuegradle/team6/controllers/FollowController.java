@@ -640,6 +640,13 @@ public class FollowController {
       activityRoleRepository.save(newRole);
     }
 
+    // Subscribe user to activity
+    boolean subscribed = !subscriptionHistoryRepository.findActive(activityId, profileId).isEmpty();
+    if(!subscribed) {
+      SubscriptionHistory subscription = new SubscriptionHistory(profile, activity, SubscribeMethod.SELF);
+      subscriptionHistoryRepository.save(subscription);
+    }
+
     return new ResponseEntity<>(HttpStatus.OK);
   }
 }
