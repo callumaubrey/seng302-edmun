@@ -1647,8 +1647,6 @@ public class FollowControllerTest {
                     .session(session))
             .andExpect(status().is4xxClientError());
   }
-}
-
 
   @Test
   void testUserUnauthorisedToUpdateRoleToParticipantOnRestricted() throws Exception {
@@ -1738,6 +1736,5 @@ public class FollowControllerTest {
                     .session(session))
             .andExpect(status().is4xxClientError());
   }
-
 
 }
