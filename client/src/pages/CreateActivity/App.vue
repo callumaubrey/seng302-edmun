@@ -207,7 +207,8 @@
                   <b-row>
                     <b-col>
                       <label>Select sharing</label>
-                      <b-form-select :options="options" size="sm" v-model=selectedVisibility/>
+                      <b-form-select :options="options" size="sm"
+                                     v-model=selectedVisibility></b-form-select>
                         <br><br>
                     </b-col>
                   </b-row>
