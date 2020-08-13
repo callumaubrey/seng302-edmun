@@ -12,6 +12,7 @@ import io.cucumber.java.en.When;
 import java.beans.Introspector;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,28 +241,10 @@ public class ActivitySharingFeatureSteps {
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
-
-    /*for (Map<String, String> activityMapping : dataTable.asMaps()) {
-      String userEmail = activityMapping.get("UserEmail");
-      String jsonString = "{\n" + "\"email\": \"" + userEmail + "\"\n" + "}";
-
-      String response =
-          mvc.perform(
-              MockMvcRequestBuilders.get(
-                  "/profiles/" + profile.getId() + "/activities/" + activityId + "/subscriber")
-                  .content(jsonString)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .session(session))
-              .andExpect(status().is4xxClientError())
-              .andReturn()
-              .getResponse()
-              .getContentAsString();
-    }*/
-
     String response =
         mvc.perform(
             MockMvcRequestBuilders.get(
-                "/activities/"+ activityId + "/members")
+                "/activities/" + activityId + "/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
             .andExpect(status().isOk())
@@ -269,6 +252,29 @@ public class ActivitySharingFeatureSteps {
             .getResponse()
             .getContentAsString();
 
+    int tableSize = dataTable.asList().size();
+
+    JSONObject obj = new JSONObject(response);
+    JSONArray participants = obj.getJSONArray("Participant");
+    if (role == "participant") {
+      Assert.assertEquals(tableSize, participants.length());
+    }
+    JSONArray organisers = obj.getJSONArray("Organiser");
+    if (role == "organiser") {
+      Assert.assertEquals(tableSize, organisers.length());
+    }
+    JSONArray creators = obj.getJSONArray("Creator");
+    if (role == "creator") {
+      Assert.assertEquals(tableSize, creators.length());
+    }
+    JSONArray followers = obj.getJSONArray("Follower");
+    if (role == "follower") {
+      Assert.assertEquals(tableSize, followers.length());
+    }
+    JSONArray accesses = obj.getJSONArray("Access");
+    if (role == "access") {
+      Assert.assertEquals(tableSize, accesses.length());
+    }
   }
 
   @When("user {string} removes user")
