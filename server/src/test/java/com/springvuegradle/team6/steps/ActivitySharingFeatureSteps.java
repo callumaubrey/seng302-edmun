@@ -241,7 +241,7 @@ public class ActivitySharingFeatureSteps {
 
     Profile profile = profileRepository.findByEmails_address(email);
 
-    for (Map<String, String> activityMapping : dataTable.asMaps()) {
+    /*for (Map<String, String> activityMapping : dataTable.asMaps()) {
       String userEmail = activityMapping.get("UserEmail");
       String jsonString = "{\n" + "\"email\": \"" + userEmail + "\"\n" + "}";
 
@@ -256,7 +256,19 @@ public class ActivitySharingFeatureSteps {
               .andReturn()
               .getResponse()
               .getContentAsString();
-    }
+    }*/
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/activities/"+ activityId + "/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
   }
 
   @When("user {string} removes user")
