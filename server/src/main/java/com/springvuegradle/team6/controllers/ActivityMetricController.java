@@ -499,9 +499,9 @@ public class ActivityMetricController {
    * @param session
    * @return activity results, if user has no results return 404
    */
-  @GetMapping("/profiles/{profileId}/activities/{activityId}/result")
+  @GetMapping("/activities/{activityId}/result/{metricId}/{profileId}")
   public ResponseEntity getAllActivityResultsForSingleUser(
-      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+      @PathVariable int profileId, @PathVariable int activityId, @PathVariable int metricId, HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -529,8 +529,8 @@ public class ActivityMetricController {
         return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
       }
     }
-    List<ActivityResult> results =
-        activityResultRepository.findSingleUsersResultsOnActivity(activityId, profileId);
+
+    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricIdAndProfile(metricId, profileId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }
@@ -563,12 +563,10 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
 
-    /*List<ActivityResult> results =
-        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
-    }*/
-    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
+    }
     return new ResponseEntity(results, HttpStatus.OK);
   }
 
