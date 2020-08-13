@@ -54,6 +54,6 @@ public class ActivityResultStartFinish extends ActivityResult {
   }
 
   public String getType() {
-    return "StartFinish";
+    return "TimeStartFinish";
   }
 }

@@ -19,7 +19,7 @@
 
 <script>
     import NavBar from "@/components/NavBar.vue";
-    import Search from '@/components/Search.vue';
+    import Search from '@/components/SearchUsers.vue';
     import AdminUserSearch from "../../components/AdminUserSearch";
     import api from '@/Api'
 

@@ -32,5 +32,4 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
      * @param roleName of Role class
      */
     boolean existsByName(String roleName);
-
 }
