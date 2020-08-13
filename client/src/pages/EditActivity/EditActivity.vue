@@ -502,6 +502,7 @@ export default {
           return;
         }
         const isoDates = this.getISODates();
+        console.log(isoDates);
         let data = {
           activity_name: this.form.name,
           description: this.form.description,
@@ -521,7 +522,7 @@ export default {
           currentObj.activityErrorMessage = "";
         })
         .catch(function (error) {
-          console.log(error);
+          console.log(error.response);
           currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
               + ". Please try again";
           currentObj.activityUpdateMessage = ""

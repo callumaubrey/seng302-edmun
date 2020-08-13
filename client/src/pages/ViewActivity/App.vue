@@ -27,7 +27,8 @@
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
-          <ShareActivity :modal="profileId === activityOwner.id" :visibility="visibility"
+          <ShareActivity :modal="parseInt(profileId) === parseInt(activityOwner.id)"
+                         :visibility="visibility"
                          :profileId="profileId"
                          :activityId="$route.params.activityId"
                          v-on:componentUpdate="forceRerender"
@@ -41,7 +42,8 @@
                           v-bind:loggedInId="loggedInId"></FollowUnfollow>
         </b-row>
         <b-row align-h="center">
-          <b-dropdown text="Actions" v-if="profileId === loggedInId || loggedInIsAdmin"
+          <b-dropdown text="Actions"
+                      v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
                       class="m-md-2">
             <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
             <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
@@ -149,7 +151,7 @@
             <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"></RecordActivityResultModal>
-            <ActivityResults :profile-id="profileId"></ActivityResults>
+            <ActivityResults :profile-id="parseInt(profileId)"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>
