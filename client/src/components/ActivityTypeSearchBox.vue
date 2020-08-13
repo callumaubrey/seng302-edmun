@@ -41,6 +41,7 @@
                         </b-dropdown-form>
                         <b-dropdown-divider></b-dropdown-divider>
                         <b-dropdown-item-button
+                                id="activity-type-dropdown"
                                 v-for="option in availableOptions"
                                 :key="option"
                                 @click="onOptionClick({ option, addTag })"
@@ -58,7 +59,7 @@
         <b-col cols="3">
             <b-form inline>
                 <label style="margin-right:10px;">Search Method: </label>
-                <b-form-radio-group id="activityTypesSearchMethods" v-model="method" v-on:@change="emitMethod" aria-describedby="activityTypesSearchMethodsHelp">
+                <b-form-radio-group id="activityTypesSearchMethods" v-model="method" aria-describedby="activityTypesSearchMethodsHelp">
                     <b-form-radio class="searchByRadio" value="AND">And
                     </b-form-radio>
                     <b-form-radio class="searchByRadio" value="OR">Or
@@ -116,10 +117,15 @@
             }
 
         },
+        watch: {
+            method: function () {
+                this.emitMethod();
+            }
+        },
         methods: {
-            getActivitiesTypes: function () {
+            getActivitiesTypesFromApi: function () {
                 let currentObj = this;
-                api.instance.get('/profiles/activity-types')
+                api.getActivityTypes()
                     .then(function (response) {
                         console.log(response.data);
                         currentObj.activityTypeOptions = response.data;
@@ -141,7 +147,7 @@
             },
         },
         mounted() {
-            this.getActivitiesTypes()
+            this.getActivitiesTypesFromApi()
         }
     }
 </script>
