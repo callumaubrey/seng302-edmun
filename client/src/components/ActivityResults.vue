@@ -3,7 +3,8 @@
     <label>{{ this.metricTitles[this.currentMetricIndex] }}</label>
     <b-row>
       <b-col class="col-tall">
-        <b-btn :disabled="this.currentMetricIndex == 0" @click="prevMetric()">
+        <b-btn :disabled="this.currentMetricIndex == 0  ||
+          this.metricIds.length == 0" @click="prevMetric()">
           <b-icon icon="arrow-left" aria-hidden="true"></b-icon>
         </b-btn>
       </b-col>
@@ -58,7 +59,8 @@
         </b-tabs>
       </b-col>
       <b-col class="col-tall">
-        <b-btn :disabled="this.currentMetricIndex == this.metricIds.length - 1" @click="nextMetric()">
+        <b-btn :disabled="this.currentMetricIndex == this.metricIds.length - 1 ||
+          this.metricIds.length == 0" @click="nextMetric()">
           <b-icon icon="arrow-right" aria-hidden="true"></b-icon>
         </b-btn>
       </b-col>
@@ -80,7 +82,6 @@ export default {
   data() {
     return {
       tableIsLoading: true,
-      bestResults: [],
       currentMetric: "",
       currentMetricIndex: 0,
       allResultsFields: [
@@ -157,7 +158,8 @@ export default {
                   {key: 'result_finish', label: 'End', class: 'medCol'},
                   {key: 'personal_ranking', tdStyle: 'smallCol'},
                 ];
-
+                res.data[i].result_start = this.getSplitDate(res.data[i].result_start);
+                res.data[i].result_finish = this.getSplitDate(res.data[i].result_finish);
               } else {
                 if (res.data[i].type == "Duration") {
                   res.data[i].value = res.data[i].pretty_result;
@@ -189,6 +191,8 @@ export default {
                 {key: 'result_finish', label: 'End', class: 'medCol'},
                 {key: 'ranking', tdStyle: 'smallCol'}
               ];
+              res.data[i].result_start = this.getSplitDate(res.data[i].result_start);
+              res.data[i].result_finish = this.getSplitDate(res.data[i].result_finish);
             } else {
               this.allResultsFields = [
                 {key: 'fullname', tdClass: 'smallCol'},
@@ -206,6 +210,10 @@ export default {
           this.rowsAll = res.data.length;
         })
       .catch((err) => console.log(err));
+    },
+    getSplitDate: function(date) {
+      let dateSplit = date.split("T");
+      return dateSplit[0] + " " + dateSplit[1];
     }
   }
 }
