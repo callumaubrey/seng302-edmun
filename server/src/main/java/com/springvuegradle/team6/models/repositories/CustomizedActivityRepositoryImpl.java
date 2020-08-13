@@ -204,7 +204,6 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       }
     }
 
-    List result = new ArrayList();
     if (finalQuery != null) {
       org.hibernate.search.jpa.FullTextQuery jpaQuery =
           fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
@@ -234,15 +233,15 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       QueryBuilder queryBuilder, String[] hashtagsArray, String method) {
     BooleanJunction query = queryBuilder.bool();
     for (String hashtag : hashtagsArray) {
-      org.apache.lucene.search.Query activityQuery =
+      org.apache.lucene.search.Query hashtagQuery =
           queryBuilder.simpleQueryString().onField("tags").matching(hashtag).createQuery();
       if (method == null) {
-        query.must(activityQuery);
+        query.must(hashtagQuery);
       } else {
-        if (method.equals("OR")) {
-          query.should(activityQuery);
+        if (method.equals("or")) {
+          query.should(hashtagQuery);
         } else {
-          query.must(activityQuery);
+          query.must(hashtagQuery);
         }
       }
     }
@@ -271,7 +270,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       if (method == null) {
         query.must(activityQuery);
       } else {
-        if (method.equals("OR")) {
+        if (method.equals("or")) {
           query.should(activityQuery);
         } else {
           query.must(activityQuery);

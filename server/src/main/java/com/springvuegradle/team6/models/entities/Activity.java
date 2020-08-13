@@ -49,8 +49,8 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
       @TokenFilterDef(
           factory = EdgeNGramFilterFactory.class,
           params = {
-            @Parameter(name = "minGramSize", value = "2"),
-            @Parameter(name = "maxGramSize", value = "5")
+            @Parameter(name = "minGramSize", value = "3"),
+            @Parameter(name = "maxGramSize", value = "30")
           })
     })
 public class Activity {
@@ -81,12 +81,16 @@ public class Activity {
     this.continuous = request.continuous;
 
     if (!this.continuous) {
-      this.startTime =
-          LocalDateTime.parse(
-              request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-      this.endTime =
-          LocalDateTime.parse(
-              request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      if (request.startTime != null) {
+        this.startTime =
+            LocalDateTime.parse(
+                request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      }
+      if (request.endTime != null) {
+        this.endTime =
+            LocalDateTime.parse(
+                request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      }
     }
 
     if (request.location != null) {
@@ -218,12 +222,22 @@ public class Activity {
     this.startTime = startTime;
   }
 
+  public void setStartTimeByString(String startTime) {
+    this.startTime =
+        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+  }
+
   public LocalDateTime getEndTime() {
     return endTime;
   }
 
   public void setEndTime(LocalDateTime endTime) {
     this.endTime = endTime;
+  }
+
+  public void setEndTimeByString(String endTime) {
+    this.endTime =
+        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
   }
 
   public Integer getId() {

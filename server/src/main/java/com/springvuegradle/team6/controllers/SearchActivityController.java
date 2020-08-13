@@ -2,9 +2,13 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.responses.SearchActivityResponse;
+import com.springvuegradle.team6.responses.SearchProfileResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import net.minidev.json.JSONObject;
@@ -96,6 +100,10 @@ public class SearchActivityController {
       hashtagsArray = hashtags.split("%20");
     }
 
+    if (activityName != null) {
+      activityName = activityName.replaceAll("%20", " ");
+    }
+
     LocalDateTime startDateLDT = null;
     LocalDateTime endDateLDT = null;
 
@@ -150,8 +158,25 @@ public class SearchActivityController {
             offset,
             profileId,
             isAdmin);
+    List<SearchActivityResponse> results = new ArrayList<>();
+    for (Activity activity : activityList) {
+      SearchActivityResponse result =
+          new SearchActivityResponse(
+              activity.getActivityName(),
+              activity.getId(),
+              activity.getProfile().getId(),
+              activity.getDescription(),
+              activity.getActivityTypes(),
+              activity.getTags(),
+              activity.isContinuous(),
+              activity.getStartTime(),
+              activity.getEndTime(),
+              activity.getLocation(),
+              activity.getVisibilityType());
+      results.add(result);
+    }
     JSONObject resultsObject = new JSONObject();
-    resultsObject.put("results", activityList);
+    resultsObject.put("results", results);
     return new ResponseEntity(resultsObject, HttpStatus.OK);
   }
 

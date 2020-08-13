@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -85,8 +87,8 @@ class EditActivityTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTime(LocalDateTime.parse("2000-04-28T15:50:41+1300", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
+    activity.setEndTime(LocalDateTime.parse("2030-08-28T15:50:41+1300", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
     activity.setProfile(profileRepository.findById(id));
     activity = activityRepository.save(activity);
     activityId = activity.getId();
