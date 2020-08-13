@@ -20,7 +20,9 @@
     <label>{{ this.metricTitles[this.currentMetricIndex] }}</label>
     <b-row>
       <b-col class="col-tall">
-        <b-btn :disabled="this.currentMetricIndex == 0" @click="prevMetric()">Left</b-btn>
+        <b-btn :disabled="this.currentMetricIndex == 0" @click="prevMetric()">
+          <b-icon icon="arrow-left" aria-hidden="true"></b-icon>
+        </b-btn>
       </b-col>
       <b-col cols="10">
         <b-tabs align="center">
@@ -73,7 +75,9 @@
         </b-tabs>
       </b-col>
       <b-col class="col-tall">
-        <b-btn :disabled="this.currentMetricIndex == this.metricIds.length - 1" @click="nextMetric()">Right</b-btn>
+        <b-btn :disabled="this.currentMetricIndex == this.metricIds.length - 1" @click="nextMetric()">
+          <b-icon icon="arrow-right" aria-hidden="true"></b-icon>
+        </b-btn>
       </b-col>
     </b-row>
   </div>
