@@ -83,10 +83,18 @@
       }
     },
     methods: {
+      /**
+       * Sets the hashtag input to value when input field is clicked
+       * @param value
+       */
       setInput(value) {
         this.value = value;
         this.selected = true;
       },
+      /**
+       * adds hashtag to list of hashtags and calls emit tags function
+       * @param value
+       */
       addTag(value) {
         value = value.toLowerCase();
         if (value[0] !== "#") {
@@ -98,6 +106,10 @@
           this.emitTagsToParent();
         }
       },
+      /**
+       * removes tag from list of tages and calls emit function
+       * @param value
+       */
       removeTag(value) {
         const index = this.values.indexOf(value);
         if (index > -1) {
@@ -105,13 +117,23 @@
           this.emitTagsToParent();
         }
       },
+      /**
+       * emits current tags to parent
+       */
       emitTagsToParent() {
         this.$emit('emitTags', this.values);
       },
+      /**
+       * emits current input to parent, used for auto complete
+       */
       emitInputToParent() {
         this.selected = false;
         this.$emit('emitInput', this.value);
       },
+      /**
+       * validation for hashtag input
+       * @returns true if valid, false otherwise
+       */
       valueValid() {
         let pattern = /^#?[a-zA-Z0-9_]*$/;
         if (!pattern.test(this.value)) {
@@ -120,6 +142,10 @@
           return true;
         }
       },
+      /**
+       * checks state of input is valid to be a hashtag
+       * @returns null if valid, false otherwise
+       */
       inputState() {
         if (this.checkInput()) {
           return null;
@@ -127,6 +153,10 @@
           return false;
         }
       },
+      /**
+       * checks validity of input and if hashtag has already been used
+       * @returns true if ok, false if otherwise
+       */
       checkInput() {
         if (!this.valueValid()) {
           this.inputErrorMessage = "Hashtags may only contain alphabets, numbers and underscores.";
@@ -140,15 +170,27 @@
           return true;
         }
       },
+      /**
+       * emits search method (AND/OR) to parent
+       * @param method
+       */
       emitSearchMethod(method) {
         this.childSearchMethod = method;
         this.$emit('emitSearchMethod', this.childSearchMethod);
       },
     },
     computed: {
+      /**
+       * calculates how many hashtags
+       * @returns true if 30 or more hashtags
+       */
       maxEntriesReached() {
         return this.values.length >= this.maxEntries;
       },
+      /**
+       * calculates max character limit for hashtag input
+       * @returns {number}
+       */
       maxCharacters() {
         if (this.values[0] == "#") {
           return this.inputCharacterLimit + 1;
@@ -156,7 +198,10 @@
           return this.inputCharacterLimit;
         }
       },
-
+      /**
+       * checks if input field is empty
+       * @returns true if empty
+       */
       noInput() {
         let tempValue = this.value;
         if (this.value[0] == "#") {
