@@ -164,6 +164,7 @@ public class ActivitySharingFeatureSteps {
     Profile profile = profileRepository.findByEmails_address(string);
     List<ActivityRole> activityRole = activityRoleRepository.findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
     ActivityRole activityRoleFound = activityRole.get(0);
+    System.out.print(activityRoleFound.getActivityRoleType());
     Assert.assertEquals(string2, activityRoleFound.getActivityRoleType().toString());
   }
 
@@ -251,12 +252,10 @@ public class ActivitySharingFeatureSteps {
                   .content(jsonString)
                   .contentType(MediaType.APPLICATION_JSON)
                   .session(session))
-              .andExpect(status().isOk())
+              .andExpect(status().is4xxClientError())
               .andReturn()
               .getResponse()
               .getContentAsString();
-
-      //Assert.assertEquals("User has no activity role", response);
     }
   }
 
@@ -449,7 +448,7 @@ public class ActivitySharingFeatureSteps {
             + "\",\n"
             + "  \"continuous\": true"
             + "}";
-    String editActivityUrl = "/profiles/" + profile.getId() + "/activities";
+    String editActivityUrl = "/profiles/" + profile.getId() + "/activities/" + activity.getId();
     mvcResponse = mvc.perform(
         MockMvcRequestBuilders.put(editActivityUrl)
             .content(jsonString)

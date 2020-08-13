@@ -41,7 +41,7 @@ Feature: Adding hashtags to activities
       | john@pocket.com | Password1 |
     And I log in as a user with email "poly@pocket.com" and password "Password1"
     And user "poly@pocket.com" creates activity "My cool activity" with "restricted" access
-    And user "john@pocket.com" has role "access" on activity "my cool activity"
+    And user "john@pocket.com" has role "access" on activity "My cool activity"
     When user "john@pocket.com" views "My cool activity"
     Then I have response status "200" on activity "My cool activity"
 
