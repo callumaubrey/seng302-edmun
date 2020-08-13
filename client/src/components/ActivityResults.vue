@@ -152,7 +152,7 @@ export default {
       api.getAllActivityResultsByProfileId(this.profileId, this.activityId, this.currentMetric)
           .then((res) => {
             for (let i = 0; i < res.data.length; i++) {
-              if (res.data[i].type == "StartFinish") {
+              if (res.data[i].type == "TimeStartFinish") {
                 this.myResultsFields = [
                   {key: 'result_start', label: 'Start', class: 'medCol'},
                   {key: 'result_finish', label: 'End', class: 'medCol'},
@@ -161,7 +161,7 @@ export default {
                 res.data[i].result_start = this.getSplitDate(res.data[i].result_start);
                 res.data[i].result_finish = this.getSplitDate(res.data[i].result_finish);
               } else {
-                if (res.data[i].type == "Duration") {
+                if (res.data[i].type == "TimeDuration") {
                   res.data[i].value = res.data[i].pretty_result;
                 }
                 this.myResultsFields = [
@@ -184,7 +184,7 @@ export default {
       api.getAllActivityResultsByMetricId(this.activityId, this.currentMetric)
         .then((res) => {
           for (let i = 0; i < res.data.length; i++) {
-            if (res.data[i].type == "StartFinish") {
+            if (res.data[i].type == "TimeStartFinish") {
               this.allResultsFields = [
                 {key: 'fullname', tdClass: 'smallCol'},
                 {key: 'result_start', label: 'Start', class: 'medCol'},
@@ -199,7 +199,7 @@ export default {
                 {key: 'value', tdClass: 'medCol'},
                 {key: 'ranking', tdClass: 'smallCol'}
               ];
-              if (res.data[i].type == "Duration") {
+              if (res.data[i].type == "TimeDuration") {
                 res.data[i].value = res.data[i].pretty_result;
               }
             }
