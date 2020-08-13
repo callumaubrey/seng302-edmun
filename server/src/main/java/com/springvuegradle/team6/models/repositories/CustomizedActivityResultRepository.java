@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface CustomizedActivityResultRepository {
 
-  List<Object[]> getSortedResultsByMetricId(int metricId);
+  List<ActivityResult> getSortedResultsByMetricId(int metricId);
 }

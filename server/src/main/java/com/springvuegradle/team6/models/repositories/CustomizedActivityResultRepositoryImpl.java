@@ -11,18 +11,22 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
   @PersistenceContext
   private EntityManager entityManager;
 
-  public List<Object[]> getSortedResultsByMetricId(int metricId) {
+  public List<ActivityResult> getSortedResultsByMetricId(int metricId) {
     Query query1 =
         this.entityManager.createNativeQuery(
-            "SELECT @SortingDirection \"\\\\:=\" q.rank_by_asc, @SortingUnit \"\\\\:=\" q.unit FROM activity_qualification_metric q WHERE q.id = :metricId");
+            "SELECT @SortingDirection \\:= q.rank_by_asc, @SortingUnit \\:= q.unit "
+                + "FROM activity_qualification_metric q WHERE q.id = :metricId");
     query1.setParameter("metricId", metricId);
-    Query query2 = this.entityManager.createNativeQuery(          "SELECT a.result_type, a.id, a.special_metric, a.count_result, a.distance_result, a.duration_result, a.result_finish, a.result_start, a.metric_id, a.user_id FROM activity_result a "
+
+    Query query2 = this.entityManager.createNativeQuery(
+        "SELECT a.result_type, a.id, a.special_metric, a.count_result, a.distance_result, "
+        + "a.duration_result, a.result_finish, a.result_start, a.metric_id, a.user_id FROM activity_result a "
         + "WHERE a.metric_id = :metricId "
         + "ORDER BY "
         + "CASE WHEN @SortingUnit=0 AND @SortingDirection=1 THEN duration_result ELSE 0 END ASC, "
-        + "CASE WHEN @SortingUnit=0 AND @SortingDirection=0 THEN duration_result ELSE 0 END DESC");
+        + "CASE WHEN @SortingUnit=0 AND @SortingDirection=0 THEN duration_result ELSE 0 END DESC", ActivityResult.class);
     query2.setParameter("metricId", metricId);
-    List<Object[]> rows = query2.getResultList();
+    List<ActivityResult> rows = query2.getResultList();
     return rows;
   }
 }

@@ -568,7 +568,7 @@ public class ActivityMetricController {
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }*/
-    List<Object[]> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
+    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
     return new ResponseEntity(results, HttpStatus.OK);
   }
 
