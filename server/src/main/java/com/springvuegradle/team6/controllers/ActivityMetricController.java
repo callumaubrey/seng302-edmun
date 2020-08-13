@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
@@ -19,7 +20,6 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.requests.EditActivityResultRequest;
@@ -33,14 +33,15 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(
     origins = {
@@ -185,11 +186,13 @@ public class ActivityMetricController {
     if (metricUnit.equals(Unit.Count)) {
       ActivityResult result =
           new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       ActivityResult result =
           new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += "distance: " + request.getValue() + " km";
     } else if (metricUnit.equals(Unit.TimeDuration)) {
@@ -198,11 +201,13 @@ public class ActivityMetricController {
           Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
       Duration duration = Duration.parse(durationString);
       ActivityResult result = new ActivityResultDuration(metric, profile, duration);
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += "duration: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       ActivityResult result =
           new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message +=
           "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
@@ -397,6 +402,7 @@ public class ActivityMetricController {
       }
       ActivityResultCount result = optionalResult.get();
       result.setResult(Integer.parseInt(request.getValue()));
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += "count: " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
@@ -408,6 +414,7 @@ public class ActivityMetricController {
       }
       ActivityResultDistance result = optionalResult.get();
       result.setResult(Float.parseFloat(request.getValue()));
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += "distance: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
@@ -423,6 +430,7 @@ public class ActivityMetricController {
           Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
       Duration duration = Duration.parse(durationString);
       result.setResult(duration);
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message += "duration: " + durationString;
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
@@ -434,6 +442,7 @@ public class ActivityMetricController {
       }
       ActivityResultStartFinish result = optionalResult.get();
       result.setStartFinish(request.getStart(), request.getEnd());
+      result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
       message +=
           "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();

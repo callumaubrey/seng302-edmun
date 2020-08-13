@@ -24,11 +24,14 @@
 
         <!-- Summary -->
         <FollowerSummary class="text-center"
-                         :activityId="parseInt($route.params.activityId)"></FollowerSummary>
+                         :activityId="parseInt($route.params.activityId)"
+                         :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
           <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility"
                          :profileId="profileId"
-                         :activityId="$route.params.activityId"></ShareActivity>
+                         :activityId="$route.params.activityId"
+                         v-on:componentUpdate="forceRerender"
+                         :key="shareActivityKey"></ShareActivity>
         </b-row>
 
         <!-- Actions -->
@@ -104,7 +107,8 @@
                 <b-row class="horizontal-scroll">
                   <div class="d-flex flex-row flex-nowrap">
                     <div v-for="(metric, i) in metrics" v-bind:key="metric">
-                      <b-card v-if="i == metrics.length - 1" :title="metric.title" class="metric-card"
+                      <b-card v-if="i == metrics.length - 1" :title="metric.title"
+                              class="metric-card"
                               style="margin-right:0;">
                         <b-card-body>
                           <p style="font-size:14px;">{{ metric.description }}</p>
@@ -143,6 +147,10 @@
           </b-tab>
           <b-tab title="Results">
             <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
+            <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                       :logged-in-id="loggedInId"
+                                       :profile-id="profileId"></RecordActivityResultModal>
+            <ActivityResults :profile-id="profileId"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>
@@ -151,52 +159,56 @@
 </template>
 
 <script>
-  import NavBar from "@/components/NavBar.vue";
-  import FollowUnfollow from "@/components/FollowUnfollow.vue";
-  import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
-  import FollowerUserList from "../../components/Activity/FollowerUserList";
-  import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
-  import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
-  import api from '@/Api'
-  import AdminMixin from "../../mixins/AdminMixin";
-  import ActivityResults from "../../components/ActivityResults";
+import NavBar from "@/components/NavBar.vue";
+import FollowUnfollow from "@/components/FollowUnfollow.vue";
+import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
+import FollowerUserList from "../../components/Activity/FollowerUserList";
+import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
+import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
+import RecordActivityResultModal from "@/components/Activity/RecordActivityResultModal";
+import api from '@/Api'
+import AdminMixin from "../../mixins/AdminMixin";
+import ActivityResults from "../../components/ActivityResults";
 
-  const App = {
-    name: "App",
-    components: {
-      ActivityResults,
-      NavBar,
-      FollowUnfollow,
-      FollowerUserList,
-      FollowerSummary,
-      ShareActivity,
-      ForbiddenMessage
-    },
-    data: function () {
-      return {
-        //isActivityOwner: false,
-        userData: "",
-        isLoggedIn: false,
-        userName: "",
-        loggedInId: null,
-        profileId: null,
-        activityName: "",
-        description: "",
-        activityTypes: [],
-        continuous: false,
-        startTime: "",
-        endTime: "",
-        location: null,
-        hashtags: [],
-        activityOwner: null,
-        locationString: "",
-        locationDataLoading: true,
-        archived: false,
+const App = {
+  name: "App",
+  components: {
+    ActivityResults,
+    NavBar,
+    FollowUnfollow,
+    FollowerUserList,
+    FollowerSummary,
+    ShareActivity,
+    ForbiddenMessage,
+    RecordActivityResultModal
+  },
+  data: function () {
+    return {
+      //isActivityOwner: false,
+      userData: "",
+      isLoggedIn: false,
+      userName: "",
+      loggedInId: null,
+      profileId: null,
+      activityName: "",
+      description: "",
+      activityTypes: [],
+      continuous: false,
+      startTime: "",
+      endTime: "",
+      location: null,
+      hashtags: [],
+      activityOwner: null,
+      locationString: "",
+      locationDataLoading: true,
+      archived: false,
         notFound: false,
         visibility: null,
         loggedInIsAdmin: false,
         isAuthorized: true,
-        metrics: []
+        metrics: [],
+        followSummaryKey:  0,
+        shareActivityKey: 0
       }
     },
     mounted() {
@@ -211,22 +223,22 @@
         let vueObj = this;
 
         api.getFirstName()
-        .then((res) => {
-          vueObj.userName = res.data;
-        })
-        .catch(() => {
-          vueObj.isLoggedIn = false;
-          vueObj.$router.push('/login');
-        });
+            .then((res) => {
+              vueObj.userName = res.data;
+            })
+            .catch(() => {
+              vueObj.isLoggedIn = false;
+              vueObj.$router.push('/login');
+            });
       },
       getLoggedInId: function () {
         let vueObj = this;
 
         api.getProfileId()
-        .then((res) => {
-          vueObj.loggedInId = res.data;
-          vueObj.isLoggedIn = true;
-        }).catch(() => {
+            .then((res) => {
+              vueObj.loggedInId = res.data;
+              vueObj.isLoggedIn = true;
+            }).catch(() => {
           vueObj.isLoggedIn = false;
           vueObj.$router.push('/login');
         })
@@ -245,10 +257,10 @@
           let profileId = this.$route.params.id;
           let activityId = this.$route.params.activityId;
           api.deleteActivity(profileId, activityId)
-          .then(() => {
-            this.$router.push("/profiles/" + profileId + "/activities/");
-          })
-          .catch(err => alert(err));
+              .then(() => {
+                this.$router.push("/profiles/" + profileId + "/activities/");
+              })
+              .catch(err => alert(err));
         }
       },
       editActivity() {
@@ -266,46 +278,46 @@
         let activityId = this.$route.params.activityId;
 
         api.getActivity(activityId)
-        .then((res) => {
-          if (res.data == "Activity is archived") {
-            this.archived = true;
-          } else {
-            vueObj.activityOwner = res.data.profile;
-            vueObj.activityName = res.data.activityName;
-            vueObj.description = res.data.description;
-            vueObj.activityTypes = res.data.activityTypes;
-            vueObj.continuous = res.data.continuous;
-            vueObj.startTime = res.data.startTime;
-            vueObj.endTime = res.data.endTime;
-            vueObj.location = res.data.location;
-            vueObj.visibility = res.data.visibilityType;
-            if (res.data.visibilityType == null) {
-              vueObj.visibility = "Public"
-            }
-            if (vueObj.location != null) {
-              vueObj.locationString = vueObj.location.city + ", ";
-              if (vueObj.location.state) {
-                vueObj.locationString += vueObj.location.state + ", ";
+            .then((res) => {
+              if (res.data == "Activity is archived") {
+                this.archived = true;
+              } else {
+                vueObj.activityOwner = res.data.profile;
+                vueObj.activityName = res.data.activityName;
+                vueObj.description = res.data.description;
+                vueObj.activityTypes = res.data.activityTypes;
+                vueObj.continuous = res.data.continuous;
+                vueObj.startTime = res.data.startTime;
+                vueObj.endTime = res.data.endTime;
+                vueObj.location = res.data.location;
+                vueObj.visibility = res.data.visibilityType;
+                if (res.data.visibilityType == null) {
+                  vueObj.visibility = "Public"
+                }
+                if (vueObj.location != null) {
+                  vueObj.locationString = vueObj.location.city + ", ";
+                  if (vueObj.location.state) {
+                    vueObj.locationString += vueObj.location.state + ", ";
+                  }
+                  vueObj.locationString += vueObj.location.country;
+                }
+                if (res.data.tags.length > 0) {
+                  for (var i = 0; i < res.data.tags.length; i++) {
+                    vueObj.hashtags.push("#" + res.data.tags[i].name);
+                  }
+                }
+                if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
+                  vueObj.$router.push('/profiles/' + this.profileId);
+                }
+                vueObj.hashtags.sort();
+                if (!vueObj.continuous) {
+                  this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
+                }
+                this.getActivityTypeDisplay(vueObj);
+                this.getMetrics(res.data.profile.id);
               }
-              vueObj.locationString += vueObj.location.country;
-            }
-            if (res.data.tags.length > 0) {
-              for (var i = 0; i < res.data.tags.length; i++) {
-                vueObj.hashtags.push("#" + res.data.tags[i].name);
-              }
-            }
-            if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
-              vueObj.$router.push('/profiles/' + this.profileId);
-            }
-            vueObj.hashtags.sort();
-            if (!vueObj.continuous) {
-              this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
-            }
-            this.getActivityTypeDisplay(vueObj);
-            this.getMetrics(res.data.profile.id);
-          }
-          vueObj.locationDataLoading = false;
-        }).catch((err) => {
+              vueObj.locationDataLoading = false;
+            }).catch((err) => {
           if (err.response && err.response.status == 404) {
             this.notFound = true;
           } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
@@ -319,12 +331,12 @@
       getMetrics(ownerId) {
         let activityId = this.$route.params.activityId;
         api.getActivityMetrics(ownerId, activityId)
-        .then((res) => {
-          this.metrics = res.data;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+            .then((res) => {
+              this.metrics = res.data;
+            })
+            .catch((err) => {
+              console.log(err);
+            });
       },
       checkIsAdmin: async function () {
         this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
@@ -348,6 +360,11 @@
       clickHashtag(hashtag) {
         hashtag = hashtag.substring(1);
         this.$router.push("/hashtag/" + hashtag);
+      },
+      forceRerender(value) {
+        this.visibility = value;
+        this.shareActivityKey += 1;
+        this.followSummaryKey += 1;
       }
     }
   };

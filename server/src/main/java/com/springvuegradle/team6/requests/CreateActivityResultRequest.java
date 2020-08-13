@@ -1,9 +1,8 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.entities.Unit;
+import com.springvuegradle.team6.models.entities.SpecialMetric;
 import java.time.LocalDateTime;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class CreateActivityResultRequest {
@@ -21,6 +20,9 @@ public class CreateActivityResultRequest {
   @JsonProperty("end")
   private LocalDateTime end;
 
+  @JsonProperty("special_metric")
+  private SpecialMetric specialMetric;
+
   public int getMetricId() {
     return metricId;
   }
@@ -35,5 +37,9 @@ public class CreateActivityResultRequest {
 
   public LocalDateTime getEnd() {
     return end;
+  }
+
+  public SpecialMetric getSpecialMetric() {
+    return specialMetric;
   }
 }
