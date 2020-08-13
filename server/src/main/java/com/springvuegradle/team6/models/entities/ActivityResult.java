@@ -85,5 +85,4 @@ public class ActivityResult {
     return this.specialMetric;
   }
 
-
 }
