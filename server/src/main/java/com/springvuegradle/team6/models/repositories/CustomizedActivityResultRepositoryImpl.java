@@ -1,9 +1,6 @@
 package com.springvuegradle.team6.models.repositories;
 
 import com.springvuegradle.team6.models.entities.*;
-import org.springframework.jmx.support.MetricType;
-
-import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,6 +12,7 @@ import javax.persistence.Query;
  * an SQL VIEW table.
  */
 public class CustomizedActivityResultRepositoryImpl implements CustomizedActivityResultRepository {
+
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -45,16 +43,16 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
   /**
    * Returns an SQL string of a unit including the sorting expression
    * @param unit Unit for this sort case
-   * @param sort_expression sort expression for the sort unit
+   * @param sortExpression sort expression for the sort unit
    * @return SQL query sort cases
    */
-  private String getResultSortCases(Unit unit, String sort_expression, boolean isLast) {
+  private String getResultSortCases(Unit unit, String sortExpression, boolean isLast) {
     if (isLast) {
-      return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sort_expression+" ELSE 0 END ASC, "
-          + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sort_expression+" ELSE 0 END DESC";
+      return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sortExpression+" ELSE 0 END ASC, "
+          + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sortExpression+" ELSE 0 END DESC";
     }
-    return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sort_expression+" ELSE 0 END ASC, "
-            + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sort_expression+" ELSE 0 END DESC, ";
+    return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sortExpression+" ELSE 0 END ASC, "
+            + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sortExpression+" ELSE 0 END DESC, ";
   }
 
   /**
@@ -63,8 +61,7 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
    * @param profileID optional profile id to limit search to.
    * @return The built query
    */
-  private Query getResultSortedQuery(ActivityQualificationMetric metric, Integer profileID)
-  {
+  private Query getResultSortedQuery(ActivityQualificationMetric metric, Integer profileID) {
     StringBuilder queryStr = new StringBuilder();
 
     // Add SELECT Statement
@@ -83,8 +80,6 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
     queryStr.append(getResultSortCases(Unit.Distance, ActivityResultDistance.SQL_SORT_EXPRESSION, false));
     queryStr.append(getResultSortCases(Unit.TimeDuration, ActivityResultDuration.SQL_SORT_EXPRESSION, false));
     queryStr.append(getResultSortCases(Unit.TimeStartFinish, ActivityResultStartFinish.SQL_SORT_EXPRESSION, true));
-
-    System.out.println(queryStr.toString());
 
     Query query = this.entityManager.createNativeQuery(queryStr.toString(), ActivityResult.class);
     query.setParameter("metricId", metric.getId());
