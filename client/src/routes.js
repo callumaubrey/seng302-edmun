@@ -11,7 +11,8 @@ import CreateActivity from './pages/CreateActivity/App';
 import Activity from './pages/ViewActivity/App';
 import EditActivity from "./pages/EditActivity/EditActivity";
 import ListActivity from './pages/ListActivity/App';
-import Search from './pages/Search/App';
+import SearchUsers from './pages/SearchUsers/App';
+import SearchActivity from "./pages/SearchActivity/App";
 import HashTag from './pages/HashTag/App';
 import HomeFeed from './pages/HomeFeed/App';
 
@@ -27,7 +28,8 @@ const routes = [
     {path: '/profiles/:id/activities/:activityId/edit', component: EditActivity},
     {path: '/profiles/:id/activities/:activityId', component: Activity},
     {path: '/profiles/:id/activities/', component: ListActivity},
-    {path: '/profiles', component: Search, name: 'Users' },
+    {path: '/activities/search', component: SearchActivity},
+    {path: '/profiles', component: SearchUsers, name: 'Users' },
     {path: '/hashtag/:hashtag', component: HashTag },
     {path: '/home', component: HomeFeed }
     ];
