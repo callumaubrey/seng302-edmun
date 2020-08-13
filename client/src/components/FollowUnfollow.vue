@@ -24,7 +24,7 @@
 
     const FollowUnfollow = {
         name: "FollowUnfollow",
-        components: {Notification},
+        components: {},
         props: {
             activityId: {
                 type: Number,
