@@ -10,33 +10,34 @@ let wrapper;
 jest.mock('@/Api.js', () => jest.fn);
 
 api.getActivityTypes = jest.fn(() => {
-    return Promise.resolve({data: ["Run","Bike","Hike","Walk","Swim"], status: 200})
+  return Promise.resolve(
+      {data: ["Run", "Bike", "Hike", "Walk", "Swim"], status: 200})
 });
 
 beforeEach(() => {
-    wrapper = mount(Component, {
-        propsData: {},
-        mocks: {},
-        stubs: {},
-        methods: {},
-        localVue,
-        api
-    });
+  wrapper = mount(Component, {
+    propsData: {},
+    mocks: {},
+    stubs: {},
+    methods: {},
+    localVue,
+    api
+  });
 });
 
 afterEach(() => {
-    wrapper.destroy();
+  wrapper.destroy();
 });
 
 describe('ActivityNameSearch.vue', () => {
-    test('is a Vue instance', () => {
-        expect(wrapper.isVueInstance).toBeTruthy();
-    });
+  test('is a Vue instance', () => {
+    expect(wrapper.isVueInstance).toBeTruthy();
+  });
 
-    test('Select Activity Type', async () => {
-        expect(wrapper.find('#activity-type-dropdown').exists()).toBe(true);
-        await wrapper.find('#activity-type-dropdown').trigger('click');
-        await wrapper.vm.$nextTick();
-        expect(wrapper.emitted().selectedActivityTypes).toBeTruthy();
-    });
+  test('Select Activity Type', async () => {
+    expect(wrapper.find('#activity-type-dropdown').exists()).toBe(true);
+    await wrapper.find('#activity-type-dropdown').trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted().selectedActivityTypes).toBeTruthy();
+  });
 });
