@@ -1531,4 +1531,243 @@ public class FollowControllerTest {
 
     Assert.assertEquals("true", result);
   }
+
+  @Test
+  void testUserUpdateRoleToParticipant() throws Exception {
+    // Create Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Fun Activity");
+    activity.setDescription("Very Fun");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity = activityRepository.save(activity);
+    int participantActivityId = activity.getId();
+
+    // Check 200 on participate
+    mvc.perform(
+      MockMvcRequestBuilders.post(
+              "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+              .accept(MediaType.APPLICATION_JSON)
+              .session(session))
+      .andExpect(status().is2xxSuccessful());
+
+    // Check user is now a participant
+    String response = mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject response_json = new JSONObject(response);
+
+    Assert.assertTrue(response_json.getBoolean("participant"));
+  }
+
+  @Test
+  void testUserUpdateRoleToParticipantAndIsSubscribed() throws Exception {
+    // Create Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Fun Activity");
+    activity.setDescription("Very Fun");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity = activityRepository.save(activity);
+    int participantActivityId = activity.getId();
+
+    // Check 200 on participate
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    // Check user is now a participant
+    String response = mvc.perform(
+            MockMvcRequestBuilders.get(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + participantActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject response_json = new JSONObject(response);
+
+    Assert.assertTrue(response_json.getBoolean("participant"));
+
+    // Check User is subscribed
+    List<SubscriptionHistory> subscription = subscriptionHistoryRepository.findActive(participantActivityId, otherId);
+    Assert.assertFalse("User has no subscription to activity", subscription.isEmpty());
+  }
+
+  @Test
+  void testUserRemovesParticipantRole() throws Exception {
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(profileRepository.findById(otherId));
+    role.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(role);
+
+    // Remove participant role
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
+
+    // Check user is now follower
+    ActivityRole newRole = activityRoleRepository.findByProfile_IdAndActivity_Id(otherId, activityId);
+    Assert.assertEquals(ActivityRoleType.Follower, newRole.getActivityRoleType());
+  }
+
+  @Test
+  void testUserFollowerCannotRemoveParticipantRole() throws Exception {
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(profileRepository.findById(otherId));
+    role.setActivityRoleType(ActivityRoleType.Follower);
+    activityRoleRepository.save(role);
+
+    // Remove participant role
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testUserCannotChangeOtherParticipantRole() throws Exception {
+    // Create New Profile
+    Profile newProfile = new Profile();
+    newProfile.setFirstname("Poly");
+    newProfile.setLastname("Pocket");
+    Set<Email> emailSet = new HashSet<>();
+    Email email = new Email("polypo@pocket.com");
+    email.setPrimary(true);
+    emailSet.add(email);
+    newProfile.setEmails(emailSet);
+    newProfile.setDob("2010-01-01");
+    newProfile.setPassword("Password1");
+    newProfile.setGender("female");
+    newProfile = profileRepository.save(newProfile);
+
+    // Set user to participant in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activityRepository.findById(activityId).get());
+    role.setProfile(newProfile);
+    role.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(role);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/" + newProfile.getId() + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testUserUnauthorisedToUpdateRoleToParticipantOnRestricted() throws Exception {
+    // Create Restricted Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Restricted Activity");
+    activity.setDescription("Very Restricted");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int restrictedActivityId = activity.getId();
+
+    // Check 4xx error on post
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + restrictedActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testUserUnauthorisedToUpdateRoleToParticipantOnPrivate() throws Exception {
+    // Create Private Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Private Activity");
+    activity.setDescription("Very Private");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Private);
+    activity = activityRepository.save(activity);
+    int privateActivityId = activity.getId();
+
+    // Check 4xx error on post
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + privateActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testCreatorUserUnableToUpdateRoleToParticipant() throws Exception {
+    // Check 4xx on participate
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + id + "/subscriptions/activities/" + activityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testOrganiserUserUnableToUpdateRoleToParticipant() throws Exception {
+    // Create Activity
+    Activity activity = new Activity();
+    activity.setActivityName("My Organised Activity");
+    activity.setDescription("Very Organised");
+    activity.setContinuous(true);
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Bike);
+    activity.setActivityTypes(activityTypes);
+    activity.setProfile(profileRepository.findById(id));
+    activity = activityRepository.save(activity);
+    int organisedActivityId = activity.getId();
+
+    // Set user to organiser in activity
+    ActivityRole role = new ActivityRole();
+    role.setActivity(activity);
+    role.setProfile(profileRepository.findById(otherId));
+    role.setActivityRoleType(ActivityRoleType.Organiser);
+    activityRoleRepository.save(role);
+
+    // Check 4xx on Participate
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/" + otherId + "/subscriptions/activities/" + organisedActivityId + "/participate")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
 }
