@@ -53,9 +53,9 @@
       <b-col class="method-col">
         <label style="margin-right:10px;">Search Method: </label>
         <b-form-radio-group id="activityTypesSearchMethods" aria-describedby="activityTypesSearchMethodsHelp" v-model="childSearchMethod" @change="emitSearchMethod" >
-          <b-form-radio class="searchByRadio" value="AND" >And
+          <b-form-radio id="radio-and" class="searchByRadio" value="AND"  >And
           </b-form-radio>
-          <b-form-radio class="searchByRadio" value="OR">Or
+          <b-form-radio id="radio-or" class="searchByRadio" value="OR">Or
           </b-form-radio>
         </b-form-radio-group>
       </b-col>
@@ -141,7 +141,6 @@
         }
       },
       emitSearchMethod(method) {
-        console.log(method);
         this.childSearchMethod = method;
         this.$emit('emitSearchMethod', this.childSearchMethod);
       },

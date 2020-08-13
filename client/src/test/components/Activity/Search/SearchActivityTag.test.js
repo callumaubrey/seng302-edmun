@@ -31,9 +31,15 @@ beforeEach(() => {
       values: [],
       inputCharacterLimit: 140
     },
+    data() {
+      return {
+        childSearchMethod: 'AND'
+      }
+    },
     mocks: {},
     stubs: {},
-    methods: {},
+    methods: {
+    },
     localVue,
     api
   });
@@ -57,7 +63,7 @@ describe('SearchActivityTag.vue', () => {
     expect(wrapper.emitted().emitInput).toBeFalsy();
   })
 
-  test('data emitted when there is correct hashtag input', async () => {
+  test('hashtag emitted when there is correct hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
     await wrapper.setData({value: "hashtag"});
@@ -65,10 +71,12 @@ describe('SearchActivityTag.vue', () => {
         "hashtag");
     await wrapper.find('#add-hashtag-button').trigger('click');
     expect(wrapper.vm.inputState()).toBe(null);
-    expect(wrapper.emitted().emitInput).toBeTruthy();
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted().emitTags).toBeTruthy();
   })
 
-  test('data not emitted when invalid hashtag input', async () => {
+  test('hashtag not emitted when invalid hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
     await wrapper.setData({value: "someHashtag*",});
@@ -79,6 +87,27 @@ describe('SearchActivityTag.vue', () => {
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted().emitInput).toBeFalsy();
+  })
+
+  test('AND method emitted when there is correct AND input', async () => {
+    expect(wrapper.find('#radio-and').exists()).toBe(true);
+    await wrapper.find('#radio-and').trigger('change');
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('emitSearchMethod')).toBeTruthy();
+    expect(wrapper.emitted().emitSearchMethod[0]).toEqual(['AND'])
+  })
+
+  test('OR method emitted when there is correct OR input', async () => {
+    expect(wrapper.find('#radio-or').exists()).toBe(true);
+
+    await wrapper.find('#radio-or').trigger('click');
+    await wrapper.vm.$nextTick();
+    await wrapper.find('#radio-or').trigger('change');
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('emitSearchMethod')).toBeTruthy();
+    expect(wrapper.emitted().emitSearchMethod[0]).toEqual(['OR'])
   })
 
 });
