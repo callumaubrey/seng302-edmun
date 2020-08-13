@@ -3,6 +3,8 @@ package com.springvuegradle.team6.controllers;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.security.UserSecurityService;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import net.minidev.json.JSONObject;
@@ -42,24 +44,37 @@ public class SearchActivityController {
   }
 
   /**
-   * This endpoint is used for searching for an activity.
-   * Anyone that is logged in can use this endpoint.
+   * This endpoint is used for searching for an activity. Anyone that is logged in can use this
+   * endpoint.
    *
    * @param activityName name to search for
    * @param activityTypes activity types to search for
    * @param activityTypesMethod the method of searching activity types (OR or AND)
    * @param hashtags hashtags to search for
    * @param hashtagsMethod the method of searching hashtags (OR or AND)
+   * @param time whether searching for duration or continuous activities, if not provided search for
+   *     all activities
+   * @param startDate if duration is selected, the startDate specifies the earliest starting date
+   *     any activity can have in the results
+   * @param endDate if duration is selected, the endDate specified the latest ending date any
+   *     activity can have in the results
+   * @param offset how many activities to skip in the results
+   * @param limit how many activities to return in the results
    * @param session the logged in session
-   * @return
+   * @return list of activities based on the search parameters
    */
   @GetMapping()
-  public ResponseEntity getActivity(
+  public ResponseEntity getActivities(
       @RequestParam(name = "name", required = false) String activityName,
       @RequestParam(name = "types", required = false) String activityTypes,
       @RequestParam(name = "types-method", required = false) String activityTypesMethod,
       @RequestParam(name = "hashtags", required = false) String hashtags,
       @RequestParam(name = "hashtags-method", required = false) String hashtagsMethod,
+      @RequestParam(name = "time", required = false) String time,
+      @RequestParam(name = "start-date", required = false) String startDate,
+      @RequestParam(name = "end-date", required = false) String endDate,
+      @RequestParam(name = "offset", required = false) Integer offset,
+      @RequestParam(name = "limit", required = false) Integer limit,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -67,9 +82,9 @@ public class SearchActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    if (activityName == null) {
+    Integer profileId = (Integer) id;
 
-    }
+    boolean isAdmin = UserSecurityService.checkIsAdmin();
 
     String[] activityTypesArray = null;
     if (activityTypes != null) {
@@ -81,12 +96,173 @@ public class SearchActivityController {
       hashtagsArray = hashtags.split("%20");
     }
 
+    LocalDateTime startDateLDT = null;
+    LocalDateTime endDateLDT = null;
+
+    if (time != null && time.toLowerCase().equals("duration")) {
+      if (startDate != null) {
+        String startYear = startDate.substring(0, 4);
+        String startMonth = startDate.substring(4, 6);
+        String startDay = startDate.substring(6, 8);
+        startDateLDT =
+            LocalDateTime.of(
+                Integer.parseInt(startYear),
+                Integer.parseInt(startMonth),
+                Integer.parseInt(startDay),
+                0,
+                0);
+      }
+      if (endDate != null) {
+        String endYear = endDate.substring(0, 4);
+        String endMonth = endDate.substring(4, 6);
+        String endDay = endDate.substring(6, 8);
+        endDateLDT =
+            LocalDateTime.of(
+                Integer.parseInt(endYear),
+                Integer.parseInt(endMonth),
+                Integer.parseInt(endDay),
+                23,
+                59,
+                59,
+                999);
+      }
+    }
+
+    if (offset == null) {
+      offset = -1;
+    }
+
+    if (limit == null) {
+      limit = -1;
+    }
 
     List<Activity> activityList =
         activityRepository.searchActivity(
-            activityName, activityTypesArray, hashtagsArray, activityTypesMethod, hashtagsMethod, null, null, null, 0, 0);
+            activityName,
+            activityTypesArray,
+            hashtagsArray,
+            activityTypesMethod,
+            hashtagsMethod,
+            time,
+            startDateLDT,
+            endDateLDT,
+            limit,
+            offset,
+            profileId,
+            isAdmin);
     JSONObject resultsObject = new JSONObject();
     resultsObject.put("results", activityList);
     return new ResponseEntity(resultsObject, HttpStatus.OK);
+  }
+
+  /**
+   * This endpoint is used for finding how many activities will return from the specifed parameters.
+   * Anyone that is logged in can use this endpoint.
+   *
+   * @param activityName name to search for
+   * @param activityTypes activity types to search for
+   * @param activityTypesMethod the method of searching activity types (OR or AND)
+   * @param hashtags hashtags to search for
+   * @param hashtagsMethod the method of searching hashtags (OR or AND)
+   * @param time whether searching for duration or continuous activities, if not provided search for
+   *     all activities
+   * @param startDate if duration is selected, the startDate specifies the earliest starting date
+   *     any activity can have in the results
+   * @param endDate if duration is selected, the endDate specified the latest ending date any
+   *     activity can have in the results
+   * @param offset how many activities to skip in the results
+   * @param limit how many activities to return in the results
+   * @param session the logged in session
+   * @return number of activities that will return based on the search parameters.
+   */
+  @GetMapping()
+  @RequestMapping(value = "/count")
+  public ResponseEntity getActivitiesCount(
+      @RequestParam(name = "name", required = false) String activityName,
+      @RequestParam(name = "types", required = false) String activityTypes,
+      @RequestParam(name = "types-method", required = false) String activityTypesMethod,
+      @RequestParam(name = "hashtags", required = false) String hashtags,
+      @RequestParam(name = "hashtags-method", required = false) String hashtagsMethod,
+      @RequestParam(name = "time", required = false) String time,
+      @RequestParam(name = "start-date", required = false) String startDate,
+      @RequestParam(name = "end-date", required = false) String endDate,
+      @RequestParam(name = "offset", required = false) Integer offset,
+      @RequestParam(name = "limit", required = false) Integer limit,
+      HttpSession session) {
+
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    Integer profileId = (Integer) id;
+
+    boolean isAdmin = UserSecurityService.checkIsAdmin();
+
+    String[] activityTypesArray = null;
+    if (activityTypes != null) {
+      activityTypesArray = activityTypes.split("%20");
+    }
+
+    String[] hashtagsArray = null;
+    if (hashtags != null) {
+      hashtagsArray = hashtags.split("%20");
+    }
+
+    LocalDateTime startDateLDT = null;
+    LocalDateTime endDateLDT = null;
+
+    if (time != null && time.toLowerCase().equals("duration")) {
+      if (startDate != null) {
+        String startYear = startDate.substring(0, 4);
+        String startMonth = startDate.substring(4, 6);
+        String startDay = startDate.substring(6, 8);
+        startDateLDT =
+            LocalDateTime.of(
+                Integer.parseInt(startYear),
+                Integer.parseInt(startMonth),
+                Integer.parseInt(startDay),
+                0,
+                0);
+      }
+      if (endDate != null) {
+        String endYear = endDate.substring(0, 4);
+        String endMonth = endDate.substring(4, 6);
+        String endDay = endDate.substring(6, 8);
+        endDateLDT =
+            LocalDateTime.of(
+                Integer.parseInt(endYear),
+                Integer.parseInt(endMonth),
+                Integer.parseInt(endDay),
+                23,
+                59,
+                59,
+                999);
+      }
+    }
+
+    if (offset == null) {
+      offset = -1;
+    }
+
+    if (limit == null) {
+      limit = -1;
+    }
+
+    Integer count =
+        activityRepository.searchActivityCount(
+            activityName,
+            activityTypesArray,
+            hashtagsArray,
+            activityTypesMethod,
+            hashtagsMethod,
+            time,
+            startDateLDT,
+            endDateLDT,
+            limit,
+            offset,
+            profileId,
+            isAdmin);
+    return new ResponseEntity(count, HttpStatus.OK);
   }
 }

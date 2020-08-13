@@ -2,6 +2,7 @@ package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +23,6 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
-import org.apache.lucene.analysis.ngram.NGramFilterFactory;
-import org.apache.lucene.analysis.standard.StandardFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -37,6 +36,7 @@ import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
 
 @Indexed
@@ -72,6 +72,35 @@ public class Activity {
     this.creationDate = LocalDateTime.now();
   }
 
+  public Activity(CreateActivityRequest request, Profile profile) {
+    this.profile = profile;
+    this.activityName = request.activityName;
+    this.description = request.description;
+    this.activityTypes = request.activityTypes;
+    this.tags = request.hashTags;
+    this.continuous = request.continuous;
+
+    if (!this.continuous) {
+      this.startTime =
+          LocalDateTime.parse(
+              request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      this.endTime =
+          LocalDateTime.parse(
+              request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+    }
+
+    if (request.location != null) {
+      this.location =
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
+    }
+    if (request.visibility != null) {
+      setVisibilityTypeByString(request.visibility);
+    } else {
+      this.visibilityType = VisibilityType.Public;
+    }
+  }
+
   @Size(max = NAME_MAX_LENGTH)
   @Column(length = NAME_MAX_LENGTH, name = "activity_name")
   @Field(
@@ -89,36 +118,13 @@ public class Activity {
 
   @ManyToOne
   @JoinColumn(name = "author_id", nullable = false)
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @FieldBridge(impl = IntegerBridge.class)
   private Profile profile;
 
   @Size(max = DESCRIPTION_MAX_LENGTH)
   @Column(length = DESCRIPTION_MAX_LENGTH)
   private String description;
-
-  public Activity(CreateActivityRequest request, Profile profile) {
-    this.profile = profile;
-    this.activityName = request.activityName;
-    this.description = request.description;
-    this.activityTypes = request.activityTypes;
-    this.tags = request.hashTags;
-    this.continuous = request.continuous;
-
-    if (!this.continuous) {
-      this.startTime = request.startTime;
-      this.endTime = request.endTime;
-    }
-
-    if (request.location != null) {
-      this.location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
-    }
-    if (request.visibility != null) {
-      setVisibilityTypeByString(request.visibility);
-    } else {
-      this.visibilityType = VisibilityType.Public;
-    }
-  }
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
@@ -136,11 +142,16 @@ public class Activity {
   @FieldBridge(impl = BuiltinIterableBridge.class)
   private Set<Tag> tags;
 
+  @Field(analyze = Analyze.YES, store = Store.NO, name = "continuous")
   private boolean continuous;
 
-  private String startTime;
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @Column(columnDefinition = "datetime")
+  private LocalDateTime startTime;
 
-  private String endTime;
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @Column(columnDefinition = "datetime")
+  private LocalDateTime endTime;
 
   @ManyToOne private NamedLocation location;
 
@@ -155,9 +166,13 @@ public class Activity {
   private boolean archived;
 
   @OneToMany(mappedBy = "activity")
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @IndexedEmbedded
+  @FieldBridge(impl = BuiltinIterableBridge.class)
   private List<ActivityRole> activityRole;
 
   @Enumerated(EnumType.ORDINAL)
+  @Field(analyze = Analyze.YES, store = Store.NO, name = "visibility")
   private VisibilityType visibilityType;
 
   @OneToMany(mappedBy = "activity")
@@ -195,19 +210,19 @@ public class Activity {
     this.continuous = continuous;
   }
 
-  public String getStartTime() {
+  public LocalDateTime getStartTime() {
     return startTime;
   }
 
-  public void setStartTime(String startTime) {
+  public void setStartTime(LocalDateTime startTime) {
     this.startTime = startTime;
   }
 
-  public String getEndTime() {
+  public LocalDateTime getEndTime() {
     return endTime;
   }
 
-  public void setEndTime(String endTime) {
+  public void setEndTime(LocalDateTime endTime) {
     this.endTime = endTime;
   }
 
