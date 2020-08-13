@@ -68,7 +68,10 @@ export default {
 
     getIsSubscribed: (userId, activityId) => instance.get('/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
-        getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
+    getActivityMemberCounts: (activityId) => instance.get('/activities/' + activityId + '/membercount'),
+
+    getActivityTypes: () => instance.get('/profiles/activity-types'),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
