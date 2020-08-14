@@ -200,9 +200,7 @@ public class ActivityController {
       LocalDateTime startDateTime;
       LocalDateTime endDateTime;
       try {
-        startDateTime =
-            LocalDateTime.parse(
-                activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        startDateTime = activity.getStartTime();
         if (startDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
@@ -215,9 +213,7 @@ public class ActivityController {
       }
 
       try {
-        endDateTime =
-            LocalDateTime.parse(
-                activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        endDateTime = activity.getEndTime();
         if (endDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
@@ -267,9 +263,7 @@ public class ActivityController {
         newStartDateTime =
             LocalDateTime.parse(
                 request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        oldStartDateTime =
-            LocalDateTime.parse(
-                activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        oldStartDateTime = activity.getStartTime();
         // If the activity has already begun but the author changes the activity name, then it
         // needs to make sure the to accept the old start time which is before now
         if (newStartDateTime.isBefore(LocalDateTime.now())
@@ -510,8 +504,12 @@ public class ActivityController {
       activity.setStartTime(null);
       activity.setEndTime(null);
     } else {
-      activity.setStartTime(request.startTime);
-      activity.setEndTime(request.endTime);
+      activity.setStartTime(
+          LocalDateTime.parse(
+              request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
+      activity.setEndTime(
+          LocalDateTime.parse(
+              request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
     }
     if (request.visibility != null) {
       activity.setVisibilityTypeByString(request.visibility);

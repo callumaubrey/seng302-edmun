@@ -2,7 +2,7 @@
     <div>
         <b-row style="margin-top:0.5rem;">
             <b-button v-if="displayButton && !isSubscribed" @click="followActivity" variant="success" style="margin: 10px">Follow</b-button>
-            <b-button v-if="displayButton && isSubscribed" @click="unfollowActivity" variant="danger" style="margin: 10px">Unfollow</b-button>
+            <b-button v-if="displayButton && isSubscribed" @click="confirmUnfollowActivity" variant="danger" style="margin: 10px">Unfollow</b-button>
             <b-button v-if="!isGoing" @click="setGoing" variant="success" style="margin: 10px">Going</b-button>
             <b-button v-if="isGoing" @click="setNotGoing" variant="danger" style="margin: 10px">Not Going</b-button>
         </b-row>
@@ -65,6 +65,7 @@
                         alert(err.body)
                     });
             },
+
             unfollowActivity: async function() {
                 await api.unsubscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
@@ -74,9 +75,30 @@
                         alert(err.body)
                     });
             },
+
+            confirmUnfollowActivity: function() {
+                if (this.isGoing) {
+                    // Confirmation modal
+                    this.$bvModal.msgBoxConfirm('Unfollowing Will Remove You As A Participant', {
+                        title: 'Are you sure you would like to unfollow?',
+                        okVariant: 'danger',
+                        okTitle: 'Yes',
+                        cancelTitle: 'Cancel',
+                        centered: true
+                    }).then(confirmed => {
+                        if (confirmed) {
+                            this.unfollowActivity()
+                        }
+                    });
+                } else {
+                    this.unfollowActivity()
+                }
+            },
+
             setGoing: function() {
                 // TODO add api call to set user to going and also to follow if not already
             },
+
             setNotGoing: function() {
                 // TODO add api call to set user not going
             }
