@@ -325,10 +325,8 @@ public class TagControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(2, result.length());
 
     LocalDateTime dateTime = LocalDateTime.parse(result.getJSONObject(0).getString("creationDate"));
-    System.out.println(dateTime);
     LocalDateTime dateTime1 =
         LocalDateTime.parse(result.getJSONObject(1).getString("creationDate"));
-    System.out.println(dateTime1);
     org.junit.jupiter.api.Assertions.assertTrue(dateTime.isAfter(dateTime1));
   }
 
