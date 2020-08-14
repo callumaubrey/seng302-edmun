@@ -509,7 +509,7 @@ public class ActivityMetricController {
    * @return activity results, if user has no results return 404
    */
   @GetMapping("/activities/{activityId}/result/{metricId}/{profileId}")
-  public ResponseEntity getAllActivityResultsForSingleUser(
+  public ResponseEntity getActivityResultsByMetricAndProfileId(
       @PathVariable int profileId, @PathVariable int activityId, @PathVariable int metricId, HttpSession session) {
     Object id = session.getAttribute("id");
 

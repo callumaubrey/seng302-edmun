@@ -99,10 +99,10 @@ export default {
       metricIds: [],
       metricTitles: [],
       metricTypes: [],
-      perPageAll: 2,
+      perPageAll: 10,
       currentPageAll: 1,
       rowsAll: 0,
-      perPageOwn: 2,
+      perPageOwn: 10,
       currentPageOwn: 1,
       rowsOwn: 0
     }
