@@ -92,11 +92,19 @@
         method: "AND"
       }
     },
+
     computed: {
+      /**
+       * Computes the search criteria for searching for an activity type
+       */
       criteria() {
-        // Compute the search criteria
         return this.searchQuery.trim().toLowerCase()
       },
+      /**
+       * Gets the available options for a user to select in activity type dropdown
+       * Filters out already selected options then if there is an input to the search box, return
+       * all activity types that adhere to the search requirements
+       */
       availableOptions() {
         const criteria = this.criteria;
         // Filter out already selected options
@@ -109,6 +117,9 @@
         // Show all options available
         return options
       },
+      /**
+       * If the search returned zero responses return a message to let user know
+       */
       searchDesc() {
         if (this.criteria && this.availableOptions.length === 0) {
           return 'There are no tags matching your search criteria'
@@ -118,6 +129,9 @@
 
     },
     methods: {
+      /**
+       * Gets all activity types from the backend and sets the response to activityTypeOptions
+       */
       getActivitiesTypesFromApi: function () {
         let currentObj = this;
         api.getActivityTypes()
@@ -128,6 +142,12 @@
           console.log(error.response.data);
         });
       },
+      /**
+       * Call when the user selects an activity type, the updated selected activity types are then
+       * emitted to the parent component
+       * @param option the activity type the user has currently selected
+       * @param addTag updates the selected activity types
+       */
       async onOptionClick({option, addTag}) {
         await addTag(option);
         this.searchQuery = ''
@@ -142,14 +162,23 @@
         await removeTag(tag)
         this.emitActivityTypes();
       },
+      /**
+       * Emits the updated activity type list to the parent component
+       */
       emitActivityTypes() {
         this.$emit('selectedActivityTypes', this.selectedOptions)
       },
+      /**
+       * Emits the updated activity type method (either 'AND' or 'OR') to the parent component
+       */
       emitMethod(method) {
         this.method = method;
         this.$emit('activityTypeMethod', this.method)
       },
     },
+    /**
+     * Called when the page loads
+     */
     mounted() {
       this.getActivitiesTypesFromApi()
     }
