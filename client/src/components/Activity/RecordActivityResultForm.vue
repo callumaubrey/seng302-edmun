@@ -304,7 +304,7 @@
         }
         api.updateActivityResult(this.profileId, this.activityId, this.result.id,
             data)
-        .then((res) => {
+        .then(() => {
           this.result.isEditMode = false
           this.$v.result.$reset();
           this.$v.$reset();
