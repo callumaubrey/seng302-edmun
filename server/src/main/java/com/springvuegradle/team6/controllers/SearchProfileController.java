@@ -88,8 +88,6 @@ public class SearchProfileController {
     }
 
     List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, activityTypesWithSpaces, method, limit, offset);
-    System.out.println(fullNameWithSpaces);
-    System.out.println(profiles.size());
     List<SearchProfileResponse> results = new ArrayList<>();
     for (Profile profile : profiles) {
       SearchProfileResponse result =

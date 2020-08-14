@@ -503,9 +503,6 @@ class EditActivityTest {
     for (Tag tag : result) {
       resultStrings.add(tag.getName());
     }
-    System.out.println("Flag");
-    System.out.println(resultStrings);
-    System.out.println(expectedResult);
     org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
   }
 
@@ -552,9 +549,6 @@ class EditActivityTest {
     for (Tag tag : result) {
       resultStrings.add(tag.getName());
     }
-    System.out.println("Flag");
-    System.out.println(resultStrings);
-    System.out.println(expectedResult);
     org.junit.jupiter.api.Assertions.assertTrue(resultStrings.containsAll(expectedResult));
   }
 

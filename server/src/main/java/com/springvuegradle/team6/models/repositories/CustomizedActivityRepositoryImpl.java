@@ -186,10 +186,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
 
     if (time != null) {
       BooleanJunction timeQuery = addTimeQuery(queryBuilder, time, startDate, endDate);
-      System.out.println("time query made");
       if (finalQuery == null) {
         finalQuery = timeQuery.createQuery();
-        System.out.println("Final query made");
       } else {
         finalQuery =
             queryBuilder.bool().must(finalQuery).must(timeQuery.createQuery()).createQuery();
@@ -301,13 +299,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     } else {
       query = queryBuilder.keyword().onField("continuous").matching(false).createQuery();
       if (startDate != null) {
-        System.out.println("start date query made");
         Query startDateQuery =
             queryBuilder.range().onField("startTime").above(startDate).createQuery();
         booleanJunction.must(startDateQuery);
       }
       if (endDate != null) {
-        System.out.println("end date query made");
         Query endDateQuery = queryBuilder.range().onField("endTime").below(endDate).createQuery();
         booleanJunction.must(endDateQuery);
       }

@@ -250,8 +250,6 @@ public class SearchActivityControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println("right here");
-    System.out.println(obj);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }

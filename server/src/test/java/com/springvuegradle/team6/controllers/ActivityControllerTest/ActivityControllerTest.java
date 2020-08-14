@@ -1163,8 +1163,6 @@ class ActivityControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .session(session));
 
-    System.out.println(session.getAttribute("id"));
-
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
                 .contentType(MediaType.APPLICATION_JSON)
