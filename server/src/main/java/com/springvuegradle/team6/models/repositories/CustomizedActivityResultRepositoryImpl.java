@@ -42,17 +42,30 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
 
   /**
    * Returns an SQL string of a unit including the sorting expression
-   * @param unit Unit for this sort case
-   * @param sortExpression sort expression for the sort unit
+   * @param metric The metric to build the sort string query from
    * @return SQL query sort cases
    */
-  private String getResultSortCases(Unit unit, String sortExpression, boolean isLast) {
-    if (isLast) {
-      return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sortExpression+" ELSE 0 END ASC, "
-          + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sortExpression+" ELSE 0 END DESC";
+  private String getResultSortString(ActivityQualificationMetric metric) {
+    StringBuilder sortBy = new StringBuilder();
+    sortBy.append("ORDER BY ");
+
+    switch (metric.getUnit()) {
+      case TimeDuration:
+        sortBy.append(ActivityResultDuration.SQL_SORT_EXPRESSION);
+        break;
+      case TimeStartFinish:
+        sortBy.append(ActivityResultStartFinish.SQL_SORT_EXPRESSION);
+        break;
+      case Count:
+        sortBy.append(ActivityResultCount.SQL_SORT_EXPRESSION);
+        break;
+      case Distance:
+        sortBy.append(ActivityResultDistance.SQL_SORT_EXPRESSION);
+        break;
     }
-    return    "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=1 THEN "+sortExpression+" ELSE 0 END ASC, "
-            + "CASE WHEN :sortingUnit="+unit.ordinal()+" AND :sortingDirection=0 THEN "+sortExpression+" ELSE 0 END DESC, ";
+    sortBy.append(metric.getRankByAsc() ? " ASC " : " DESC ");
+
+    return sortBy.toString();
   }
 
   /**
@@ -65,26 +78,19 @@ public class CustomizedActivityResultRepositoryImpl implements CustomizedActivit
     StringBuilder queryStr = new StringBuilder();
 
     // Add SELECT Statement
-    queryStr.append("SELECT a.result_type, a.id, a.special_metric, a.count_result, a.distance_result, "
-            + "a.duration_result, a.result_finish, a.result_start, a.metric_id, a.user_id FROM activity_result a ");
+    queryStr.append("SELECT * FROM activity_result ");
 
     // Add Conditions
-    queryStr.append("WHERE a.metric_id = :metricId ");
+    queryStr.append("WHERE metric_id = :metricId ");
     if (profileID != null) {
-      queryStr.append("AND a.user_id = :profileId ");
+      queryStr.append("AND user_id = :profileId ");
     }
 
     // Add Sorting
-    queryStr.append("ORDER BY ");
-    queryStr.append(getResultSortCases(Unit.Count, ActivityResultCount.SQL_SORT_EXPRESSION, false));
-    queryStr.append(getResultSortCases(Unit.Distance, ActivityResultDistance.SQL_SORT_EXPRESSION, false));
-    queryStr.append(getResultSortCases(Unit.TimeDuration, ActivityResultDuration.SQL_SORT_EXPRESSION, false));
-    queryStr.append(getResultSortCases(Unit.TimeStartFinish, ActivityResultStartFinish.SQL_SORT_EXPRESSION, true));
+    queryStr.append(getResultSortString(metric));
 
     Query query = this.entityManager.createNativeQuery(queryStr.toString(), ActivityResult.class);
     query.setParameter("metricId", metric.getId());
-    query.setParameter("sortingUnit", metric.getUnit());
-    query.setParameter("sortingDirection", metric.getRankByAsc());
 
     if(profileID != null) {
       query.setParameter("profileId", profileID);
