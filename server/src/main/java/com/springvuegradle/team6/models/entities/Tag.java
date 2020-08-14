@@ -2,6 +2,12 @@ package com.springvuegradle.team6.models.entities;
 
 import javax.persistence.*;
 import java.util.Collection;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
 
 @Entity
 public class Tag {

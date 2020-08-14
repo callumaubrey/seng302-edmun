@@ -903,7 +903,6 @@ public class FollowControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(obj);
     JSONArray arr = obj.getJSONArray("Participant");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }

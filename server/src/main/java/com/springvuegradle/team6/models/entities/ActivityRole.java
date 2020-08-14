@@ -1,21 +1,26 @@
 package com.springvuegradle.team6.models.entities;
 
 import javax.persistence.*;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
 
 @Entity
 public class ActivityRole {
 
   public ActivityRole() {}
 
-  @Id
-  @GeneratedValue
-  private int id;
+  @Id @GeneratedValue private int id;
 
   @ManyToOne
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
 
   @OneToOne
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @FieldBridge(impl = IntegerBridge.class)
   private Profile profile;
 
   @Enumerated(EnumType.ORDINAL)
@@ -33,14 +38,20 @@ public class ActivityRole {
     this.profile = profile;
   }
 
-  public Profile getProfile() {return profile;};
+  public Profile getProfile() {
+    return profile;
+  }
+  ;
 
-  public ActivityRoleType getActivityRoleType() {return activityRoleType;};
+  public ActivityRoleType getActivityRoleType() {
+    return activityRoleType;
+  }
+  ;
 
   public String getRole() {
     if (activityRoleType == ActivityRoleType.Creator) {
       return "creator";
-    } else if(activityRoleType == ActivityRoleType.Organiser) {
+    } else if (activityRoleType == ActivityRoleType.Organiser) {
       return "organiser";
     } else if (activityRoleType == ActivityRoleType.Participant) {
       return "participant";
