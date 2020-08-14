@@ -39,7 +39,7 @@
 
           </b-input-group>
           <div v-if="!selected">
-            <div v-for="option in options" :key="option">
+            <div v-for="option in hashtag.options" :key="option">
               <b-input
                   class="autocomplete-item"
                   :readonly=true
@@ -150,6 +150,7 @@
               results[i] = "#" + results[i];
             }
             vue.hashtag.options = results;
+            console.log(vue.hashtag.options)
           })
           .catch(function () {
 
