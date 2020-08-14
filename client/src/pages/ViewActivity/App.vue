@@ -319,6 +319,7 @@ const App = {
         }
         vueObj.locationDataLoading = false;
       }).catch((err) => {
+        console.log(err)
         if (err.response && err.response.status == 404) {
           this.notFound = true;
         } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
@@ -343,13 +344,22 @@ const App = {
       this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
     },
     getCorrectDateFormat: function (start, end, currentObj) {
-      const startDate = new Date(start.substring(0, 10)).toDateString();
-      const endDate = new Date(end.substring(0, 10)).toDateString();
+      let startDate = start.dayOfWeek + ', ' + start.dayOfMonth + ' ' + start.month + " "
+          + start.year;
+      let startTime = start.hour + ':' + start.minute
+      // start time is not set
+      if (startTime === '0:0') {
+        startTime = '';
+      }
+      currentObj.startTime = startDate + " " + startTime
 
-      currentObj.startTime = startDate + ' ' + start.substring(11, 19) + ' ' + 'GMT'
-          + start.substring(19, start.length) + ' (New Zealand Standard Time)';
-      currentObj.endTime = endDate + ' ' + end.substring(11, 19) + ' ' + 'GMT' + end.substring(19,
-          end.length) + ' (New Zealand Standard Time)';
+      let endDate = end.dayOfWeek + ', ' + end.dayOfMonth + ' ' + end.month + " " + end.year;
+      let endTime = end.hour + ':' + end.minute
+      // end time is not set
+      if (endTime === '0:0') {
+        endTime = '';
+      }
+      currentObj.endTime = endDate + " " + endTime
     },
     getActivityTypeDisplay: function (currentObj) {
       let result = "";

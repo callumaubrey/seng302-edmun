@@ -557,6 +557,10 @@ export default {
       let startDate = new Date(this.durationForm.startDate);
       let endDate = new Date(this.durationForm.endDate);
 
+      // wind it back to previous date to align with local date time
+      startDate.setDate(startDate.getDate() - 1);
+      endDate.setDate(endDate.getDate() - 1);
+
       if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
         startDate = new Date(
             this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
@@ -587,6 +591,7 @@ export default {
         endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
             endDateISO.length);
       }
+
       return [startDateISO, endDateISO];
 
     },

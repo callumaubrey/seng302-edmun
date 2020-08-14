@@ -324,11 +324,6 @@ export default {
       startDate: {
         required,
         dateValidate(val) {
-          console.log(val)
-          console.log(new Date().toISOString().split('T')[0])
-          if (val < this.dbStartDate) {
-            return false;
-          }
           return val >= new Date().toISOString().split('T')[0];
         }
       },
@@ -437,7 +432,6 @@ export default {
       })
       .catch(function (error) {
         console.log(error.response);
-        console.log(error);
       });
     },
     validateState(name) {
@@ -490,7 +484,6 @@ export default {
           currentObj.activityErrorMessage = "";
         })
         .catch(function (error) {
-          console.log(error.response.data);
           currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
               + ". Please try again";
           currentObj.activityUpdateMessage = "";
@@ -502,7 +495,6 @@ export default {
           return;
         }
         const isoDates = this.getISODates();
-        console.log(isoDates);
         let data = {
           activity_name: this.form.name,
           description: this.form.description,
@@ -522,7 +514,6 @@ export default {
           currentObj.activityErrorMessage = "";
         })
         .catch(function (error) {
-          console.log(error.response);
           currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
               + ". Please try again";
           currentObj.activityUpdateMessage = ""
@@ -531,8 +522,13 @@ export default {
       }
     },
     getISODates: function () {
+      console.log(this.durationForm.startDate)
       let startDate = new Date(this.durationForm.startDate);
       let endDate = new Date(this.durationForm.endDate);
+
+      // wind it back to previous date to align with local date time
+      startDate.setDate(startDate.getDate() - 1);
+      endDate.setDate(endDate.getDate() - 1);
 
       if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
         startDate = new Date(
@@ -568,9 +564,10 @@ export default {
       return [startDateISO, endDateISO];
     },
     convertISOtoDateTime: function (ISODate) {
-      const date = ISODate.substring(0, 10);
-      let time = ISODate.substring(11, 16);
-      if (time == "24:00") {
+      const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
+          + ISODate.dayOfMonth).toISOString().substring(0, 10);
+      let time = ISODate.hour + ':' + ISODate.minute
+      if (time == "0:0") {
         time = null;
       }
       return [date, time]
