@@ -343,23 +343,39 @@ const App = {
     checkIsAdmin: async function () {
       this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
     },
+    getCorrectTimeFormat(dateObject) {
+      let hour = dateObject.hour;
+      let minute = dateObject.minute;
+      if (dateObject.hour.toString().length === 1) {
+        hour = '0' + dateObject.hour;
+      }
+      if (dateObject.minute.toString().length === 1) {
+        minute = '0' + dateObject.minute;
+      }
+      let time = hour  + ':' + minute;
+      if (time === "00:00") {
+        time = null;
+      }
+      return time;
+    },
     getCorrectDateFormat: function (start, end, currentObj) {
-      let startDate = start.dayOfWeek + ', ' + start.dayOfMonth + ' ' + start.month + " "
-          + start.year;
-      let startTime = start.hour + ':' + start.minute
-      // start time is not set
-      if (startTime === '0:0') {
-        startTime = '';
+      let startTime = this.getCorrectTimeFormat(start)
+      let startDate = new Date(start.year + "-" + start.monthValue + '-'
+          + start.dayOfMonth + ' ' + startTime).toString();
+      if (startTime == null) {
+        startDate = new Date(start.year + "-" + start.monthValue + '-'
+            + start.dayOfMonth + ' ' + '24:00').toString();
       }
-      currentObj.startTime = startDate + " " + startTime
+      currentObj.startTime = startDate;
 
-      let endDate = end.dayOfWeek + ', ' + end.dayOfMonth + ' ' + end.month + " " + end.year;
-      let endTime = end.hour + ':' + end.minute
-      // end time is not set
-      if (endTime === '0:0') {
-        endTime = '';
+      let endTime = this.getCorrectTimeFormat(end)
+      let endDate = new Date(end.year + "-" + end.monthValue + '-'
+          + end.dayOfMonth + ' ' + this.getCorrectTimeFormat(end) ).toString();
+      if (endTime == null) {
+        endDate = new Date(end.year + "-" + end.monthValue + '-'
+            + end.dayOfMonth + ' ' + '24:00' ).toString();
       }
-      currentObj.endTime = endDate + " " + endTime
+      currentObj.endTime = endDate;
     },
     getActivityTypeDisplay: function (currentObj) {
       let result = "";

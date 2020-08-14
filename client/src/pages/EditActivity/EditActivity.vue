@@ -566,8 +566,17 @@ export default {
     convertISOtoDateTime: function (ISODate) {
       const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
           + ISODate.dayOfMonth).toISOString().substring(0, 10);
-      let time = ISODate.hour + ':' + ISODate.minute
-      if (time == "0:0") {
+
+      let hour = ISODate.hour;
+      let minute = ISODate.minute;
+      if (ISODate.hour.toString().length === 1) {
+        hour = '0' + ISODate.hour;
+      }
+      if (ISODate.minute.toString().length === 1) {
+        minute = '0' + ISODate.minute;
+      }
+      let time = hour + ':' + minute;
+      if (time === "00:00") {
         time = null;
       }
       return [date, time]
