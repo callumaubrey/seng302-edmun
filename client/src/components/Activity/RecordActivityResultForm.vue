@@ -103,330 +103,329 @@
 </template>
 
 <script>
-import api from "@/Api";
-import {validationMixin} from "vuelidate";
+  import api from "@/Api";
+  import {validationMixin} from "vuelidate";
 
-let durationRegex = /(\d+)h (\d+)m (\d+)s/;
+  let durationRegex = /(\d+)h (\d+)m (\d+)s/;
 
-export default {
-  name: "RecordActivityResultForm",
-  mixins: [validationMixin],
-  props: ['result', 'metricDict', 'isCreateResult'],
-  data() {
-    return {
-      // key (special metric title), value (special metric enum)
-      specialMetricDict: {
-        "Did not finish": "DidNotFinish",
-        "Disqualified": "Disqualified",
-        "Technical Failure": "TechnicalFailure"
-      },
-      resultErrorMessage: null,
-      hour: null,
-      minute: null,
-      second: null,
-      specialMetricTitle: null,
-    }
-  },
-  validations: {
-    hour: {
-      validateHour(val) {
-        this.hour = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Hours must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
-        }
+  export default {
+    name: "RecordActivityResultForm",
+    mixins: [validationMixin],
+    props: ['result', 'metricDict', 'isCreateResult', 'profileId', 'activityId'],
+    data() {
+      return {
+        // key (special metric title), value (special metric enum)
+        specialMetricDict: {
+          "Did not finish": "DidNotFinish",
+          "Disqualified": "Disqualified",
+          "Technical Failure": "TechnicalFailure"
+        },
+        resultErrorMessage: null,
+        hour: null,
+        minute: null,
+        second: null,
+        specialMetricTitle: null,
       }
     },
-    minute: {
-      validateMinute(val) {
-        this.minute = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Minutes must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
-        }
-      }
-    },
-    second: {
-      validateSecond(val) {
-        this.second = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Seconds must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
-        }
-      }
-    },
-    result: {
-      result: {
-        validateResult(val) {
-          if (this.result.type === 'Count') {
-            let integerRegex = new RegExp("^[0-9]*[1-9][0-9]*$");
-            if (!integerRegex.test(val)) {
-              this.resultErrorMessage = "Count should be an integer value"
-              return false
-            } else {
-              this.resultErrorMessage = null
-              return true
-            }
-          } else if (this.result.type === 'Distance') {
-            let floatRegex = new RegExp("^(?=.)([+-]?([0-9]*)(\\.([0-9]+))?)$");
-            if (!floatRegex.test(val)) {
-              this.resultErrorMessage = "Distance should be a float value"
-              return false
-            } else {
-              this.resultErrorMessage = null
-              return true
-            }
+    validations: {
+      hour: {
+        validateHour(val) {
+          this.hour = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Hours must be an integer"
+            return false
           } else {
+            this.resultErrorMessage = null
             return true
           }
         }
       },
-      result_start: {
-      },
-      result_finish: {
-        resultFinishValidate(val) {
-          let startTime = new Date(this.result.result_start);
-          let endTime = new Date(val);
-          if (endTime < startTime) {
-            this.resultErrorMessage = "End date time should be after start date time"
-            return false;
+      minute: {
+        validateMinute(val) {
+          this.minute = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Minutes must be an integer"
+            return false
+          } else {
+            this.resultErrorMessage = null
+            return true
           }
-          return true;
+        }
+      },
+      second: {
+        validateSecond(val) {
+          this.second = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Seconds must be an integer"
+            return false
+          } else {
+            this.resultErrorMessage = null
+            return true
+          }
+        }
+      },
+      result: {
+        result: {
+          validateResult(val) {
+            if (this.result.type === 'Count') {
+              let integerRegex = new RegExp("^[0-9]*[1-9][0-9]*$");
+              if (!integerRegex.test(val)) {
+                this.resultErrorMessage = "Count should be an integer value"
+                return false
+              } else {
+                this.resultErrorMessage = null
+                return true
+              }
+            } else if (this.result.type === 'Distance') {
+              let floatRegex = new RegExp("^(?=.)([+-]?([0-9]*)(\\.([0-9]+))?)$");
+              if (!floatRegex.test(val)) {
+                this.resultErrorMessage = "Distance should be a float value"
+                return false
+              } else {
+                this.resultErrorMessage = null
+                return true
+              }
+            } else {
+              return true
+            }
+          }
+        },
+        result_start: {},
+        result_finish: {
+          resultFinishValidate(val) {
+            let startTime = new Date(this.result.result_start);
+            let endTime = new Date(val);
+            if (endTime < startTime) {
+              this.resultErrorMessage = "End date time should be after start date time"
+              return false;
+            }
+            return true;
+          }
         }
       }
-    }
-  },
-  computed: {
-    // key (metric title), value (metric id)
-    metricTitleDict() {
-      let metricTitleDict = {}
-      for (let metricId in this.metricDict) {
-        metricTitleDict[this.metricDict[metricId].title] = metricId;
-      }
-      return metricTitleDict
     },
+    computed: {
+      // key (metric title), value (metric id)
+      metricTitleDict() {
+        let metricTitleDict = {}
+        for (let metricId in this.metricDict) {
+          metricTitleDict[this.metricDict[metricId].title] = metricId;
+        }
+        return metricTitleDict
+      },
 
-  },
-  methods: {
-    /**
-     * Update result type and description to interchange input group,
-     * Reset validation highlights,
-     * Reset user input
-     * @param val metric title
-     */
-    updateInputGroup(val) {
-      this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
-      this.result.description = this.metricDict[this.metricTitleDict[val]].description;
+    },
+    methods: {
+      /**
+       * Update result type and description to interchange input group,
+       * Reset validation highlights,
+       * Reset user input
+       * @param val metric title
+       */
+      updateInputGroup(val) {
+        this.result.type = this.metricDict[this.metricTitleDict[val]].unit;
+        this.result.description = this.metricDict[this.metricTitleDict[val]].description;
 
-      this.$v.result.$reset();
-      this.$v.$reset();
-
-      this.resultErrorMessage = null;
-      this.result.result = null;
-      this.result.result_start = null;
-      this.result.result_finish = null;
-    },
-    validateResultState(name) {
-      const {$dirty, $error} = this.$v.result[name];
-      return $dirty ? !$error : null;
-    },
-    validateState(name) {
-      const {$dirty, $error} = this.$v[name];
-      return $dirty ? !$error : null;
-    },
-    /**
-     * Calls POST activity result endpoint, and also resets the form upon success
-     */
-    createActivityResult() {
-      if (this.result.type === 'TimeDuration') {
-        this.$v.$touch()
-        if (this.$v.$anyError) {
-          return;
-        }
-        this.convertToDurationStringFormat();
-      } else {
-        this.$v.result.$touch();
-        if (this.$v.result.$anyError) {
-          return;
-        }
-      }
-      let data = {
-        metric_id: this.metricTitleDict[this.result.title],
-        value: this.result.result,
-        start: this.result.result_start,
-        end: this.result.result_finish,
-        special_metric: this.specialMetricDict[this.specialMetricTitle]
-      }
-      api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
-      .then((res) => {
-        this.resultErrorMessage = null;
-        this.result.id = res.data;
-        this.resetForm();
-        this.$emit('child-to-parent', 'create')
-      })
-      .catch(() => {
-        this.makeToast("Activity result could not be created", 'danger')
-      })
-    },
-    /**
-     * Calls PUT activity result endpoint
-     */
-    editActivityResult() {
-      if (this.result.type === 'TimeDuration') {
-        this.$v.$touch()
-        if (this.$v.$anyError) {
-          return;
-        }
-        this.convertToDurationStringFormat();
-      } else {
-        this.$v.result.$touch();
-        if (this.$v.result.$anyError) {
-          return;
-        }
-      }
-      let data = {
-        metric_id: this.metricTitleDict[this.result.title],
-        value: this.result.result,
-        start: this.result.result_start,
-        end: this.result.result_finish,
-        special_metric: this.specialMetricDict[this.specialMetricTitle]
-      }
-      api.updateActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id,
-          data)
-      .then(() => {
-        this.result.isEditMode = false
         this.$v.result.$reset();
         this.$v.$reset();
-        this.$emit('child-to-parent', 'edit')
-      })
-      .catch(() => {
-        this.makeToast("Selected activity result could not be deleted", 'danger')
-      })
-    },
-    /**
-     * Calls DELETE activity result endpoint
-     */
-    removeActivityResult() {
-      api.deleteActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id)
-      .then(() => {
-        this.$emit('child-to-parent', 'delete')
-      }).catch(() => {
-        this.makeToast("Activity result could not be deleted", 'danger')
-      })
-    },
-    /**
-     * Makes a toast notification
-     * @param message the notification message
-     * @param variant the colour of the notification based on variant (see Bootstrap Vue variants)
-     * @param delay the milliseconds that the toast would stay on the screen
-     */
-    makeToast(message = 'EDMUN', variant = null, delay = 5000,) {
-      this.$bvToast.toast(message, {
-        variant: variant,
-        solid: true,
-        autoHideDelay: delay
-      })
-    },
-    /**
-     * Combine hour, minute and second variables to form a duration string
-     */
-    convertToDurationStringFormat() {
-      if (this.hour.length === 1) {
-        this.hour = '0' + this.hour;
-      }
-      if (this.minute.length === 1) {
-        this.minute = '0' + this.minute;
-      }
-      if (this.second.length === 1) {
-        this.second = '0' + this.second;
-      }
-      this.result.result = this.hour + ':' + this.minute + ':' + this.second
-    },
-    /**
-     * Parse an example of '1h 2m 3s' string into its respective variables
-     */
-    parseDurationStringIntoHMS() {
-      if (this.result.type === 'TimeDuration' && this.result.result !== null) {
-        let matches = this.result.result.match(durationRegex);
-        if (matches) {
-          this.hour = matches[1] === undefined ? 0 : matches[1]
-          this.minute = matches[2] === undefined ? 0 : matches[2]
-          this.second = matches[3] === undefined ? 0 : matches[3]
-        }
-      }
-    },
-    /**
-     * Reset create activity result form
-     */
-    resetForm() {
-      this.result.metric_id = null;
-      this.result.user_id = null;
-      this.result.special_metric = null;
-      this.result.result = null;
-      this.result.result_finish = null;
-      this.result.result_start = null;
-      this.result.type = null
-      this.result.isEditMode = true;
-      this.result.title = null;
-      this.result.description = null;
-      this.$v.result.$reset();
 
-      this.hour = null;
-      this.minute = null;
-      this.second = null;
-      this.specialMetricTitle = null;
-      this.$v.$reset();
-    },
-    /**
-     * Compute special metric title by using special metric enum and specialMetricDict
-     * @returns {null}
-     */
-    parseToSpecialMetricTitle() {
-      if (this.result.special_metric !== null) {
-        for (let specialMetricTitle in this.specialMetricDict) {
-          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
-            this.specialMetricTitle = specialMetricTitle;
+        this.resultErrorMessage = null;
+        this.result.result = null;
+        this.result.result_start = null;
+        this.result.result_finish = null;
+      },
+      validateResultState(name) {
+        const {$dirty, $error} = this.$v.result[name];
+        return $dirty ? !$error : null;
+      },
+      validateState(name) {
+        const {$dirty, $error} = this.$v[name];
+        return $dirty ? !$error : null;
+      },
+      /**
+       * Calls POST activity result endpoint, and also resets the form upon success
+       */
+      createActivityResult() {
+        if (this.result.type === 'TimeDuration') {
+          this.$v.$touch()
+          if (this.$v.$anyError) {
+            return;
+          }
+          this.convertToDurationStringFormat();
+        } else {
+          this.$v.result.$touch();
+          if (this.$v.result.$anyError) {
+            return;
           }
         }
+        let data = {
+          metric_id: this.metricTitleDict[this.result.title],
+          value: this.result.result,
+          start: this.result.result_start,
+          end: this.result.result_finish,
+          special_metric: this.specialMetricDict[this.specialMetricTitle]
+        }
+        api.createActivityResult(this.profileId, this.activityId, data)
+        .then((res) => {
+          this.resultErrorMessage = null;
+          this.result.id = res.data;
+          this.resetForm();
+          this.$emit('child-to-parent', 'create')
+        })
+        .catch(() => {
+          this.makeToast("Activity result could not be created", 'danger')
+        })
+      },
+      /**
+       * Calls PUT activity result endpoint
+       */
+      editActivityResult() {
+        if (this.result.type === 'TimeDuration') {
+          this.$v.$touch()
+          if (this.$v.$anyError) {
+            return;
+          }
+          this.convertToDurationStringFormat();
+        } else {
+          this.$v.result.$touch();
+          if (this.$v.result.$anyError) {
+            return;
+          }
+        }
+        let data = {
+          metric_id: this.metricTitleDict[this.result.title],
+          value: this.result.result,
+          start: this.result.result_start,
+          end: this.result.result_finish,
+          special_metric: this.specialMetricDict[this.specialMetricTitle]
+        }
+        api.updateActivityResult(this.profileId, this.activityId, this.result.id,
+            data)
+        .then((res) => {
+          this.result.isEditMode = false
+          this.$v.result.$reset();
+          this.$v.$reset();
+          this.$emit('child-to-parent', 'edit')
+        })
+        .catch(() => {
+          this.makeToast("Selected activity result could not be edited", 'danger')
+        })
+      },
+      /**
+       * Calls DELETE activity result endpoint
+       */
+      removeActivityResult() {
+        api.deleteActivityResult(this.profileId, this.activityId, this.result.id)
+        .then(() => {
+          this.$emit('child-to-parent', 'delete')
+        }).catch(() => {
+          this.makeToast("Activity result could not be deleted", 'danger')
+        })
+      },
+      /**
+       * Makes a toast notification
+       * @param message the notification message
+       * @param variant the colour of the notification based on variant (see Bootstrap Vue variants)
+       * @param delay the milliseconds that the toast would stay on the screen
+       */
+      makeToast(message = 'EDMUN', variant = null, delay = 5000,) {
+        this.$bvToast.toast(message, {
+          variant: variant,
+          solid: true,
+          autoHideDelay: delay
+        })
+      },
+      /**
+       * Combine hour, minute and second variables to form a duration string
+       */
+      convertToDurationStringFormat() {
+        if (this.hour.length === 1) {
+          this.hour = '0' + this.hour;
+        }
+        if (this.minute.length === 1) {
+          this.minute = '0' + this.minute;
+        }
+        if (this.second.length === 1) {
+          this.second = '0' + this.second;
+        }
+        this.result.result = this.hour + ':' + this.minute + ':' + this.second
+      },
+      /**
+       * Parse an example of '1h 2m 3s' string into its respective variables
+       */
+      parseDurationStringIntoHMS() {
+        if (this.result.type === 'TimeDuration' && this.result.result !== null) {
+          let matches = this.result.result.match(durationRegex);
+          if (matches) {
+            this.hour = matches[1] === undefined ? 0 : matches[1]
+            this.minute = matches[2] === undefined ? 0 : matches[2]
+            this.second = matches[3] === undefined ? 0 : matches[3]
+          }
+        }
+      },
+      /**
+       * Reset create activity result form
+       */
+      resetForm() {
+        this.result.metric_id = null;
+        this.result.user_id = null;
+        this.result.special_metric = null;
+        this.result.result = null;
+        this.result.result_finish = null;
+        this.result.result_start = null;
+        this.result.type = null
+        this.result.isEditMode = true;
+        this.result.title = null;
+        this.result.description = null;
+        this.$v.result.$reset();
+
+        this.hour = null;
+        this.minute = null;
+        this.second = null;
+        this.specialMetricTitle = null;
+        this.$v.$reset();
+      },
+      /**
+       * Compute special metric title by using special metric enum and specialMetricDict
+       * @returns {null}
+       */
+      parseToSpecialMetricTitle() {
+        if (this.result.special_metric !== null) {
+          for (let specialMetricTitle in this.specialMetricDict) {
+            if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
+              this.specialMetricTitle = specialMetricTitle;
+            }
+          }
+        }
+      },
+      /**
+       * On 'Cancel' button click, edit mode is turned off, and modal is refreshed to get the unchanged data
+       */
+      onCancelButtonClick() {
+        this.result.isEditMode = false;
+        this.$emit('child-to-parent');
       }
     },
-    /**
-     * On 'Cancel' button click, edit mode is turned off, and modal is refreshed to get the unchanged data
-     */
-    onCancelButtonClick() {
-      this.result.isEditMode = false;
-      this.$emit('child-to-parent');
+    mounted() {
+      this.parseToSpecialMetricTitle();
+      this.parseDurationStringIntoHMS();
     }
-  },
-  mounted() {
-    this.parseToSpecialMetricTitle();
-    this.parseDurationStringIntoHMS();
   }
-}
 </script>
 
 <style>
-.button-group {
-  margin-right: 5px;
-}
+  .button-group {
+    margin-right: 5px;
+  }
 
-#select-metric-title {
-  margin-bottom: 5px;
-}
+  #select-metric-title {
+    margin-bottom: 5px;
+  }
 
-#cancel-result-button {
-  margin-left: 5px;
-}
+  #cancel-result-button {
+    margin-left: 5px;
+  }
 </style>

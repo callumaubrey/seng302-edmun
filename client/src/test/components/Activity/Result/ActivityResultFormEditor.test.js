@@ -1,10 +1,19 @@
 import {createLocalVue, mount} from "@vue/test-utils";
 import BootstrapVue from "bootstrap-vue";
 import Component from "@/components/Activity/RecordActivityResultForm";
+import api from '@/Api.js'
 
 const localVue = createLocalVue();
 localVue.use(BootstrapVue);
 let wrapper;
+
+jest.mock('@/Api.js', () => jest.fn);
+
+api.deleteActivityResult = jest.fn(() => {
+  return Promise.resolve(
+      {data: {}, status: 200})
+});
+
 
 beforeEach(() => {
   wrapper = mount(Component, {
@@ -44,7 +53,8 @@ beforeEach(() => {
     mocks: {},
     stubs: {},
     methods: {},
-    localVue
+    localVue,
+    api
   });
 });
 

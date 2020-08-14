@@ -52,8 +52,4 @@ public class ActivityResultStartFinish extends ActivityResult {
   public LocalDateTime getResultStart() {
     return resultStart;
   }
-
-  public String getType() {
-    return "TimeStartFinish";
-  }
 }

@@ -388,6 +388,7 @@ public class ActivityMetricController {
               + activity.getActivityName()
               + " their new results are: ";
     }
+    Integer activityResultId;
 
     if (metricUnit.equals(Unit.Count)) {
       Optional<ActivityResultCount> optionalResult =
@@ -396,22 +397,36 @@ public class ActivityMetricController {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
       }
-      ActivityResultCount result = optionalResult.get();
-      result.setResult(Integer.parseInt(request.getValue()));
+      ActivityResultCount oldResult = optionalResult.get();
+      Integer oldResultId = oldResult.getId();
+      ActivityQualificationMetric activityQualificationMetric =
+          activityQualificationMetricRepository.getOne(request.getMetricId());
+      ActivityResultCount result =
+          new ActivityResultCount(
+              activityQualificationMetric, profile, Integer.parseInt(request.getValue()));
       result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
+      result.setId(oldResultId);
+      activityResultRepository.delete(oldResult);
+      activityResultId = activityResultRepository.save(result).getId();
       message += "count: " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
-      Optional<ActivityResultDistance> optionalResult =
-          activityResultRepository.findSpecificDistanceResult(resultId);
+      Optional<ActivityResultDistance> optionalResult;
+      optionalResult = activityResultRepository.findSpecificDistanceResult(resultId);
       if (!optionalResult.isPresent()) {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
       }
-      ActivityResultDistance result = optionalResult.get();
-      result.setResult(Float.parseFloat(request.getValue()));
+      ActivityResultDistance oldResult = optionalResult.get();
+      Integer oldResultId = oldResult.getId();
+      ActivityQualificationMetric activityQualificationMetric =
+          activityQualificationMetricRepository.getOne(request.getMetricId());
+      ActivityResultDistance result =
+          new ActivityResultDistance(
+              activityQualificationMetric, profile, Float.parseFloat(request.getValue()));
       result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
+      result.setId(oldResultId);
+      activityResultRepository.delete(oldResult);
+      activityResultId = activityResultRepository.save(result).getId();
       message += "distance: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format H:I:S
@@ -421,13 +436,19 @@ public class ActivityMetricController {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
       }
-      ActivityResultDuration result = optionalResult.get();
+      ActivityResultDuration oldResult = optionalResult.get();
+      Integer oldResultId = oldResult.getId();
+      ActivityQualificationMetric activityQualificationMetric =
+          activityQualificationMetricRepository.getOne(request.getMetricId());
       String durationString =
           Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
       Duration duration = Duration.parse(durationString);
-      result.setResult(duration);
+      ActivityResultDuration result =
+          new ActivityResultDuration(activityQualificationMetric, profile, duration);
       result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
+      result.setId(oldResultId);
+      activityResultRepository.delete(oldResult);
+      activityResultId = activityResultRepository.save(result).getId();
       message += "duration: " + durationString;
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
@@ -436,18 +457,27 @@ public class ActivityMetricController {
         return new ResponseEntity(
             "No result found for this user, activity and metric", HttpStatus.NOT_FOUND);
       }
-      ActivityResultStartFinish result = optionalResult.get();
-      result.setStartFinish(request.getStart(), request.getEnd());
+      ActivityResultStartFinish oldResult = optionalResult.get();
+      Integer oldResultId = oldResult.getId();
+      ActivityQualificationMetric activityQualificationMetric =
+          activityQualificationMetricRepository.getOne(request.getMetricId());
+      ActivityResultStartFinish result =
+          new ActivityResultStartFinish(
+              activityQualificationMetric, profile, request.getStart(), request.getEnd());
       result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
+      result.setId(oldResultId);
+      activityResultRepository.delete(oldResult);
+      activityResultId = activityResultRepository.save(result).getId();
       message +=
           "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+    } else {
+      activityResultId = null;
     }
 
     ActivityHistory activityHistory = new ActivityHistory(activity, message);
     activityHistoryRepository.save(activityHistory);
 
-    return new ResponseEntity("Updated", HttpStatus.OK);
+    return new ResponseEntity(activityResultId, HttpStatus.OK);
   }
 
   /**
@@ -539,6 +569,7 @@ public class ActivityMetricController {
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }
+
     return new ResponseEntity(results, HttpStatus.OK);
   }
 
@@ -551,7 +582,7 @@ public class ActivityMetricController {
    */
   @GetMapping("/activities/{activityId}/result/{metricId}")
   public ResponseEntity getAllActivityResultsForSingleMetric(
-      @PathVariable int activityId, @PathVariable int metricId,  HttpSession session) {
+      @PathVariable int activityId, @PathVariable int metricId, HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -563,7 +594,8 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity does not exist", HttpStatus.NOT_FOUND);
     }
 
-    Optional<ActivityQualificationMetric> metric = activityQualificationMetricRepository.findById(metricId);
+    Optional<ActivityQualificationMetric> metric =
+        activityQualificationMetricRepository.findById(metricId);
     if (metric.isEmpty()) {
       return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
@@ -577,8 +609,9 @@ public class ActivityMetricController {
   }
 
   /**
-   * Deletes an activity result based on the resultId
-   * A owner, participant and admin can delete result
+   * Deletes an activity result based on the resultId A owner, participant and admin can delete
+   * result
+   *
    * @param profileId owner of activity
    * @param activityId activityId
    * @param resultId activity result ID
@@ -611,7 +644,8 @@ public class ActivityMetricController {
 
     Activity activity = optionalActivity.get();
     if (!activity.getProfile().getId().equals(ownerProfile.getId())) {
-      return new ResponseEntity("ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(
+          "ProfileID and activity owner ID don't match", HttpStatus.BAD_REQUEST);
     }
 
     Optional<ActivityResult> activityResultOptional = activityResultRepository.findById(resultId);
@@ -625,17 +659,20 @@ public class ActivityMetricController {
         UserSecurityService.checkIsAdminOrCreator((Integer) id, ownerProfile.getId());
     if (!isAdminOrCreator) {
       if (!loggedInProfile.getId().equals(activityResult.getUserId())) {
-        return new ResponseEntity("You cannot delete another users result", HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity(
+            "You cannot delete another users result", HttpStatus.UNAUTHORIZED);
       }
 
       // Then participant is removing result
       List<ActivityRole> activityRoles =
-        activityRoleRepository.findByActivity_IdAndProfile_Id(activityId, loggedInProfile.getId());
+          activityRoleRepository.findByActivity_IdAndProfile_Id(
+              activityId, loggedInProfile.getId());
       if (activityRoles.isEmpty()) {
         return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
       } else {
         if (!activityRoles.get(0).getActivityRoleType().equals(ActivityRoleType.Participant)) {
-          return new ResponseEntity("You are not a participant of this activity", HttpStatus.UNAUTHORIZED);
+          return new ResponseEntity(
+              "You are not a participant of this activity", HttpStatus.UNAUTHORIZED);
         }
       }
     }

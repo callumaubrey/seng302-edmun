@@ -32,7 +32,4 @@ public class ActivityResultCount extends ActivityResult {
     return this.result;
   }
 
-  public String getType() {
-    return "Count";
-  }
 }
