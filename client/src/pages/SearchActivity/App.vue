@@ -8,7 +8,6 @@
                            :help-text="'Max 30 hashtags'"
                            :input-character-limit="140"
                            :input-placeholder="'hashtag'"
-                           v-on:emitInput="autocompleteHashtagInput"
                            v-on:emitTags="manageTags"
                            v-on:changeSearchMethod="manageHashtagMethod"
                            ></SearchActivityTag>
@@ -31,7 +30,6 @@
       return {
         activity_data: [],
         hashtag: {
-          options: [],
           values: [],
           searchMethod: 'AND'
         },
@@ -43,35 +41,8 @@
           this.activity_data = res.data;
         })
       },
-      autocompleteHashtagInput: function (value) {
-        let pattern = /^#?[a-zA-Z0-9_]*$/;
-        if (!pattern.test(value)) {
-          this.hashtag.options = [];
-          return;
-        }
-        if (value[0] == "#") {
-          value = value.substr(1);
-        }
-        if (value.length > 2) {
-          let vue = this;
-          api.getHashtagAutocomplete(value)
-          .then(function (response) {
-            let results = response.data.results;
-            for (let i = 0; i < results.length; i++) {
-              results[i] = "#" + results[i];
-            }
-            vue.hashtag.options = results;
-          })
-          .catch(function () {
-
-          });
-        } else {
-          this.hashtag.options = [];
-        }
-      },
       manageTags: function (value) {
         this.hashtag.values = value;
-        this.hashtag.options = [];
       },
       manageHashtagMethod: function (method) {
         this.hashtag.searchMethod = method;

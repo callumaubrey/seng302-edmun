@@ -27,7 +27,7 @@
                 :disabled="maxEntriesReached"
                 :maxlength="maxCharacters"
                 list="autocomplete"
-                v-on:input="emitInputToParent">
+                v-on:input="autocompleteHashtagInput">
             </b-form-input>
 
             <b-input-group-append>
@@ -64,11 +64,12 @@
 </template>
 
 <script>
+  import api from "../../Api";
+
   export default {
     name: "SearchActivityTag",
     props: {
       maxEntries: Number,
-      options: Array,
       inputPlaceholder: String,
       helpText: String,
       values: Array,
@@ -79,7 +80,11 @@
         value: "",
         selected: false,
         inputErrorMessage: "",
-        childSearchMethod: "AND"
+        childSearchMethod: "AND",
+        hashtag: {
+          options: [],
+          searchMethod: 'AND'
+        }
       }
     },
     methods: {
@@ -126,9 +131,32 @@
       /**
        * emits current input to parent, used for auto complete
        */
-      emitInputToParent() {
-        this.selected = false;
-        this.$emit('emitInput', this.value);
+      autocompleteHashtagInput: function () {
+        let value = this.value;
+        let pattern = /^#?[a-zA-Z0-9_]*$/;
+        if (!pattern.test(value)) {
+          this.hashtag.options = [];
+          return;
+        }
+        if (value[0] == "#") {
+          value = value.substr(1);
+        }
+        if (value.length > 2) {
+          let vue = this;
+          api.getHashtagAutocomplete(value)
+          .then(function (response) {
+            let results = response.data.results;
+            for (let i = 0; i < results.length; i++) {
+              results[i] = "#" + results[i];
+            }
+            vue.hashtag.options = results;
+          })
+          .catch(function () {
+
+          });
+        } else {
+          this.hashtag.options = [];
+        }
       },
       /**
        * validation for hashtag input
