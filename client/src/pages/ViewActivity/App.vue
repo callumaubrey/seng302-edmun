@@ -146,11 +146,10 @@
             </b-row>
           </b-tab>
           <b-tab title="Results">
-            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
             <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"></RecordActivityResultModal>
-            <ActivityResults :profile-id="profileId"></ActivityResults>
+            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>

@@ -115,6 +115,10 @@ export default {
       // load all results and my results in here i guess
       this.tableIsLoading = false;
 
+      /**
+       * This function gets all the available metrics of an activity
+       * It pushes the IDS, titles and metric types to separate lists
+       */
       api.getActivityMetrics(this.profileId, this.activityId)
         .then((res) => {
           this.countMetrics = res.data.length;
@@ -130,6 +134,9 @@ export default {
         })
         .catch(err => console.log(err));
     },
+    /**
+     * This sets the current metric to the next available metric
+     */
     nextMetric: function () {
       let index = this.metricIds.indexOf(this.currentMetric);
       if (index >= 0 && index < this.metricIds.length - 1) {
@@ -139,6 +146,9 @@ export default {
         this.getMyResults();
       }
     },
+    /**
+     * This sets the current metric to the previous available metric
+     */
     prevMetric: function () {
       let index = this.metricIds.indexOf(this.currentMetric);
       if (index > 0 && index < this.metricIds.length) {
@@ -148,6 +158,9 @@ export default {
         this.getMyResults();
       }
     },
+    /**
+     * This function gets a users results from the current metric
+     */
     getMyResults: function() {
       api.getAllActivityResultsByProfileId(this.profileId, this.activityId, this.currentMetric)
           .then((res) => {
@@ -180,6 +193,9 @@ export default {
             console.log(err);
           })
     },
+    /**
+     * This function gets all results for a specified metric
+     */
     getAllResults: function() {
       api.getAllActivityResultsByMetricId(this.activityId, this.currentMetric)
         .then((res) => {
@@ -211,6 +227,11 @@ export default {
         })
       .catch((err) => console.log(err));
     },
+    /**
+     * Formats the date by splitting the date string
+     * @param date
+     * @returns {string}
+     */
     getSplitDate: function(date) {
       let dateSplit = date.split("T");
       return dateSplit[0] + " " + dateSplit[1];
