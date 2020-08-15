@@ -94,6 +94,7 @@ export default {
             result.result = this.convertToReadableDurationFormat(result.result)
           }
           this.resultList.push(result)
+          this.userHasNoResultsMessage = null;
         }
       })
       .catch(() => {
