@@ -6,29 +6,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
-import com.springvuegradle.team6.models.entities.*;
-import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
 import com.springvuegradle.team6.models.entities.ActivityResult;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
 import com.springvuegradle.team6.models.entities.ActivityResultDistance;
+import com.springvuegradle.team6.models.entities.ActivityResultDuration;
+import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
 import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.entities.*;
-import com.springvuegradle.team6.controllers.TestDataGenerator;
-import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -2502,7 +2499,7 @@ public class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2563,7 +2560,7 @@ public class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2629,7 +2626,7 @@ public class ActivityMetricControllerTest {
     ActivityResultCount countResult = new ActivityResultCount(metric1, profile1, 20);
     countResult = activityResultRepository.save(countResult);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2689,7 +2686,7 @@ public class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2751,7 +2748,7 @@ public class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
