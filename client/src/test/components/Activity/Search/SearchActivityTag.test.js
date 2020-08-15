@@ -66,7 +66,7 @@ describe('SearchActivityTag.vue', () => {
   test('hashtag emitted when there is correct hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
-    await wrapper.setData({value: "hashtag"});
+    await wrapper.setData({input_value: "hashtag"});
     expect(wrapper.find('#hashtag-input').element.value).toBe(
         "hashtag");
     await wrapper.find('#add-hashtag-button').trigger('click');
@@ -79,7 +79,7 @@ describe('SearchActivityTag.vue', () => {
   test('hashtag not emitted when invalid hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
-    await wrapper.setData({value: "someHashtag*",});
+    await wrapper.setData({input_value: "someHashtag*",});
     expect(wrapper.find('#hashtag-input').element.value).toBe(
         "someHashtag*");
     await wrapper.find('#add-hashtag-button').trigger('click');
@@ -90,8 +90,8 @@ describe('SearchActivityTag.vue', () => {
   })
 
   test('AND method emitted when there is correct AND input', async () => {
-    expect(wrapper.find('#radio-and').exists()).toBe(true);
-    await wrapper.find('#radio-and').trigger('change');
+    expect(wrapper.find('#activity-tag-radio-and').exists()).toBe(true);
+    await wrapper.find('#activity-tag-radio-and').trigger('change');
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted('emitSearchMethod')).toBeTruthy();
@@ -99,11 +99,11 @@ describe('SearchActivityTag.vue', () => {
   })
 
   test('OR method emitted when there is correct OR input', async () => {
-    expect(wrapper.find('#radio-or').exists()).toBe(true);
+    expect(wrapper.find('#activity-tag-radio-or').exists()).toBe(true);
 
-    await wrapper.find('#radio-or').trigger('click');
+    await wrapper.find('#activity-tag-radio-or').trigger('click');
     await wrapper.vm.$nextTick();
-    await wrapper.find('#radio-or').trigger('change');
+    await wrapper.find('#activity-tag-radio-or').trigger('change');
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted('emitSearchMethod')).toBeTruthy();

@@ -4,9 +4,9 @@
       <b-col cols="10">
         <b-form-text>{{ helpText }}</b-form-text>
         <b-form-tags v-model="values" no-outer-focus
-                     style="margin: 0; padding: 0; background-color: initial; border: 0;">
-          <ul v-if="values.length > 0" class="list-inline d-inline-block mb-2">
-            <li v-for="tag in values" :key="tag" class="list-inline-item">
+                     style="margin: 0; padding: 0; background-color: initial; border: 0">
+          <ul class="list-inline d-inline-block mb-2" style="min-height: 20px;">
+            <li v-for="tag in values" :key="tag" class="list-inline-item" >
               <b-form-tag
                   @remove="removeTag(tag)"
                   :key="tag"
@@ -52,10 +52,10 @@
       </b-col>
       <b-col class="method-col">
         <label style="margin-right:10px;">Search Method: </label>
-        <b-form-radio-group id="activityTypesSearchMethods" aria-describedby="activityTypesSearchMethodsHelp" v-model="childSearchMethod" @change="emitSearchMethod" >
-          <b-form-radio id="radio-and" class="searchByRadio" value="AND"  >And
+        <b-form-radio-group id="activityTagSearchMethods" v-model="childSearchMethod" @change="emitSearchMethod" >
+          <b-form-radio id="activity-tag-radio-and" class="searchByRadio" value="AND"  >And
           </b-form-radio>
-          <b-form-radio id="radio-or" class="searchByRadio" value="OR">Or
+          <b-form-radio id="activity-tag-radio-or" class="searchByRadio" value="OR">Or
           </b-form-radio>
         </b-form-radio-group>
       </b-col>
@@ -74,13 +74,16 @@
       helpText: String,
       values: Array,
       inputCharacterLimit: Number,
+      childSearchMethod: {
+        type: String,
+        default: "AND"
+      },
     },
     data() {
       return {
         value: "",
         selected: false,
         inputErrorMessage: "",
-        childSearchMethod: "AND",
         hashtag: {
           options: [],
           searchMethod: 'AND'
@@ -205,7 +208,7 @@
        */
       emitSearchMethod(method) {
         this.childSearchMethod = method;
-        this.$emit('emitSearchMethod', this.childSearchMethod);
+        this.$emit('emitSearchMethod', method);
       },
     },
     computed: {

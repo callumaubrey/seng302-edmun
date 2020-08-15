@@ -1,19 +1,19 @@
 <template>
     <div>
         <b-row>
-
-            <b-button id="allButton" :pressed.sync="allButtonPressedState" @click="toggleAllStateButton" pill
-                      class="time-selection-button" variant="outline-primary">All
-            </b-button>
-            <b-button id="continuousButton" :pressed.sync="continuousButtonPressedState"
-                      @click="toggleContinuousStateButton" pill class="time-selection-button" variant="outline-primary">
-                Continuous
-            </b-button>
-            <b-button v-b-toggle="'durationCollapse'" id="durationButton" :pressed.sync="durationButtonPressedState"
-                      @click="toggleDurationStateButton" pill class="time-selection-button" variant="outline-primary">
-                Duration
-            </b-button>
-
+            <b-col>
+                <b-button id="allButton" :pressed.sync="allButtonPressedState" @click="toggleAllStateButton" pill
+                          class="time-selection-button" variant="outline-primary">All
+                </b-button>
+                <b-button id="continuousButton" :pressed.sync="continuousButtonPressedState"
+                          @click="toggleContinuousStateButton" pill class="time-selection-button" variant="outline-primary">
+                    Continuous
+                </b-button>
+                <b-button v-b-toggle="'durationCollapse'" id="durationButton" :pressed.sync="durationButtonPressedState"
+                          @click="toggleDurationStateButton" pill class="time-selection-button" variant="outline-primary">
+                    Duration
+                </b-button>
+            </b-col>
         </b-row>
         <br v-if="durationButtonPressedState">
         <b-row>
@@ -88,12 +88,14 @@
                 let duration = {
                     startDate: this.startDate,
                     endDate: this.endDate
-                }
+                };
                 if (this.startDate && this.endDate) {
                     if (this.validDates) {
                         this.$emit("dates", duration)
                     }
-                } if (this.startDate || this.endDate) {
+                }else if (this.startDate || this.endDate) {
+                    this.$emit("dates", duration)
+                }else if(!this.startDate && !this.endDate) {
                     this.$emit("dates", duration)
                 }
             },

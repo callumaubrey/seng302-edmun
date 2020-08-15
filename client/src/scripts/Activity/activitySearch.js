@@ -20,14 +20,14 @@ export default {
      * @param pagination_limit Integer limits number of results returned
      */
     searchActivities: function(instance,
-                               search_query=undefined,
+                               search_query=null,
                                types = [],
                                types_method_and = true,
                                hashtags = [],
                                hashtags_method_and = true,
                                activity_mode_filter="all",
-                               start_date=undefined,
-                               end_date=undefined,
+                               start_date=null,
+                               end_date=null,
                                pagination_offset=0,
                                pagination_limit=10) {
 
@@ -53,14 +53,14 @@ export default {
      * @param pagination_limit Integer limits number of results returned
      */
     searchActivitiesPageCount: function(instance,
-                               search_query=undefined,
+                               search_query=null,
                                types = [],
                                types_method_and = true,
                                hashtags = [],
                                hashtags_method_and = true,
                                activity_mode_filter="all",
-                               start_date=undefined,
-                               end_date=undefined,
+                               start_date=null,
+                               end_date=null,
                                pagination_offset=0,
                                pagination_limit=10) {
 
@@ -84,14 +84,14 @@ export default {
      * @param pagination_offset Integer offsets search results
      * @param pagination_limit Integer limits number of results returned
      */
-    getSearchActivitiesQueryParams: function(search_query=undefined,
+    getSearchActivitiesQueryParams: function(search_query=null,
                                    types = [],
                                    types_method_and = true,
                                    hashtags = [],
                                    hashtags_method_and = true,
                                    activity_mode_filter="all",
-                                   start_date=undefined,
-                                   end_date=undefined,
+                                   start_date=null,
+                                   end_date=null,
                                    pagination_offset=0,
                                    pagination_limit=10) {
         // Build dictionary of query parameters
@@ -114,9 +114,9 @@ export default {
         }
 
         // Cull Irrelevant parameters
-        if (params['name'] === undefined) delete params['name'];
-        if (params['start_date'] === undefined) delete params['start_date'];
-        if (params['end_date'] === undefined) delete params['end_date'];
+        if (params['name'] === null || params['name'].length === 0) delete params['name'];
+        if (params['start-date'] === null) delete params['start-date'];
+        if (params['end-date'] === null) delete params['end-date'];
 
         if(params['types'].length === 0) {
             delete params['types'];

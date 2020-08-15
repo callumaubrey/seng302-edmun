@@ -1,7 +1,5 @@
 <template>
-    <b-col>
-        <b-input id="name-input-field" v-model="searchQuery" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
-    </b-col>
+    <b-input size="lg" id="name-input-field" v-model="searchQuery" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
 </template>
 
 
@@ -10,14 +8,15 @@
     export default {
         name: "ActivityNameSearch.vue",
 
-        data() {
-            return {
-                searchQuery: null,
+        props: {
+            value: {
+                default: '',
+                type: String
             }
         },
         methods: {
             emitQuery() {
-                this.$emit('updateSearchQuery', this.searchQuery)
+                this.$emit('input', this.searchQuery)
             },
         }
     }
