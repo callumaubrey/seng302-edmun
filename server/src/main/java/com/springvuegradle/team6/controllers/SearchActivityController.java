@@ -104,6 +104,14 @@ public class SearchActivityController {
       activityName = activityName.replaceAll("%20", " ");
     }
 
+    if (activityTypesMethod != null) {
+      activityTypesMethod = activityTypesMethod.toLowerCase();
+    }
+
+    if (hashtagsMethod != null) {
+      hashtagsMethod = hashtagsMethod.toLowerCase();
+    }
+
     LocalDateTime startDateLDT = null;
     LocalDateTime endDateLDT = null;
 
@@ -195,8 +203,6 @@ public class SearchActivityController {
    *     any activity can have in the results
    * @param endDate if duration is selected, the endDate specified the latest ending date any
    *     activity can have in the results
-   * @param offset how many activities to skip in the results
-   * @param limit how many activities to return in the results
    * @param session the logged in session
    * @return number of activities that will return based on the search parameters.
    */
@@ -211,8 +217,6 @@ public class SearchActivityController {
       @RequestParam(name = "time", required = false) String time,
       @RequestParam(name = "start-date", required = false) String startDate,
       @RequestParam(name = "end-date", required = false) String endDate,
-      @RequestParam(name = "offset", required = false) Integer offset,
-      @RequestParam(name = "limit", required = false) Integer limit,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -232,6 +236,18 @@ public class SearchActivityController {
     String[] hashtagsArray = null;
     if (hashtags != null) {
       hashtagsArray = hashtags.split("%20");
+    }
+
+    if (activityName != null) {
+      activityName = activityName.replaceAll("%20", " ");
+    }
+
+    if (activityTypesMethod != null) {
+      activityTypesMethod = activityTypesMethod.toLowerCase();
+    }
+
+    if (hashtagsMethod != null) {
+      hashtagsMethod = hashtagsMethod.toLowerCase();
     }
 
     LocalDateTime startDateLDT = null;
@@ -266,14 +282,6 @@ public class SearchActivityController {
       }
     }
 
-    if (offset == null) {
-      offset = -1;
-    }
-
-    if (limit == null) {
-      limit = -1;
-    }
-
     Integer count =
         activityRepository.searchActivityCount(
             activityName,
@@ -284,8 +292,6 @@ public class SearchActivityController {
             time,
             startDateLDT,
             endDateLDT,
-            limit,
-            offset,
             profileId,
             isAdmin);
     return new ResponseEntity(count, HttpStatus.OK);

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -281,6 +282,27 @@ public class SearchActivityControllerTest {
   }
 
   @Test
+  void getActivitiesByPartialNameResultsSizeMatchesCountReturnTwoActivities() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=Hagley").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+    String response2 =
+        mvc.perform(MockMvcRequestBuilders.get("/activities/count?name=Hagley").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Integer count = Integer.parseInt(response2);
+    org.junit.jupiter.api.Assertions.assertEquals(2, count);
+  }
+
+  @Test
   void getActivitiesByActivityTypesWithOrReturnFourActivities() throws Exception {
     String response =
         mvc.perform(
@@ -294,6 +316,34 @@ public class SearchActivityControllerTest {
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(4, arr.length());
   }
+
+  @Test
+  void getActivitiesByActivityTypesWithOrResultsSizeMatchesCountReturnFourActivities() throws Exception {
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(4, arr.length());
+
+    String response2 =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Integer count = Integer.parseInt(response2);
+    org.junit.jupiter.api.Assertions.assertEquals(4, count);
+
+  }
+
 
   @Test
   void getActivitiesWithOffsetReturnTwoResults() throws Exception {
@@ -324,6 +374,50 @@ public class SearchActivityControllerTest {
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
+
+  @Test
+  void getActivitiesWithOffsetThreeReturnOneResults() throws Exception {
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or&offset=3")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+
+  @Test
+  void getActivitiesWithLimitWithOffsetReturnTwoResultsCountReturnsFour() throws Exception {
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or&limit=2&offset=1")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+
+    String response2 =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Integer count = Integer.parseInt(response2);
+    org.junit.jupiter.api.Assertions.assertEquals(4, count);
+  }
+
+
 
   @Test
   void getActivitiesWithLimitWithOffsetReturnOneResults() throws Exception {
