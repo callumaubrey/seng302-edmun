@@ -389,6 +389,7 @@ const App = {
     },
     clickHashtag(hashtag) {
       hashtag = hashtag.substring(1);
+      // let queryString = "/activities?hashtags=" + hashtag + "%20limit=10&offset=0"
       this.$router.push("/hashtag/" + hashtag);
     },
     forceRerender(value) {
