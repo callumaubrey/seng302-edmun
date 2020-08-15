@@ -1163,8 +1163,6 @@ class ActivityControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .session(session));
 
-    System.out.println(session.getAttribute("id"));
-
     mvc.perform(
             MockMvcRequestBuilders.get("/activities/{activityId}", activity.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -1736,8 +1734,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);
@@ -1788,8 +1786,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);
@@ -1843,8 +1841,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);
@@ -1908,8 +1906,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Public);
     activity = activityRepository.save(activity);
@@ -1971,8 +1969,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);
@@ -2022,8 +2020,8 @@ class ActivityControllerTest {
     activityTypes.add(ActivityType.Walk);
     activity.setActivityTypes(activityTypes);
     activity.setContinuous(true);
-    activity.setStartTime("2000-04-28T15:50:41+1300");
-    activity.setEndTime("2030-08-28T15:50:41+1300");
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
     activity.setProfile(profileRepository.findById(id));
     activity.setVisibilityType(VisibilityType.Restricted);
     activity = activityRepository.save(activity);

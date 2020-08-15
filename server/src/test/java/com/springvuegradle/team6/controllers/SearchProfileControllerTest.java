@@ -232,7 +232,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
@@ -249,7 +248,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String middlename = arr.getJSONObject(0).getString("middlename");
     org.junit.jupiter.api.Assertions.assertEquals("Michelle Christopher", middlename);
@@ -267,7 +265,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
@@ -281,7 +278,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -309,8 +305,6 @@ public class SearchProfileControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals("100", response);
     long endTime = System.nanoTime();
     long duration = (endTime - startTime)/1000000;
-    //See how long it takes
-    System.out.println(duration);
   }
 
 
@@ -325,7 +319,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String email = arr.getJSONObject(0).getString("primary_email");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
@@ -342,7 +335,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String email = arr.getJSONObject(0).getString("primary_email");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
@@ -360,7 +352,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -374,7 +365,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -388,7 +378,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
   }
@@ -404,7 +393,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -431,8 +419,6 @@ public class SearchProfileControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals("100", response);
     long endTime = System.nanoTime();
     long duration = (endTime - startTime)/1000000;
-    //See how long it takes
-    System.out.println(duration);
   }
 
   @Test
@@ -564,7 +550,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -589,7 +574,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -603,7 +587,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -617,7 +600,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
