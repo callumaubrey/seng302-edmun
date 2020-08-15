@@ -150,7 +150,8 @@
           <b-tab title="Results">
             <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                        :logged-in-id="loggedInId"
-                                       :profile-id="profileId"></RecordActivityResultModal>
+                                       :profile-id="profileId"
+                                       style="padding-bottom: 10px"></RecordActivityResultModal>
             <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
         </b-tabs>

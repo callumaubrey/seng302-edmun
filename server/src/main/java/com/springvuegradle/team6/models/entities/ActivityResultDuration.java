@@ -50,7 +50,4 @@ public class ActivityResultDuration extends ActivityResult {
     return seconds < 0 ? "-" + positive : positive;
   }
 
-  public String getType() {
-    return "TimeDuration";
-  }
 }
