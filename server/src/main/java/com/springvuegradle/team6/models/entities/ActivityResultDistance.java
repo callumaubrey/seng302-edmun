@@ -9,6 +9,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("1")
 public class ActivityResultDistance extends ActivityResult {
 
+  public static final String SQL_SORT_EXPRESSION = "distance_result";
+
   @Column(name = "distance_result")
   private float result;
 
