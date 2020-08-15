@@ -109,7 +109,7 @@ export default {
         };
 
         // Check parameters are valid
-        if(params['time'] !== "all" || params['time'] !== "continuous" || params['time'] !== "duration") {
+        if(params['time'] !== "all" && params['time'] !== "continuous" && params['time'] !== "duration") {
             throw "activity_mode_filter is of invalid string, must be 'continuous', 'duration', 'all'"
         }
 

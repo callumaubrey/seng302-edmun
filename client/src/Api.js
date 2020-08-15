@@ -1,4 +1,5 @@
 import axios from 'axios';
+import activitySearchAPI from "./scripts/Activity/activitySearch";
 
 const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 console.log(SERVER_URL + "@@@");
@@ -106,6 +107,34 @@ export default {
 
 
     getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
+
+    getActivitiesBySearch: (search_query=undefined,
+                            types = [],
+                            types_method_and = true,
+                            hashtags = [],
+                            hashtags_method_and = true,
+                            activity_mode_filter="all",
+                            start_date=undefined,
+                            end_date=undefined,
+                            pagination_offset=0,
+                            pagination_limit=10) =>
+        {return activitySearchAPI.searchActivities(instance,
+        search_query, types, types_method_and, hashtags, hashtags_method_and,
+        activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit)},
+
+    getActivityCountBySearch: (search_query=undefined,
+                               types = [],
+                               types_method_and = true,
+                               hashtags = [],
+                               hashtags_method_and = true,
+                               activity_mode_filter="all",
+                               start_date=undefined,
+                               end_date=undefined,
+                               pagination_offset=0,
+                               pagination_limit=10) =>
+        {return activitySearchAPI.searchActivitiesPageCount(instance,
+        search_query, types, types_method_and, hashtags, hashtags_method_and,
+        activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit)},
 
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
