@@ -152,7 +152,7 @@
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
-            <ActivityResults :profile-id="parseInt(profileId)"></ActivityResults>
+            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>

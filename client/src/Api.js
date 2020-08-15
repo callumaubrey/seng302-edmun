@@ -164,6 +164,10 @@ export default {
     unsubscribeToActivity: (profileId, activityId) => instance.delete(
         '/profiles/' + profileId + '/subscriptions/activities/' + activityId),
 
+    getAllActivityResultsByProfileId: (profileId, activityId, metricId) => instance.get('/activities/' + activityId + '/result/' + metricId + '/' + profileId),
+
+    getAllActivityResultsByMetricId: (activityId, metricId) => instance.get('/activities/' + activityId + '/result/' + metricId),
+
     deleteActivityResult: (profileId, activityId, resultId) => instance.delete(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
         + resultId)

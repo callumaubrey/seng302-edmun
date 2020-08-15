@@ -20,6 +20,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.requests.EditActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
@@ -68,6 +69,7 @@ public class ActivityMetricController {
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
+  private final CustomizedActivityResultRepositoryImpl customizedActivityResultRepository;
 
   ActivityMetricController(
       ProfileRepository profileRepository,
@@ -75,13 +77,15 @@ public class ActivityMetricController {
       ActivityRoleRepository activityRoleRepository,
       ActivityQualificationMetricRepository activityQualificationMetricRepository,
       ActivityResultRepository activityResultRepository,
-      ActivityHistoryRepository activityHistoryRepository) {
+      ActivityHistoryRepository activityHistoryRepository,
+      CustomizedActivityResultRepositoryImpl customizedActivityResultRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
     this.activityHistoryRepository = activityHistoryRepository;
+    this.customizedActivityResultRepository = customizedActivityResultRepository;
   }
 
   /**
@@ -534,9 +538,9 @@ public class ActivityMetricController {
    * @param session
    * @return activity results, if user has no results return 404
    */
-  @GetMapping("/profiles/{profileId}/activities/{activityId}/result")
-  public ResponseEntity getAllActivityResultsForSingleUser(
-      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+  @GetMapping("/activities/{activityId}/result/{metricId}/{profileId}")
+  public ResponseEntity getActivityResultsByMetricAndProfileId(
+      @PathVariable int profileId, @PathVariable int activityId, @PathVariable int metricId, HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -564,8 +568,8 @@ public class ActivityMetricController {
         return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
       }
     }
-    List<ActivityResult> results =
-        activityResultRepository.findSingleUsersResultsOnActivity(activityId, profileId);
+
+    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricIdAndProfile(metricId, profileId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }
@@ -600,8 +604,7 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
 
-    List<ActivityResult> results =
-        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }

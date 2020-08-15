@@ -71,6 +71,11 @@ public class ActivityResult {
     return this.userId.getId();
   }
 
+  @JsonProperty("fullname")
+  public String getFullName() {
+    return this.userId.getFirstname() + " " + this.userId.getLastname();
+  }
+
   @JsonProperty("special_metric")
   public SpecialMetric getSpecialMetric() {
     return this.specialMetric;

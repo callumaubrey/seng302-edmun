@@ -56,6 +56,10 @@ public class ActivityQualificationMetric {
     this.unit = unit;
   }
 
+  public void setRankByAsc(boolean rank) {
+    this.rankByAsc = rank;
+  }
+
   public void setDescription(String description) {
     this.description = description;
   }
