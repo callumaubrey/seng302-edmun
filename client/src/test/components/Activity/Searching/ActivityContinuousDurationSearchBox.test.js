@@ -34,13 +34,18 @@ describe('ActivityContinuousDurationSearchBox.vue', () => {
     });
 
     test('Click continuous button emits "continuous"', async () => {
-        //Todo
+        expect(wrapper.find('#continuousButton').exists()).toBe(true);
+        await wrapper.find('#continuousButton').trigger('click');
+        expect(wrapper.emitted().selected).toBeTruthy()
+        expect(wrapper.emitted().selected[0][0]).toBe("continuous")
     });
 
     test('Click duration button emits "duration"', async () => {
-        //Todo
+        expect(wrapper.find('#durationButton').exists()).toBe(true);
+        await wrapper.find('#durationButton').trigger('click');
+        expect(wrapper.emitted().selected).toBeTruthy()
+        expect(wrapper.emitted().selected[0][0]).toBe("duration")
     });
-
 
     test("Changing start date emits both dates", async() => {
         expect(wrapper.find("#start-date-input").exists()).toBe(true);
@@ -48,5 +53,13 @@ describe('ActivityContinuousDurationSearchBox.vue', () => {
         input.element.value = "2020-01-01"
         await input.trigger("change")
         expect(wrapper.emitted().dates[0][0].startDate).toBe("2020-01-01")
-    })
+    });
+
+    test("Changing end date emits both dates", async() => {
+        expect(wrapper.find("#end-date-input").exists()).toBe(true);
+        const input = wrapper.find("#end-date-input");
+        input.element.value = "2020-01-01"
+        await input.trigger("change")
+        expect(wrapper.emitted().dates[0][0].endDate).toBe("2020-01-01")
+    });
 });

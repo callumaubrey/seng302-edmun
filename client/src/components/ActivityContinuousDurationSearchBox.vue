@@ -23,7 +23,6 @@
                         <b-col cols="2">
                             <label>Start date: </label>
                         </b-col>
-                        {{startDate}}
                         <b-col>
                             <b-form-input id="start-date-input" v-model=startDate type="date" @change="emitDates" :state="validDatesStates" ></b-form-input>
                         </b-col>
@@ -54,18 +53,27 @@
             }
         },
         methods: {
+            /**
+             * Sets the all button to selected and deselects other options
+             */
             toggleAllStateButton: function () {
                 this.allButtonPressedState = true;
                 this.continuousButtonPressedState = false;
                 this.durationButtonPressedState = false;
                 this.emitSelected()
             },
+            /**
+             * Sets the continuous button to selected and deselects other options
+             */
             toggleContinuousStateButton: function () {
                 this.allButtonPressedState = false;
                 this.continuousButtonPressedState = true;
                 this.durationButtonPressedState = false;
                 this.emitSelected()
             },
+            /**
+             * Sets the duration button to selected and deselects other options
+             */
             toggleDurationStateButton: function () {
                 this.allButtonPressedState = false;
                 this.continuousButtonPressedState = false;
@@ -91,6 +99,9 @@
             },
         },
         computed: {
+            /**
+             * Returns a string of the button which is currently selected
+             */
             currentlySelected: function () {
                 if (this.continuousButtonPressedState) {
                     return "continuous"
@@ -123,6 +134,7 @@
                     monthStr = month;
                 }
                 let date = today.getDate();
+                console.log(date)
                 let dateStr = "";
                 if (date < 10) {
                     dateStr = "0" + date;
