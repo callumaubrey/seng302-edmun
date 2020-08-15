@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label>{{ this.metricTitles[this.currentMetricIndex] }}</label>
+    <label style="font-size:18px;">{{ this.metricTitles[this.currentMetricIndex] }}</label>
     <b-row>
       <b-col class="col-tall">
         <b-btn :disabled="this.currentMetricIndex == 0  ||
