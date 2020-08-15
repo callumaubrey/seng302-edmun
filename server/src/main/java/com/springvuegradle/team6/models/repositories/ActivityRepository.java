@@ -12,7 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 
 @RepositoryRestResource
-public interface ActivityRepository extends JpaRepository<Activity, Integer> {
+public interface ActivityRepository
+    extends JpaRepository<Activity, Integer>, CustomizedActivityRepository {
 
   /**
    * Find activity by activity id
@@ -51,7 +52,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    * activity_role regardless of the visibility.
    *
    * @param hashtagName the name of the hashtag
-   * @param profileId   the id of the user that is calling the query
+   * @param profileId the id of the user that is calling the query
    * @return the activities
    */
   @Query(
@@ -91,7 +92,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Integer> {
    * so all activities which contain the hashtag are returned
    *
    * @param hashtagName the name of the hashtag
-   * @param profileId   the id of the user that is calling the query
+   * @param profileId the id of the user that is calling the query
    * @return a list of activities which contain the hashtag and are any visibility type
    */
   @Query(

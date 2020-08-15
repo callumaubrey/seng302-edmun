@@ -50,7 +50,6 @@ public class ActivityHashtagFeatureSteps {
 
   @Given("I create an activity {string} with no hashtags")
   public void i_create_an_activity_with_no_hashtags(String activityName) throws Exception {
-    System.out.println(loginSteps.session);
     jsonString =
         "{\n"
             + "  \"activity_name\": \""
@@ -71,7 +70,6 @@ public class ActivityHashtagFeatureSteps {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
-    System.out.println(activityId);
   }
 
   @When("I edit an activity {string} and add hashtags")
@@ -137,7 +135,6 @@ public class ActivityHashtagFeatureSteps {
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(loginSteps.session));
     activityId = mvcResponse.andReturn().getResponse().getContentAsString();
-    System.out.println(activityId);
   }
 
   @When("I search for activity by hashtag {string}")

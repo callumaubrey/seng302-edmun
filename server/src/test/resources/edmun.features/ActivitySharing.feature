@@ -41,7 +41,7 @@ Feature: Adding hashtags to activities
       | john@pocket.com | Password1 |
     And I log in as a user with email "poly@pocket.com" and password "Password1"
     And user "poly@pocket.com" creates activity "My cool activity" with "restricted" access
-    And user "john@pocket.com" has role "access" on activity "my cool activity"
+    And user "john@pocket.com" has role "Access" on activity "My cool activity"
     When user "john@pocket.com" views "My cool activity"
     Then I have response status "200" on activity "My cool activity"
 
@@ -198,20 +198,23 @@ Feature: Adding hashtags to activities
   @U17
   Scenario: An organiser can not share the activity
     Given the following users are registered
-      | email | password |
-      | poly@pocket.com | Password1 |
-      | john@john.com | Password1 |
-      | tester@testboy.com | Password 1|
+      | email              | password   |
+      | poly@pocket.com    | Password1  |
+      | john@john.com      | Password1  |
+      | tester@testboy.com | Password 1 |
     And I log in as a user with email "poly@pocket.com" and password "Password1"
     And user "poly@pocket.com" creates activity "My cool activity" with "restricted" access
-
+    And user "poly@pocket.com" adds user roles
+      | UserEmail     | Role      |
+      | john@john.com | Organiser |
     When user "john@john.com" adds user roles
-      | UserEmail | Role |
+      | UserEmail          | Role   |
       | john@john.com      | access |
       | tester@testboy.com | access |
     Then  I have response status "401" on activity "My cool activity"
     And user "john@john.com" gets users of role "access" for activity "My cool activity" should show
-      | UserEmail |
+      | UserEmail     |
+      | john@john.com |
 
   @U17
   Scenario: An organiser can edit the activity
