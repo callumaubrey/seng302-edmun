@@ -2,7 +2,19 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
+import com.springvuegradle.team6.models.entities.SubscriptionHistory;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.UnsubscribeMethod;
+import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
@@ -124,8 +136,15 @@ public class ActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
+    ActivityRole role =
+        activityRoleRepository.findByProfile_IdAndActivity_Id((Integer) id, activity.getId());
+
+    //Check if user is either admin/creator/organiser
     if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
-      return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
+      if (role == null || (role != null
+          && role.getActivityRoleType() != ActivityRoleType.Organiser)) {
+        return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
+      }
     }
 
     if (!activityRepository.existsById(activity.getId())) {
@@ -263,13 +282,21 @@ public class ActivityController {
         newStartDateTime =
             LocalDateTime.parse(
                 request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        oldStartDateTime = activity.getStartTime();
-        // If the activity has already begun but the author changes the activity name, then it
-        // needs to make sure the to accept the old start time which is before now
-        if (newStartDateTime.isBefore(LocalDateTime.now())
-            && !newStartDateTime.isEqual(oldStartDateTime)) {
-          return new ResponseEntity(
-              "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+        if (activity.getStartTime() != null) {
+          oldStartDateTime = activity.getStartTime();
+          // If the activity has already begun but the author changes the activity name, then it
+          // needs to make sure the to accept the old start time which is before now
+          if (newStartDateTime.isBefore(LocalDateTime.now())
+              && !newStartDateTime.isEqual(oldStartDateTime)) {
+            return new ResponseEntity(
+                "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+            // if activity is previously a continuous activity, will not need checks for old start time
+          } else {
+            if (newStartDateTime.isBefore(LocalDateTime.now())) {
+              return new ResponseEntity(
+                  "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+            }
+          }
         }
       } catch (DateTimeParseException e) {
         return new ResponseEntity(

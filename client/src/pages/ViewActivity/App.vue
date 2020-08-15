@@ -27,7 +27,8 @@
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
-          <ShareActivity :modal="profileId == activityOwner.id" :visibility="visibility"
+          <ShareActivity :modal="parseInt(profileId) === parseInt(activityOwner.id)"
+                         :visibility="visibility"
                          :profileId="profileId"
                          :activityId="$route.params.activityId"
                          v-on:componentUpdate="forceRerender"
@@ -41,7 +42,8 @@
                           v-bind:loggedInId="loggedInId"></FollowUnfollow>
         </b-row>
         <b-row align-h="center">
-          <b-dropdown v-if="profileId == loggedInId || loggedInIsAdmin" text="Actions"
+          <b-dropdown text="Actions"
+                      v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
                       class="m-md-2">
             <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
             <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
@@ -150,7 +152,7 @@
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
-            <ActivityResults :profile-id="profileId"></ActivityResults>
+            <ActivityResults :profile-id="parseInt(profileId)"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>
@@ -318,6 +320,7 @@ const App = {
         }
         vueObj.locationDataLoading = false;
       }).catch((err) => {
+        console.log(err)
         if (err.response && err.response.status == 404) {
           this.notFound = true;
         } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
@@ -341,11 +344,39 @@ const App = {
     checkIsAdmin: async function () {
       this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
     },
+    getCorrectTimeFormat(dateObject) {
+      let hour = dateObject.hour;
+      let minute = dateObject.minute;
+      if (dateObject.hour.toString().length === 1) {
+        hour = '0' + dateObject.hour;
+      }
+      if (dateObject.minute.toString().length === 1) {
+        minute = '0' + dateObject.minute;
+      }
+      let time = hour  + ':' + minute;
+      if (time === "00:00") {
+        time = null;
+      }
+      return time;
+    },
     getCorrectDateFormat: function (start, end, currentObj) {
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      currentObj.startTime = startDate.toString();
-      currentObj.endTime = endDate.toString();
+      let startTime = this.getCorrectTimeFormat(start)
+      let startDate = new Date(start.year + "-" + start.monthValue + '-'
+          + start.dayOfMonth + ' ' + startTime).toString();
+      if (startTime == null) {
+        startDate = new Date(start.year + "-" + start.monthValue + '-'
+            + start.dayOfMonth + ' ' + '24:00').toString();
+      }
+      currentObj.startTime = startDate;
+
+      let endTime = this.getCorrectTimeFormat(end)
+      let endDate = new Date(end.year + "-" + end.monthValue + '-'
+          + end.dayOfMonth + ' ' + this.getCorrectTimeFormat(end) ).toString();
+      if (endTime == null) {
+        endDate = new Date(end.year + "-" + end.monthValue + '-'
+            + end.dayOfMonth + ' ' + '24:00' ).toString();
+      }
+      currentObj.endTime = endDate;
     },
     getActivityTypeDisplay: function (currentObj) {
       let result = "";
