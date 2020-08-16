@@ -1,9 +1,7 @@
 <template>
   <div>
     <label style="font-size:18px;">{{ this.metricTitles[this.currentMetricIndex] }}</label>
-    <b-modal id="editResultModal">
-      <record-activity-result-form :profile-id="this.profileId" :activity-id="this.activityId" :is-create-result="false" :result="this.selectedResult" :metric-dict="this.metricTitleDict"></record-activity-result-form>
-    </b-modal>
+    <edit-table-result :result="this.selectedResult" :profileId="profileId" :activityId="activityId"></edit-table-result>
     <b-row>
       <b-col class="col-tall">
         <b-btn :disabled="this.currentMetricIndex == 0  ||
@@ -74,16 +72,12 @@
 
 <script>
 import api from '@/Api'
-import RecordActivityResultForm from "./Activity/RecordActivityResultForm";
+import EditTableResult from "./EditTableResult";
 
 export default {
   name: "ActivityResults",
-  components: {RecordActivityResultForm},
-  props: {
-    profileId: Number,
-    activityId: Number
-  },
-
+  components: {EditTableResult},
+  props: ["profileId", "activityId"],
   data() {
     return {
       tableIsLoading: true,
@@ -246,9 +240,11 @@ export default {
     },
 
     editActivity: function (item) {
-      this.selectedResult = item.data()
+      this.selectedResult = item
+      console.log(item)
+      console.log("flag1")
       this.$bvModal.show("editResultModal")
-      console.log(item.data())
+
     },
   },
 }
