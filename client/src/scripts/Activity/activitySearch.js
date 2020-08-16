@@ -33,7 +33,7 @@ export default {
 
         let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
             hashtags_method_and, activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit);
-        query_params_str = query_params_str.replaceAll('%2C', '%20');
+        query_params_str = query_params_str.replace(/%2C/g, '%20');
 
         return instance.get('/activities?' + query_params_str);
     },
@@ -63,7 +63,7 @@ export default {
 
         let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
             hashtags_method_and, activity_mode_filter, start_date, end_date, null, null);
-        query_params_str = query_params_str.replaceAll('%2C', '%20');
+        query_params_str = query_params_str.replace(/%2C/g, '%20');
 
         return instance.get('/activities/count?' + query_params_str);
     },
