@@ -44,13 +44,15 @@
         <label>Metric Title: </label>
         <b-form-select :options="Object.keys(metricTitleDict)" id="select-metric-title"
                        v-model="result.title"
+                       :disabled="specialMetricSelected"
                        v-on:change="updateInputGroup"></b-form-select>
         <b-form-text>{{ this.result.description }}</b-form-text>
 
 
         <label>Special Metric: </label>
         <b-form-select :options="Object.keys(specialMetricDict)" id="select-special-metric"
-                       v-model="specialMetricTitle"></b-form-select>
+                       v-model="specialMetricTitle"
+                       v-on:change="setSpecialMetricSelectedFlag"></b-form-select>
       </b-col>
 
       <b-col sm="6">
@@ -58,31 +60,81 @@
         <b-form-input id="result-input" placeholder="Enter your result"
                       :state="validateResultState('result')"
                       v-if="result.type==='Count' || result.type==='Distance'"
+                      :disabled="specialMetricSelected"
                       v-model="$v.result.result.$model"></b-form-input>
 
 
         <b-input-group v-if="result.type==='TimeDuration'">
           <b-form-input :state="validateState('hour')" placeholder="Hours"
+                        :disabled="specialMetricSelected"
                         v-model="$v.hour.$model"></b-form-input>
           <b-form-input :state="validateState('minute')" placeholder="Minutes"
+                        :disabled="specialMetricSelected"
                         v-model="$v.minute.$model"></b-form-input>
           <b-form-input :state="validateState('second')" placeholder="Seconds"
+                        :disabled="specialMetricSelected"
                         v-model="$v.second.$model"></b-form-input>
         </b-input-group>
 
         <b-input-group id="result-startfinish-feedback" v-if="result.type==='TimeStartFinish'">
-          <b-row>
-            <label>Start Time: </label>
-            <b-form-input placeholder="Enter your start time" type="datetime-local"
-                          :state="validateResultState('result_start')"
-                          v-model="$v.result.result_start.$model"></b-form-input>
-          </b-row>
-          <b-row>
-            <label style="padding-top: 5px">End Time: </label>
-            <b-form-input placeholder="Enter your end time" type="datetime-local"
-                          :state="validateResultState('result_finish')"
-                          v-model="$v.result.result_finish.$model"></b-form-input>
-          </b-row>
+          <div>
+            <b-form-group id="start-date-input-group" label="Start Date"
+                          label-for="start-date-input">
+              <b-form-input
+                  :disabled="specialMetricSelected"
+                  :state="validateStartFinishState('startDate')"
+                  id="start-date-input"
+                  type="date"
+                  v-model="$v.startFinish.startDate.$model"
+              ></b-form-input>
+              <b-form-invalid-feedback id="start-date-feedback">Start date must be in a valid format
+              </b-form-invalid-feedback>
+            </b-form-group>
+            <b-form-group id="start-time-input-group" label="Start Time"
+                          label-for="start-time-input">
+              <b-form-input
+                  :disabled="specialMetricSelected"
+                  :state="validateStartFinishState('startTime')"
+                  aria-describedby="start-time-feedback"
+                  id="start-time-input"
+                  type="time"
+                  v-model="$v.startFinish.startTime.$model"
+              ></b-form-input>
+              <b-form-invalid-feedback id="start-time-feedback">Start time must be in a valid format
+              </b-form-invalid-feedback>
+            </b-form-group>
+          </div>
+          <div>
+            <b-form-group id="end-date-input-group" label="End Date" label-for="end-date-input"
+                          style="padding-left: 5px">
+              <b-form-input
+                  :disabled="specialMetricSelected"
+                  :state="validateStartFinishState('endDate')"
+                  aria-describedby="end-date-feedback"
+                  id="end-date-input"
+                  type="date"
+                  v-model="$v.startFinish.endDate.$model"
+              ></b-form-input>
+              <b-form-invalid-feedback id="end-date-feedback">This is a required field and cannot be
+                before start date.
+              </b-form-invalid-feedback>
+            </b-form-group>
+            <b-form-group id="end-time-input-group" label="End Time" label-for="end-time-input"
+                          style="padding-left: 5px">
+              <b-form-input
+                  :disabled="specialMetricSelected"
+                  :state="validateStartFinishState('endTime')"
+                  aria-describedby="end-time-feedback"
+                  id="end-time-input"
+                  type="time"
+                  v-model="$v.startFinish.endTime.$model"
+              ></b-form-input>
+              <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same
+                as
+                start time.
+              </b-form-invalid-feedback>
+            </b-form-group>
+          </div>
         </b-input-group>
         <p style="color: crimson" v-if="resultErrorMessage!=null">{{ resultErrorMessage }}</p>
       </b-col>
@@ -111,11 +163,12 @@ let durationRegex = /(\d+)h (\d+)m (\d+)s/;
 export default {
   name: "RecordActivityResultForm",
   mixins: [validationMixin],
-  props: ['result', 'metricDict', 'isCreateResult'],
+  props: ['result', 'metricDict', 'isCreateResult', 'profileId', 'activityId'],
   data() {
     return {
       // key (special metric title), value (special metric enum)
       specialMetricDict: {
+        "None": null,
         "Did not finish": "DidNotFinish",
         "Disqualified": "Disqualified",
         "Technical Failure": "TechnicalFailure"
@@ -125,6 +178,13 @@ export default {
       minute: null,
       second: null,
       specialMetricTitle: null,
+      specialMetricSelected: false,
+      startFinish: {
+        startDate: null,
+        startTime: null,
+        endDate: null,
+        endTime: null
+      }
     }
   },
   validations: {
@@ -167,6 +227,39 @@ export default {
         }
       }
     },
+    startFinish: {
+      startDate: {},
+      endDate: {
+        dateValidate(val) {
+          let startDate = new Date(this.startDate);
+          let endDate = new Date(val);
+          if (endDate < startDate) {
+            return false;
+          }
+          return true;
+        }
+      },
+      startTime: {},
+      endTime: {
+        timeValidate(val) {
+          let startTime = this.startTime;
+          if (this.startDate == this.endDate) {
+            if (val && startTime) {
+              let splitStartTime = startTime.split(":");
+              let splitEndTime = val.split(":");
+              let startTimeObj = new Date();
+              startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+              let endTimeObj = new Date();
+              endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+              if (endTimeObj <= startTimeObj) {
+                return false;
+              }
+            }
+          }
+          return true;
+        }
+      }
+    },
     result: {
       result: {
         validateResult(val) {
@@ -191,19 +284,6 @@ export default {
           } else {
             return true
           }
-        }
-      },
-      result_start: {
-      },
-      result_finish: {
-        resultFinishValidate(val) {
-          let startTime = new Date(this.result.result_start);
-          let endTime = new Date(val);
-          if (endTime < startTime) {
-            this.resultErrorMessage = "End date time should be after start date time"
-            return false;
-          }
-          return true;
         }
       }
     }
@@ -242,6 +322,10 @@ export default {
       const {$dirty, $error} = this.$v.result[name];
       return $dirty ? !$error : null;
     },
+    validateStartFinishState(name) {
+      const {$dirty, $error} = this.$v.startFinish[name];
+      return $dirty ? !$error : null;
+    },
     validateState(name) {
       const {$dirty, $error} = this.$v[name];
       return $dirty ? !$error : null;
@@ -256,6 +340,12 @@ export default {
           return;
         }
         this.convertToDurationStringFormat();
+      } else if (this.result.type === 'TimeStartFinish') {
+        this.$v.startFinish.$touch();
+        if (this.$v.startFinish.$anyError) {
+          return;
+        }
+        this.parseDateTimeInputIntoISODateTimeString();
       } else {
         this.$v.result.$touch();
         if (this.$v.result.$anyError) {
@@ -269,7 +359,7 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      api.createActivityResult(this.$route.params.id, this.$route.params.activityId, data)
+      api.createActivityResult(this.profileId, this.activityId, data)
       .then((res) => {
         this.resultErrorMessage = null;
         this.result.id = res.data;
@@ -290,6 +380,12 @@ export default {
           return;
         }
         this.convertToDurationStringFormat();
+      } else if (this.result.type === 'TimeStartFinish') {
+        this.$v.startFinish.$touch();
+        if (this.$v.startFinish.$anyError) {
+          return;
+        }
+        this.parseDateTimeInputIntoISODateTimeString();
       } else {
         this.$v.result.$touch();
         if (this.$v.result.$anyError) {
@@ -303,7 +399,7 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      api.updateActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id,
+      api.updateActivityResult(this.profileId, this.activityId, this.result.id,
           data)
       .then(() => {
         this.result.isEditMode = false
@@ -312,14 +408,14 @@ export default {
         this.$emit('child-to-parent', 'edit')
       })
       .catch(() => {
-        this.makeToast("Selected activity result could not be deleted", 'danger')
+        this.makeToast("Selected activity result could not be edited", 'danger')
       })
     },
     /**
      * Calls DELETE activity result endpoint
      */
     removeActivityResult() {
-      api.deleteActivityResult(this.$route.params.id, this.$route.params.activityId, this.result.id)
+      api.deleteActivityResult(this.profileId, this.activityId, this.result.id)
       .then(() => {
         this.$emit('child-to-parent', 'delete')
       }).catch(() => {
@@ -353,6 +449,43 @@ export default {
         this.second = '0' + this.second;
       }
       this.result.result = this.hour + ':' + this.minute + ':' + this.second
+    },
+    /**
+     * Combine date time input and convert them into ISO date time string to be sent to backend
+     */
+    parseDateTimeInputIntoISODateTimeString() {
+      let startDate = new Date(this.startFinish.startDate);
+      let endDate = new Date(this.startFinish.endDate);
+
+      if (this.startFinish.startTime !== "" && this.startFinish.startTime != null) {
+        startDate = new Date(this.startFinish.startDate + " " + this.startFinish.startTime);
+      }
+
+      if (this.startFinish.endTime !== "" && this.startFinish.endTime != null) {
+        endDate = new Date(this.startFinish.endDate + " " + this.startFinish.endTime);
+      }
+      console.log(startDate);
+      this.result.result_start = startDate.toISOString();
+      this.result.result_finish = endDate.toISOString();
+    },
+    /**
+     * Break ISO Date time string down into its respective date time input boxes
+     */
+    parseISODateTimeStringIntoDateTimeInput() {
+      if (this.result.type === 'TimeStartFinish') {
+        this.startFinish.startDate = this.result.result_start.substring(0, 10);
+        this.startFinish.endDate = this.result.result_finish.substring(0, 10);
+
+        this.startFinish.startTime = this.result.result_start.substring(11, 16);
+        this.startFinish.endTime = this.result.result_finish.substring(11, 16);
+        if (this.startFinish.startTime == "24:00") {
+          this.startFinish.startTime = null;
+        }
+        if (this.startFinish.endTime == "24:00") {
+          this.startFinish.endTime = null;
+        }
+      }
+
     },
     /**
      * Parse an example of '1h 2m 3s' string into its respective variables
@@ -408,11 +541,23 @@ export default {
     onCancelButtonClick() {
       this.result.isEditMode = false;
       this.$emit('child-to-parent');
+    },
+    /**
+     * Set specialMetricSelected attribute to true if the form is only used for editing and special metric is selected
+     */
+    setSpecialMetricSelectedFlag() {
+      if (!this.isCreateResult && this.specialMetricTitle !== 'None') {
+        this.specialMetricSelected = true
+      } else {
+        this.specialMetricSelected = false
+      }
     }
   },
   mounted() {
     this.parseToSpecialMetricTitle();
     this.parseDurationStringIntoHMS();
+    this.parseISODateTimeStringIntoDateTimeInput();
+    this.setSpecialMetricSelectedFlag();
   }
 }
 </script>
