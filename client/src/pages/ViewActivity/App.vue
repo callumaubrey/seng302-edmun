@@ -27,7 +27,7 @@
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
-          <ShareActivity :modal="parseInt(profileId) === parseInt(activityOwner.id)"
+          <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
                          :visibility="visibility"
                          :profileId="profileId"
                          :activityId="$route.params.activityId"
@@ -191,7 +191,7 @@ const App = {
       isLoggedIn: false,
       userName: "",
       loggedInId: null,
-      profileId: null,
+      profileId: null, 
       activityName: "",
       description: "",
       activityTypes: [],
