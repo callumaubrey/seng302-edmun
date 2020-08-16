@@ -73,8 +73,8 @@ describe('ActivityNameSearch.vue', () => {
   });
 
   test('AND method emitted when there is correct AND input', async () => {
-    expect(wrapper.find('#radio-and').exists()).toBe(true);
-    await wrapper.find('#radio-and').trigger('change');
+    expect(wrapper.find('#activity-type-radio-and').exists()).toBe(true);
+    await wrapper.find('#activity-type-radio-and').trigger('change');
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted('activityTypeMethod')).toBeTruthy();
@@ -82,10 +82,10 @@ describe('ActivityNameSearch.vue', () => {
   })
 
   test('OR method emitted when there is correct OR input', async () => {
-    expect(wrapper.find('#radio-or').exists()).toBe(true);
-    await wrapper.find('#radio-or').trigger('click');
+    expect(wrapper.find('#activity-type-radio-or').exists()).toBe(true);
+    await wrapper.find('#activity-type-radio-or').trigger('click');
     await wrapper.vm.$nextTick();
-    await wrapper.find('#radio-or').trigger('change');
+    await wrapper.find('#activity-type-radio-or').trigger('change');
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted('activityTypeMethod')).toBeTruthy();
