@@ -1,6 +1,9 @@
 <template>
   <div>
     <label style="font-size:18px;">{{ this.metricTitles[this.currentMetricIndex] }}</label>
+    <b-modal id="editResultModal">
+      <record-activity-result-form :profile-id="this.profileId" :activity-id="this.activityId" :is-create-result="false" :result="this.selectedResult" :metric-dict="this.metricTitleDict"></record-activity-result-form>
+    </b-modal>
     <b-row>
       <b-col class="col-tall">
         <b-btn :disabled="this.currentMetricIndex == 0  ||
@@ -17,6 +20,7 @@
                      :busy="tableIsLoading"
                      :per-page="perPageAll"
                      :current-page="currentPageAll"
+                     @row-clicked="editActivity"
             >
               <template v-slot:table-busy>
                 <div class="text-center text-primary my-2">
@@ -70,10 +74,11 @@
 
 <script>
 import api from '@/Api'
+import RecordActivityResultForm from "./Activity/RecordActivityResultForm";
 
 export default {
   name: "ActivityResults",
-
+  components: {RecordActivityResultForm},
   props: {
     profileId: Number,
     activityId: Number
@@ -93,7 +98,10 @@ export default {
         {key: 'value', label: 'Value', class: 'medCol'},
         {key: 'personal ranking', tdStyle: 'smallCol'},
       ],
+      selectedResult: null,
+      metricTitleDict: {},
       allResults: [],
+      displayEditResult: true,
       myResults: [],
       countMetrics: 0,
       metricIds: [],
@@ -235,8 +243,14 @@ export default {
     getSplitDate: function(date) {
       let dateSplit = date.split("T");
       return dateSplit[0] + " " + dateSplit[1];
-    }
-  }
+    },
+
+    editActivity: function (item) {
+      this.selectedResult = item.data()
+      this.$bvModal.show("editResultModal")
+      console.log(item.data())
+    },
+  },
 }
 </script>
 
