@@ -89,15 +89,7 @@
                     startDate: this.startDate,
                     endDate: this.endDate
                 };
-                if (this.startDate && this.endDate) {
-                    if (this.validDates) {
-                        this.$emit("dates", duration)
-                    }
-                }else if (this.startDate || this.endDate) {
-                    this.$emit("dates", duration)
-                }else if(!this.startDate && !this.endDate) {
-                    this.$emit("dates", duration)
-                }
+                this.$emit("dates", duration)
             },
         },
         computed: {

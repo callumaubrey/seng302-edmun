@@ -66,7 +66,7 @@ describe('SearchActivityTag.vue', () => {
   test('hashtag emitted when there is correct hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
-    await wrapper.setData({input_value: "hashtag"});
+    await wrapper.setData({value: "hashtag"});
     expect(wrapper.find('#hashtag-input').element.value).toBe(
         "hashtag");
     await wrapper.find('#add-hashtag-button').trigger('click');
@@ -79,7 +79,7 @@ describe('SearchActivityTag.vue', () => {
   test('hashtag not emitted when invalid hashtag input', async () => {
     expect(wrapper.find('#add-hashtag-button').exists()).toBe(true);
     expect(wrapper.find('#hashtag-input').exists()).toBe(true);
-    await wrapper.setData({input_value: "someHashtag*",});
+    await wrapper.setData({value: "someHashtag*",});
     expect(wrapper.find('#hashtag-input').element.value).toBe(
         "someHashtag*");
     await wrapper.find('#add-hashtag-button').trigger('click');
