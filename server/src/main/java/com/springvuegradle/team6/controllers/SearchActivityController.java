@@ -255,9 +255,11 @@ public class SearchActivityController {
 
     if (time != null && time.toLowerCase().equals("duration")) {
       if (startDate != null) {
+        // YYYY-MM-DD
+        // 0123456789
         String startYear = startDate.substring(0, 4);
-        String startMonth = startDate.substring(4, 6);
-        String startDay = startDate.substring(6, 8);
+        String startMonth = startDate.substring(5, 7);
+        String startDay = startDate.substring(8, 9);
         startDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(startYear),
@@ -267,9 +269,9 @@ public class SearchActivityController {
                 0);
       }
       if (endDate != null) {
-        String endYear = endDate.substring(0, 4);
-        String endMonth = endDate.substring(4, 6);
-        String endDay = endDate.substring(6, 8);
+        String startYear = startDate.substring(0, 4);
+        String startMonth = startDate.substring(5, 7);
+        String startDay = startDate.substring(8, 9);
         endDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(endYear),

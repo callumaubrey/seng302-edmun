@@ -118,6 +118,11 @@ export default {
         if (params['offset'] === null) delete params['offset'];
         if (params['limit'] === null) delete params['limit'];
 
+        if(params['time'] !== "duration") {
+            delete params['start-date'];
+            delete params['end-date'];
+        }
+
         if(params['types'].length === 0) {
             delete params['types'];
             delete params['types-method'];
@@ -153,8 +158,8 @@ export default {
         if (params.has('hashtags-method')) data['hashtags_method_and'] = params.get('hashtags-method') === "AND";
         if (params.has('time')) data['activity_mode_filter'] = params.get('time');
         else data['activity_mode_filter'] = "all";
-        if (params.has('start-date')) data['start_date'] = Date(params.get('start-date'));
-        if (params.has('end-date')) data['end_date'] = Date(params.get('end-date'));
+        if (params.has('start-date')) data['start_date'] = params.get('start-date');
+        if (params.has('end-date')) data['end_date'] = params.get('end-date');
         if (params.has('offset')) data['pagination_offset'] = parseInt(params.get('offset'));
         if (params.has('limit')) data['pagination_limit'] = parseInt(params.get('limit'));
 
