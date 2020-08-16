@@ -151,7 +151,7 @@
             <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"></RecordActivityResultModal>
-            <ActivityResults :profile-id="parseInt(profileId)"></ActivityResults>
+            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
         </b-tabs>
       </div>
