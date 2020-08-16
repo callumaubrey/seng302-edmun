@@ -50,7 +50,7 @@
             </b-form>
         </div>
         <b-container class="b-container">
-            <a href="/#/register" id="signup-link">Sign up for Edmun</a>
+            <b-link to="/register" id="signup-link">Sign up for Edmun</b-link>
         </b-container>
 
     </div>
@@ -60,6 +60,7 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import api from '@/Api';
+    import {mutations} from "../../store";
 
     export default {
         components: {
@@ -70,7 +71,7 @@
                 let state = null;
                 if (this.submitted) {
                     if (this.email.length > 0) {
-                        let pattern = new RegExp("^($|[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+)$");
+                        let pattern = new RegExp("^($|[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-]+)$");
                         state = pattern.test(this.email);
                     } else {
                         state = false;
@@ -107,13 +108,15 @@
                 if (this.emailState != false && this.passwordState != false) {
                     let currentObj = this;
                     api.login(this.email, this.password)
-                        .then(function () {
+                        .then(function (response) {
                             let adminPattern = new RegExp("Admin");
                             if (adminPattern.test(currentObj.output)) {
                                 currentObj.$router.push('/admin');
                             } else {
                                 currentObj.$router.push('/home')
                             }
+
+                            mutations.setLoggedInUser(response.data);
                         })
                         .catch(function (error) {
                             console.log(error)

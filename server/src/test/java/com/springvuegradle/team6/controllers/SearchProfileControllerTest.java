@@ -1,24 +1,25 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
         "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -200,6 +200,14 @@ public class SearchProfileControllerTest {
             .andExpect(status().isOk());
   }
 
+  @AfterAll
+  void tearDown(@Autowired DataSource dataSource) throws SQLException {
+      try (Connection conn = dataSource.getConnection()) {
+        ScriptUtils.executeSqlScript(conn, new ClassPathResource("tearDown.sql"));
+    }
+  }
+
+
   @Test
   void searchProfileByFullnameReturnOneResult() throws Exception {
     String response =
@@ -224,7 +232,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
@@ -241,7 +248,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String middlename = arr.getJSONObject(0).getString("middlename");
     org.junit.jupiter.api.Assertions.assertEquals("Michelle Christopher", middlename);
@@ -259,7 +265,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
   }
@@ -273,7 +278,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -301,8 +305,6 @@ public class SearchProfileControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals("100", response);
     long endTime = System.nanoTime();
     long duration = (endTime - startTime)/1000000;
-    //See how long it takes
-    System.out.println(duration);
   }
 
 
@@ -317,7 +319,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String email = arr.getJSONObject(0).getString("primary_email");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
@@ -334,7 +335,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     String email = arr.getJSONObject(0).getString("primary_email");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
@@ -352,7 +352,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -366,7 +365,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -380,7 +378,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
   }
@@ -396,7 +393,6 @@ public class SearchProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }
@@ -423,8 +419,6 @@ public class SearchProfileControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals("100", response);
     long endTime = System.nanoTime();
     long duration = (endTime - startTime)/1000000;
-    //See how long it takes
-    System.out.println(duration);
   }
 
   @Test
@@ -556,7 +550,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -581,7 +574,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -595,7 +587,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
@@ -609,7 +600,6 @@ public class SearchProfileControllerTest {
                     .getResponse()
                     .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    System.out.println(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(0, arr.length());
   }

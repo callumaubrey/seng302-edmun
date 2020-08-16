@@ -2,25 +2,64 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
-import com.springvuegradle.team6.requests.*;
+import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
+import com.springvuegradle.team6.models.entities.SubscriptionHistory;
+import com.springvuegradle.team6.models.entities.Tag;
+import com.springvuegradle.team6.models.entities.UnsubscribeMethod;
+import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.requests.CreateActivityRequest;
+import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
+import com.springvuegradle.team6.requests.EditActivityRequest;
+import com.springvuegradle.team6.requests.EditActivityTypeRequest;
+import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
+import com.springvuegradle.team6.requests.objects.EmailRolePair;
 import com.springvuegradle.team6.security.UserSecurityService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.DataBinder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * This controller contains end points related to getting, creating, editing and deleting the
+ * activity.
+ */
 @CrossOrigin(
     origins = {
       "http://localhost:9000",
@@ -47,6 +86,8 @@ public class ActivityController {
   private final TagRepository tagRepository;
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
+  private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
+  private final ActivityResultRepository activityResultRepository;
 
   ActivityController(
       ProfileRepository profileRepository,
@@ -55,7 +96,9 @@ public class ActivityController {
       NamedLocationRepository locationRepository,
       TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
-      ActivityHistoryRepository activityHistoryRepository) {
+      ActivityHistoryRepository activityHistoryRepository,
+      ActivityQualificationMetricRepository activityQualificationMetricRepository,
+      ActivityResultRepository activityResultRepository) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -63,6 +106,8 @@ public class ActivityController {
     this.tagRepository = tagRepository;
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
+    this.activityQualificationMetricRepository = activityQualificationMetricRepository;
+    this.activityResultRepository = activityResultRepository;
   }
 
   /**
@@ -91,17 +136,15 @@ public class ActivityController {
       return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
     }
 
-    Collection<SimpleGrantedAuthority> userRoles =
-        (Collection<SimpleGrantedAuthority>)
-            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-    boolean isAdmin =
-        userRoles.stream()
-            .anyMatch(
-                simpleGrantedAuthority ->
-                    (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
-                        || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
-    if (!(id.toString().equals(activity.getProfile().getId().toString())) && !isAdmin) {
-      return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
+    ActivityRole role =
+        activityRoleRepository.findByProfile_IdAndActivity_Id((Integer) id, activity.getId());
+
+    //Check if user is either admin/creator/organiser
+    if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
+      if (role == null || (role != null
+          && role.getActivityRoleType() != ActivityRoleType.Organiser)) {
+        return new ResponseEntity<>("You can only edit your own activity", HttpStatus.UNAUTHORIZED);
+      }
     }
 
     if (!activityRepository.existsById(activity.getId())) {
@@ -176,9 +219,7 @@ public class ActivityController {
       LocalDateTime startDateTime;
       LocalDateTime endDateTime;
       try {
-        startDateTime =
-            LocalDateTime.parse(
-                activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        startDateTime = activity.getStartTime();
         if (startDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
@@ -191,9 +232,7 @@ public class ActivityController {
       }
 
       try {
-        endDateTime =
-            LocalDateTime.parse(
-                activity.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        endDateTime = activity.getEndTime();
         if (endDateTime.isBefore(LocalDateTime.now())) {
           return new ResponseEntity(
               "End date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
@@ -220,7 +259,8 @@ public class ActivityController {
    * @return null if there are no errors, otherwise return ResponseEntity with error message and
    *     status code
    */
-  public ResponseEntity<String> checkEditActivityDateTime(EditActivityRequest request, Activity activity) {
+  public ResponseEntity<String> checkEditActivityDateTime(
+      EditActivityRequest request, Activity activity) {
     if (!request.continuous) {
       if (request.startTime == null) {
         return new ResponseEntity<>(
@@ -242,15 +282,21 @@ public class ActivityController {
         newStartDateTime =
             LocalDateTime.parse(
                 request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        oldStartDateTime =
-            LocalDateTime.parse(
-                activity.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        // If the activity has already begun but the author changes the activity name, then it
-        // needs to make sure the to accept the old start time which is before now
-        if (newStartDateTime.isBefore(LocalDateTime.now())
-            && !newStartDateTime.isEqual(oldStartDateTime)) {
-          return new ResponseEntity(
-              "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+        if (activity.getStartTime() != null) {
+          oldStartDateTime = activity.getStartTime();
+          // If the activity has already begun but the author changes the activity name, then it
+          // needs to make sure the to accept the old start time which is before now
+          if (newStartDateTime.isBefore(LocalDateTime.now())
+              && !newStartDateTime.isEqual(oldStartDateTime)) {
+            return new ResponseEntity(
+                "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+            // if activity is previously a continuous activity, will not need checks for old start time
+          } else {
+            if (newStartDateTime.isBefore(LocalDateTime.now())) {
+              return new ResponseEntity(
+                  "Start date/time cannot be before the current time", HttpStatus.BAD_REQUEST);
+            }
+          }
         }
       } catch (DateTimeParseException e) {
         return new ResponseEntity(
@@ -321,42 +367,42 @@ public class ActivityController {
     hashtag.setName(hashtag.getName().toLowerCase().substring(1));
   }
 
-
   /**
    * Put request to edit the hashtags associated to the activity specified in the path
    *
-   * @param profileId  author of the activity
+   * @param profileId author of the activity
    * @param activityId activity id
-   * @param request    EditActivityHashtagRequest
-   * @param session    HttpSession
+   * @param request EditActivityHashtagRequest
+   * @param session HttpSession
    * @return The response code and message
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}/hashtags")
-  public ResponseEntity<String> editActivityHashTag(@PathVariable Integer profileId,
-                                                    @PathVariable Integer activityId,
-                                                    @Valid @RequestBody EditActivityHashtagRequest request,
-                                                    HttpSession session) {
+  public ResponseEntity<String> editActivityHashTag(
+      @PathVariable Integer profileId,
+      @PathVariable Integer activityId,
+      @Valid @RequestBody EditActivityHashtagRequest request,
+      HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
 
-
       // Check if authorised
       ResponseEntity<String> authorisedResponse =
-              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+          UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
 
       ResponseEntity<String> activityAuthorizedResponse =
-              this.checkAuthorisedToEditActivity(activity, session);
+          this.checkAuthorisedToEditActivity(activity, session);
       if (activityAuthorizedResponse != null) {
         return activityAuthorizedResponse;
       }
 
       // Check hashtags
-      ResponseEntity<String> checkHashtagsValidityResponse = checkAllTagsValidity(request.getHashtags());
+      ResponseEntity<String> checkHashtagsValidityResponse =
+          checkAllTagsValidity(request.getHashtags());
       if (checkHashtagsValidityResponse != null) {
         return checkHashtagsValidityResponse;
       }
@@ -376,19 +422,19 @@ public class ActivityController {
       }
       activityRepository.save(activity);
 
-      return ResponseEntity.ok("Hashtags of Activity '" + activity.getActivityName() + "' were updated.");
+      return ResponseEntity.ok(
+          "Hashtags of Activity '" + activity.getActivityName() + "' were updated.");
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
   }
 
-
   /**
    * Post Request to create an activity for the given profile based on the request
    *
    * @param profileId The id of the profile where the activity is created for
-   * @param request   The request with values to create the activity
-   * @param session   The session of the currently logged in user
+   * @param request The request with values to create the activity
+   * @param session The session of the currently logged in user
    * @return The response code and message
    */
   @PostMapping("/profiles/{profileId}/activities")
@@ -448,25 +494,21 @@ public class ActivityController {
     // Set creation date to now
     activity.setCreationDate(LocalDateTime.now());
 
-
-
     activityRepository.save(activity);
 
-    SubscriptionHistory subscriptionHistory = new SubscriptionHistory(profile, activity);
+    addMetricsToActivity(activity, request.metrics);
+
+    SubscriptionHistory subscriptionHistory =
+        new SubscriptionHistory(profile, activity, SubscribeMethod.SELF);
 
     subscriptionHistoryRepository.save(subscriptionHistory);
 
-    //Set creator of activity in ActivityRoleRepository
+    // Set creator of activity in ActivityRoleRepository
     ActivityRole creator = new ActivityRole();
     creator.setActivity(activity);
     creator.setProfile(profile);
     creator.setActivityRoleType(ActivityRoleType.Creator);
     activityRoleRepository.save(creator);
-
-    ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activity.getId());
-    if (editActivityRolesResponse != null) {
-      return editActivityRolesResponse;
-    }
 
     return new ResponseEntity(activity.getId(), HttpStatus.CREATED);
   }
@@ -483,31 +525,35 @@ public class ActivityController {
     activity.setActivityTypes(request.activityTypes);
     activity.setContinuous(request.continuous);
     if (request.visibility != null) {
-      activity.setVisibilityType(request.visibility);
+      activity.setVisibilityTypeByString(request.visibility);
     }
     if (activity.isContinuous()) {
       activity.setStartTime(null);
       activity.setEndTime(null);
     } else {
-      activity.setStartTime(request.startTime);
-      activity.setEndTime(request.endTime);
+      activity.setStartTime(
+          LocalDateTime.parse(
+              request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
+      activity.setEndTime(
+          LocalDateTime.parse(
+              request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
     }
     if (request.visibility != null) {
-      activity.setVisibilityType(request.visibility);
+      activity.setVisibilityTypeByString(request.visibility);
     }
 
     if (request.location != null) {
       NamedLocation location =
-              new NamedLocation(
-                      request.location.country, request.location.state, request.location.city);
+          new NamedLocation(
+              request.location.country, request.location.state, request.location.city);
       activity.setLocation(location);
 
       if (activity.getLocation() != null) {
         Optional<NamedLocation> optionalNamedLocation =
-                locationRepository.findByCountryAndStateAndCity(
-                        activity.getLocation().getCountry(),
-                        activity.getLocation().getState(),
-                        activity.getLocation().getCity());
+            locationRepository.findByCountryAndStateAndCity(
+                activity.getLocation().getCountry(),
+                activity.getLocation().getState(),
+                activity.getLocation().getCity());
         if (optionalNamedLocation.isPresent()) {
           activity.setLocation(optionalNamedLocation.get());
         } else {
@@ -515,6 +561,8 @@ public class ActivityController {
           activity.setLocation(location);
         }
       }
+    } else {
+      activity.setLocation(null);
     }
 
     Set<Tag> hashtags = new HashSet<>();
@@ -530,22 +578,69 @@ public class ActivityController {
       }
       activity.setTags(hashtags);
     }
+
+    addMetricsToActivity(activity, request.metrics);
+  }
+
+  /**
+   * Method to add metrics to activity. Nothing will be done if no metric is passed into request
+   *
+   * @param activity activity in the request
+   * @param requestMetrics metric list that was passed into request
+   */
+  private void addMetricsToActivity(
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    if (requestMetrics != null) {
+      for (ActivityQualificationMetric metric : requestMetrics) {
+        metric.setActivity(activity);
+        activityQualificationMetricRepository.save(metric);
+        metrics.add(metric);
+      }
+      activity.setMetrics(metrics);
+    }
+  }
+
+  /**
+   * This method will deal with the different cases of visibility and which roles to delete and
+   * which users to unsubscribe
+   *
+   * @param request the request with the new visibility
+   * @param activity the activity with the original visibility
+   */
+  void editActivityVisibilityHandling(EditActivityRequest request, Activity activity) {
+
+    if (activity.getVisibilityType() == VisibilityType.Restricted
+        && request.visibility.equals(
+            "public")) { // access roles dont need to exist if going from restricted to public;
+      activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
+    } else if (!(activity.getVisibilityType() == VisibilityType.Public
+            && request.visibility.equals("public"))
+        && !(activity.getVisibilityType() == VisibilityType.Restricted
+            && request.visibility.equals(
+                "restricted"))) { // This checks if there was no change in visibility.
+      activityRoleRepository.deleteAllActivityRolesExceptOwner(
+          activity.getId(), activity.getProfile().getId());
+      subscriptionHistoryRepository.unSubscribeAllButCreator(
+          activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
+    }
   }
 
   /**
    * Put Request to update an activity for the given profile based on the request
    *
    * @param profileId The id of the author of the activity
-   * @param request   The request with values to update the activity
-   * @param session   The session of the currently logged in user
+   * @param request The request with values to update the activity
+   * @param session The session of the currently logged in user
    * @return The response code and message
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}")
   public ResponseEntity<String> editActivity(
-          @PathVariable Integer profileId,
-          @PathVariable Integer activityId,
-          @Valid @RequestBody EditActivityRequest request,
-          HttpSession session) throws JsonProcessingException {
+      @PathVariable Integer profileId,
+      @PathVariable Integer activityId,
+      @Valid @RequestBody EditActivityRequest request,
+      HttpSession session)
+      throws JsonProcessingException {
 
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
 
@@ -554,7 +649,7 @@ public class ActivityController {
 
       // Check if authorised
       ResponseEntity<String> authorisedResponse =
-              UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+          UserSecurityService.checkAuthorised(profileId, session, profileRepository);
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
@@ -571,31 +666,32 @@ public class ActivityController {
         return checkHashtagsValidityResponse;
       }
 
-      ResponseEntity<String> checkActivityDateTimeResponse = checkEditActivityDateTime(request, activity);
+      ResponseEntity<String> checkActivityDateTimeResponse =
+          checkEditActivityDateTime(request, activity);
       if (checkActivityDateTimeResponse != null) {
         return checkActivityDateTimeResponse;
       }
 
-
       ObjectMapper mapper = new ObjectMapper();
       String preJson = mapper.writeValueAsString(activity);
 
-      editActivityFromRequest(request, activity);
-      activityRepository.save(activity);
-
-      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.emails, activity, activityId);
-      if (editActivityRolesResponse != null) {
-        return editActivityRolesResponse;
+      if (request.visibility != null) {
+        editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       }
+      editActivityFromRequest(request, activity);
 
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
-        String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
-        ActivityHistory activityHistory = new ActivityHistory(activity,
+        String editorName =
+            profileRepository
+                .findById(Integer.parseInt(session.getAttribute("id").toString()))
+                .getFullname();
+        ActivityHistory activityHistory =
+            new ActivityHistory(
+                activity,
                 "Activity '" + activity.getActivityName() + "' was updated by " + editorName);
         activityHistoryRepository.save(activityHistory);
       }
-
 
       return ResponseEntity.ok("Activity: " + activity.getActivityName() + " was updated.");
     } else {
@@ -624,13 +720,17 @@ public class ActivityController {
       Activity activity = optionalActivity.get();
       if (!activity.getProfile().getId().equals(profileId)) {
         return new ResponseEntity<>(
-                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+            "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
       }
       activity.setArchived(true);
       activityRepository.save(activity);
 
-      String editorName = profileRepository.findById(Integer.parseInt(session.getAttribute("id").toString())).getFullname();
-      String activityArchivedMessage = "Activity '" + activity.getActivityName() + "' was archived by " + editorName;
+      String editorName =
+          profileRepository
+              .findById(Integer.parseInt(session.getAttribute("id").toString()))
+              .getFullname();
+      String activityArchivedMessage =
+          "Activity '" + activity.getActivityName() + "' was archived by " + editorName;
       ActivityHistory activityHistory = new ActivityHistory(activity, activityArchivedMessage);
       activityHistoryRepository.save(activityHistory);
 
@@ -649,6 +749,7 @@ public class ActivityController {
   @GetMapping("/activities/{activityId}")
   public ResponseEntity<String> getActivity(@PathVariable int activityId, HttpSession session) {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
     if (optionalActivity.isEmpty()) {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
@@ -656,16 +757,27 @@ public class ActivityController {
     if (activity.isArchived()) {
       return new ResponseEntity<>("Activity is archived", HttpStatus.OK);
     }
+    // This activityAuthorizedResponse checks if user is owner or admin. It is null if it is either
+    // of these two, is a response if unauthorized.
+    ResponseEntity<String> activityAuthorizedResponse =
+        this.checkAuthorisedToEditActivity(activity, session);
+
     Object profileId = session.getAttribute("id");
     if (!profileId.toString().equals(activity.getProfile().getId().toString())) {
       if (activity.getVisibilityType() == VisibilityType.Private) {
-        return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        if (activityAuthorizedResponse != null) {
+          return new ResponseEntity<>("Activity is private", HttpStatus.UNAUTHORIZED);
+        }
       }
 
       if (activity.getVisibilityType() == VisibilityType.Restricted) {
-        ActivityRole activityRoles = activityRoleRepository.findByProfile_IdAndActivity_Id(Integer.parseInt(profileId.toString()), activityId);
+        ActivityRole activityRoles =
+            activityRoleRepository.findByProfile_IdAndActivity_Id(
+                Integer.parseInt(profileId.toString()), activityId);
         if (activityRoles == null) {
-          return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          if (activityAuthorizedResponse != null) {
+            return new ResponseEntity<>("Activity is restricted", HttpStatus.UNAUTHORIZED);
+          }
         }
       }
     }
@@ -680,6 +792,7 @@ public class ActivityController {
 
   /**
    * Given the activity id, find the creator of the activity and return the id of the creator
+   *
    * @param activityId id of the activity
    * @return the id of the creator of the activity
    */
@@ -703,7 +816,10 @@ public class ActivityController {
   }
 
   /**
-   * Get all activity that a user has created by their userID that is not archived
+   * Get all activity that a user has created by their userID that is not archived. No activities
+   * that are private should be returned unless the user is either an admin or the creator of the
+   * activity. It should also return all restricted activities that the requesting user has access
+   * to.
    *
    * @param profileId The id of the user profile
    * @param session The session of the current user logged in
@@ -722,46 +838,156 @@ public class ActivityController {
       return new ResponseEntity("User does not exist", HttpStatus.NOT_FOUND);
     }
 
-    return ResponseEntity.ok(activityRepository.findByProfile_IdAndArchivedFalse(profileId));
+    List<Activity> response;
+    if (UserSecurityService.checkIsAdminOrCreator((int) id, profileId)) {
+      response = activityRepository.findByProfile_IdAndArchivedFalse(profileId);
+    } else {
+      response = activityRepository.getPublicAndRestrictedActivities(profileId, (int) id);
+    }
+
+    return ResponseEntity.ok(response);
   }
 
   /**
-   * Increases the activity role of each accessor to Access, and decreases the activity role to standard user if
-   * they no longer belongs to the list of accessor
+   * This takes care of all subscription adn activity role logic when changing visibility of an
+   * activity using visibility endpoint.
    *
-   * @param emails     list of accessor emails
-   * @param activity   the activity to be edited
+   * @param request the request with the new visibility and accessors
+   * @param activity the activity to be edited
    * @param activityId the activity id to be edited
-   * @return a NOT FOUND response entity if accessor is not found, otherwise return null
+   * @return a NOT FOUND response entity if an accessor is not found, otherwise return null
    */
-  private ResponseEntity<String> editActivityRoles(List<String> emails, Activity activity, int activityId) {
-    // Returns if list of accessor is not passed
-    // or visibility type of activity is public (everyone can access) or private (no one can access)
-    if (emails == null || activity.getVisibilityType() == VisibilityType.Public || activity.getVisibilityType() == VisibilityType.Private) {
+  private ResponseEntity<String> editActivityRoles(
+      EditActivityVisibilityRequest request, Activity activity, int activityId) {
+    if (request.getAccessors() == null) {
       return null;
     }
-    List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
-    if (activityRoles.size() > 0) {
-      for (var i = 0; i < activityRoles.size(); i++) {
-        Profile profile = activityRoles.get(i).getProfile();
-        if (!(emails.contains(profile.getPrimaryEmail().getAddress()))) {
-          activityRoleRepository.delete(activityRoles.get(i));
+
+    if (request.getVisibility().equals("public") || request.getVisibility().equals("private")) {
+      if (request.getAccessors().size() > 0) {
+        return new ResponseEntity(
+            "Can't have accessors when changing to private or public.", HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    for (EmailRolePair emailRolePair : request.getAccessors()) {
+      Profile profile = profileRepository.findByEmails_address(emailRolePair.getEmail());
+      if (profile == null) {
+        return new ResponseEntity(
+            "User with email " + emailRolePair.getEmail() + " does not exist",
+            HttpStatus.NOT_FOUND);
+      }
+    }
+
+    if (request.getVisibility().equals("public")) {
+      List<ActivityRole> activityRoles =
+          activityRoleRepository.findByActivityRoleTypeAndActivity_Id(
+              ActivityRoleType.Access, activityId);
+      activityRoleRepository.deleteInBatch(activityRoles);
+    }
+
+    // Changing activity to private removes all users apart from the creator
+    if (request.getVisibility().equals("private")) {
+      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
+      if (activityRoles.size() > 0) {
+        for (ActivityRole activityRole : activityRoles) {
+          if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Creator)) {
+            activityRoleRepository.delete(activityRole);
+            List<SubscriptionHistory> subHistory =
+                subscriptionHistoryRepository.findActive(
+                    activityId, activityRole.getProfile().getId());
+            if (subHistory.size() > 0) {
+              subHistory.get(0).setEndDateTime(LocalDateTime.now());
+              subHistory.get(0).setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+              subscriptionHistoryRepository.save(subHistory.get(0));
+            }
+          }
         }
       }
     }
-    if (emails.size() > 0) {
-      for (String email : emails) {
+
+    if (request.getVisibility().equals("restricted")) {
+      List<ActivityRole> activityRoles = activityRoleRepository.findByActivity_Id(activityId);
+      List<Integer> currentProfileIds = new ArrayList<>();
+      for (ActivityRole activityRole : activityRoles) {
+        currentProfileIds.add(activityRole.getProfile().getId());
+      }
+      List<Integer> requestProfileIds = new ArrayList<>();
+
+      for (EmailRolePair emailRolePair : request.getAccessors()) {
+        String email = emailRolePair.getEmail();
         Profile profile = profileRepository.findByEmails_address(email);
-        if (profile == null) {
-          return new ResponseEntity("User with email " + email + " does not exist", HttpStatus.NOT_FOUND);
-        }
-        ActivityRole role = activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+        requestProfileIds.add(profile.getId());
+        ActivityRole role =
+            activityRoleRepository.findByProfile_IdAndActivity_Id(profile.getId(), activityId);
+        ActivityRoleType requestActivityRoleType =
+            ActivityRoleType.valueOf(
+                emailRolePair.getRole().substring(0, 1).toUpperCase()
+                    + emailRolePair.getRole().substring(1));
+
         if (role == null) {
           ActivityRole activityRole = new ActivityRole();
           activityRole.setActivity(activity);
           activityRole.setProfile(profile);
-          activityRole.setActivityRoleType(ActivityRoleType.Access);
+
+          activityRole.setActivityRoleType(requestActivityRoleType);
           activityRoleRepository.save(activityRole);
+          switch (requestActivityRoleType) {
+            case Access:
+              break;
+            case Follower:
+            case Participant:
+            case Organiser:
+              SubscriptionHistory subscriptionHistory =
+                  new SubscriptionHistory(profile, activity, SubscribeMethod.ADDED);
+              subscriptionHistoryRepository.save(subscriptionHistory);
+          }
+        } else {
+          ActivityRoleType currentActivityRoleType = role.getActivityRoleType();
+          if (requestActivityRoleType != currentActivityRoleType) {
+            role.setActivityRoleType(requestActivityRoleType);
+            switch (currentActivityRoleType) {
+              case Access:
+                SubscriptionHistory subscriptionHistory =
+                    new SubscriptionHistory(profile, activity, SubscribeMethod.ADDED);
+                subscriptionHistoryRepository.save(subscriptionHistory);
+                break;
+              case Follower:
+              case Participant:
+              case Organiser:
+                if (requestActivityRoleType == ActivityRoleType.Access) {
+                  List<SubscriptionHistory> subHistory =
+                      subscriptionHistoryRepository.findActive(activityId, profile.getId());
+                  if (subHistory.size() > 0) {
+                    subHistory.get(0).setEndDateTime(LocalDateTime.now());
+                    subHistory.get(0).setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+                    subscriptionHistoryRepository.save(subHistory.get(0));
+                  }
+                }
+                break;
+            }
+          }
+        }
+      }
+
+      // Find the difference between the current profile ids and the profile ids in the request
+      currentProfileIds.removeAll(requestProfileIds);
+      // Remove all activity roles for profile ids that are not in the request for the activity
+      // which is not creator
+      for (Integer profileId : currentProfileIds) {
+        ActivityRole activityRole =
+            activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
+        if (activityRole.getActivityRoleType() != ActivityRoleType.Creator) {
+          activityRoleRepository.delete(activityRole);
+          List<SubscriptionHistory> subHistory =
+              subscriptionHistoryRepository.findActive(
+                  activityId, activityRole.getProfile().getId());
+          // Remove subscription if they were a follower or above
+          if (subHistory.size() > 0) {
+            subHistory.get(0).setEndDateTime(LocalDateTime.now());
+            subHistory.get(0).setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+            subscriptionHistoryRepository.save(subHistory.get(0));
+          }
         }
       }
     }
@@ -769,19 +995,22 @@ public class ActivityController {
   }
 
   /**
-   * Changes the visibility of a users activity
+   * Changes the visibility of a users activity. If the visibility is private, all users apart from
+   * the owner are removed from the activity. If the visibility is restricted, users in the request
+   * and the owner are the only users able to view the activity. If the visibility is public, all
+   * access users are removed, as public activities give access to all
    *
-   * @param profileId  The id of the user profile
+   * @param profileId The id of the user profile
    * @param activityId The id of the activity
-   * @param session    The current session of the logged in user
+   * @param session The current session of the logged in user
    * @return
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}/visibility")
-  public ResponseEntity changeVisibility(
-          @PathVariable int profileId,
-          @PathVariable int activityId,
-          @RequestBody @Valid EditActivityVisibilityRequest request,
-          HttpSession session) {
+  public ResponseEntity changeActivityVisibility(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @RequestBody @Valid EditActivityVisibilityRequest request,
+      HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -791,18 +1020,20 @@ public class ActivityController {
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isPresent()) {
       Activity activity = optionalActivity.get();
-      if (!activity.getProfile().getId().equals(profileId)) {
+      if (!UserSecurityService.checkIsAdminOrCreator((Integer) id, activity.getProfile().getId())) {
         return new ResponseEntity<>(
-                "You are not the author of this activity", HttpStatus.UNAUTHORIZED);
+            "You are not authorized to change visibility for this activity",
+            HttpStatus.UNAUTHORIZED);
       }
 
-      activity.setVisibilityType(request.getVisibility());
-      activityRepository.save(activity);
-
-      ResponseEntity<String> editActivityRolesResponse = editActivityRoles(request.getEmails(), activity, activityId);
+      ResponseEntity<String> editActivityRolesResponse =
+          editActivityRoles(request, activity, activityId);
       if (editActivityRolesResponse != null) {
         return editActivityRolesResponse;
       }
+
+      activity.setVisibilityTypeByString(request.getVisibility());
+      activityRepository.save(activity);
 
       return new ResponseEntity<>("Activity visibility has been saved", HttpStatus.OK);
     } else {

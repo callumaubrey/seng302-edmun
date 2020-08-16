@@ -1,11 +1,16 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
+import com.springvuegradle.team6.models.entities.ActivityHistory;
+import com.springvuegradle.team6.models.entities.SubscribeMethod;
+import com.springvuegradle.team6.models.entities.SubscriptionHistory;
+import com.springvuegradle.team6.models.entities.UnsubscribeMethod;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import com.springvuegradle.team6.responses.FeedResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
 import net.minidev.json.JSONObject;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,19 +82,28 @@ public class FeedController {
           }
         }
 
+        String subscribeMessage = "Subscribed to the activity: ";
+        if (subscriptionHistory.getSubscribeMethod() == SubscribeMethod.ADDED) {
+          subscribeMessage = "Added to the activity: ";
+        }
+
         FeedResponse feed =
             new FeedResponse(
                 subscriptionHistory.getActivity().getId(),
-                "Subscribed to the activity: "
+                subscribeMessage
                     + subscriptionHistory.getActivity().getActivityName()
                     + ".",
                 subscriptionHistory.getStartDateTime().toString());
         feeds.add(feed);
         if (subscriptionHistory.getEndDateTime() != null) {
+          String unsubscribeMessage = "Unsubscribed from the activity: ";
+          if (subscriptionHistory.getUnsubscribeMethod() == UnsubscribeMethod.REMOVED) {
+            unsubscribeMessage = "Removed from the activity: ";
+          }
           FeedResponse feed1 =
               new FeedResponse(
                   subscriptionHistory.getActivity().getId(),
-                  "Unsubscribed to the activity: "
+                  unsubscribeMessage
                       + subscriptionHistory.getActivity().getActivityName()
                       + ".",
                   subscriptionHistory.getEndDateTime().toString());

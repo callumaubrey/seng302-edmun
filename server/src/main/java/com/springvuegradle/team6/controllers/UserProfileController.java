@@ -1,20 +1,39 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.models.location.NamedLocation;
-import com.springvuegradle.team6.models.location.NamedLocationRepository;
-import com.springvuegradle.team6.requests.*;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.CountryRepository;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.RoleRepository;
+import com.springvuegradle.team6.requests.CreateProfileRequest;
+import com.springvuegradle.team6.requests.EditEmailsRequest;
+import com.springvuegradle.team6.requests.EditPasswordRequest;
+import com.springvuegradle.team6.requests.EditProfileRequest;
+import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import net.minidev.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin(
@@ -68,7 +87,7 @@ public class UserProfileController {
   public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session)
       throws JsonProcessingException {
     ResponseEntity<String> canViewResponse =
-        UserSecurityService.canViewPermission(id, session, repository);
+        UserSecurityService.checkViewingPermission(id, session, repository);
     if (canViewResponse != null) {
       return canViewResponse;
     }
@@ -159,7 +178,7 @@ public class UserProfileController {
    *     logged in
    */
   @GetMapping("/firstname")
-  public ResponseEntity getProfileFirstName(HttpSession session) throws JsonProcessingException {
+  public ResponseEntity getProfileFirstName(HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
@@ -170,13 +189,34 @@ public class UserProfileController {
   }
 
   /**
+   * Return all emails based on the profileId
+   * Can be used by any logged in user
+   * @param session The logged in session
+   * @param profileId The profileId of emails that you want
+   * @return
+   */
+  @GetMapping("/{profileId}/emails")
+  public ResponseEntity getProfileEmails(HttpSession session, @PathVariable Integer profileId) {
+    Object id = session.getAttribute("id");
+    ResponseEntity permissionResponse =
+        UserSecurityService.checkViewingPermission(profileId, session, repository);
+    if (permissionResponse != null) {
+      return permissionResponse;
+    }
+    List<Email> emails = emailRepository.getEmailsByProfileId(profileId);
+    JSONObject resultsObject = new JSONObject();
+    resultsObject.put("emails", emails);
+    return ResponseEntity.ok(resultsObject);
+  }
+
+  /**
    * Get request to return the id of the current user logged into the session
    *
    * @param session the current Http session
    * @return response entity with the current logged in user id
    */
   @GetMapping("/id")
-  public ResponseEntity<String> getUserId(HttpSession session) throws JsonProcessingException {
+  public ResponseEntity<String> getUserId(HttpSession session) {
     Object id = session.getAttribute("id");
     if (id == null) {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);

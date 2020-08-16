@@ -1,7 +1,7 @@
 <template>
     <b-navbar class="nav-bar" fixed toggleable="lg" type="dark" variant="dark">
-        <b-navbar-brand v-if="!isLoggedIn" to='/'>Edmun</b-navbar-brand>
-        <b-navbar-brand v-if="isLoggedIn" @click="goToProfile">Edmun</b-navbar-brand>
+        <b-navbar-brand v-if="!isLoggedIn" to='/'><b-img :src="require('@/assets/goatonly_navbar.png')" height="40px"></b-img></b-navbar-brand>
+        <b-navbar-brand v-if="isLoggedIn" @click="goToProfile"><b-img :src="require('@/assets/goatonly_navbar.png')" height="40px"></b-img></b-navbar-brand>
         <b-navbar-toggle fixed target="nav-collapse" toggleable="true"></b-navbar-toggle>
 
         <b-collapse id="nav-collapse" is-nav>
@@ -20,7 +20,7 @@
                                 <b-form-select v-model="searchBy" :options="searchOptions"></b-form-select>
                             </template>
 
-                            <b-form-input placeholder="Search" v-model="searchQuery"></b-form-input>
+                            <b-form-input @keydown.enter.native="search()" placeholder="Search" v-model="searchQuery"></b-form-input>
 
                             <b-input-group-append>
                                 <b-button @click="search()">
@@ -83,7 +83,8 @@
                 searchBy: 1,
                 searchQuery: "",
                 searchOptions: [
-                    {value: 1, text: 'Users'}
+                    {value: 1, text: 'Users'},
+                    {value: 2, text: 'Activities'}
                 ],
                 profileId: "",
                 loggedInIsAdmin: null,
@@ -102,6 +103,8 @@
                     .then(function (response) {
                         console.log(response.data);
                         vueObj.$router.push('/');
+
+                        mutations.logout();
                     })
                     .catch(function (error) {
                         console.log(error.response.data);
@@ -141,10 +144,17 @@
                     .catch(function () {
                     });
             },
+
             search() {
-                if (this.searchQuery === '') return;
-                this.$router.push('/profiles?fullname=' + this.searchQuery);
+                if (this.searchQuery === '') {
+                    this.$router.push('/profiles');
+                } else if (this.searchBy == 1) {
+                    this.$router.push('/profiles?fullname=' + this.searchQuery);
+                } else if (this.searchBy == 2) {
+                    this.$router.push('/activities/search?name=' + this.searchQuery);
+                }
             },
+
             switchAccessControl(value) {
                 mutations.switchAccessControl(value);
             }

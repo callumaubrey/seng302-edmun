@@ -1,9 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.Email;
-import com.springvuegradle.team6.models.EmailRepository;
-import com.springvuegradle.team6.models.Profile;
-import com.springvuegradle.team6.models.ProfileRepository;
+import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.responses.SearchProfileResponse;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -54,7 +54,6 @@ public class SearchProfileController {
    * @return the results of the search containing profiles that match the full name roughly
    */
   @GetMapping()
-  //@RequestMapping(params = "fullname")
   public ResponseEntity getProfileByFullName(
       @RequestParam(name = "fullname", required = false) String fullName,
       @RequestParam(name = "activity", required = false) String activityType,
@@ -89,8 +88,6 @@ public class SearchProfileController {
     }
 
     List<Profile> profiles = profileRepository.searchFullname(fullNameWithSpaces, activityTypesWithSpaces, method, limit, offset);
-    System.out.println(fullNameWithSpaces);
-    System.out.println(profiles.size());
     List<SearchProfileResponse> results = new ArrayList<>();
     for (Profile profile : profiles) {
       SearchProfileResponse result =
@@ -167,6 +164,8 @@ public class SearchProfileController {
     }
     JSONObject resultsObject = new JSONObject();
     List<SearchProfileResponse> results = new ArrayList<>();
+
+    searchedEmail = searchedEmail.toLowerCase();
 
     Profile profile = null;
     Optional<Email> optionalEmail = emailRepository.findByAddress(searchedEmail);

@@ -1,18 +1,30 @@
 <template>
     <div>
-        <b-row>
-            <b-button v-if="displayButton && !isSubscribed" @click="followActivity" variant="success">Follow</b-button>
-            <b-button v-if="displayButton && isSubscribed" @click="unfollowActivity" variant="danger">Unfollow</b-button>
+        <b-row style="margin-top:0.5rem;">
+            <b-button v-if="displayFollowButton && !isSubscribed" @click="followActivity" variant="success"
+                      style="margin: 10px">Follow
+            </b-button>
+            <b-button v-if="displayFollowButton && isSubscribed" @click="unfollowActivity" variant="danger"
+                      style="margin: 10px">Unfollow
+            </b-button>
+            <b-button v-if="displayGoingButton && !isGoing" @click="setGoing" variant="success" style="margin: 10px">
+                Going
+            </b-button>
+            <b-button v-if="displayGoingButton && isGoing" @click="setNotGoing" variant="danger" style="margin: 10px">
+                Not Going
+            </b-button>
         </b-row>
     </div>
 
 </template>
 
 <script>
-    import axios from "axios";
+    import api from '@/Api';
+    import {store} from "../store";
 
     const FollowUnfollow = {
         name: "FollowUnfollow",
+        components: {},
         props: {
             activityId: {
                 type: Number,
@@ -29,22 +41,24 @@
         },
         data: function () {
             return {
-                displayButton: true,
-                isSubscribed: false,
+                displayFollowButton: Boolean,
+                displayGoingButton: Boolean,
+                isSubscribed: Boolean,
+                isGoing: Boolean
             }
         },
-        mounted() {
+        async beforeMount() {
+            this.displayGoingButton = false
+            this.displayFollowButton = false
+            this.getIsGoing()
             this.getCanFollow();
         },
         methods: {
-            getCanFollow: function() {
+            getCanFollow: async function () {
                 if (this.loggedInId != this.activityOwnerId) {
-                    let vueObj = this;
-                    let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                    axios.defaults.withCredentials = true;
-                    axios.get(url)
+                    await api.getIsSubscribed(this.loggedInId, this.activityId)
                         .then((res) => {
-                            vueObj.isSubscribed = res.data.subscribed;
+                            this.isSubscribed = res.data.subscribed;
                         })
                         .catch(() => {
                             console.log('500 error')
@@ -53,31 +67,97 @@
                     this.displayButton = false;
                 }
             },
-            followActivity: function() {
-                let vueObj = this;
-                let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                axios.defaults.withCredentials = true;
-                axios.post(url)
+            /**
+             * Calls getIsParticipating endpoint which should return a boolean if successful. The boolean
+             * is if the user is participating in the activity. This is used for displaying the going button
+             * and following status
+             * @returns {Promise<void>}
+             */
+            getIsGoing: async function () {
+                this.update
+                await api.getIsParticipating(this.loggedInId, this.activityId)
+                    .then((res) => {
+                        if (res.data.participant == "null") {
+                            this.displayFollowButton = false
+                            this.displayGoingButton = false
+                        }
+                        if (res.data.participant == "false") {
+                            this.displayFollowButton = true
+                            this.displayGoingButton = true
+                            this.isGoing = false
+                            this.isSubscribed = true
+                        }
+                        if (res.data.participant == "true") {
+                            this.displayFollowButton = false
+                            this.displayGoingButton = true
+                            this.isGoing = true
+                            this.isSubscribed = false
+                        }
+
+                    })
+                    .catch(() => {
+                        console.log('500 error')
+                    });
+            },
+            followActivity: async function () {
+                await api.subscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
-                        vueObj.getCanFollow();
+                        this.getCanFollow();
+                        store.newNotification("Activity Followed", "success", 2)
                     })
                     .catch((err) => {
                         alert(err.body)
                     });
             },
-            unfollowActivity: function() {
-                let vueObj = this;
-                let url = 'http://localhost:9499/profiles/' + this.loggedInId +'/subscriptions/activities/' + this.activityId;
-                axios.defaults.withCredentials = true;
-                axios.delete(url)
+
+            unfollowActivity: async function () {
+                await api.unsubscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
-                        vueObj.getCanFollow();
+                        store.newNotification("Activity Unfollowed", "success", 2)
+                        this.getCanFollow();
                     })
                     .catch((err) => {
                         alert(err.body)
                     });
-            }
-        }
+            },
+
+            /**
+             * Sets a user to participant if they are able to be. Updates displaying
+             * and function of the follow/unFollow and going/notGoing buttons. If error
+             * then logs in console
+             */
+            setGoing: async function () {
+                await api.setActivityRoleParticipant(this.loggedInId, this.activityId)
+                    .then(() => {
+                        this.displayFollowButton = false
+                        this.displayGoingButton = true
+                        this.isGoing = true
+                        this.isSubscribed = true
+                        store.newNotification("Activity Participation Updated", "success", 2)
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    });
+            },
+
+            /**
+             * Demotes a user from participant to follower and sets variables for the displaying
+             * and function of the follow/unFollow and going/notGoing buttons
+             * @returns {Promise<void>}
+             */
+            setNotGoing: async function () {
+                await api.deleteActivityRoleParticipant(this.loggedInId, this.activityId)
+                    .then(() => {
+                        store.newNotification("Activity Participation Updated", "success", 2)
+                        this.displayFollowButton = true
+                        this.displayGoingButton = true
+                        this.isGoing = false
+                    })
+                    .catch((err) => {
+                        alert(err.body)
+                    });
+            },
+        },
     };
     export default FollowUnfollow
 

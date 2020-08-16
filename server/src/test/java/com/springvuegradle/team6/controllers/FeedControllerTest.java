@@ -1,9 +1,11 @@
 package com.springvuegradle.team6.controllers;
 
-import com.springvuegradle.team6.models.*;
-import com.springvuegradle.team6.requests.LoginRequest;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
+import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -26,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 public class FeedControllerTest {
 
@@ -85,13 +87,14 @@ public class FeedControllerTest {
     history.setActivity(activity);
     history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
     history.setMessage("Activity " + activity.getActivityName() + " was created");
-    history = activityHistoryRepository.save(history);
+    activityHistoryRepository.save(history);
 
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     String response =
         mvc.perform(
@@ -134,7 +137,9 @@ public class FeedControllerTest {
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
     subscriptionHistory.setEndDateTime(LocalDateTime.of(2020, 3, 2, 1, 0));
+    subscriptionHistory.setUnsubscribeMethod(UnsubscribeMethod.SELF);
     subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
 
     String response =
@@ -182,25 +187,27 @@ public class FeedControllerTest {
     history.setActivity(activity);
     history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
     history.setMessage("Activity " + activity.getActivityName() + " was created");
-    history = activityHistoryRepository.save(history);
+    activityHistoryRepository.save(history);
 
     ActivityHistory history1 = new ActivityHistory();
     history1.setActivity(activity1);
     history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
     history1.setMessage("Activity " + activity1.getActivityName() + " was created");
-    history1 = activityHistoryRepository.save(history1);
+    activityHistoryRepository.save(history1);
 
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
     subscriptionHistory1.setActivity(activity1);
     subscriptionHistory1.setProfile(profile);
     subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
-    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+    subscriptionHistory1.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory1);
 
     String response =
         mvc.perform(
@@ -233,25 +240,27 @@ public class FeedControllerTest {
     history.setActivity(activity);
     history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
     history.setMessage("Activity " + activity.getActivityName() + " was created");
-    history = activityHistoryRepository.save(history);
+    activityHistoryRepository.save(history);
 
     ActivityHistory history1 = new ActivityHistory();
     history1.setActivity(activity1);
     history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
     history1.setMessage("Activity " + activity1.getActivityName() + " was created");
-    history1 = activityHistoryRepository.save(history1);
+    activityHistoryRepository.save(history1);
 
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
     subscriptionHistory1.setActivity(activity1);
     subscriptionHistory1.setProfile(profile);
     subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
-    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+    subscriptionHistory1.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory1);
 
     String response =
         mvc.perform(
@@ -287,25 +296,27 @@ public class FeedControllerTest {
     history.setActivity(activity);
     history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
     history.setMessage("Activity " + activity.getActivityName() + " was created");
-    history = activityHistoryRepository.save(history);
+    activityHistoryRepository.save(history);
 
     ActivityHistory history1 = new ActivityHistory();
     history1.setActivity(activity1);
     history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
     history1.setMessage("Activity " + activity1.getActivityName() + " was created");
-    history1 = activityHistoryRepository.save(history1);
+    activityHistoryRepository.save(history1);
 
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
     subscriptionHistory1.setActivity(activity1);
     subscriptionHistory1.setProfile(profile);
     subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
-    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+    subscriptionHistory1.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory1);
 
     String response =
         mvc.perform(
@@ -323,15 +334,15 @@ public class FeedControllerTest {
 
   @Test
   void testGetHomeFeedWithOffsetLargerThanNumberOfFeedsLeftReturnStatusOkReturnNoResults()
-          throws Exception {
+      throws Exception {
     String response =
-            mvc.perform(
-                    MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?offset=1")
-                            .session(session))
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?offset=1")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("feeds");
@@ -339,7 +350,8 @@ public class FeedControllerTest {
   }
 
   @Test
-  void testGetHomeFeedWithOffsetPlusLimitLargerThanNumberOfFeedsLeftReturnStatusOkReturnCorrectResults()
+  void
+      testGetHomeFeedWithOffsetPlusLimitLargerThanNumberOfFeedsLeftReturnStatusOkReturnCorrectResults()
           throws Exception {
     Activity activity = new Activity();
     activity.setProfile(profile);
@@ -357,37 +369,192 @@ public class FeedControllerTest {
     history.setActivity(activity);
     history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
     history.setMessage("Activity " + activity.getActivityName() + " was created");
-    history = activityHistoryRepository.save(history);
+    activityHistoryRepository.save(history);
 
     ActivityHistory history1 = new ActivityHistory();
     history1.setActivity(activity1);
     history1.setTimeDate(LocalDateTime.of(2020, 3, 3, 13, 15));
     history1.setMessage("Activity " + activity1.getActivityName() + " was created");
-    history1 = activityHistoryRepository.save(history1);
+    activityHistoryRepository.save(history1);
 
     SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
     subscriptionHistory.setActivity(activity);
     subscriptionHistory.setProfile(profile);
     subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
-    subscriptionHistory = subscriptionHistoryRepository.save(subscriptionHistory);
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
 
     SubscriptionHistory subscriptionHistory1 = new SubscriptionHistory();
     subscriptionHistory1.setActivity(activity1);
     subscriptionHistory1.setProfile(profile);
     subscriptionHistory1.setStartDateTime(LocalDateTime.of(2020, 2, 1, 15, 14));
-    subscriptionHistory1 = subscriptionHistoryRepository.save(subscriptionHistory1);
+    subscriptionHistory1.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory1);
 
     String response =
-            mvc.perform(
-                    MockMvcRequestBuilders.get("/feed/homefeed/" + profile.getId() + "?offset=2&limit=4")
-                            .session(session))
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/feed/homefeed/" + profile.getId() + "?offset=2&limit=4")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("feeds");
     org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+  }
+
+  @Test
+  void
+  testSelfSubscribeToActivityAndGetHomeFeedReturnStatusOkReturnSelfSubscribeMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Subscribed to the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Added to the activity:"));
+  }
+
+  @Test
+  void
+  testAddedToActivityAndGetHomeFeedReturnStatusOkReturnAddedToActivityMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Added to the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Subscribed to the activity:"));
+  }
+
+  @Test
+  void
+  testSelfUnsubscribeFromActivityAndGetHomeFeedReturnStatusOkReturnSelfUnsubscribeMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistory.setEndDateTime(LocalDateTime.of(2020, 3, 2, 1, 0));
+    subscriptionHistory.setUnsubscribeMethod(UnsubscribeMethod.SELF);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Unsubscribed from the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Removed from the activity:"));
+  }
+
+  @Test
+  void
+  testRemovedFromActivityAndGetHomeFeedReturnStatusOkReturnRemovedFromActivityMessage()
+      throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Play rock, paper, scissors");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    ActivityHistory history = new ActivityHistory();
+    history.setActivity(activity);
+    history.setTimeDate(LocalDateTime.of(2020, 3, 1, 13, 15));
+    history.setMessage("Activity " + activity.getActivityName() + " was created");
+    activityHistoryRepository.save(history);
+
+    SubscriptionHistory subscriptionHistory = new SubscriptionHistory();
+    subscriptionHistory.setActivity(activity);
+    subscriptionHistory.setProfile(profile);
+    subscriptionHistory.setStartDateTime(LocalDateTime.of(2020, 2, 1, 13, 14));
+    subscriptionHistory.setSubscribeMethod(SubscribeMethod.ADDED);
+    subscriptionHistory.setEndDateTime(LocalDateTime.of(2020, 3, 2, 1, 0));
+    subscriptionHistory.setUnsubscribeMethod(UnsubscribeMethod.REMOVED);
+    subscriptionHistoryRepository.save(subscriptionHistory);
+
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get(
+                "/feed/homefeed/" + profile.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertTrue(response.contains("Removed from the activity:"));
+    org.junit.jupiter.api.Assertions.assertFalse(response.contains("Unsubscribed to the activity:"));
   }
 }
