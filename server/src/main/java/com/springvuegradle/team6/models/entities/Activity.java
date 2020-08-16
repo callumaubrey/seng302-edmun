@@ -33,6 +33,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Parameter;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -118,6 +119,7 @@ public class Activity {
   @Id
   @GeneratedValue
   @Column(name = "id")
+  @SortableField
   private Integer id;
 
   @ManyToOne

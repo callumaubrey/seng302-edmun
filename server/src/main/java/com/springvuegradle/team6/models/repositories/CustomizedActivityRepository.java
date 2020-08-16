@@ -29,8 +29,6 @@ public interface CustomizedActivityRepository {
       String time,
       LocalDateTime startDate,
       LocalDateTime endDate,
-      int limit,
-      int offset,
       int profileId,
       boolean isAdmin);
 }

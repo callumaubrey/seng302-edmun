@@ -1,4 +1,5 @@
 import axios from 'axios';
+import activitySearchAPI from "./scripts/Activity/activitySearch";
 
 const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 console.log(SERVER_URL + "@@@");
@@ -31,6 +32,10 @@ export default {
 
     createActivityResult: (userId, activityId, data) => instance.post(
         'profiles/' + userId + '/activities/' + activityId + '/result', data),
+
+    setActivityRoleParticipant: (userId, activityId, data) => instance.post(
+        'profiles/' + userId + '/subscriptions/activities/' + activityId + '/participate', data),
+
     // (R)ead
 
     getProfileRoles: () => instance.get('/profiles/role'),
@@ -68,7 +73,7 @@ export default {
 
     getProfile: (id) => instance.get('/profiles/' + id),
 
-    getProfileByEmailAsync: async (email) => instance.get('/profiles?email='+ email),
+    getProfileByEmailAsync: async (email) => instance.get('/profiles?email=' + email),
 
     getFirstName: () => instance.get('/profiles/firstname'),
 
@@ -93,6 +98,9 @@ export default {
     getIsSubscribed: (userId, activityId) => instance.get(
         '/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
+    getIsParticipating: (profileId, activityId) => instance.get(
+        '/profiles/' + profileId + '/subscriptions/activities/' + activityId + '/participate'),
+
     getActivityMemberCounts: (activityId) => instance.get(
         '/activities/' + activityId + '/membercount'),
 
@@ -104,8 +112,33 @@ export default {
     getActivityMetrics: (profileId, activityId) => instance.get(
         '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
 
-
     getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
+
+    getActivitiesBySearch: (search_query=undefined,
+                            types = [],
+                            types_method_and = true,
+                            hashtags = [],
+                            hashtags_method_and = true,
+                            activity_mode_filter="all",
+                            start_date=undefined,
+                            end_date=undefined,
+                            pagination_offset=0,
+                            pagination_limit=10) =>
+        {return activitySearchAPI.searchActivities(instance,
+        search_query, types, types_method_and, hashtags, hashtags_method_and,
+        activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit)},
+
+    getActivityCountBySearch: (search_query=undefined,
+                               types = [],
+                               types_method_and = true,
+                               hashtags = [],
+                               hashtags_method_and = true,
+                               activity_mode_filter="all",
+                               start_date=undefined,
+                               end_date=undefined) =>
+        {return activitySearchAPI.searchActivitiesPageCount(instance,
+        search_query, types, types_method_and, hashtags, hashtags_method_and,
+        activity_mode_filter, start_date, end_date)},
 
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
@@ -144,7 +177,7 @@ export default {
         data),
 
     updateActivityResult: (profileId, activityId, resultId,
-        data) => instance.put(
+                           data) => instance.put(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
         + resultId, data),
     // (D)elete
@@ -170,6 +203,10 @@ export default {
 
     deleteActivityResult: (profileId, activityId, resultId) => instance.delete(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
-        + resultId)
+        + resultId),
+
+    deleteActivityRoleParticipant: (profileId, activityId) => instance.delete(
+        "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate")
+
 
 }
