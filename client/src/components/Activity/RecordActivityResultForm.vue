@@ -534,7 +534,7 @@ export default {
     parseToSpecialMetricTitle() {
       if (this.result.special_metric !== null) {
         for (let specialMetricTitle in this.specialMetricDict) {
-          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
+          if (this.specialMetricDict[specialMetricTitle] === this.result.special_metric) {
             this.specialMetricTitle = specialMetricTitle;
           }
         }
