@@ -230,12 +230,12 @@ public class SearchActivityController {
 
     String[] activityTypesArray = null;
     if (activityTypes != null) {
-      activityTypesArray = activityTypes.split("%20");
+      activityTypesArray = activityTypes.replaceAll("%20", " ").split(" ");
     }
 
     String[] hashtagsArray = null;
     if (hashtags != null) {
-      hashtagsArray = hashtags.split("%20");
+      hashtagsArray = hashtags.replaceAll("%20", " ").split(" ");
     }
 
     if (activityName != null) {
