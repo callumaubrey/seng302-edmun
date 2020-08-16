@@ -55,8 +55,9 @@
             <b-row>
                 <!-- Hashtags -->
                 <b-col cols="8" class="p-2">
-                    <span v-for="tag in activity.tags" :key="tag.name" class="pr-1">
-                        <router-link :to="{path: '/hashtag/' + tag.name}">#{{tag.name}}</router-link>
+                    <span :key="tag.name" class="pr-1" v-for="tag in activity.tags">
+                        <router-link
+                            :to="{ path: '/activities/search?hashtags=%23' + tag.name + '&hashtags-method=AND&offset=1&limit=10' }">#{{ tag.name }}</router-link>
                     </span>
                 </b-col>
 
@@ -72,20 +73,20 @@
 </template>
 
 <script>
-    import api from "../../Api";
-    import ActivityTypeIcon from "./ActivityType/ActivityTypeIcon";
+import api from "../../Api";
+import ActivityTypeIcon from "./ActivityType/ActivityTypeIcon";
 
-    export default {
-        name: "ActivityList.vue",
-        components: {ActivityTypeIcon},
-        data: function() {
-            return {
-                display_mode: 'all',
-                activity_data: [],
+export default {
+  name: "ActivityList.vue",
+  components: {ActivityTypeIcon},
+  data: function () {
+    return {
+      display_mode: 'all',
+      activity_data: [],
 
-                login_user_id: -1,
+      login_user_id: -1,
 
-                show_error_message: false,
+      show_error_message: false,
                 error_message: ''
             }
         },
