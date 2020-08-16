@@ -512,7 +512,7 @@ public class SearchActivityControllerTest {
   void getActivitiesWithDurationWithStartDateReturnTwoActivity() throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities?time=duration&start-date=20200403")
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=2020-04-03")
                     .session(session))
             .andExpect(status().isOk())
             .andReturn()
@@ -527,7 +527,7 @@ public class SearchActivityControllerTest {
   void getActivitiesWithDurationWithEndDateReturnTwoActivity() throws Exception {
     String response =
         mvc.perform(
-                MockMvcRequestBuilders.get("/activities?time=duration&start-date=20200403")
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=2020-04-03")
                     .session(session))
             .andExpect(status().isOk())
             .andReturn()
@@ -543,7 +543,7 @@ public class SearchActivityControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/activities?time=duration&start-date=20200401&end-date=20200402")
+                        "/activities?time=duration&start-date=2020-04-01&end-date=2020-04-02")
                     .session(session))
             .andExpect(status().isOk())
             .andReturn()
@@ -559,7 +559,7 @@ public class SearchActivityControllerTest {
     String response =
         mvc.perform(
                 MockMvcRequestBuilders.get(
-                        "/activities?time=duration&start-date=20300401&end-date=20300402")
+                        "/activities?time=duration&start-date=2030-04-01&end-date=2030-04-02")
                     .session(session))
             .andExpect(status().isOk())
             .andReturn()

@@ -116,10 +116,14 @@ public class SearchActivityController {
     LocalDateTime endDateLDT = null;
 
     if (time != null && time.toLowerCase().equals("duration")) {
+
       if (startDate != null) {
-        String startYear = startDate.substring(0, 4);
-        String startMonth = startDate.substring(4, 6);
-        String startDay = startDate.substring(6, 8);
+        String[] startDateArray = startDate.split("-");
+        // YYYY-MM-DD
+        // 0123456789
+        String startYear = startDateArray[0];
+        String startMonth = startDateArray[1];
+        String startDay = startDateArray[2];
         startDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(startYear),
@@ -129,9 +133,11 @@ public class SearchActivityController {
                 0);
       }
       if (endDate != null) {
-        String endYear = endDate.substring(0, 4);
-        String endMonth = endDate.substring(4, 6);
-        String endDay = endDate.substring(6, 8);
+        String[] endDateArray = endDate.split("-");
+
+        String endYear = endDateArray[0];
+        String endMonth = endDateArray[1];
+        String endDay = endDateArray[2];
         endDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(endYear),
@@ -254,12 +260,14 @@ public class SearchActivityController {
     LocalDateTime endDateLDT = null;
 
     if (time != null && time.toLowerCase().equals("duration")) {
+
       if (startDate != null) {
+        String[] startDateArray = startDate.split("-");
         // YYYY-MM-DD
         // 0123456789
-        String startYear = startDate.substring(0, 4);
-        String startMonth = startDate.substring(5, 7);
-        String startDay = startDate.substring(8, 9);
+        String startYear = startDateArray[0];
+        String startMonth = startDateArray[1];
+        String startDay = startDateArray[2];
         startDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(startYear),
@@ -269,9 +277,11 @@ public class SearchActivityController {
                 0);
       }
       if (endDate != null) {
-        String startYear = startDate.substring(0, 4);
-        String startMonth = startDate.substring(5, 7);
-        String startDay = startDate.substring(8, 9);
+        String[] endDateArray = endDate.split("-");
+
+        String endYear = endDateArray[0];
+        String endMonth = endDateArray[1];
+        String endDay = endDateArray[2];
         endDateLDT =
             LocalDateTime.of(
                 Integer.parseInt(endYear),
