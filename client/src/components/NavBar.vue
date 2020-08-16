@@ -151,7 +151,7 @@
                 } else if (this.searchBy == 1) {
                     this.$router.push('/profiles?fullname=' + this.searchQuery);
                 } else if (this.searchBy == 2) {
-                    this.$router.push('/activities?name=' + this.searchQuery);
+                    this.$router.push('/activities/search?name=' + this.searchQuery);
                 }
             },
 
