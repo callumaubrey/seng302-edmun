@@ -35,10 +35,10 @@ public class SearchActivityResponse {
     this.visibilityType = visibilityType;
   }
 
-  @JsonProperty("activity_name")
+  @JsonProperty("activityName")
   public String activityName;
 
-  @JsonProperty("activity_id")
+  @JsonProperty("id")
   public Integer activityId;
 
   @JsonProperty("profile_id")
@@ -47,24 +47,24 @@ public class SearchActivityResponse {
   @JsonProperty("description")
   public String description;
 
-  @JsonProperty("activity_types")
+  @JsonProperty("activityTypes")
   public Set<ActivityType> activityTypes;
 
-  @JsonProperty("hashtags")
+  @JsonProperty("tags")
   public Set<Tag> hashtags;
 
   @JsonProperty("continuous")
   public boolean continuous;
 
-  @JsonProperty("start_date_time")
+  @JsonProperty("startTime")
   public LocalDateTime startTime;
 
-  @JsonProperty("end_date_time")
+  @JsonProperty("endTime")
   public LocalDateTime endTime;
 
   @JsonProperty("location")
   public NamedLocation location;
 
-  @JsonProperty("visibility")
+  @JsonProperty("visibilityType")
   public VisibilityType visibilityType;
 }

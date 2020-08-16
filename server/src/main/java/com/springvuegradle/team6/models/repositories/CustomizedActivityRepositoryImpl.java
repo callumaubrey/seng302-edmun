@@ -9,6 +9,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.tomcat.jni.Local;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.bridge.StringBridge;
@@ -86,8 +88,6 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param time either continuous or duration
    * @param startDate earliest start date for an activity
    * @param endDate latest end date for an activity
-   * @param limit the number of activities to return
-   * @param offset the number of activities to skip
    * @param profileId the profileId of the current user logged in
    * @return a count of the number of activities
    */
@@ -101,8 +101,6 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       String time,
       LocalDateTime startDate,
       LocalDateTime endDate,
-      int limit,
-      int offset,
       int profileId,
       boolean isAdmin) {
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
@@ -115,8 +113,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             time,
             startDate,
             endDate,
-            limit,
-            offset,
+            -1,
+            -1,
             profileId,
             isAdmin);
 
@@ -203,8 +201,13 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     }
 
     if (finalQuery != null) {
+      org.apache.lucene.search.Sort sort =
+          new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+
       org.hibernate.search.jpa.FullTextQuery jpaQuery =
           fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
+
+      jpaQuery.setSort(sort);
 
       if (limit != -1) {
         jpaQuery.setMaxResults(limit);
