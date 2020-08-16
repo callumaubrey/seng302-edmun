@@ -56,8 +56,10 @@
                 <!-- Hashtags -->
                 <b-col cols="8" class="p-2">
                     <span :key="tag.name" class="pr-1" v-for="tag in activity.tags">
-                        <router-link
-                            :to="{ path: '/activities/search?hashtags=%23' + tag.name + '&hashtags-method=AND&offset=1&limit=10' }">#{{ tag.name }}</router-link>
+                        <a
+                            :href="'#/activities/search?hashtags=%23' + tag.name + '&hashtags-method=AND&offset=1&limit=10'">#{{
+                            tag.name
+                          }}</a>
                     </span>
                 </b-col>
 
