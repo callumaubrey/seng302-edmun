@@ -390,7 +390,8 @@ const App = {
     },
     clickHashtag(hashtag) {
       hashtag = hashtag.substring(1);
-      this.$router.push("/hashtag/" + hashtag);
+      let queryString = "?hashtags=%23" + hashtag + "&hashtags-method=AND&offset=1&limit=10"
+      this.$router.push("/activities/search" + queryString);
     },
     forceRerender(value) {
       this.visibility = value;
