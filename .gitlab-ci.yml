@@ -23,17 +23,17 @@ setup:
     paths:
       - client/node_modules/
 
-#junit:
-#  stage: test
-#  script:
-#    - cd server
-#    - ./gradlew test
-#
-#jest:
-#  stage: test
-#  script:
-#    - cd client
-#    - npm run test
+junit:
+  stage: test
+  script:
+    - cd server
+    - ./gradlew test
+
+jest:
+  stage: test
+  script:
+    - cd client
+    - npm run test
 
 deploy-test-server:
   stage: deploy
