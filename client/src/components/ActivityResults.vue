@@ -1,7 +1,7 @@
 <template>
   <div>
     <label style="font-size:18px;">{{ this.metricTitles[this.currentMetricIndex] }}</label>
-    <edit-table-result :result="this.selectedResult" :profileId="profileId" :activityId="activityId"></edit-table-result>
+    <edit-table-result :result="this.selectedResult" :profileId="profileId" :activityId="activityId" v-on:table-update="updateTable"></edit-table-result>
     <b-row>
       <b-col class="col-tall">
         <b-btn :disabled="this.currentMetricIndex == 0  ||
@@ -238,14 +238,16 @@ export default {
       let dateSplit = date.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     },
-
     editActivity: function (item) {
-      this.selectedResult = item
-      console.log(item)
-      console.log("flag1")
-      this.$bvModal.show("editResultModal")
-
+      this.selectedResult = item;
+      this.$root.$emit('mountEditModal');
+      this.$nextTick(() => {
+        this.$bvModal.show("editResultModal");
+      })
     },
+    updateTable: function() {
+      this.loadResults();
+    }
   },
 }
 </script>

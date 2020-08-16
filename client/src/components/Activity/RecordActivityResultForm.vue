@@ -551,7 +551,7 @@ export default {
      * Set specialMetricSelected attribute to true if the form is only used for editing and special metric is selected
      */
     setSpecialMetricSelectedFlag() {
-      if (!this.isCreateResult && this.specialMetricTitle !== 'None') {
+      if (!this.isCreateResult && this.specialMetricTitle !== 'None' && this.specialMetricTitle !== null) {
         this.specialMetricSelected = true
       } else {
         this.specialMetricSelected = false
