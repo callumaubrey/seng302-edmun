@@ -33,8 +33,11 @@
           <!-- Activity Mode input -->
           <b-row class="my-3">
             <b-col>
-              <ActivityContinuousDurationSearchBox v-on:selected="updateModeFilter"
-              v-on:dates="updateDurationDates"></ActivityContinuousDurationSearchBox>
+              <ActivityContinuousDurationSearchBox ref="ActivityModeInput"
+                                                   :start-date-prop="search_data.duration_limit.start_date"
+                                                   :end-date-prop="search_data.duration_limit.end_date"
+                                                    v-on:selected="updateModeFilter"
+                                                    v-on:dates="updateDurationDates"></ActivityContinuousDurationSearchBox>
             </b-col>
           </b-row>
 
@@ -136,7 +139,7 @@
 
           pagination: {
             offset: 1,
-            limit: 2,
+            limit: 10,
             count: 0
           }
         },
@@ -164,11 +167,8 @@
 
         this.activity_data = [];
 
-        let row_offset = (this.search_data.pagination.offset - 1) * (this.search_data.pagination.limit) + 1;
+        let row_offset = (this.search_data.pagination.offset - 1) * (this.search_data.pagination.limit) * 2;
         let row_limit = this.search_data.pagination.limit + 1;
-
-        console.log('offset: ' + row_offset);
-        console.log('limit: ' + row_limit);
 
         // Get Activities
         Api.getActivitiesBySearch(this.search_data.search_query,
@@ -182,7 +182,6 @@
                                   row_offset,
                                   row_limit).then((response) => {
           this.activity_data = response.data.results;
-          console.log('Activities:' + response.data.results.length);
         }).catch((error) => {
           console.log(error);
         });
@@ -195,11 +194,8 @@
                 this.search_data.hashtags.method === "AND",
                 this.search_data.search_mode_filter,
                 this.search_data.duration_limit.start_date,
-                this.search_data.duration_limit.end_date,
-                row_offset,
-                row_limit).then((response) => {
-          this.search_data.pagination.count = response.data;
-          console.log('Count:' + response.data);
+                this.search_data.duration_limit.end_date).then((response) => {
+          this.search_data.pagination.count = response.data / 2;
         }).catch((error) => {
           console.log(error);
         });
@@ -224,14 +220,34 @@
       },
 
       search() {
-        console.log(this.search_data);
         this.loadActivities();
-
       },
+
 
       newPageSelected(page) {
         this.search_data.pagination.offset = page;
         this.loadActivities();
+      },
+
+      /**
+       * Loads query into search data fields
+       */
+      loadQueryIntoFields() {
+        let params = SearchActivityApi.getSearchActivtyParamsFromQueryURL(this.$route.query);
+
+        if(params.search_query !== undefined) this.search_data.search_query = params.search_query;
+        if(params.types !== undefined) this.search_data.types.values = params.types;
+        if(params.types_method_and !== undefined) this.search_data.types.method = params.types_method_and ? "AND" : "OR";
+        if(params.hashtags !== undefined) this.search_data.hashtags.values = params.hashtags;
+        if(params.hashtags_method_and !== undefined) this.search_data.hashtags.method = params.hashtags_method_and ? "AND" : "OR";
+        if(params.activity_mode_filter !== undefined) this.search_data.search_mode_filter = params.activity_mode_filter;
+        if(params.start_date !== undefined) this.search_data.duration_limit.start_date = params.start_date;
+        if(params.end_date !== undefined) this.search_data.duration_limit.end_date = params.end_date;
+        if(params.pagination_offset !== undefined) this.search_data.pagination.offset = params.pagination_offset;
+        if(params.pagination_limit !== undefined) this.search_data.pagination.limit = params.pagination_limit;
+
+        if(this.search_data.search_mode_filter === "continuous") this.$refs.ActivityModeInput.toggleContinuousStateButton();
+        if(this.search_data.search_mode_filter === "duration") this.$refs.ActivityModeInput.toggleDurationStateButton();
       },
 
       updateHashTagValues(values) {
@@ -261,7 +277,6 @@
           this.search_data.duration_limit.start_date = duration.startDate;
         }
 
-        console.log(duration);
         if (duration.endDate.length === 0) {
           this.search_data.duration_limit.end_date = null;
         } else {
@@ -271,7 +286,9 @@
 
 
     },
+
     mounted() {
+      this.loadQueryIntoFields();
       this.getUser();
       this.loadActivities();
     }

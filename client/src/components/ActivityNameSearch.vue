@@ -1,5 +1,5 @@
 <template>
-    <b-input size="lg" id="name-input-field" v-model="searchQuery" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
+    <b-input size="lg" id="name-input-field" v-model="value" v-on:keyup="emitQuery" placeholder="Search Activity"></b-input>
 </template>
 
 
@@ -16,7 +16,7 @@
         },
         methods: {
             emitQuery() {
-                this.$emit('input', this.searchQuery)
+                this.$emit('input', this.value)
             },
         }
     }

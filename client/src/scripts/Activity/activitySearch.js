@@ -33,6 +33,7 @@ export default {
 
         let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
             hashtags_method_and, activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit);
+        query_params_str = query_params_str.replaceAll('%2C', '%20');
 
         return instance.get('/activities?' + query_params_str);
     },
@@ -49,8 +50,6 @@ export default {
      * @param activity_mode_filter String for activity mode filtering must match "all", "continuous", "duration"
      * @param start_date Date if activity_mode_filter is "Duration" then this filters any activities that start before this Date.
      * @param end_date Date if activity_mode_filter is "Duration" then this filters any activities that end after this Date.
-     * @param pagination_offset Integer offsets search results
-     * @param pagination_limit Integer limits number of results returned
      */
     searchActivitiesPageCount: function(instance,
                                search_query=null,
@@ -60,12 +59,11 @@ export default {
                                hashtags_method_and = true,
                                activity_mode_filter="all",
                                start_date=null,
-                               end_date=null,
-                               pagination_offset=0,
-                               pagination_limit=10) {
+                               end_date=null) {
 
         let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
-            hashtags_method_and, activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit);
+            hashtags_method_and, activity_mode_filter, start_date, end_date, null, null);
+        query_params_str = query_params_str.replaceAll('%2C', '%20');
 
         return instance.get('/activities/count?' + query_params_str);
     },
@@ -117,6 +115,8 @@ export default {
         if (params['name'] === null || params['name'].length === 0) delete params['name'];
         if (params['start-date'] === null) delete params['start-date'];
         if (params['end-date'] === null) delete params['end-date'];
+        if (params['offset'] === null) delete params['offset'];
+        if (params['limit'] === null) delete params['limit'];
 
         if(params['types'].length === 0) {
             delete params['types'];
@@ -140,11 +140,11 @@ export default {
     /**
      * Extracts parameters from query url returns an associative array. This is useful for loading in parameters
      * from a page related to activity search
-     * @param queryURL query section of a url
+     * @param query query section of a url
      */
-    getSearchActivtyParamsFromQueryURL: function (queryURL) {
+    getSearchActivtyParamsFromQueryURL: function (query) {
         let data = {};
-        let params = new URLSearchParams(queryURL);
+        let params = new URLSearchParams(query);
 
         if (params.has('name')) data['search_query'] = params.get('name');
         if (params.has('types')) data['types'] = params.get('types').split(',');
@@ -153,10 +153,10 @@ export default {
         if (params.has('hashtags-method')) data['hashtags_method_and'] = params.get('hashtags-method') === "AND";
         if (params.has('time')) data['activity_mode_filter'] = params.get('time');
         else data['activity_mode_filter'] = "all";
-        if (params.has('start-date')) data['start_date'] = Date(params.get('start_date'));
-        if (params.has('end-date')) data['end_date'] = Date(params.get('end_date'));
-        if (params.has('offset')) data['pagination_offset'] = parseInt(params.get('pagination_offset'));
-        if (params.has('limit')) data['pagination_limit'] = parseInt(params.get('pagination_limit'));
+        if (params.has('start-date')) data['start_date'] = Date(params.get('start-date'));
+        if (params.has('end-date')) data['end_date'] = Date(params.get('end-date'));
+        if (params.has('offset')) data['pagination_offset'] = parseInt(params.get('offset'));
+        if (params.has('limit')) data['pagination_limit'] = parseInt(params.get('limit'));
 
         return data;
     }
