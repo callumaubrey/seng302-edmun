@@ -9,6 +9,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("0")
 public class ActivityResultCount extends ActivityResult {
 
+  public static final String SQL_SORT_EXPRESSION = "count_result";
+
   @Column(name = "count_result")
   private Integer result;
 
@@ -32,7 +34,4 @@ public class ActivityResultCount extends ActivityResult {
     return this.result;
   }
 
-  public String getType() {
-    return "Count";
-  }
 }

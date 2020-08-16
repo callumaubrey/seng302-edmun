@@ -83,7 +83,8 @@
                 searchBy: 1,
                 searchQuery: "",
                 searchOptions: [
-                    {value: 1, text: 'Users'}
+                    {value: 1, text: 'Users'},
+                    {value: 2, text: 'Activities'}
                 ],
                 profileId: "",
                 loggedInIsAdmin: null,
@@ -147,8 +148,10 @@
             search() {
                 if (this.searchQuery === '') {
                     this.$router.push('/profiles');
-                } else {
+                } else if (this.searchBy == 1) {
                     this.$router.push('/profiles?fullname=' + this.searchQuery);
+                } else if (this.searchBy == 2) {
+                    this.$router.push('/activities/search?name=' + this.searchQuery);
                 }
             },
 

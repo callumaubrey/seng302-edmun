@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card v-for="activity in activity_data" :key="activity.id"
-            @click="gotoActivity(activity.id)"
+            @click="gotoActivity(activity.profile_id, activity.id)"
             class="activity-card rounded mb-3">
       <b-card-body class="activity-card-body" >
         <b-row>
@@ -67,8 +67,8 @@
     },
 
     methods: {
-      gotoActivity(id) {
-        this.$router.push('/profiles/' + this.user_id + '/activities/' + id);
+      gotoActivity(user_id, activity_id) {
+        this.$router.push('/profiles/' + user_id + '/activities/' + activity_id);
       },
       getDurationTimeSummary(activity) {
         // Returns a pretty print summary of different types of durations

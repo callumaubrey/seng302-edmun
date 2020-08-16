@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource
-public interface ActivityResultRepository extends JpaRepository<ActivityResult, Integer> {
+public interface ActivityResultRepository extends JpaRepository<ActivityResult, Integer>, CustomizedActivityResultRepository {
 
   /**
    * Gets all a particular users results for an activity.
@@ -22,8 +22,8 @@ public interface ActivityResultRepository extends JpaRepository<ActivityResult, 
    */
   @Query(
       value =
-          "select * from activity_result a LEFT JOIN activity_qualification_metric q on "
-              + "a.metric_id = q.id where q.activity_id = :activityId and a.user_id = :userId ",
+          "select a.*, p.firstname, p.lastname from activity_result a LEFT JOIN activity_qualification_metric q on "
+              + "a.metric_id = q.id LEFT JOIN profile p on a.user_id = p.id where q.activity_id = :activityId and a.user_id = :userId ",
       nativeQuery = true)
   List<ActivityResult> findSingleUsersResultsOnActivity(int activityId, int userId);
 

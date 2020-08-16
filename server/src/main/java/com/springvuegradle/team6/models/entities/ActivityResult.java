@@ -6,6 +6,7 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -14,21 +15,17 @@ import javax.persistence.ManyToOne;
 
 /**
  * ActivityResult superclass which records the ActivityQualificationMetrics and Profile associated.
- * The entity is also able to record special metrics such as DNF, technical failure or disqualified
- *
- * @Inheritance groups subclasses attributes into a single table, and a discriminator column will be
- * created to differentiate the subclasses
- * @DiscriminatorColumn changes the discriminator column name, and each subclass is represented as
- * integer
+ * The entity is also able to record special metrics such as DNF, technical failure or
+ * disqualified @Inheritance groups subclasses attributes into a single table, and a discriminator
+ * column will be created to differentiate the subclasses @DiscriminatorColumn changes the
+ * discriminator column name, and each subclass is represented as integer
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "result_type", discriminatorType = DiscriminatorType.INTEGER)
 public class ActivityResult {
 
-  @Id
-  @GeneratedValue
-  private Integer id;
+  @Id @GeneratedValue private Integer id;
 
   @ManyToOne
   @JoinColumn(name = "metric_id", nullable = false)
@@ -48,8 +45,7 @@ public class ActivityResult {
   }
 
   // For testing purposes only
-  public ActivityResult() {
-  }
+  public ActivityResult() {}
 
   /**
    * Override activity result to record special metrics such as DNF, technical failure or
@@ -75,10 +71,22 @@ public class ActivityResult {
     return this.userId.getId();
   }
 
+  @JsonProperty("fullname")
+  public String getFullName() {
+    return this.userId.getFirstname() + " " + this.userId.getLastname();
+  }
+
   @JsonProperty("special_metric")
   public SpecialMetric getSpecialMetric() {
     return this.specialMetric;
   }
 
 
+  public String getType() {
+    return this.metricId.getUnit().toString();
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
 }

@@ -33,17 +33,7 @@ describe('ActivityNameSearch.vue', () => {
         expect(wrapper.find('#name-input-field').exists()).toBe(true);
         await wrapper.find('#name-input-field').trigger('keyup');
         await wrapper.vm.$nextTick();
-        expect(wrapper.emitted().updateSearchQuery).toBeTruthy();
-    });
-
-    test('Test value sent', async () => {
-        expect(wrapper.find('#name-input-field').exists()).toBe(true);
-        await wrapper.setData({searchQuery: 'run'});
-        await wrapper.find('#name-input-field').trigger('keyup');
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-        expect(wrapper.emitted('updateSearchQuery')).toBeTruthy();
-        expect(wrapper.emitted('updateSearchQuery')[0]).toEqual(['run']);
+        expect(wrapper.emitted().input).toBeTruthy();
     });
 
 });

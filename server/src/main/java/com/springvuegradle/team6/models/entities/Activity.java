@@ -2,6 +2,7 @@ package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,8 +21,39 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Size;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Parameter;
+import org.hibernate.search.annotations.SortableField;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
+import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
 
+@Indexed
 @Entity
+@AnalyzerDef(
+    name = "activityAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(
+          factory = EdgeNGramFilterFactory.class,
+          params = {
+            @Parameter(name = "minGramSize", value = "3"),
+            @Parameter(name = "maxGramSize", value = "30")
+          })
+    })
 public class Activity {
 
   // Constants
@@ -41,22 +73,6 @@ public class Activity {
     this.creationDate = LocalDateTime.now();
   }
 
-  @Size(max = NAME_MAX_LENGTH)
-  @Column(length = NAME_MAX_LENGTH)
-  private String activityName;
-
-  @Id
-  @GeneratedValue
-  @Column(name = "id")
-  private Integer id;
-
-  @ManyToOne
-  @JoinColumn(name = "author_id", nullable = false)
-  private Profile profile;
-  @Size(max = DESCRIPTION_MAX_LENGTH)
-  @Column(length = DESCRIPTION_MAX_LENGTH)
-  private String description;
-
   public Activity(CreateActivityRequest request, Profile profile) {
     this.profile = profile;
     this.activityName = request.activityName;
@@ -66,8 +82,16 @@ public class Activity {
     this.continuous = request.continuous;
 
     if (!this.continuous) {
-      this.startTime = request.startTime;
-      this.endTime = request.endTime;
+      if (request.startTime != null) {
+        this.startTime =
+            LocalDateTime.parse(
+                request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      }
+      if (request.endTime != null) {
+        this.endTime =
+            LocalDateTime.parse(
+                request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+      }
     }
 
     if (request.location != null) {
@@ -82,22 +106,58 @@ public class Activity {
     }
   }
 
+  @Size(max = NAME_MAX_LENGTH)
+  @Column(length = NAME_MAX_LENGTH, name = "activity_name")
+  @Field(
+      index = Index.YES,
+      analyze = Analyze.YES,
+      store = Store.NO,
+      name = "activity_name",
+      analyzer = @Analyzer(definition = "activityAnalyzer"))
+  private String activityName;
+
+  @Id
+  @GeneratedValue
+  @Column(name = "id")
+  @SortableField
+  private Integer id;
+
+  @ManyToOne
+  @JoinColumn(name = "author_id", nullable = false)
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @FieldBridge(impl = IntegerBridge.class)
+  private Profile profile;
+
+  @Size(max = DESCRIPTION_MAX_LENGTH)
+  @Column(length = DESCRIPTION_MAX_LENGTH)
+  private String description;
+
+  @IndexedEmbedded
+  @Field(analyze = Analyze.YES, store = Store.NO)
   @ElementCollection(targetClass = ActivityType.class)
   @Enumerated(EnumType.ORDINAL)
   private Set<ActivityType> activityTypes;
 
+  @IndexedEmbedded
+  @Field(analyze = Analyze.YES, store = Store.NO)
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "activity_tags",
       joinColumns = @JoinColumn(name = "activity_id", referencedColumnName = "id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  @FieldBridge(impl = BuiltinIterableBridge.class)
   private Set<Tag> tags;
 
+  @Field(analyze = Analyze.YES, store = Store.NO, name = "continuous")
   private boolean continuous;
 
-  private String startTime;
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @Column(columnDefinition = "datetime")
+  private LocalDateTime startTime;
 
-  private String endTime;
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @Column(columnDefinition = "datetime")
+  private LocalDateTime endTime;
 
   @ManyToOne private NamedLocation location;
 
@@ -112,9 +172,13 @@ public class Activity {
   private boolean archived;
 
   @OneToMany(mappedBy = "activity")
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @IndexedEmbedded
+  @FieldBridge(impl = BuiltinIterableBridge.class)
   private List<ActivityRole> activityRole;
 
   @Enumerated(EnumType.ORDINAL)
+  @Field(analyze = Analyze.YES, store = Store.NO, name = "visibility")
   private VisibilityType visibilityType;
 
   @OneToMany(mappedBy = "activity")
@@ -152,20 +216,30 @@ public class Activity {
     this.continuous = continuous;
   }
 
-  public String getStartTime() {
+  public LocalDateTime getStartTime() {
     return startTime;
   }
 
-  public void setStartTime(String startTime) {
+  public void setStartTime(LocalDateTime startTime) {
     this.startTime = startTime;
   }
 
-  public String getEndTime() {
+  public void setStartTimeByString(String startTime) {
+    this.startTime =
+        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+  }
+
+  public LocalDateTime getEndTime() {
     return endTime;
   }
 
-  public void setEndTime(String endTime) {
+  public void setEndTime(LocalDateTime endTime) {
     this.endTime = endTime;
+  }
+
+  public void setEndTimeByString(String endTime) {
+    this.endTime =
+        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
   }
 
   public Integer getId() {
