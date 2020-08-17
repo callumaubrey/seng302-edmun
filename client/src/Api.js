@@ -106,8 +106,8 @@ export default {
 
     getActivityTypes: () => instance.get('/profiles/activity-types'),
 
-    getUserActivityResults: (userId, activityId) => instance.get(
-        '/profiles/' + userId + '/activities/' + activityId + '/result'),
+    getUserActivityResults: (userId, activityId, metricId) => instance.get(
+        '/activities/' + activityId + '/result/' +  metricId + '/' + userId),
 
     getActivityMetrics: (profileId, activityId) => instance.get(
         '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),

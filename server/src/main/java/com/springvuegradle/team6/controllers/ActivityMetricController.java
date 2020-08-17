@@ -130,11 +130,12 @@ public class ActivityMetricController {
       return new ResponseEntity("You don't have access", HttpStatus.UNAUTHORIZED);
     } else {
       ActivityRole activityRole = activityRoles.get(0);
-      if (id.equals(profile.getId())) {
+      Integer intId = (Integer) id;
+      if (intId.equals(profile.getId())) {
         // Doing your own result
         if (!ownerProfile.getId().equals(profile.getId())) {
           // If we are not the owner then we check if participant
-          if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Participant)) {
+          if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Participant) && !activityRole.getActivityRoleType().equals(ActivityRoleType.Organiser)) {
             return new ResponseEntity("You must be a participant", HttpStatus.UNAUTHORIZED);
           }
         }
