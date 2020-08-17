@@ -74,20 +74,20 @@
 </template>
 
 <script>
-    import api from '@/Api'
-    import EditTableResult from "./EditTableResult";
+import api from '@/Api'
+import EditTableResult from "./EditTableResult";
 
-    export default {
-        name: "ActivityResults",
-        components: {EditTableResult},
-        props: ["profileId", "activityId"],
-        data() {
-            return {
-                tableIsLoading: true,
-                currentMetric: "",
-                currentMetricIndex: 0,
-                allResultsFields: [
-                    {key: 'firstname', tdClass: 'smallCol'},
+export default {
+  name: "ActivityResults",
+  components: {EditTableResult},
+  props: ["profileId", "activityId"],
+  data() {
+    return {
+      tableIsLoading: true,
+      currentMetric: "",
+      currentMetricIndex: 0,
+      allResultsFields: [
+        {key: 'firstname', tdClass: 'smallCol'},
                     {key: 'value', tdClass: 'medCol'},
                     {key: 'ranking', tdClass: 'smallCol'}
                 ],
@@ -113,8 +113,13 @@
             }
         },
         mounted() {
+          this.getLoggedInId();
+          this.loadResults();
+          // listen to create , edit and delete result event
+          this.$root.$on('table-update', () => {
             this.getLoggedInId();
             this.loadResults();
+          });
         },
         methods: {
             loadResults: function () {
