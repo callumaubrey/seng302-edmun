@@ -144,6 +144,8 @@
             nextMetric: function () {
                 let index = this.metricIds.indexOf(this.currentMetric);
                 if (index >= 0 && index < this.metricIds.length - 1) {
+                    this.allResults = []
+                    this.myResults = []
                     this.currentMetric = this.metricIds[index + 1];
                     this.currentMetricIndex = index + 1;
                     this.getAllResults();
@@ -156,6 +158,8 @@
             prevMetric: function () {
                 let index = this.metricIds.indexOf(this.currentMetric);
                 if (index > 0 && index < this.metricIds.length) {
+                    this.allResults = []
+                    this.myResults = []
                     this.currentMetric = this.metricIds[index - 1];
                     this.currentMetricIndex = index - 1;
                     this.getAllResults();
