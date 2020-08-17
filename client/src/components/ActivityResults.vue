@@ -30,9 +30,10 @@
                         </b-table>
                         <b-col>
                             <b-pagination
-                                    v-model="currentPageAll"
+                                    v-bind="currentPageAll"
                                     :total-rows="rowsAll"
                                     :per-page="perPageAll"
+                                    v-on:table-update="updateTable"
                             ></b-pagination>
                         </b-col>
                     </b-tab>
@@ -43,6 +44,7 @@
                                  :busy="tableIsLoading"
                                  :per-page="perPageOwn"
                                  :current-page="currentPageOwn"
+                                 v-on:table-update="updateTable"
                         >
                             <template v-slot:table-busy>
                                 <div class="text-center text-primary my-2">
@@ -251,8 +253,9 @@
                     this.$bvModal.show("editResultModal");
                 })
             },
-            updateTable: function () {
-                this.loadResults();
+            updateTable: async function () {
+                this.getAllResults()
+                this.getMyResults()
             },
             getLoggedInId: function () {
                 api.getProfileId().then((res) => {
