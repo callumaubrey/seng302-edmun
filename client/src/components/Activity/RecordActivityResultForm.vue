@@ -1,7 +1,9 @@
 <template>
 
   <!-- This block displays the activity result -->
+
   <div v-if="!result.isEditMode">
+
     <b-row>
       <b-col sm="3">
         <b-row>
@@ -39,6 +41,8 @@
 
   <!-- This block deals with the creating/editing activity result form -->
   <div v-else>
+    <div>
+    </div>
     <b-row>
       <b-col sm="4">
         <label>Metric Title: </label>
@@ -151,6 +155,7 @@
         </b-button-group>
       </b-col>
     </b-row>
+
   </div>
 </template>
 
@@ -184,7 +189,8 @@ export default {
         startTime: null,
         endDate: null,
         endTime: null
-      }
+      },
+      loggedInId: null
     }
   },
   validations: {
@@ -359,7 +365,7 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      api.createActivityResult(this.profileId, this.activityId, data)
+      api.createActivityResult(this.loggedInId, this.activityId, data)
       .then((res) => {
         this.resultErrorMessage = null;
         this.result.id = res.data;
@@ -399,7 +405,7 @@ export default {
         end: this.result.result_finish,
         special_metric: this.specialMetricDict[this.specialMetricTitle]
       }
-      api.updateActivityResult(this.profileId, this.activityId, this.result.id,
+      api.updateActivityResult(this.loggedInId, this.activityId, this.result.id,
           data)
       .then(() => {
         this.result.isEditMode = false
@@ -415,7 +421,7 @@ export default {
      * Calls DELETE activity result endpoint
      */
     removeActivityResult() {
-      api.deleteActivityResult(this.profileId, this.activityId, this.result.id)
+      api.deleteActivityResult(this.loggedInId, this.activityId, this.result.id)
       .then(() => {
         this.$emit('child-to-parent', 'delete')
       }).catch(() => {
@@ -464,7 +470,6 @@ export default {
       if (this.startFinish.endTime !== "" && this.startFinish.endTime != null) {
         endDate = new Date(this.startFinish.endDate + " " + this.startFinish.endTime);
       }
-      console.log(startDate);
       this.result.result_start = startDate.toISOString();
       this.result.result_finish = endDate.toISOString();
     },
@@ -529,7 +534,7 @@ export default {
     parseToSpecialMetricTitle() {
       if (this.result.special_metric !== null) {
         for (let specialMetricTitle in this.specialMetricDict) {
-          if (this.specialMetricDict[specialMetricTitle] == this.result.special_metric) {
+          if (this.specialMetricDict[specialMetricTitle] === this.result.special_metric) {
             this.specialMetricTitle = specialMetricTitle;
           }
         }
@@ -546,14 +551,23 @@ export default {
      * Set specialMetricSelected attribute to true if the form is only used for editing and special metric is selected
      */
     setSpecialMetricSelectedFlag() {
-      if (!this.isCreateResult && this.specialMetricTitle !== 'None') {
+      if (!this.isCreateResult && this.specialMetricTitle !== 'None' && this.specialMetricTitle !== null) {
         this.specialMetricSelected = true
       } else {
         this.specialMetricSelected = false
       }
+    },
+    async getLoggedInId() {
+      api.getProfileId().then((res) => {
+        this.loggedInId = res.data;
+      })
+      .catch(() => {
+        alert("An error has occurred, please refresh the page")
+      })
     }
   },
-  mounted() {
+  async mounted() {
+    await this.getLoggedInId();
     this.parseToSpecialMetricTitle();
     this.parseDurationStringIntoHMS();
     this.parseISODateTimeStringIntoDateTimeInput();

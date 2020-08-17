@@ -89,27 +89,30 @@
        * Calls GET all activity results of user endpoint
        */
       getActivityResultsForUser() {
-        api.getUserActivityResults(this.profileId, this.activityId).then((res) => {
-          let result;
-          for (result of res.data) {
-            result.title = this.metricDict[result.metric_id].title;
-            result.description = this.metricDict[result.metric_id].description;
-            result.isEditMode = false
-            if (result.type === 'TimeDuration') {
-              result.result = this.convertToReadableDurationFormat(result.result)
+        for (let metricId of Object.keys(this.metricDict)) {
+          api.getUserActivityResults(this.loggedInId, this.activityId, metricId).then((res) => {
+            let result;
+            for (result of res.data) {
+              result.title = this.metricDict[result.metric_id].title;
+              result.description = this.metricDict[result.metric_id].description;
+              result.isEditMode = false;
+              if (result.type === 'TimeDuration') {
+                result.result = this.convertToReadableDurationFormat(result.result)
+              }
+              this.resultList.push(result)
             }
-            this.resultList.push(result)
-          }
-        })
-        .catch(() => {
-          this.userHasNoResultsMessage = "User has no activity results";
-        })
+          })
+            .catch(() => {
+            this.userHasNoResultsMessage = "User has no activity results";
+          })
+
+        }
       },
       /**
        * Calls GET all metrics of activity endpoint
        */
       getAllMetricsForActivity() {
-        api.getActivityMetrics(this.loggedInId, this.activityId).then((res) => {
+        api.getActivityMetrics(this.profileId, this.activityId).then((res) => {
           let metric;
           for (metric of res.data) {
             this.metricDict[metric.id] = metric;

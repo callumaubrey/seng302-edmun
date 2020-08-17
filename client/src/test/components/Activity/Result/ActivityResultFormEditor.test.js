@@ -14,6 +14,11 @@ api.deleteActivityResult = jest.fn(() => {
       {data: {}, status: 200})
 });
 
+api.getProfileId = jest.fn(() => {
+  return Promise.resolve(
+      {data: 1, status: 200})
+})
+
 
 beforeEach(() => {
   wrapper = mount(Component, {
