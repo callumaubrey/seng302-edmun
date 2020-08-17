@@ -58,21 +58,21 @@
 </template>
 
 <script>
-    import NavBar from '@/components/NavBar.vue';
-    import api from '@/Api';
-    import {mutations} from "../../store";
+import NavBar from '@/components/NavBar.vue';
+import api from '@/Api';
+import {mutations} from "../../store";
 
-    export default {
-        components: {
-            NavBar
-        },
-        computed: {
-            emailState() {
-                let state = null;
-                if (this.submitted) {
-                    if (this.email.length > 0) {
-                        let pattern = new RegExp("^($|[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-]+)$");
-                        state = pattern.test(this.email);
+export default {
+  components: {
+    NavBar
+  },
+  computed: {
+    emailState() {
+      let state = null;
+      if (this.submitted) {
+        if (this.email.length > 0) {
+          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          state = pattern.test(this.email);
                     } else {
                         state = false;
                     }

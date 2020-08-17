@@ -54,20 +54,20 @@
 </template>
 
 <script>
-  import RecordActivityResultForm from "@/components/Activity/RecordActivityResultForm";
-  import api from "@/Api";
+import RecordActivityResultForm from "@/components/Activity/RecordActivityResultForm";
+import api from "@/Api";
 
-  export default {
-    name: "RecordActivityResultModal",
-    components: {
-      RecordActivityResultForm
-    },
-    props: ['profileId', 'activityId', 'loggedInId'],
-    data() {
-      return {
-        createResultForm: {
-          metric_id: null,
-          user_id: null,
+export default {
+  name: "RecordActivityResultModal",
+  components: {
+    RecordActivityResultForm
+  },
+  props: ['profileId', 'activityId', 'loggedInId'],
+  data() {
+    return {
+      createResultForm: {
+        metric_id: null,
+        user_id: null,
           special_metric: null,
           result: null,
           result_finish: null,
@@ -102,10 +102,6 @@
               this.resultList.push(result)
             }
           })
-            .catch(() => {
-            this.userHasNoResultsMessage = "User has no activity results";
-          })
-
         }
       },
       /**
@@ -149,6 +145,7 @@
         } else if (val === 'create') {
           this.makeToast("Activity result is successfully created", 'success')
         }
+        this.$root.$emit('table-update')
       },
       /**
        * Makes a toast notification
