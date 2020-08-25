@@ -16,16 +16,10 @@ public class Location implements Serializable {
 
   @Id @GeneratedValue private long locationID = 0;
 
-  private String name = "";
-
   private double latitude = 0;
   private double longitude = 0;
 
   public Location() {}
-
-  public Location(String name) {
-    setName(name);
-  }
 
   /**
    * Sets a location using a specific latitude and longitude
@@ -36,14 +30,6 @@ public class Location implements Serializable {
   public Location(double latitude, double longitude) {
     setLatitude(latitude);
     setLongitude(longitude);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public double getLatitude() {
