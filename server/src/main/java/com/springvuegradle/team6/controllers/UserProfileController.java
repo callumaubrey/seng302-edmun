@@ -2,11 +2,12 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
@@ -59,14 +60,14 @@ public class UserProfileController {
   private final CountryRepository countryRepository;
   private final RoleRepository roleRepository;
   private final EmailRepository emailRepository;
-  private final NamedLocationRepository locationRepository;
+  private final LocationRepository locationRepository;
 
   UserProfileController(
       ProfileRepository rep,
       CountryRepository countryRepository,
       EmailRepository emailRepository,
       RoleRepository roleRep,
-      NamedLocationRepository locationRepository) {
+      LocationRepository locationRepository) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
@@ -343,14 +344,14 @@ public class UserProfileController {
       }
 
       // Update location
-      Optional<NamedLocation> optionalNamedLocation =
-          locationRepository.findByCountryAndStateAndCity(
-              location.country, location.state, location.city);
-      if (optionalNamedLocation.isPresent()) {
-        profile.setLocation(optionalNamedLocation.get());
+      Optional<Location> optionalLocation =
+          locationRepository.findByLatitudeAndLongitude(
+              location.latitude, location.longitude);
+      if (optionalLocation.isPresent()) {
+        profile.setLocation(optionalLocation.get());
       } else {
-        NamedLocation newLocation =
-            new NamedLocation(location.country, location.state, location.city);
+        Location newLocation =
+            new Location(location.latitude, location.longitude);
         locationRepository.save(newLocation);
         profile.setLocation(newLocation);
       }
