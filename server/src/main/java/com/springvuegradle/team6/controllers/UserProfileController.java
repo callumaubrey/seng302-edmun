@@ -321,7 +321,7 @@ public class UserProfileController {
    * Put request to update user's location
    *
    * @param id user id under query
-   * @param location location of type NamedLocation
+   * @param location location of type Location
    * @param session Http session
    * @return ResponseEntity will return 200 success if user is authorised to update location, else
    *     return 404 response if user is not found
