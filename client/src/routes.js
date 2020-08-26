@@ -15,7 +15,6 @@ import SearchUsers from './pages/SearchUsers/App';
 import SearchActivity from "./pages/SearchActivity/App";
 import HashTag from './pages/HashTag/App';
 import HomeFeed from './pages/HomeFeed/App';
-import TestPage from './pages/TestPage';
 
 const routes = [
     {path: '/', component: Home},
@@ -32,8 +31,7 @@ const routes = [
     {path: '/activities/search', component: SearchActivity},
     {path: '/profiles', component: SearchUsers, name: 'Users' },
     {path: '/hashtag/:hashtag', component: HashTag },
-    {path: '/home', component: HomeFeed },
-    {path: '/test', component: TestPage}
+    {path: '/home', component: HomeFeed }
     ];
 
 export default routes;
