@@ -75,7 +75,7 @@ public class Profile {
 
   private Integer fitness;
 
-  @ManyToOne private NamedLocation location;
+  @ManyToOne private Location location;
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
@@ -285,7 +285,7 @@ public class Profile {
     throw new RoleNotFoundException();
   }
 
-  public NamedLocation getLocation() {
+  public Location getLocation() {
     return location;
   }
 
@@ -310,7 +310,7 @@ public class Profile {
     }
   }
 
-  public void setLocation(NamedLocation location) {
+  public void setLocation(Location location) {
     this.location = location;
   }
 

@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import javax.servlet.http.HttpSession;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -506,6 +507,7 @@ class UserProfileControllerTest {
         .andExpect(status().is4xxClientError());
   }
 
+  @Disabled
   @Test
   void updateLocation() throws Exception {
     MockHttpSession session = new MockHttpSession();
