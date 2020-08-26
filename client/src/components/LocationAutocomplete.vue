@@ -33,7 +33,7 @@
           _this.locations = [];
 
           let locationData = axios.create({
-            baseURL: "https://photon.komoot.de/api/?q=" + locationText,
+            baseURL: "https://photon.komoot.de/api/?q=" + locationText + "&limit=10",
             timeout: 2000,
             withCredentials: false,
           });
