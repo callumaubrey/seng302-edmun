@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,7 +27,8 @@ public class LocationUpdateTest {
 
     @Autowired
     private ObjectMapper mapper;
-    
+
+    @Disabled
     @Test
     void testEditProfileLocationUpdate() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -85,6 +87,7 @@ public class LocationUpdateTest {
         ).andExpect(status().isOk());
     }
 
+    @Disabled
     @Test
     void updateLocation() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -117,6 +120,7 @@ public class LocationUpdateTest {
         ).andExpect(status().isOk());
     }
 
+    @Disabled
     @Test
     void deleteLocation() throws Exception {
         MockHttpSession session = new MockHttpSession();
