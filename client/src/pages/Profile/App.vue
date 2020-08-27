@@ -116,6 +116,7 @@
                                 </b-row>
                             </b-col>
                         </b-card>
+                        <map-pane></map-pane>
                     </b-tab>
                     <b-tab style="margin: 1em" title="Activities">
 
@@ -141,13 +142,15 @@
     import AdminMixin from "../../mixins/AdminMixin";
     import {store} from "../../store";
     import ActivityList from "../../components/Activity/ActivityList";
+    import MapPane from "../../components/MapPane";
 
     const App = {
         name: 'App',
         components: {
             ActivityList,
             NavBar,
-            AdminSideBar
+            AdminSideBar,
+            MapPane
         },
         data: function () {
             return {
