@@ -81,8 +81,12 @@
             data.lng = location.lng;
           }
           this.selectedLocation = data;
+          this.emitLocationToParent(data);
         }
       },
+      emitLocationToParent: function (value) {
+        this.$emit("emitLocation", value);
+      }
     }
   };
 
