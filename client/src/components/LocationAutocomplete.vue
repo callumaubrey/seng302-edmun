@@ -12,6 +12,9 @@
 
   const LocationAutocomplete = {
     name: "LocationAutocomplete",
+    props: {
+      givenLocation: String
+    },
     data() {
       return {
         locationText: null,
@@ -20,7 +23,15 @@
         selectedLocation: null
       }
     },
+    mounted() {
+      this.checkProp();
+    },
     methods: {
+      checkProp: function () {
+        if (this.givenLocation != null) {
+          this.locationText = this.givenLocation;
+        }
+      },
       doAutocomplete: async function (locationText) {
         clearTimeout(this.timeout);
 
