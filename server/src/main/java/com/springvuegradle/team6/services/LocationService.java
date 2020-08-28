@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.services;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,6 +17,11 @@ public class LocationService {
 
   public String getLocationAddressFromLatLng(double lat, double lng) {
     String url = "https://photon.komoot.de/reverse?lon={lng}&lat={lat}";
-    return this.restTemplate.getForObject(url, String.class, lng, lat);
+    ResponseEntity<String> response = this.restTemplate.getForEntity(url, String.class, lng, lat);
+    if (response.getStatusCode() == HttpStatus.OK) {
+      return response.getBody();
+    } else {
+      return null;
+    }
   }
 }

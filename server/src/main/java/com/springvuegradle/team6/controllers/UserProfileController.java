@@ -3,7 +3,6 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
-import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
@@ -98,10 +97,18 @@ public class UserProfileController {
     }
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
-      return ResponseEntity.ok(p.get());
+      Profile profile = p.get();
+      return ResponseEntity.ok(profile);
     } else {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  @GetMapping("/test")
+  public ResponseEntity test() {
+    String addressFromLatLng =
+        locationService.getLocationAddressFromLatLng(-43.528641, 172.581578);
+    return ResponseEntity.ok(addressFromLatLng);
   }
 
   /**
