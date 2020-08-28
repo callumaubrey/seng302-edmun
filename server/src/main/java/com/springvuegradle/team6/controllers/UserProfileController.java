@@ -16,6 +16,7 @@ import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,18 +62,21 @@ public class UserProfileController {
   private final RoleRepository roleRepository;
   private final EmailRepository emailRepository;
   private final LocationRepository locationRepository;
+  private final LocationService locationService;
 
   UserProfileController(
       ProfileRepository rep,
       CountryRepository countryRepository,
       EmailRepository emailRepository,
       RoleRepository roleRep,
-      LocationRepository locationRepository) {
+      LocationRepository locationRepository,
+      LocationService locationService) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
     this.emailRepository = emailRepository;
     this.locationRepository = locationRepository;
+    this.locationService = locationService;
   }
 
   /**
