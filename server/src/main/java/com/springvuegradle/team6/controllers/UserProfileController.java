@@ -100,11 +100,11 @@ public class UserProfileController {
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
       Profile profile = p.get();
-      double lat = profile.getLocation().getLatitude();
-      double lng = profile.getLocation().getLongitude();
-      if (lat != 0 && lng != 0) {
+      if (profile.getLocation() != null) {
+        double lat = profile.getLocation().getLatitude();
+        double lng = profile.getLocation().getLongitude();
         String address;
-        if ((int) session.getAttribute("id") == id) {
+        if ((int) session.getAttribute("id") == id || UserSecurityService.checkIsAdmin()) {
           address = locationService.getLocationAddressFromLatLng(lat, lng, false);
         } else {
           address = locationService.getLocationAddressFromLatLng(lat, lng, true);
@@ -121,13 +121,6 @@ public class UserProfileController {
     } else {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
     }
-  }
-
-  @GetMapping("/test")
-  public ResponseEntity<String> test() {
-    String addressFromLatLng =
-        locationService.getLocationAddressFromLatLng(-43.528641, 172.581578, true);
-    return ResponseEntity.ok(addressFromLatLng);
   }
 
   /**

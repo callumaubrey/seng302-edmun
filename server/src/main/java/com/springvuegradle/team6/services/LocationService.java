@@ -20,7 +20,6 @@ public class LocationService {
   }
 
   public String getLocationAddressFromLatLng(double lat, double lng, boolean hideDetails) {
-
     // Send API requuest
     String url = "https://photon.komoot.de/reverse?lon={lng}&lat={lat}";
     ResponseEntity<String> response = this.restTemplate.getForEntity(url, String.class, lng, lat);
@@ -38,10 +37,11 @@ public class LocationService {
     }
 
     // Process JSON
-    JSONArray features = (JSONArray)responseJson.get("features");
-    if(features.isEmpty()) {
+    JSONArray features = (JSONArray) responseJson.get("features");
+    if (features.isEmpty()) {
       return null;
     }
+
     JSONObject primaryFeature = (JSONObject) features.get(0);
     JSONObject properties = (JSONObject) primaryFeature.get("properties");
     String country = properties.getAsString("country");
@@ -52,24 +52,25 @@ public class LocationService {
 
     // Build address string
     StringBuilder address = new StringBuilder();
-    if(country != null) {
-      address.append(country);
-    }
-    if(state != null) {
-      address.append(", ");
-      address.append(state);
-    }
-    if(city != null) {
-      address.append(", ");
-      address.append(city);
-    }
-    if(street != null && !hideDetails) {
-      address.append(", ");
-      if(housenumber != null) {
+    if (street != null && !hideDetails) {
+      //address.append(", ");
+      if (housenumber != null) {
         address.append(housenumber);
         address.append(" ");
       }
       address.append(street);
+      address.append(", ");
+    }
+    if (city != null) {
+      address.append(city);
+      address.append(", ");
+    }
+    if (state != null) {
+      address.append(state);
+      address.append(", ");
+    }
+    if (country != null) {
+      address.append(country);
     }
 
     return address.toString();

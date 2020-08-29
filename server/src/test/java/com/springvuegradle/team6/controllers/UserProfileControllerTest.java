@@ -2,9 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
@@ -23,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,6 +47,8 @@ class UserProfileControllerTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private EmailRepository emailRepository;
+
+  @Autowired private LocationRepository locationRepository;
 
   private CreateProfileRequest getDummyProfile() {
     CreateProfileRequest validRequest = new CreateProfileRequest();
@@ -638,5 +643,160 @@ class UserProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("emails");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeReturnsAddressString() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Location location = new Location(-43.527531, 172.581472);
+    location = locationRepository.save(location);
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile.setLocation(location);
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = obj.get("address").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeAnotherProfileReturnsHiddenAddressString() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Location location = new Location(-43.527531, 172.581472);
+    location = locationRepository.save(location);
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe2@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile.setLocation(location);
+    profile = profileRepository.save(profile);
+
+    Location location2 = new Location(-43.527531, 172.581472);
+    location2 = locationRepository.save(location2);
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("johnydoe1@gmail.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("John");
+    profile2.setLastname("Doe1");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2.setLocation(location2);
+    profile2 = profileRepository.save(profile2);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = obj.get("address").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("Canterbury, New Zealand", address);
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void getProfileWithLatitudeAndLongitudeAsAdminReturnsFullAddress() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Location location = new Location(-43.527531, 172.581472);
+    location = locationRepository.save(location);
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile.setLocation(location);
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = obj.get("address").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
   }
 }
