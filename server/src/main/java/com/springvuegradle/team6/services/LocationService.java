@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * This service is used to communicate to the photon api
+ */
 @Service
 public class LocationService {
 
@@ -19,8 +22,16 @@ public class LocationService {
     this.restTemplate = restTemplateBuilder.build();
   }
 
+  /**
+   * Gets an address string from latitude and longitude using photon API
+   *
+   * @param lat double latitude
+   * @param lng double longitude
+   * @param hideDetails boolean to specify if should return full address or not
+   * @return address string or null if errors are present
+   */
   public String getLocationAddressFromLatLng(double lat, double lng, boolean hideDetails) {
-    // Send API requuest
+    // Send API request
     String url = "https://photon.komoot.de/reverse?lon={lng}&lat={lat}";
     ResponseEntity<String> response = this.restTemplate.getForEntity(url, String.class, lng, lat);
     if (response.getStatusCode() != HttpStatus.OK) {
@@ -53,7 +64,6 @@ public class LocationService {
     // Build address string
     StringBuilder address = new StringBuilder();
     if (street != null && !hideDetails) {
-      //address.append(", ");
       if (housenumber != null) {
         address.append(housenumber);
         address.append(" ");
