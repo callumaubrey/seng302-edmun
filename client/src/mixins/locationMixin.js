@@ -47,7 +47,7 @@ export default {
                             }
                             fixedData['data'].push({"address":
                                     {"city":obj.address.city.toString(),"state":state, "country":obj.address.country.toString()},
-                                "display_name":display_name, "place_id":obj.place_id});
+                                "display_name":display_name, "place_id":obj.place_id, "latitude": obj.lat, "longitude" : obj.lon});
                         } else if (obj.address.county) {
                             if (state) {
                                 display_name = obj.address.county.toString() + ", " + state + ", " + obj.address.country.toString();
@@ -56,7 +56,7 @@ export default {
                             }
                             fixedData['data'].push({"address":
                                     {"city":obj.address.county.toString(),"state":state, "country":obj.address.country.toString()},
-                                "display_name":display_name, "place_id":obj.place_id});
+                                "display_name":display_name, "place_id":obj.place_id, "latitude": obj.lat, "longitude" : obj.lon});
                         }
 
                     }

@@ -462,18 +462,27 @@ export default {
 
       if (location !== null) {
         let data = {
-          country: null,
-          state: null,
-          city: null
+          // country: null,
+          // state: null,
+          // city: null,
+          latitude: null,
+          longitude: null,
         };
-        if (location.address.city) {
-          data.city = location.address.city;
+        console.log(location)
+        // if (location.address.city) {
+        //   data.city = location.address.city;
+        // }
+        // if (location.address.state) {
+        //   data.state = location.address.state;
+        // }
+        // if (location.address.country) {
+        //   data.country = location.address.country;
+        // }
+        if (location.latitude) {
+          data.latitude = location.latitude;
         }
-        if (location.address.state) {
-          data.state = location.address.state;
-        }
-        if (location.address.country) {
-          data.country = location.address.country;
+        if (location.longitude) {
+          data.longitude = location.longitude;
         }
         this.locationData = data;
       }
