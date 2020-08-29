@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Profile;
@@ -18,6 +19,7 @@ import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -98,6 +100,23 @@ public class UserProfileController {
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
       Profile profile = p.get();
+      double lat = profile.getLocation().getLatitude();
+      double lng = profile.getLocation().getLongitude();
+      if (lat != 0 && lng != 0) {
+        String address;
+        if ((int) session.getAttribute("id") == id) {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, false);
+        } else {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, true);
+        }
+
+        if (address != null) {
+          ObjectMapper mapper = new ObjectMapper();
+          Map<String, Object> map = mapper.convertValue(profile, Map.class);
+          map.put("address", address);
+          return ResponseEntity.ok(map);
+        }
+      }
       return ResponseEntity.ok(profile);
     } else {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
