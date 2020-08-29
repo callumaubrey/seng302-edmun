@@ -12,9 +12,10 @@
                 <b-button v-if="showMap" class="button" @click="showMap = !showMap">
                     Hide Map
                 </b-button>
-                    <!-- Testing buttons to create random locations and remove the last added location -->
-<!--                <b-button @click="createMarker('m' + (markers.length + 1), 1, -44 + Math.random(), 172 + Math.random())">Add Marker</b-button>-->
-<!--                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
+                <!-- Testing buttons to create random locations and remove the last added location -->
+                <!--                <b-button @click="createMarker('m' + (markers.length + 1), 1, -44 + Math.random(), 172 + Math.random())">Add Marker</b-button>-->
+                <!--                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
+                <!--                <b-button @click="refreshMap()">Refresh Map</b-button>-->
             </div>
         </b-row>
         <hr :hidden="!showMap">
@@ -24,9 +25,10 @@
                     :zoom="zoom"
                     :center="center"
                     :options="mapOptions"
-                    style="height: 100%;"
+                    style="height: 100%; display: block"
                     @update:center="centerUpdate"
                     @update:zoom="zoomUpdate"
+                    :onload="refreshMap"
             >
                 <l-tile-layer
                         :url="url"
@@ -53,9 +55,22 @@
         components: {
             LMap,
             LTileLayer,
-            LMarker
+            LMarker,
         },
         data() {
+            //Sets up the icons
+            const blueMarker = L.icon({
+                iconUrl: require('leaflet/dist/images/marker-icon.png'),
+                shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+                iconAnchor: [10, 30],
+            });
+            const redMarker = L.icon({
+                iconUrl: require('@/assets/red-marker-icon.png'),
+                shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+                iconAnchor: [10, 35],
+            });
             return {
                 isCard: false,
                 zoom: 13,
@@ -69,7 +84,9 @@
                     zoomSnap: 0.5
                 },
                 showMap: true,
-                markers: []
+                markers: [],
+                blueMarker: blueMarker,
+                redMarker: redMarker
             };
         },
         methods: {
@@ -78,12 +95,16 @@
              **/
             zoomUpdate(zoom) {
                 this.currentZoom = zoom;
+                this.zoom = zoom
+                this.refreshMap()
             },
             /**
              * Updates the center of the map
              **/
             centerUpdate(center) {
                 this.currentCenter = center;
+                this.center = center
+                this.refreshMap()
             },
 
             /**
@@ -94,29 +115,14 @@
              * lng: longitude of the marker
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng){
-                //Sets up the icons
-                let blueMarker = L.icon({
-                    iconUrl: require('leaflet/dist/images/marker-icon.png'),
-                    shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-                    iconAnchor: [10, 30],
-                });
-                let redMarker = L.icon({
-                    iconUrl: require('@/assets/red-marker-icon.png'),
-                    shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-                    iconAnchor: [10, 35],
-                });
-
+            createMarker(id, iconColour, lat, lng) {
                 //Check inputs and set position and icon
                 let icon = null
                 let coordinates = [lat, lng]
-                if (iconColour == 1){
-                    icon = redMarker
-                }
-                else{
-                    icon = blueMarker
+                if (iconColour == 1) {
+                    icon = this.redMarker
+                } else {
+                    icon = this.blueMarker
                 }
 
                 //Adds the marker to the markers list to be displayed
@@ -130,16 +136,16 @@
             /**
              * Removes a marker by id
              **/
-            removeMarker(id){
-                if (this.markers.length < 1){
+            removeMarker(id) {
+                if (this.markers.length < 1) {
                     console.log("No markers in the list to remove")
                     return;
                 }
                 var i = 0;
                 var marker;
                 //Loops over markers and removes a marker with the same id
-                for (marker of this.markers){
-                    if (marker.id == id){
+                for (marker of this.markers) {
+                    if (marker.id == id) {
                         this.markers.splice(i)
                         return
                     }
@@ -147,6 +153,15 @@
                 }
                 console.log("Could not find marker with id: " + id)
             },
+            /**
+             * Updates the map tiles when the map is visible
+             * This is a pretty gross fix to the map tiles not loading bug but it works -Will
+             **/
+            refreshMap() {
+                setTimeout(function () {
+                    window.dispatchEvent(new Event('resize'))
+                }, 1);
+            }
         },
     };
 </script>
