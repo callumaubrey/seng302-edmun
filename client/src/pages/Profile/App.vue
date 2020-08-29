@@ -102,7 +102,7 @@
 
                     </b-tab>
 
-                    <b-tab title="Location Info">
+                    <b-tab title="Location Info" @click="$refs.map.refreshMap()">
                         <b-card style="margin: 1em;" title="Location Info:">
                             <b-col v-if="userData.location">
                                 <b-row>
@@ -116,7 +116,7 @@
                                 </b-row>
                             </b-col>
                         </b-card>
-                        <map-pane></map-pane>
+                        <map-pane ref="map"></map-pane>
                     </b-tab>
                     <b-tab style="margin: 1em" title="Activities">
 

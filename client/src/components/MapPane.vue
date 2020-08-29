@@ -13,9 +13,9 @@
                     Hide Map
                 </b-button>
                 <!-- Testing buttons to create random locations and remove the last added location -->
-                <!--                <b-button @click="createMarker('m' + (markers.length + 1), 1, -44 + Math.random(), 172 + Math.random())">Add Marker</b-button>-->
-                <!--                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
-                <!--                <b-button @click="refreshMap()">Refresh Map</b-button>-->
+<!--                                <b-button @click="createMarker('m' + (markers.length + 1), 2, -44 + Math.random(), 172 + Math.random())">Add Marker</b-button>-->
+<!--                                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
+<!--                                <b-button @click="refreshMap()">Refresh Map</b-button>-->
             </div>
         </b-row>
         <hr :hidden="!showMap">
@@ -28,7 +28,6 @@
                     style="height: 100%; display: block"
                     @update:center="centerUpdate"
                     @update:zoom="zoomUpdate"
-                    :onload="refreshMap"
             >
                 <l-tile-layer
                         :url="url"
@@ -96,7 +95,6 @@
             zoomUpdate(zoom) {
                 this.currentZoom = zoom;
                 this.zoom = zoom
-                this.refreshMap()
             },
             /**
              * Updates the center of the map
@@ -104,7 +102,6 @@
             centerUpdate(center) {
                 this.currentCenter = center;
                 this.center = center
-                this.refreshMap()
             },
 
             /**
@@ -160,7 +157,7 @@
             refreshMap() {
                 setTimeout(function () {
                     window.dispatchEvent(new Event('resize'))
-                }, 1);
+                }, 100);
             }
         },
     };
