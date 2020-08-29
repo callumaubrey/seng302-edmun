@@ -105,9 +105,9 @@ public class UserProfileController {
   }
 
   @GetMapping("/test")
-  public ResponseEntity test() {
+  public ResponseEntity<String> test() {
     String addressFromLatLng =
-        locationService.getLocationAddressFromLatLng(-43.528641, 172.581578);
+        locationService.getLocationAddressFromLatLng(-43.528641, 172.581578, true);
     return ResponseEntity.ok(addressFromLatLng);
   }
 
