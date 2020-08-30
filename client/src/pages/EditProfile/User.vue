@@ -392,6 +392,7 @@
 
                         </b-col>
                     </b-row>
+                    <ModifyLocationMapPane title="Set Your Location"></ModifyLocationMapPane>
                 </b-container>
             </b-collapse>
             <hr>
@@ -406,6 +407,7 @@
     import locationMixin from "../../mixins/locationMixin";
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
+    import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
 
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -420,6 +422,7 @@
         name: 'User',
         mixins: [locationMixin],
         components: {
+            ModifyLocationMapPane,
             NavBar
         },
         data: function () {

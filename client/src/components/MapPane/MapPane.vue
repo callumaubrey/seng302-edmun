@@ -1,27 +1,67 @@
 <template>
-    <div style="height: 40em; width: 100%" :hidden="!showMap">
-        <l-map
-                v-if="showMap"
-                :zoom="zoom"
-                :center="center"
-                :options="mapOptions"
-                style="height: 100%; display: block"
-                @update:center="centerUpdate"
-                @update:zoom="zoomUpdate"
-        >
-            <l-tile-layer
-                    :url="url"
-                    :attribution="attribution"
-            />
-            <l-marker v-for="marker in markers"
-                      :key="marker.id"
-                      :visible="marker.visible"
-                      :lat-lng="marker.position"
-                      :icon="marker.icon"
-            >
-            </l-marker>
-        </l-map>
-    </div>
+    <b-row>
+        <b-col>
+            <!-- Toggle Header -->
+            <b-row style="cursor:pointer;" v-if="canHide">
+                <b-col @click="()=>{showMap=!showMap; refreshMap()}">
+                    <h4 class="mb-0">
+                        <i v-if="showMap" class="fas fa-caret-down"></i>
+                        <i v-else class="fas fa-caret-right"></i>
+                        {{title}}
+                    </h4>
+                </b-col>
+            </b-row>
+
+            <!-- Map and slots -->
+            <b-row>
+                <b-col>
+                    <b-collapse v-model="showMap">
+                        <!-- Header Slot -->
+                        <b-row>
+                            <b-col>
+                                <slot name="header"></slot>
+                            </b-col>
+                        </b-row>
+
+                        <!-- Map -->
+                        <div style="height: 40em; width: 100%" class="mt-2">
+                            <l-map
+                                    v-if="showMap"
+                                    :zoom="zoom"
+                                    :center="center"
+                                    :options="mapOptions"
+                                    style="height: 100%; display: block"
+                                    @click="(event) => {$emit('onMapClick', event)}"
+                                    @update:center="centerUpdate"
+                                    @update:zoom="zoomUpdate"
+                            >
+                                <l-tile-layer
+                                        :url="url"
+                                        :attribution="attribution"
+                                />
+                                <l-marker v-for="marker in markers"
+                                          :key="marker.id"
+                                          :visible="marker.visible"
+                                          :lat-lng="marker.position"
+                                          :icon="marker.icon"
+                                >
+                                </l-marker>
+                            </l-map>
+                        </div>
+
+                        <!-- Footer Slot -->
+                        <b-row>
+                            <b-col>
+                                <slot name="footer"></slot>
+                            </b-col>
+                        </b-row>
+                    </b-collapse>
+                </b-col>
+            </b-row>
+
+            <hr v-if="canHide">
+        </b-col>
+    </b-row>
 </template>
 
 <script>
@@ -36,7 +76,14 @@
             LMarker,
         },
         props: {
-            showMap: Boolean
+            canHide: {
+                type: Boolean,
+                default: true
+            },
+            title: {
+                type: String,
+                default: "Map"
+            }
         },
         data() {
             //Sets up the icons
@@ -53,6 +100,7 @@
                 iconAnchor: [10, 35],
             });
             return {
+                showMap: true,
                 zoom: 13,
                 center: L.latLng(-43.530629, 172.625955),
                 url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -82,6 +130,13 @@
             centerUpdate(center) {
                 this.currentCenter = center;
                 this.center = center
+            },
+
+            /**
+             * Updates the center of the map using lat and lng
+             **/
+            setMapCenter(lat, lng) {
+                this.centerUpdate(L.latLng(lat, lng));
             },
 
             /**
@@ -139,6 +194,11 @@
                 }, 100);
             }
         },
+        mounted() {
+            setTimeout(function () {
+                this.refreshMap();
+            }, 500)
+        }
     };
 </script>
 <style>
