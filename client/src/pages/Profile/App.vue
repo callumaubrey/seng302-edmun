@@ -116,7 +116,35 @@
                                 </b-row>
                             </b-col>
                         </b-card>
-                        <map-pane ref="map"></map-pane>
+                        <b-card style="margin: 1em">
+                            <b-row>
+                                <b-col>
+                                    <h4>Your Map:</h4>
+                                </b-col>
+                                <div style="right: auto">
+                                    <!--Hide and un-hide button for the map-->
+                                    <b-button class="button" v-b-toggle.collapse-1-inner
+                                              @click="$refs.map.refreshMap()">
+                                        {{ showMap ? 'Show Map' : 'Hide Map' }}
+                                    </b-button>
+
+                                    <!-- Testing buttons to create random locations and remove the last added location -->
+<!--                                                                        <b-button-->
+<!--                                                                                @click="$refs.map.createMarker('m' + ($refs.map.markers.length + 1), 2, -44 + Math.random(), 172 + Math.random())">-->
+<!--                                                                            Add Marker-->
+<!--                                                                        </b-button>-->
+<!--                                                                        <b-button @click="$refs.map.removeMarker('m' + $refs.map.markers.length)">Remove-->
+<!--                                                                            Marker-->
+<!--                                                                        </b-button>-->
+<!--                                                                        <b-button @click="$refs.map.refreshMap()">Refresh Map</b-button>-->
+                                </div>
+                            </b-row>
+                            <b-collapse id="collapse-1-inner">
+                                <hr>
+                                <map-pane ref="map" :show-map="showMap"></map-pane>
+                            </b-collapse>
+
+                        </b-card>
                     </b-tab>
                     <b-tab style="margin: 1em" title="Activities">
 
@@ -169,6 +197,7 @@
                 dob: '',
                 loggedInIsAdmin: false,
                 hidden: null,
+                showMap: true
             }
         },
         computed: {

@@ -1,48 +1,27 @@
 <template>
-    <b-card style="margin: 1em">
-        <b-row style="padding-left: 1em; padding-right: 1em">
-            <b-col>
-                <h4>Your Map</h4>
-            </b-col>
-            <div style="right: auto">
-                <!--Hide and un-hide button for the map-->
-                <b-button v-if="!showMap" class="button" @click="showMap = !showMap">
-                    Show Map
-                </b-button>
-                <b-button v-if="showMap" class="button" @click="showMap = !showMap">
-                    Hide Map
-                </b-button>
-                <!-- Testing buttons to create random locations and remove the last added location -->
-<!--                                <b-button @click="createMarker('m' + (markers.length + 1), 2, -44 + Math.random(), 172 + Math.random())">Add Marker</b-button>-->
-<!--                                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
-<!--                                <b-button @click="refreshMap()">Refresh Map</b-button>-->
-            </div>
-        </b-row>
-        <hr :hidden="!showMap">
-        <div style="height: 40em; width: 100%" :hidden="!showMap">
-            <l-map
-                    v-if="showMap"
-                    :zoom="zoom"
-                    :center="center"
-                    :options="mapOptions"
-                    style="height: 100%; display: block"
-                    @update:center="centerUpdate"
-                    @update:zoom="zoomUpdate"
+    <div style="height: 40em; width: 100%" :hidden="!showMap">
+        <l-map
+                v-if="showMap"
+                :zoom="zoom"
+                :center="center"
+                :options="mapOptions"
+                style="height: 100%; display: block"
+                @update:center="centerUpdate"
+                @update:zoom="zoomUpdate"
+        >
+            <l-tile-layer
+                    :url="url"
+                    :attribution="attribution"
+            />
+            <l-marker v-for="marker in markers"
+                      :key="marker.id"
+                      :visible="marker.visible"
+                      :lat-lng="marker.position"
+                      :icon="marker.icon"
             >
-                <l-tile-layer
-                        :url="url"
-                        :attribution="attribution"
-                />
-                <l-marker v-for="marker in markers"
-                          :key="marker.id"
-                          :visible="marker.visible"
-                          :lat-lng="marker.position"
-                          :icon="marker.icon"
-                >
-                </l-marker>
-            </l-map>
-        </div>
-    </b-card>
+            </l-marker>
+        </l-map>
+    </div>
 </template>
 
 <script>
@@ -55,6 +34,9 @@
             LMap,
             LTileLayer,
             LMarker,
+        },
+        props: {
+            showMap: Boolean
         },
         data() {
             //Sets up the icons
@@ -71,7 +53,6 @@
                 iconAnchor: [10, 35],
             });
             return {
-                isCard: false,
                 zoom: 13,
                 center: L.latLng(-43.530629, 172.625955),
                 url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -82,7 +63,6 @@
                 mapOptions: {
                     zoomSnap: 0.5
                 },
-                showMap: true,
                 markers: [],
                 blueMarker: blueMarker,
                 redMarker: redMarker
@@ -135,8 +115,7 @@
              **/
             removeMarker(id) {
                 if (this.markers.length < 1) {
-                    console.log("No markers in the list to remove")
-                    return;
+                    return false;
                 }
                 var i = 0;
                 var marker;
@@ -144,11 +123,11 @@
                 for (marker of this.markers) {
                     if (marker.id == id) {
                         this.markers.splice(i)
-                        return
+                        return true
                     }
                     i += 1
                 }
-                console.log("Could not find marker with id: " + id)
+                return false
             },
             /**
              * Updates the map tiles when the map is visible
