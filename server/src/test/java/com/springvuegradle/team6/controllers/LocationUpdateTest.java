@@ -49,7 +49,7 @@ public class LocationUpdateTest {
                 "  ],\n" +
                 "  \"location\": {\n" +
                 "    \"latitude\": \"-43.525650\",\n" +
-                "    \"longitude\": \"172.639847\",\n" +
+                "    \"longitude\": \"172.639847\"\n" +
                 "  }\n" +
                 "}";
         mvc.perform(MockMvcRequestBuilders
@@ -85,7 +85,6 @@ public class LocationUpdateTest {
         ).andExpect(status().isOk());
     }
 
-    @Disabled
     @Test
     void updateLocation() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -118,7 +117,6 @@ public class LocationUpdateTest {
         ).andExpect(status().isOk());
     }
 
-    @Disabled
     @Test
     void deleteLocation() throws Exception {
         MockHttpSession session = new MockHttpSession();
