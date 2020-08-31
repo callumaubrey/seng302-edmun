@@ -462,22 +462,10 @@ export default {
 
       if (location !== null) {
         let data = {
-          // country: null,
-          // state: null,
-          // city: null,
           latitude: null,
           longitude: null,
         };
         console.log(location)
-        // if (location.address.city) {
-        //   data.city = location.address.city;
-        // }
-        // if (location.address.state) {
-        //   data.state = location.address.state;
-        // }
-        // if (location.address.country) {
-        //   data.country = location.address.country;
-        // }
         if (location.latitude) {
           data.latitude = location.latitude;
         }
