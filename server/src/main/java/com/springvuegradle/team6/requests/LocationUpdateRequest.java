@@ -1,15 +1,15 @@
 package com.springvuegradle.team6.requests;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.Range;
 
 public class LocationUpdateRequest {
 
-  /** double value for exact latitude coordinate */
-  @NotNull(message = "latitude cannot be null")
+  @JsonProperty("latitude")
+  @Range(min=-90, max=90, message = "latitude must be between -90 and 90")
   public double latitude;
 
-  /** double value for exact longitude coordinate */
-  @NotNull(message = "longitude cannot be null")
+  @JsonProperty("longitude")
+  @Range(min=-180, max=180, message = "longitude must be between -180 and 180")
   public double longitude;
 }
