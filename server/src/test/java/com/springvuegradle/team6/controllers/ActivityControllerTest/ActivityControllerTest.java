@@ -501,7 +501,6 @@ class ActivityControllerTest {
         .andExpect(status().isCreated());
   }
 
-  @Disabled
   @Test
   void createActivityWithLocationEmptyReturnStatusBadRequest() throws Exception {
     String jsonString =
