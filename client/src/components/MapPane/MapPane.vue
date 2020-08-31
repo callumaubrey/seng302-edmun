@@ -194,10 +194,16 @@
                 }, 100);
             }
         },
-        mounted() {
-            setTimeout(function () {
+
+        /**
+         * Refresh the map everytime the map is rendered by vue.
+         */
+        updated: function () {
+            this.$nextTick(function () {
+                // Code that will run only after the
+                // entire view has been re-rendered
                 this.refreshMap();
-            }, 500)
+            })
         }
     };
 </script>
