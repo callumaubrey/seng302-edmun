@@ -332,7 +332,6 @@ class EditActivityTest {
         .andExpect(status().isBadRequest());
   }
 
-  @Disabled
   @Test
   void EditActivityLocationReturnStatusIsOk() throws Exception {
     String jsonString =
@@ -346,22 +345,128 @@ class EditActivityTest {
             + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
             + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"state\": \"Canterbury\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
+            + " \t\"latitude\": 43.02,\n"
+            + " \t\"longitude\": 24.421\n"
             + "  }"
             + "}";
 
     mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/profiles/{profileId}/activities/{activityId}", id, activityId)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
   }
 
-  @Disabled
+  @Test
+  void EditActivityLocationLatOutOfBoundsReturnStatusBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 90.02,\n"
+            + " \t\"longitude\": 24.421\n"
+            + "  }"
+            + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void EditActivityLocationLonOutOfBoundsReturnStatusBadRequest() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 90.00,\n"
+            + " \t\"longitude\": -180.01\n"
+            + "  }"
+            + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void EditActivityLocationNegativeMaxBoundsReturnStatusIsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": -90.00,\n"
+            + " \t\"longitude\": -180.00\n"
+            + "  }"
+            + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void EditActivityLocationPositiveMaxBoundsReturnStatusIsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 90.00,\n"
+            + " \t\"longitude\": 180.00\n"
+            + "  }"
+            + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+  }
+
   @Test
   void EditActivityLocationEmptyReturnStatusBadRequest() throws Exception {
     String jsonString =
@@ -375,6 +480,8 @@ class EditActivityTest {
             + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
             + " \"location\": {\n"
+            + " \t\"latitude\": ,\n"
+            + " \t\"longitude\": \n"
             + "  }"
             + "}";
 
@@ -387,7 +494,6 @@ class EditActivityTest {
         .andExpect(status().isBadRequest());
   }
 
-  @Disabled
   @Test
   void EditActivityLocationNoStateReturnStatusIsOk() throws Exception {
     String jsonString =
@@ -401,8 +507,8 @@ class EditActivityTest {
             + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
             + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
+            + " \t\"latitude\": -90.0,\n"
+            + " \t\"longitude\": 45.2\n"
             + "  }"
             + "}";
 
@@ -415,12 +521,11 @@ class EditActivityTest {
         .andExpect(status().isOk());
   }
 
-  @Disabled
   @Test
   void EditActivityWithoutLocationReturnStatusIsOkAndDeletesLocation() throws Exception {
     Location location = new Location();
-//    location.setCity("Christchurch");
-//    location.setCountry("NZ");
+    location.setLatitude(42.3);
+    location.setLongitude(-42.3);
     location = locationRepository.save(location);
 
     Activity activity = activityRepository.findById(activityId).get();
@@ -454,7 +559,6 @@ class EditActivityTest {
 
   }
 
-  @Disabled
   @Test
   @WithMockUser(
       username = "admin",
@@ -471,8 +575,8 @@ class EditActivityTest {
             + "  \"start_time\": \"2030-04-28T15:50:41+1300\", \n"
             + "  \"end_time\": \"2030-08-28T15:50:41+1300\", \n"
             + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
+            + " \t\"latitude\": 43.02,\n"
+            + " \t\"longitude\": 24.421\n"
             + "  }"
             + "}";
 
