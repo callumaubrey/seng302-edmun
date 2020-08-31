@@ -1,9 +1,9 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
-import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
@@ -16,8 +16,10 @@ import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -61,18 +63,21 @@ public class UserProfileController {
   private final RoleRepository roleRepository;
   private final EmailRepository emailRepository;
   private final LocationRepository locationRepository;
+  private final LocationService locationService;
 
   UserProfileController(
       ProfileRepository rep,
       CountryRepository countryRepository,
       EmailRepository emailRepository,
       RoleRepository roleRep,
-      LocationRepository locationRepository) {
+      LocationRepository locationRepository,
+      LocationService locationService) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
     this.emailRepository = emailRepository;
     this.locationRepository = locationRepository;
+    this.locationService = locationService;
   }
 
   /**
@@ -94,7 +99,25 @@ public class UserProfileController {
     }
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
-      return ResponseEntity.ok(p.get());
+      Profile profile = p.get();
+      if (profile.getLocation() != null) {
+        double lat = profile.getLocation().getLatitude();
+        double lng = profile.getLocation().getLongitude();
+        String address;
+        if ((int) session.getAttribute("id") == id || UserSecurityService.checkIsAdmin()) {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, false);
+        } else {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, true);
+        }
+
+        if (address != null) {
+          ObjectMapper mapper = new ObjectMapper();
+          Map<String, Object> map = mapper.convertValue(profile, Map.class);
+          map.put("address", address);
+          return ResponseEntity.ok(map);
+        }
+      }
+      return ResponseEntity.ok(profile);
     } else {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
     }

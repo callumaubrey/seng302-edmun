@@ -207,6 +207,4 @@ export default {
 
     deleteActivityRoleParticipant: (profileId, activityId) => instance.delete(
         "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate")
-
-
 }
