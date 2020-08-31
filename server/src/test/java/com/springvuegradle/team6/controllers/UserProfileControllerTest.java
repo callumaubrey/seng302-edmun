@@ -6,10 +6,8 @@ import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.EditPasswordRequest;
-import com.springvuegradle.team6.requests.EditProfileRequest;
-import com.springvuegradle.team6.requests.LoginRequest;
+import com.springvuegradle.team6.requests.*;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -507,7 +505,6 @@ class UserProfileControllerTest {
         .andExpect(status().is4xxClientError());
   }
 
-  @Disabled
   @Test
   void updateLocation() throws Exception {
     MockHttpSession session = new MockHttpSession();
@@ -516,14 +513,16 @@ class UserProfileControllerTest {
     String updateUrl = "/profiles/%d/location";
     updateUrl = String.format(updateUrl, id);
 
-    NamedLocation location = new NamedLocation();
-    location.setCountry("New Zealand");
-    location.setState("Canterbury");
-    location.setCity("Christchurch");
+    Double latitude = -43.525650;
+    Double longitude = 172.639847;
+
+    LocationUpdateRequest locationUpdateRequest = new LocationUpdateRequest();
+    locationUpdateRequest.latitude = latitude;
+    locationUpdateRequest.longitude = longitude;
 
     mvc.perform(
             put(updateUrl)
-                .content(mapper.writeValueAsString(location))
+                .content(mapper.writeValueAsString(locationUpdateRequest))
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());

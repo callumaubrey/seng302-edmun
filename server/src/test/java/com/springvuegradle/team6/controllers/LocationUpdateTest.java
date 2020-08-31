@@ -28,7 +28,6 @@ public class LocationUpdateTest {
     @Autowired
     private ObjectMapper mapper;
 
-    @Disabled
     @Test
     void testEditProfileLocationUpdate() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -49,9 +48,8 @@ public class LocationUpdateTest {
                 "    \"USA\"\n" +
                 "  ],\n" +
                 "  \"location\": {\n" +
-                "    \"country\": \"NZ\",\n" +
-                "    \"state\": \"Canterbury\",\n" +
-                "    \"city\": \"Christchurch\"\n" +
+                "    \"latitude\": \"-43.525650\",\n" +
+                "    \"longitude\": \"172.639847\",\n" +
                 "  }\n" +
                 "}";
         mvc.perform(MockMvcRequestBuilders
@@ -75,8 +73,8 @@ public class LocationUpdateTest {
                 "    \"USA\"\n" +
                 "  ],\n" +
                 "  \"location\": {\n" +
-                "    \"country\": \"NZ\",\n" +
-                "    \"city\": \"Christchurch\"\n" +
+                "    \"latitude\": \"-36.848461\",\n" +
+                "    \"longitude\": \"174.763336\"\n" +
                 "  }\n" +
                 "}";
         mvc.perform(MockMvcRequestBuilders

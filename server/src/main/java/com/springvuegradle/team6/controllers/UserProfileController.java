@@ -122,7 +122,6 @@ public class UserProfileController {
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
-
       // Edit profile
       request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
       ResponseEntity<String> editEmailsResponse =
