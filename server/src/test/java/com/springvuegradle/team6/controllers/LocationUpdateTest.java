@@ -14,6 +14,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -92,22 +93,21 @@ public class LocationUpdateTest {
         TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
 
        String  jsonString ="{\n" +
-                "    \"country\": \"NZ\",\n" +
-                "    \"state\": \"Canterbury\",\n" +
-                "    \"city\": \"Christchurch\"\n" +
-               "}";
+               "    \"latitude\": \"-36.848461\",\n" +
+               "    \"longitude\": \"174.763336\"\n" +
+               "  }\n";
 
         mvc.perform(MockMvcRequestBuilders
                 .put("/profiles/{profileId}/location", id)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isOk()).andDo(print());
 
         jsonString ="{\n" +
-                "    \"country\": \"NZ\",\n" +
-                "    \"city\": \"Christchurch\"\n" +
-                "}";
+                "    \"latitude\": \"-43.525650\",\n" +
+                "    \"longitude\": \"172.639847\"\n" +
+                "  }\n";
 
         mvc.perform(MockMvcRequestBuilders
                 .put("/profiles/{profileId}/location", id)
@@ -124,10 +124,9 @@ public class LocationUpdateTest {
         TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
 
         String  jsonString ="{\n" +
-                "    \"country\": \"NZ\",\n" +
-                "    \"state\": \"Canterbury\",\n" +
-                "    \"city\": \"Christchurch\"\n" +
-                "}";
+                "    \"latitude\": \"-43.525650\",\n" +
+                "    \"longitude\": \"172.639847\"\n" +
+                "  }\n";
 
         mvc.perform(MockMvcRequestBuilders
                 .put("/profiles/{profileId}/location", id)
