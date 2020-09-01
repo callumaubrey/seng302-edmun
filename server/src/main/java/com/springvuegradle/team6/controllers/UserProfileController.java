@@ -128,7 +128,8 @@ public class UserProfileController {
    * be logged in. New data is contained in request body, empty fields are unchanged
    *
    * @param request EditProfileRequest form with Id of profile to edit and new info to update
-   * @return returns response entity with details of update
+   * @return returns response entity with details of update or 404 if not found or bad request if
+   *     incorrect request body
    */
   @PutMapping("/{id}")
   public ResponseEntity<String> updateProfile(
@@ -145,9 +146,14 @@ public class UserProfileController {
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
-
-      // Edit profile
-      request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
+      // Tries to edit profile using request body as an EditProfileRequest if fails returns 400
+      // error
+      try {
+        request.editProfileFromRequest(
+            edit, countryRepository, emailRepository, locationRepository);
+      } catch (Exception e) {
+        return new ResponseEntity<>("Error in request body", HttpStatus.BAD_REQUEST);
+      }
       ResponseEntity<String> editEmailsResponse =
           EditEmailsRequest.editEmails(
               edit, emailRepository, request.additionalemail, request.primaryemail);
@@ -213,8 +219,8 @@ public class UserProfileController {
   }
 
   /**
-   * Return all emails based on the profileId
-   * Can be used by any logged in user
+   * Return all emails based on the profileId Can be used by any logged in user
+   *
    * @param session The logged in session
    * @param profileId The profileId of emails that you want
    * @return
@@ -368,13 +374,11 @@ public class UserProfileController {
 
       // Update location
       Optional<Location> optionalLocation =
-          locationRepository.findByLatitudeAndLongitude(
-              location.latitude, location.longitude);
+          locationRepository.findByLatitudeAndLongitude(location.latitude, location.longitude);
       if (optionalLocation.isPresent()) {
         profile.setLocation(optionalLocation.get());
       } else {
-        Location newLocation =
-            new Location(location.latitude, location.longitude);
+        Location newLocation = new Location(location.latitude, location.longitude);
         locationRepository.save(newLocation);
         profile.setLocation(newLocation);
       }

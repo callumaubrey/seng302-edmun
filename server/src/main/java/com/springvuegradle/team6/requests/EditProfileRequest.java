@@ -96,6 +96,9 @@ public class EditProfileRequest {
     @JsonProperty("additional_email")
     public List<String> additionalemail;
 
+    /**
+     * Location request consisting of latitude and longitude doubles
+     */
     @Valid
     public LocationUpdateRequest location;
 
