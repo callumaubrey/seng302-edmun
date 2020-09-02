@@ -345,6 +345,7 @@ class ActivityControllerTest {
                 .session(session))
         .andExpect(status().is4xxClientError());
   }
+
   @Test
   void createActivityLongitudeOnEdgeOfBounds() throws Exception {
     String jsonString =
@@ -361,12 +362,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated());
   }
+
   @Test
   void createActivityLongitudeOutsideNegativeBounds() throws Exception {
     String jsonString =
@@ -383,12 +385,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
+
   @Test
   void createActivityLongitudeOnEdgeOfNegativeBounds() throws Exception {
     String jsonString =
@@ -405,12 +408,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated());
   }
+
   @Test
   void createActivityLatitudeOutOfBounds() throws Exception {
     String jsonString =
@@ -427,12 +431,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
+
   @Test
   void createActivityLatitudeOnEdgeOfBounds() throws Exception {
     String jsonString =
@@ -449,12 +454,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated());
   }
+
   @Test
   void createActivityLatitudeOutsideNegativeBounds() throws Exception {
     String jsonString =
@@ -471,12 +477,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().is4xxClientError());
   }
+
   @Test
   void createActivityLatitudeOnEdgeOfNegativeBounds() throws Exception {
     String jsonString =
@@ -493,14 +500,13 @@ class ActivityControllerTest {
             + ""
             + "}";
     mvc.perform(
-        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
         .andExpect(status().isCreated());
   }
 
-  @Disabled
   @Test
   void createActivityWithLocationEmptyReturnStatusBadRequest() throws Exception {
     String jsonString =
