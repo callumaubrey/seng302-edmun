@@ -93,10 +93,12 @@
                 iconAnchor: [10, 30],
             });
             const redMarker = L.icon({
-                iconUrl: require('@/assets/red-marker-icon.png'),
+                iconUrl: require('@/assets/red_man.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('@/assets/red-marker-icon.png'),
-                iconAnchor: [10, 35],
+                iconRetinaUrl: require('@/assets/red_man.png'),
+                iconSize: [65, 65],
+                iconAnchor: [10, 0],
+                shadowAnchor: [-10,-15]
             });
             return {
                 showMap: true,

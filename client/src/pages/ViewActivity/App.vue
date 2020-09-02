@@ -137,8 +137,13 @@
             </b-row>
             <b-row align-h="center">
               <b-col cols="9">
-                <MapPane ref="mapPane">
-                </MapPane>
+                <b-card style="margin: 1em">
+                  <b-row align-h="center">
+                    <b-col>
+                      <MapPane ref="mapPane"></MapPane>
+                    </b-col>
+                  </b-row>
+                </b-card>
               </b-col>
             </b-row>
 
