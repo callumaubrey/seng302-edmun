@@ -315,7 +315,6 @@ class ActivityControllerTest {
             + "  }"
             + ""
             + "}";
-    System.out.println(jsonString);
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
                 .content(jsonString)
