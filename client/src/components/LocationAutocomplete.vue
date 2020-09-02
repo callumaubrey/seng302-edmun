@@ -2,7 +2,7 @@
   <div>
     <b-input v-model="locationText" @keyup.native="doAutocomplete(locationText)" autocomplete="off"></b-input>
     <div v-for="i in locations" :key="i.osm_id">
-      <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name></b-input>
+      <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name style="cursor: pointer"></b-input>
     </div>
   </div>
 </template>
@@ -20,7 +20,8 @@
         locationText: null,
         timeout: null,
         locations: [],
-        selectedLocation: null
+        selectedLocation: null,
+        loadingLocations: false,
       }
     },
     mounted() {
@@ -35,9 +36,13 @@
       doAutocomplete: async function (locationText) {
         clearTimeout(this.timeout);
 
+        if (locationText === '') {
+          this.locations = [];
+        }
+
         let _this = this;
         this.timeout = setTimeout(async function () {
-          if (locationText == '') {
+          if (locationText === '') {
             return;
           }
 
@@ -71,7 +76,7 @@
           if (fixedData.data.length > 0) {
             _this.locations = fixedData.data;
           }
-        }, 1000);
+        }, 500);
       },
       setSelectedLocation: function (location) {
         this.locationText = location.display_name;
@@ -92,6 +97,7 @@
             data.lng = location.lng;
           }
           this.selectedLocation = data;
+          this.locations = [];
           this.emitLocationToParent(data);
         }
       },
