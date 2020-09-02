@@ -1,6 +1,9 @@
 <template>
   <div>
-    <b-input v-model="locationText" @keyup.native="doAutocomplete(locationText)" autocomplete="off"></b-input>
+    <div>
+      <b-input v-model="locationText" @keyup.native="doAutocomplete(locationText)" autocomplete="off" placeholder="Search address"></b-input>
+        <i v-if="loadingLocations" class="autocomplete-loading-icon text-primary fas fa-circle-notch fa-spin"></i>
+    </div>
     <div v-for="i in locations" :key="i.osm_id">
       <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name style="cursor: pointer"></b-input>
     </div>
@@ -38,13 +41,11 @@
 
         if (locationText === '') {
           this.locations = [];
+          return;
         }
 
         let _this = this;
         this.timeout = setTimeout(async function () {
-          if (locationText === '') {
-            return;
-          }
 
           _this.locations = [];
 
@@ -54,7 +55,9 @@
             withCredentials: false,
           });
 
+          _this.loadingLocations = true;
           let data = await (locationData.get());
+          _this.loadingLocations = false;
 
           let fixedData = JSON.parse('{"data":[]}');
           for (let i = 0; i < data.data.features.length; i++) {
@@ -76,7 +79,7 @@
           if (fixedData.data.length > 0) {
             _this.locations = fixedData.data;
           }
-        }, 500);
+        }, 1000);
       },
       setSelectedLocation: function (location) {
         this.locationText = location.display_name;
@@ -109,3 +112,12 @@
 
   export default LocationAutocomplete;
 </script>
+
+<style>
+  .autocomplete-loading-icon {
+    position: absolute;
+    top: 0.22em;
+    right: 0.8em;
+    font-size: 1.6em;
+  }
+</style>

@@ -116,6 +116,7 @@
         mounted() {
             if (this.value !== null) {
                 this.updateMarker(this.value.lat, this.value.lng);
+                this.$refs.map.setMapCenter(this.value.lat, this.value.lng);
             }
         }
     }
