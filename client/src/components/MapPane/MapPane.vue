@@ -46,7 +46,7 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
-                                          @click="activitySelected(marker)"
+                                          @click="markerSelected(marker)"
                                 >
                                     <!-- Popups -->
                                     <l-popup id="leaflet-tooltip"
@@ -226,7 +226,7 @@
                 });
             },
 
-            activitySelected(marker) {
+            markerSelected(marker) {
                 this.center = marker.position
             }
         },
