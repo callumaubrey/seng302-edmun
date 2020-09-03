@@ -200,6 +200,7 @@
                                  :user-long="userLong"
                                  @locationSelect="updateLocation"
                                  :activity-lat="locationData.latitude"
+                                 :activity-long="locationData.longitude"
             ></ActivityLocationTab>
 
             <!-- Metrics Editor -->
@@ -465,7 +466,7 @@
               location: this.locationData,
               hashtags: this.hashtag.values,
               metrics: this.$refs.metric_editor.getMetricData()
-            }
+            };
             api.updateActivity(userId, this.activityId, data)
             .then(function (response) {
               console.log(response);
@@ -551,6 +552,29 @@
           .catch(function () {
           });
         },
+        /**
+        * Gets the users location details, if any, for the map tab marker
+        * @returns {Promise<void>}
+        */
+        getUserLocation: async function () {
+          let currentObj = this;
+          await api.getLocation(this.profileId)
+            .then(function (response) {
+              currentObj.userLat = response.data.latitude;
+              currentObj.userLong = response.data.longitude;
+            }).catch(function () {
+            });
+        },
+        /**
+        * sets the location data for the activity from the coords emitted
+        * @param coords emitted from map component
+        */
+        updateLocation: function (coords) {
+          this.locationData = {
+            latitude: coords.lat,
+            longitude: coords.lng
+          };
+        },
         checkAuthorized: async function () {
           let currentObj = this;
           this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
@@ -577,7 +601,8 @@
         this.activityId = this.$route.params.activityId;
         await this.checkAuthorized();
         this.getActivity();
-        this.getUserId();
+        await this.getUserId();
+        await this.getUserLocation();
       }
     }
 </script>

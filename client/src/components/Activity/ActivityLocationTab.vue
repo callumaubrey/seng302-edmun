@@ -43,15 +43,13 @@
         data: () => {
             return {
                 markerOnMap: false,
-                priorityGeoLocation: null
+                priorityGeoLocation: null,
+                originalLat: null,
+                originalLong: null,
             }
         },
 
         props: {
-            value: { // Value should be an object with members lat & lng
-                type: Object,
-                default: () => {return null}
-            },
             title: {
                 type: String,
                 default: "Set Activity Location"
@@ -85,7 +83,6 @@
                 default: null
             }
         },
-
         methods: {
             /**
              * When the map is clicked the event will change the v-model and move the activity pin on the map.
@@ -128,13 +125,14 @@
             },
 
             /**
-             * Update the v-model and remove the marker
+             * Change activity location pin back to original if there is one else just remove
              */
             clearLocation: function () {
-                this.markerOnMap = false;
                 this.$refs.map.removeMarker(1);
-                this.$emit('input', null);
-                this.$refs.location_input.clearLocation();
+                if (this.originalLat !== null && this.originalLong !== null) {
+                    this.$refs.map.createMarker(1, 0, this.originalLat, this.originalLong);
+                    this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
+                }
             },
 
             /**
@@ -156,25 +154,32 @@
             /**
              * Sets the users location pin on the map if they have one using data from parent
              */
-            setUsersLocationPin: function() {
-                console.log(this.userLat);
+            setUsersLocationPin: function () {
                 if (this.userLat == null && this.userLong == null) {
                     return;
                 }
                 this.$refs.map.createMarker(2, 1, this.userLat, this.userLong);
                 // Centers map on user if activity has no current location
-                if (this.value == null) {
+                if (this.activityLat !== null && this.activityLong !== null) {
                     this.$refs.map.setMapCenter(this.userLat, this.userLong);
                 }
+            },
+            /**
+             * Sets the current activity location pin on the map if there is one using data from parent
+             */
+            setOriginalActivityPin: function () {
+                if (this.activityLat == null && this.activityLong == null) {
+                    return;
+                }
+                this.originalLat = this.activityLat;
+                this.originalLong = this.activityLong;
+                this.$refs.map.createMarker(1, 0, this.originalLat, this.originalLong);
+                this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
             }
         },
         mounted() {
-            if (this.value !== null) {
-                // Set Marker on map and center map on it
-                this.updateMarker(this.value.lat, this.value.lng);
-                this.$refs.map.setMapCenter(this.value.lat, this.value.lng);
-            }
             setTimeout(this.setUsersLocationPin, 1000);
+            setTimeout(this.setOriginalActivityPin, 1000);
         }
     }
 </script>

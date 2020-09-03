@@ -564,12 +564,10 @@ export default {
       let currentObj = this;
       await api.getLocation(this.profileId)
         .then(function (response) {
-          console.log(response);
           currentObj.userLat = response.data.latitude;
           currentObj.userLong = response.data.longitude;
         }).catch(function () {
       });
-      console.log(this.userLat);
     },
     /**
      * sets the location data for the activity from the coords emitted
@@ -580,7 +578,6 @@ export default {
         latitude: coords.lat,
         longitude: coords.lng
       };
-      console.log(this.locationData);
     },
     goToActivities() {
       const profileId = this.$route.params.id;
