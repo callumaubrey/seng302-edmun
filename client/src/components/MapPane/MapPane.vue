@@ -24,6 +24,7 @@
                         </b-row>
 
                         <!-- Map -->
+                        <hr v-if="canHide">
                         <div style="height: 40em; width: 100%" class="mt-2">
                             <l-map
                                     ref="map"
@@ -31,7 +32,7 @@
                                     :zoom="zoom"
                                     :center="center"
                                     :options="mapOptions"
-                                    style="height: 100%; display: block"
+                                    style="height: 100%;"
                                     @click="(event) => {$emit('onMapClick', event)}"
                                     @update:center="centerUpdate"
                                     @update:zoom="zoomUpdate"
@@ -45,7 +46,23 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
+                                          @click="activitySelected(marker)"
                                 >
+                                    <!-- Popups -->
+                                    <l-popup id="leaflet-tooltip"
+                                               :options='{interactive: true, offset: [2, -26], direction: "top"}'
+                                               v-if="marker.displayPopup"
+                                    >
+
+                                        <!-- Popup Content -->
+                                        <b-container style="max-height: 6.5em; overflow: hidden">
+                                            <b>
+                                                {{marker.title}}
+                                            </b>
+                                            <hr style="margin: 0.25em">
+                                            <label>{{marker.content}}</label>
+                                        </b-container>
+                                    </l-popup>
                                 </l-marker>
                             </l-map>
                         </div>
@@ -59,22 +76,21 @@
                     </b-collapse>
                 </b-col>
             </b-row>
-
-            <hr v-if="canHide">
         </b-col>
     </b-row>
 </template>
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LPopup} from "vue2-leaflet";
 
     export default {
-        name: "Example",
+        name: "MapPane",
         components: {
             LMap,
             LTileLayer,
             LMarker,
+            LPopup
         },
         props: {
             canHide: {
@@ -91,14 +107,16 @@
             const blueMarker = L.icon({
                 iconUrl: require('leaflet/dist/images/marker-icon.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+                iconRetinaUrl: require('leaflet/dist/images/marker-icon.png'),
                 iconAnchor: [10, 30],
             });
             const redMarker = L.icon({
-                iconUrl: require('@/assets/red-marker-icon.png'),
+                iconUrl: require('@/assets/red_man.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-                iconAnchor: [10, 35],
+                iconRetinaUrl: require('@/assets/red_man.png'),
+                iconSize: [65, 65],
+                iconAnchor: [10, 0],
+                shadowAnchor: [-10,-15]
             });
             return {
                 showMap: true,
@@ -107,8 +125,6 @@
                 url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 attribution:
                     '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-                currentZoom: 11.5,
-                currentCenter: L.latLng(-43.530629, 172.625955),
                 mapOptions: {
                     zoomSnap: 0.5
                 },
@@ -124,14 +140,12 @@
              * Updates the zoom of the map
              **/
             zoomUpdate(zoom) {
-                this.currentZoom = zoom;
                 this.zoom = zoom
             },
             /**
              * Updates the center of the map
              **/
             centerUpdate(center) {
-                this.currentCenter = center;
                 this.center = center
             },
 
@@ -150,11 +164,11 @@
              * lng: longitude of the marker
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng) {
+            createMarker(id, iconColour, lat, lng, content, title, displayPopup) {
                 //Check inputs and set position and icon
                 let icon = null
                 let coordinates = [lat, lng]
-                if (iconColour == 1) {
+                if (iconColour === 1) {
                     icon = this.redMarker
                 } else {
                     icon = this.blueMarker
@@ -166,6 +180,9 @@
                     position: coordinates,
                     visible: true,
                     icon: icon,
+                    content: content,
+                    title: title,
+                    displayPopup: displayPopup
                 })
             },
             /**
@@ -207,6 +224,10 @@
                     };
                     _this.$emit('userLocationUpdate', _this.userGeoLocation);
                 });
+            },
+
+            activitySelected(marker) {
+                this.center = marker.position
             }
         },
 
@@ -214,7 +235,6 @@
          * Refresh the map everytime the map is rendered by vue.
          */
         updated: function () {
-
             this.$nextTick(function () {
                 // Code that will run only after the
                 // entire view has been re-rendered
@@ -231,5 +251,16 @@
     .button {
         margin-left: 0.5em;
         margin-right: 0.5em
+    }
+
+    .leaflet-tooltip {
+        padding-left: 0em;
+        padding-right: 0em;
+        min-width: 14em;
+        max-width: 14em;
+        white-space: normal;
+        max-height: 8em;
+        min-height: 8em;
+        text-justify: distribute;
     }
 </style>

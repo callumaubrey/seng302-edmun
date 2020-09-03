@@ -135,8 +135,20 @@
                 </b-card>
               </b-col>
             </b-row>
-
-            <!-- Participants -->
+            <b-row align-h="center">
+              <b-col cols="9">
+                <b-card style="margin: 1em">
+                  <b-row align-h="center">
+                    <b-col>
+                      <MapPane ref="mapPane" v-if="this.location"></MapPane>
+                      <b-card-body v-else>No Location</b-card-body>
+                    </b-col>
+                  </b-row>
+                </b-card>
+              </b-col>
+            </b-row>
+          </b-tab>
+          <b-tab title="Participants">
             <b-row align-h="center">
               <b-col cols="9">
                 <b-card style="margin: 1em" title="Participants:">
@@ -171,10 +183,12 @@ import RecordActivityResultModal from "@/components/Activity/RecordActivityResul
 import api from '@/Api'
 import AdminMixin from "../../mixins/AdminMixin";
 import ActivityResults from "../../components/ActivityResults";
+import MapPane from "../../components/MapPane/MapPane";
 
 const App = {
   name: "App",
   components: {
+    MapPane,
     ActivityResults,
     NavBar,
     FollowUnfollow,
@@ -296,13 +310,6 @@ const App = {
           if (res.data.visibilityType == null) {
             vueObj.visibility = "Public"
           }
-          if (vueObj.location != null) {
-            vueObj.locationString = vueObj.location.city + ", ";
-            if (vueObj.location.state) {
-              vueObj.locationString += vueObj.location.state + ", ";
-            }
-            vueObj.locationString += vueObj.location.country;
-          }
           if (res.data.tags.length > 0) {
             for (var i = 0; i < res.data.tags.length; i++) {
               vueObj.hashtags.push("#" + res.data.tags[i].name);
@@ -317,6 +324,11 @@ const App = {
           }
           this.getActivityTypeDisplay(vueObj);
           this.getMetrics(res.data.profile.id);
+          if (vueObj.location) {
+            this.$nextTick(function () {
+              this.setUpMap();
+            });
+          }
         }
         vueObj.locationDataLoading = false;
       }).catch((err) => {
@@ -397,6 +409,19 @@ const App = {
       this.visibility = value;
       this.shareActivityKey += 1;
       this.followSummaryKey += 1;
+    },
+    async setUpMap() {
+      let userLocation = await api.getLocation(this.profileId);
+      let map = this.$refs.mapPane;
+      // checking if user has a location to put on the map
+      if (userLocation.data !== null) {
+        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude);
+      }
+      // checking if activity has a location to put on the map
+      if (this.location !== null) {
+        map.createMarker(2, 2, this.location.latitude, this.location.longitude);
+        map.setMapCenter(this.location.latitude, this.location.longitude);
+      }
     }
 
   }

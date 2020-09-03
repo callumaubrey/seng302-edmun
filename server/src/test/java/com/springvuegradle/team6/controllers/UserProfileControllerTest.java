@@ -511,6 +511,39 @@ class UserProfileControllerTest {
   }
 
   @Test
+  void getLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+    Location location = new Location();
+    location.setLatitude(-43.5);
+    location.setLongitude(172.5);
+    location = locationRepository.save(location);
+
+    Profile profile = profileRepository.findById(id);
+    profile.setLocation(location);
+    profileRepository.save(profile);
+
+    String getUrl = "/profiles/%d/location";
+    getUrl = String.format(getUrl, id);
+
+    String response =
+            mvc.perform(
+                    get(getUrl)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    Double latitude = (Double) obj.get("latitude");
+    Double longitude = (Double) obj.get("longitude");
+    org.junit.jupiter.api.Assertions.assertEquals(-43.5, latitude);
+    org.junit.jupiter.api.Assertions.assertEquals(172.5, longitude);
+  }
+
+  @Test
   void updateLocation() throws Exception {
     MockHttpSession session = new MockHttpSession();
     int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);

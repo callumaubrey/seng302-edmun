@@ -73,6 +73,8 @@ export default {
 
     getProfile: (id) => instance.get('/profiles/' + id),
 
+    getLocation: (id) => instance.get('/profiles/' + id + '/location'),
+
     getProfileByEmailAsync: async (email) => instance.get('/profiles?email=' + email),
 
     getFirstName: () => instance.get('/profiles/firstname'),

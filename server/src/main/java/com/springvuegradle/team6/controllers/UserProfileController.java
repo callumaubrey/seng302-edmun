@@ -421,4 +421,22 @@ public class UserProfileController {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
     }
   }
+
+  @RequestMapping(value="/{id}/location", method=RequestMethod.GET)
+  public ResponseEntity getLocation(@PathVariable Integer id, HttpSession session) {
+    Optional<Profile> p = repository.findById(id);
+    if (p.isPresent()) {
+      Profile profile = p.get();
+
+      // Check if authorised
+      ResponseEntity<String> authorisedResponse =
+              UserSecurityService.checkAuthorised(id, session, repository);
+      if (authorisedResponse != null) {
+        return authorisedResponse;
+      }
+      return ResponseEntity.ok(profile.getLocation());
+    } else {
+      return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
+    }
+  }
 }
