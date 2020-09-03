@@ -102,20 +102,7 @@
 
                     </b-tab>
 
-                    <b-tab title="Location Info" @click="$refs.map.refreshMap()">
-                        <b-card style="margin: 1em;" title="Location Info:">
-                            <b-col v-if="userData.location">
-                                <b-row>
-                                    City: {{userData.location.city}}
-                                </b-row>
-                                <b-row>
-                                    State: {{userData.location.state}}
-                                </b-row>
-                                <b-row>
-                                    Country: {{userData.location.country}}
-                                </b-row>
-                            </b-col>
-                        </b-card>
+                    <b-tab title="Location Info" @click="addUserLocationToMap">
                         <b-card style="margin: 1em">
                             <map-pane ref="map" :can-hide="true"></map-pane>
                         </b-card>
@@ -229,6 +216,13 @@
                             currentObj.$router.push('/');
                         }
                     });
+            },
+
+            addUserLocationToMap() {
+                if(this.location !== null) {
+                    this.$refs.map.createMarker(1, 0, this.location.latitude, this.location.longitude);
+                    this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
+                }
             },
 
             getCorrectDateFormat: function (date, currentObj) {

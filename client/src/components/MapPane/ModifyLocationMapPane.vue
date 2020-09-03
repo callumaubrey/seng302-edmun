@@ -5,13 +5,17 @@
             <MapPane ref="map"
                      :title="title"
                      :can-hide="canHide"
-                     @onMapClick="mapClicked">
+                     @onMapClick="mapClicked"
+                     @userLocationUpdate="userGeoLocationUpdate">
 
                 <!-- Location Autocomplete In Map Header -->
                 <template v-slot:header>
                     <b-row>
                         <b-col cols="11">
-                            <LocationAutocomplete :given-location="address" @emitLocation="textLocationSelected"></LocationAutocomplete>
+                            <LocationAutocomplete ref="location_input"
+                                                  :priority-geo-location="priorityGeoLocation"
+                                                  :given-location="address"
+                                                  @emitLocation="textLocationSelected"></LocationAutocomplete>
                         </b-col>
                         <b-col cols="1">
                             <b-button block variant="primary" :disabled="!markerOnMap"
@@ -38,7 +42,8 @@
 
         data: () => {
             return {
-                markerOnMap: false
+                markerOnMap: false,
+                priorityGeoLocation: null
             }
         },
 
@@ -77,6 +82,9 @@
                 // Update set location on v-model
                 this.$emit('input', event.latlng);
                 this.updateMarker(lat, lng);
+
+                // Update Text in AutocompleteLocation component
+                this.$refs.location_input.setLocationTextByCoords(lat, lng);
             },
 
             /**
@@ -110,12 +118,32 @@
                 this.markerOnMap = false;
                 this.$refs.map.removeMarker(1);
                 this.$emit('input', null);
+                this.$refs.location_input.clearLocation();
+            },
+
+            /**
+             * On Map getting users geo location update Location Autocomplete
+             * for priority geo location searching.
+             */
+            userGeoLocationUpdate: function (coords) {
+                this.priorityGeoLocation = coords;
+
+                // Set users location if they are not already centered on a marker
+                if(!this.markerOnMap) {
+                    this.$refs.map.setMapCenter(coords.lat, coords.lng);
+                }
+            },
+
+            refreshMap: function () {
+                this.$refs.map.refreshMap()
             }
         },
 
         mounted() {
             if (this.value !== null) {
+                // Set Marker on map and center map on it
                 this.updateMarker(this.value.lat, this.value.lng);
+                this.$refs.map.setMapCenter(this.value.lat, this.value.lng);
             }
         }
     }

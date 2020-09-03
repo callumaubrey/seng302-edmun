@@ -334,7 +334,8 @@
                 </b-container>
             </b-collapse>
             <hr>
-            <div v-b-toggle="'collapse-6'">
+
+            <div v-b-toggle="'collapse-6'" class="clickable">
                 <b-container>
                     <b-row>
                         <b-col><h3 class=edit-title>Location</h3></b-col>
@@ -345,54 +346,17 @@
                     </b-row>
                 </b-container>
             </div>
-            <b-collapse id="collapse-6">
+            <b-collapse id="collapse-6" @show="$refs.map.refreshMap()">
                 <b-container>
                     <hr>
-                    <b-row v-if="locationDisplayText != ''" align-v="center">
-                        <b-col cols="10">
-                            Current location: {{locationDisplayText}}
-                        </b-col>
-                        <b-col cols="2" class="text-right">
-                            <b-button class="invisible-btn" style="float: right;" @click="removeLocation()">
-                                Remove
-                            </b-button>
-                        </b-col>
-                    </b-row>
-                    <b-row v-else>
-                        <b-col>
-                            {{locationDeleteMessage}}
-                        </b-col>
-                    </b-row>
-                    <hr>
-                    <b-row>
-                        <b-col>
-                            <p>Search for a location</p>
-                        </b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col cols="9">
-                            <b-input autocomplete="off" class="form-control" type="text" v-model="locationText"
-                                     @keyup.native="getLocationData(locationText)"></b-input>
-                            <div v-for="i in locations" :key="i.place_id">
-                                <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name></b-input>
-                            </div>
-                            <b-form-valid-feedback :state='locationUpdateMessage != ""'>
-                                {{locationUpdateMessage}}
-                            </b-form-valid-feedback>
-                            <b-form-invalid-feedback :state='!locationErrorFlag'>
-                                {{locationErrorMessage}}
-                            </b-form-invalid-feedback>
-                            <b-form-text>Locations searched will only display if the search includes a city/county or is
-                              part of a city e.g suburb
-                            </b-form-text>
-                        </b-col>
-                        <b-col cols="3">
-                            <b-button class="invisible-btn" style="float: right;" v-on:click="submitLocation">Submit
-                            </b-button>
-
-                        </b-col>
-                    </b-row>
-                    <ModifyLocationMapPane title="Set Your Location"></ModifyLocationMapPane>
+                    <b-form-text>
+                        &#8203; <!-- Zero Width Space to prevent form text height to expand on text displayed -->
+                        <span class="text-success" v-if="locationForm.state === true">
+                            Location updated
+                        </span>
+                        <span class="text-danger" v-if="locationForm.state === false">{{locationForm.error_message}}</span>
+                    </b-form-text>
+                    <ModifyLocationMapPane ref="map" :can-hide="false" v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
                 </b-container>
             </b-collapse>
             <hr>
@@ -445,10 +409,15 @@
                 emailForm: {
                     emailInput: ""
                 },
+                locationForm: {
+                    value: null,
+                    error_message: "",
+                    state: null,
+                },
+
                 profileId: null,
                 disabled: true,
                 primaryEmail: [],
-                location: '',
                 emails: [],
                 yourCountries: [],
                 yourActivites: [],
@@ -473,7 +442,6 @@
                     "Female",
                     "Non-binary"
                 ],
-                locationText: "",
                 userData: null,
                 passportsUpdateMessage: "",
                 passportsErrorMessage: "",
@@ -484,14 +452,7 @@
                 passwordErrorMessage: "",
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
-                activityErrorMessage: "",
-                locationUpdateMessage: "",
-                locationErrorMessage: "",
-                locationDeleteMessage: "No location is currently associated with this account",
-                locationDisplayText: "",
                 loggedInIsAdmin: false,
-                selectedLocation: null,
-                locationErrorFlag: false,
             }
         },
         validations: {
@@ -747,9 +708,9 @@
                 const deletedActivity = (this.yourActivites.splice(index, 1));
                 let data = {
                     activities: this.yourActivites
-                }
+                };
 
-                api.updateProfileLocation(userId, data).then(function (response) {
+                api.updateActivityTypes(userId, data).then(function (response) {
                     if (response.status == 200) {
                         vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
                     }
@@ -760,74 +721,36 @@
                     }
                 });
             },
-            setSelectedLocation: function (location) {
-                this.selectedLocation = location;
-                this.locationText = this.selectedLocation.display_name;
-            },
+
+            /**
+             * Submits locationForm data to api. For updates and deleting the users location.
+             */
             submitLocation: function () {
-                if (this.selectedLocation == null || this.locationText != this.selectedLocation.display_name) {
-                    this.locationErrorFlag = true;
-                    this.locationErrorMessage = "Please select a location from the drop-down";
-                    this.locationUpdateMessage = ""
-                    return;
-                }
-                this.locationErrorFlag = false;
-                const vueObj = this;
-                vueObj.locations = [];
-                vueObj.location = vueObj.selectedLocation;
-                let userId = this.profileId;
-                if (this.loggedInIsAdmin) {
-                    userId = this.$route.params.id;
-                }
+                this.locationForm.state = null;
 
-                if (this.location !== null) {
+                // Update location is new value set. If null delete current location
+                let apiRequest = null;
+                if(this.locationForm.value !== null) {
                     let data = {
-                        country: null,
-                        state: null,
-                        city: null
+                        latitude: this.locationForm.value.lat,
+                        longitude: this.locationForm.value.lng
                     };
-                    if (vueObj.location.address.city) {
-                        data.city = vueObj.location.address.city;
-                    }
-                    if (vueObj.location.address.state) {
-                        data.state = vueObj.location.address.state;
-                    }
-                    if (vueObj.location.address.country) {
-                        data.country = vueObj.location.address.country;
-                    }
 
-                    api.updateProfileLocation(userId, data).then(function () {
-                        vueObj.locationDisplayText = vueObj.location.display_name;
-                        vueObj.locationUpdateMessage = "Location successfully updated";
-                        vueObj.locationErrorMessage = "";
-                        vueObj.locationText = "";
-                    }).catch(function () {
-                        vueObj.locationUpdateMessage = "";
-                        vueObj.locationErrorMessage = "Location failed to update";
-                    });
+                    apiRequest = api.updateProfileLocation(this.profileId, data);
                 } else {
-                    let data = {};
-                    api.updateProfileLocation(userId, data).then(function () {
-                        vueObj.locationUpdateMessage = "Location successfully updated";
-                        vueObj.locationErrorMessage = "";
-                    }).catch(function () {
-                        vueObj.locationUpdateMessage = "";
-                        vueObj.locationErrorMessage = "Location failed to update";
-                    });
+                    apiRequest = api.removeLocation(this.profileId);
                 }
+
+                // Update form to api's response
+                apiRequest.then(() => {
+                    this.locationForm.state = true;
+                }).catch((error) => {
+                    this.locationForm.state = false;
+                    this.locationForm.error_message = error.response.data;
+                })
+
             },
-            removeLocation: async function () {
-                await api.removeLocation(this.profileId).then(() => {
-                    this.locationErrorMessage = "";
-                    this.locationUpdateMessage = "Location successfully removed";
-                    this.location = "";
-                    this.locationDisplayText = "";
-                    this.locationDeleteMessage = "Location successfully removed";
-                }).catch(() => {
-                    this.locationUpdateMessage = "";
-                    this.locationErrorMessage = "Location could not be removed";
-                });
-            },
+
             getCountryData: async function () {
                 var data = await (countryData.get());
                 var countriesLen = data.data.length;
@@ -974,14 +897,14 @@
                         vueObj.isLoggedIn = true;
                         vueObj.userName = response.data.firstname;
                         vueObj.yourActivites = response.data.activities;
-                        vueObj.location = response.data.location;
-                        if (vueObj.location) {
-                            vueObj.locationDisplayText = vueObj.location.city + ", ";
-                            if (vueObj.location.state) {
-                                vueObj.locationDisplayText += vueObj.location.state + ", ";
-                            }
-                            vueObj.locationDisplayText += vueObj.location.country;
+
+                        if (response.data.location) {
+                            vueObj.locationForm.value = {
+                                lat: response.data.location.latitude,
+                                lng: response.data.location.longitude};
                         }
+
+
                     })
                     .catch(function (e) {
                         console.log(e)
