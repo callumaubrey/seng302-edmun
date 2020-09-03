@@ -24,13 +24,14 @@
                         </b-row>
 
                         <!-- Map -->
+                        <hr v-if="canHide">
                         <div style="height: 40em; width: 100%" class="mt-2">
                             <l-map
                                     v-if="showMap"
                                     :zoom="zoom"
                                     :center="center"
                                     :options="mapOptions"
-                                    style="height: 100%; display: block"
+                                    style="height: 100%;"
                                     @click="(event) => {$emit('onMapClick', event)}"
                                     @update:center="centerUpdate"
                                     @update:zoom="zoomUpdate"
@@ -44,7 +45,23 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
+                                          @click="activitySelected(marker)"
                                 >
+                                    <!-- Popups -->
+                                    <l-popup id="leaflet-tooltip"
+                                               :options='{interactive: true, offset: [2, -26], direction: "top"}'
+                                               v-if="marker.displayPopup"
+                                    >
+
+                                        <!-- Popup Content -->
+                                        <b-container style="max-height: 6.5em; overflow: hidden">
+                                            <b>
+                                                {{marker.title}}
+                                            </b>
+                                            <hr style="margin: 0.25em">
+                                            <label>{{marker.content}}</label>
+                                        </b-container>
+                                    </l-popup>
                                 </l-marker>
                             </l-map>
                         </div>
@@ -58,15 +75,13 @@
                     </b-collapse>
                 </b-col>
             </b-row>
-
-            <hr v-if="canHide">
         </b-col>
     </b-row>
 </template>
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LPopup} from "vue2-leaflet";
 
     export default {
         name: "Example",
@@ -74,6 +89,7 @@
             LMap,
             LTileLayer,
             LMarker,
+            LPopup
         },
         props: {
             canHide: {
@@ -106,14 +122,12 @@
                 url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 attribution:
                     '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-                currentZoom: 11.5,
-                currentCenter: L.latLng(-43.530629, 172.625955),
                 mapOptions: {
                     zoomSnap: 0.5
                 },
                 markers: [],
                 blueMarker: blueMarker,
-                redMarker: redMarker
+                redMarker: redMarker,
             };
         },
         methods: {
@@ -121,14 +135,12 @@
              * Updates the zoom of the map
              **/
             zoomUpdate(zoom) {
-                this.currentZoom = zoom;
                 this.zoom = zoom
             },
             /**
              * Updates the center of the map
              **/
             centerUpdate(center) {
-                this.currentCenter = center;
                 this.center = center
             },
 
@@ -136,7 +148,7 @@
              * Updates the center of the map using lat and lng
              **/
             setMapCenter(lat, lng) {
-                this.centerUpdate(L.latLng(lat, lng));
+                this.centerUpdate(L.latLng(lng, lat));
             },
 
             /**
@@ -147,7 +159,7 @@
              * lng: longitude of the marker
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng) {
+            createMarker(id, iconColour, lat, lng, content, title, displayPopup) {
                 //Check inputs and set position and icon
                 let icon = null
                 let coordinates = [lat, lng]
@@ -163,6 +175,9 @@
                     position: coordinates,
                     visible: true,
                     icon: icon,
+                    content: content,
+                    title: title,
+                    displayPopup: displayPopup
                 })
             },
             /**
@@ -192,6 +207,10 @@
                 setTimeout(function () {
                     window.dispatchEvent(new Event('resize'))
                 }, 100);
+            },
+
+            activitySelected(marker) {
+                this.center = marker.position
             }
         },
 
@@ -211,5 +230,16 @@
     .button {
         margin-left: 0.5em;
         margin-right: 0.5em
+    }
+
+    .leaflet-tooltip {
+        padding-left: 0em;
+        padding-right: 0em;
+        min-width: 14em;
+        max-width: 14em;
+        white-space: normal;
+        max-height: 8em;
+        min-height: 8em;
+        text-justify: distribute;
     }
 </style>
