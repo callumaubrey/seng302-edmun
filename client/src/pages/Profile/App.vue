@@ -259,7 +259,7 @@
                 let obj = this;
                 let map = obj.$refs.map;
                 map.refreshMap();
-                const profileId = obj.loggedInId;
+                const profileId = obj.profileId;
                 api.getActivities(profileId)
                     .then(function (response) {
                       obj.myActivities = response.data;

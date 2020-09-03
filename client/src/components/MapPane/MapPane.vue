@@ -48,8 +48,14 @@
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
                                 >
+                                    <l-tooltip id="leaflet-tool-tip" :options='{interactive: true, offset: [2, -26], direction: "top"}'>
+                                        <b-container style="max-height: 6.5em; overflow: hidden" align="centre">
+                                            <b>{{marker.title}} <br></b>
+                                            <b>This is the hover</b>
+                                        </b-container>
+                                    </l-tooltip>
                                     <!-- Popups -->
-                                    <l-popup id="leaflet-tooltip"
+                                    <l-popup   id="leaflet-popup"
                                                :options='{interactive: true, offset: [2, -26], direction: "top"}'
                                     >
 
@@ -78,7 +84,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LPopup} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LPopup, LTooltip} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -86,7 +92,8 @@
             LMap,
             LTileLayer,
             LMarker,
-            LPopup
+            LPopup,
+            LTooltip
         },
         props: {
             canHide: {
@@ -177,7 +184,8 @@
                     // content will have to be the url to router push to eg /profiles/profileID/activities/activityID
                     content: content,
                     title: title,
-                    displayPopup: displayPopup
+                    displayPopup: displayPopup,
+                    showTooltip: true
                 })
             },
             /**
@@ -222,7 +230,7 @@
             },
 
             markerSelected(marker) {
-                this.center = marker.position
+                this.center = marker.position;
             }
         },
 
