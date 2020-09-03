@@ -102,7 +102,7 @@
 
                     </b-tab>
 
-                    <b-tab title="Location Info" @click="$refs.map.refreshMap()">
+                    <b-tab title="Location Info" @click="getMyActivities()">
                         <b-card style="margin: 1em;" title="Location Info:">
                             <b-col v-if="userData.location">
                                 <b-row>
@@ -161,6 +161,7 @@
                 userData: '',
                 passports: [],
                 activities: [],
+                myActivities: [],
                 additionalEmails: [],
                 isLoggedIn: '',
                 userName: "",
@@ -194,7 +195,7 @@
                     });
             },
             getProfileData: async function () {
-                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 let currentObj = this;
                 api.getProfile(this.$route.params.id)
                     .then(function (response) {
@@ -220,6 +221,7 @@
 
                         currentObj.location = response.data.location;
                         currentObj.checkHideElements();
+
                     })
                     // eslint-disable-next-line no-unused-vars
                     .catch(function (error) {
@@ -258,6 +260,24 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
+
+            getMyActivities: function () {
+                let obj = this;
+                let map = obj.$refs.map;
+                map.refreshMap();
+                const profileId = obj.loggedInId;
+                api.getActivities(profileId)
+                    .then(function (response) {
+                      obj.myActivities = response.data;
+                      console.log(obj.myActivities);
+                      for (let i = 0; i < obj.myActivities.length; i++) {
+                          let activity = obj.myActivities[i];
+                          let routeString = "/profiles/" + profileId + "/activities/" + activity.id;
+                          map.createMarker(i, 1, activity.location.latitude, activity.location.longitude, routeString, activity.activityName, true)
+                      }
+                    })
+
+            }
         },
         watch: {
             $route: function () {

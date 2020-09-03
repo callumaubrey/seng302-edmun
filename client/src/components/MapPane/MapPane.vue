@@ -50,16 +50,12 @@
                                     <!-- Popups -->
                                     <l-popup id="leaflet-tooltip"
                                                :options='{interactive: true, offset: [2, -26], direction: "top"}'
-                                               v-if="marker.displayPopup"
                                     >
 
                                         <!-- Popup Content -->
-                                        <b-container style="max-height: 6.5em; overflow: hidden">
-                                            <b>
-                                                {{marker.title}}
-                                            </b>
-                                            <hr style="margin: 0.25em">
-                                            <label>{{marker.content}}</label>
+                                        <b-container style="max-height: 6.5em; overflow: hidden" align="centre">
+                                            <b>{{marker.title}} <br></b>
+                                            <a @click=$router.push(marker.content)>Go to Activity</a>
                                         </b-container>
                                     </l-popup>
                                 </l-marker>
@@ -176,6 +172,7 @@
                     position: coordinates,
                     visible: true,
                     icon: icon,
+                    // content will have to be the url to router push to eg /profiles/profileID/activities/activityID
                     content: content,
                     title: title,
                     displayPopup: displayPopup
@@ -233,7 +230,7 @@
         margin-right: 0.5em
     }
 
-    .leaflet-tooltip {
+    .leaflet-pop-up {
         padding-left: 0em;
         padding-right: 0em;
         min-width: 14em;
