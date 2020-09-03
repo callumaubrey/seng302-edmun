@@ -458,22 +458,17 @@ export default {
     selectLocation(location) {
       this.form.location = location.display_name;
       this.locations = [];
-      console.log(location);
 
       if (location !== null) {
         let data = {
-          country: null,
-          state: null,
-          city: null
+          latitude: null,
+          longitude: null,
         };
-        if (location.address.city) {
-          data.city = location.address.city;
+        if (location.latitude) {
+          data.latitude = parseFloat(location.latitude)
         }
-        if (location.address.state) {
-          data.state = location.address.state;
-        }
-        if (location.address.country) {
-          data.country = location.address.country;
+        if (location.longitude) {
+          data.longitude = parseFloat(location.longitude)
         }
         this.locationData = data;
       }
