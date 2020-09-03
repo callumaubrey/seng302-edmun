@@ -16,7 +16,11 @@
   const LocationAutocomplete = {
     name: "LocationAutocomplete",
     props: {
-      givenLocation: String
+      givenLocation: String,
+      priorityGeoLocation: { // Latitude and Longitude of the user currently to narrow down the search
+        type: Object,
+        default: null
+      },
     },
     data() {
       return {
@@ -36,6 +40,40 @@
           this.locationText = this.givenLocation;
         }
       },
+
+      /**
+       * Extracts useful display information from an OSM feature
+       * @param feature
+       */
+      parseOSMFeature: function(feature) {
+        let obj = feature.properties;
+        let geo = feature.geometry.coordinates;
+
+        let displayName;
+
+        let area = '';
+        if(obj.city) {
+          area = ", " + obj.city;
+        }else if(obj.state) {
+          area = ", " + obj.state;
+        }
+
+        if (obj.osm_value == "house") {
+          displayName = obj.housenumber + " " + obj.street + area + ", " + obj.country;
+        } else if (obj.osm_value == "suburb" || obj.osm_value == "city" || obj.osm_value == "residential") {
+          displayName = obj.name + area + ", " + obj.country;
+        } else if (obj.osm_value == "country") {
+          displayName = obj.country;
+        }
+
+        return {
+          "lng": geo[0],
+          "lat": geo[1],
+          "display_name": displayName,
+          "osm_id": obj.osm_id
+        };
+      },
+
       doAutocomplete: async function (locationText) {
         clearTimeout(this.timeout);
 
@@ -49,8 +87,14 @@
 
           _this.locations = [];
 
+          let geo_priority_query = "";
+          if(_this.priorityGeoLocation !== null) {
+            geo_priority_query += "&lat=" + _this.priorityGeoLocation.lat;
+            geo_priority_query += "&lon=" + _this.priorityGeoLocation.lng;
+          }
+
           let locationData = axios.create({
-            baseURL: "https://photon.komoot.de/api/?q=" + locationText + "&limit=10",
+            baseURL: "https://photon.komoot.de/api/?q=" + locationText + geo_priority_query + "&limit=10",
             timeout: 2000,
             withCredentials: false,
           });
@@ -61,18 +105,9 @@
 
           let fixedData = JSON.parse('{"data":[]}');
           for (let i = 0; i < data.data.features.length; i++) {
-            let obj = data.data.features[i].properties;
-            let geo = data.data.features[i].geometry.coordinates;
-            let displayName;
-            if (obj.osm_value == "house") {
-              displayName = obj.housenumber + " " + obj.street + ", " + obj.state + ", " + obj.country;
-            } else if (obj.osm_value == "suburb" || obj.osm_value == "city" || obj.osm_value == "residential") {
-              displayName = obj.name + ", " + obj.state + ", " + obj.country;
-            } else if (obj.osm_value == "country") {
-              displayName = obj.country;
-            }
-            if (displayName) {
-              fixedData['data'].push({"lng": geo[0], "lat": geo[1], "display_name": displayName, "osm_id": obj.osm_id});
+            let feature_data = _this.parseOSMFeature(data.data.features[i]);
+            if(feature_data.display_name) {
+              fixedData['data'].push(feature_data)
             }
           }
 
@@ -104,8 +139,38 @@
           this.emitLocationToParent(data);
         }
       },
+
       emitLocationToParent: function (value) {
         this.$emit("emitLocation", value);
+      },
+
+      setLocationTextByCoords: function(lat, lng) {
+        let coordsDataAPI = axios.create({
+          baseURL: "https://photon.komoot.de/reverse?lon="+lng+"&lat="+lat+"&limit=1",
+          timeout: 2000,
+          withCredentials: false,
+        });
+
+        this.loadingLocations = true;
+        coordsDataAPI.get().then((res) => {
+          // If relevant feature is found
+          if(res.data.features.length > 0) {
+            let feature_data  = this.parseOSMFeature(res.data.features[0]);
+            this.locationText = feature_data.display_name;
+            this.locations = [];
+          } else {
+            this.clearLocation();
+          }
+          this.loadingLocations = false;
+        }).catch(() => {
+          this.loadingLocations = false;
+          this.clearLocation();
+        })
+      },
+
+      clearLocation: function () {
+        this.locationText = '';
+        this.locations = [];
       }
     }
   };

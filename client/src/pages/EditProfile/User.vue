@@ -334,6 +334,7 @@
                 </b-container>
             </b-collapse>
             <hr>
+
             <div v-b-toggle="'collapse-6'" class="clickable">
                 <b-container>
                     <b-row>

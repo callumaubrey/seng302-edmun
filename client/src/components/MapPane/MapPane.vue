@@ -26,6 +26,7 @@
                         <!-- Map -->
                         <div style="height: 40em; width: 100%" class="mt-2">
                             <l-map
+                                    ref="map"
                                     v-if="showMap"
                                     :zoom="zoom"
                                     :center="center"
@@ -113,7 +114,9 @@
                 },
                 markers: [],
                 blueMarker: blueMarker,
-                redMarker: redMarker
+                redMarker: redMarker,
+
+                userGeoLocation: null
             };
         },
         methods: {
@@ -192,6 +195,17 @@
                 setTimeout(function () {
                     window.dispatchEvent(new Event('resize'))
                 }, 100);
+            },
+
+            updateMapToUserGeoLocation() {
+                let _this = this;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    _this.userGeoLocation = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    };
+                    _this.$emit('userLocationUpdate', _this.userGeoLocation);
+                });
             }
         },
 
@@ -204,6 +218,10 @@
                 // entire view has been re-rendered
                 this.refreshMap();
             })
+        },
+
+        mounted() {
+            this.updateMapToUserGeoLocation();
         }
     };
 </script>
