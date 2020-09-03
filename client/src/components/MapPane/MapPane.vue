@@ -154,7 +154,6 @@
                 let coordinates = [lat, lng]
                 if (iconColour === 1) {
                     icon = this.redMarker
-                    console.log("red amrker erached");
                 } else {
                     icon = this.blueMarker
                 }

@@ -140,14 +140,13 @@
                 <b-card style="margin: 1em">
                   <b-row align-h="center">
                     <b-col>
-                      <MapPane ref="mapPane"></MapPane>
+                      <MapPane ref="mapPane" v-if="this.location"></MapPane>
+                      <b-card-body v-else>No Location</b-card-body>
                     </b-col>
                   </b-row>
                 </b-card>
               </b-col>
             </b-row>
-
-
           </b-tab>
           <b-tab title="Participants">
             <b-row align-h="center">
@@ -311,13 +310,6 @@ const App = {
           if (res.data.visibilityType == null) {
             vueObj.visibility = "Public"
           }
-          if (vueObj.location != null) {
-            vueObj.locationString = vueObj.location.city + ", ";
-            if (vueObj.location.state) {
-              vueObj.locationString += vueObj.location.state + ", ";
-            }
-            vueObj.locationString += vueObj.location.country;
-          }
           if (res.data.tags.length > 0) {
             for (var i = 0; i < res.data.tags.length; i++) {
               vueObj.hashtags.push("#" + res.data.tags[i].name);
@@ -332,9 +324,11 @@ const App = {
           }
           this.getActivityTypeDisplay(vueObj);
           this.getMetrics(res.data.profile.id);
-          this.$nextTick(function() {
-            this.setUpMap();
-          });
+          if (vueObj.location) {
+            this.$nextTick(function () {
+              this.setUpMap();
+            });
+          }
         }
         vueObj.locationDataLoading = false;
       }).catch((err) => {
@@ -417,8 +411,8 @@ const App = {
       this.followSummaryKey += 1;
     },
     async setUpMap() {
-      let userLocation = await api.getLocation(this.loggedInId);
-      let map = this.$refs.mapPane
+      let userLocation = await api.getLocation(this.profileId);
+      let map = this.$refs.mapPane;
       // checking if user has a location to put on the map
       if (userLocation.data !== null) {
         map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude);
