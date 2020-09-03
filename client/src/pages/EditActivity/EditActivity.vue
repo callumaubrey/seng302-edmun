@@ -183,33 +183,6 @@
                       </b-form-group>
                     </b-col>
                   </b-row>
-
-                  <b-row>
-                    <b-col>
-                      <b-form-group
-                          description="Please enter the location you want to search for and select from the dropdown"
-                          id="location-input-group"
-                          invalid-feedback="The location of the activity must be chosen from the drop down"
-                          label="Location"
-                          label-for="location-input">
-                        <b-form-input :state="validateState('location')"
-                                      autocomplete="off"
-                                      class="form-control"
-                                      id="location-input"
-                                      name="location-input"
-                                      placeholder="Search for a city/county"
-                                      type="text"
-                                      v-model="$v.form.location.$model"
-                                      v-on:input="locationData=null"
-                                      v-on:keyup="getLocationData(form.location)">
-                        </b-form-input>
-                        <div :key="i.place_id" v-for="i in locations">
-                          <b-input :value=i.display_name class="clickable" type="button"
-                                   v-on:click="selectLocation(i)"></b-input>
-                        </div>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
                   <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
                   <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
                     {{ activityUpdateMessage }}
@@ -220,6 +193,14 @@
                 </b-form>
               </b-container>
             </b-tab>
+
+            <ActivityLocationTab ref="map"
+                                 :can-hide="false"
+                                 :user-lat="userLat"
+                                 :user-long="userLong"
+                                 @locationSelect="updateLocation"
+                                 :activity-lat="locationData.latitude"
+            ></ActivityLocationTab>
 
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
@@ -243,6 +224,7 @@
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
     import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+    import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
     export default {
       mixins: [validationMixin, locationMixin],
@@ -250,7 +232,8 @@
         ActivityMetricsEditor,
         SearchTag,
         NavBar,
-        ForbiddenMessage
+        ForbiddenMessage,
+        ActivityLocationTab
       },
       data() {
         return {
@@ -262,13 +245,14 @@
           activityTypes: ["Hike", "Bike", "Run", "Walk", "Swim"],
           activityUpdateMessage: "",
           activityErrorMessage: "",
+          userLat: null,
+          userLong: null,
           form: {
             name: null,
             description: null,
             selectedActivityType: 0,
             selectedActivityTypes: [],
             date: null,
-            location: ""
           },
           durationForm: {
             startDate: null,
@@ -303,22 +287,6 @@
             }
           },
           date: {},
-          location: {
-            locationValidate() {
-              if (this.locations.length == 0 || this.locations == null) {
-                if (this.locationData != null && (this.form.location != null || this.form.location
-                    != "")) {
-                  return true;
-                } else if (this.locationData == null && (this.form.location == null
-                    || this.form.location == "")) {
-                  return true;
-                } else {
-                  return false;
-                }
-              }
-              return false;
-            }
-          }
         },
         durationForm: {
           startDate: {
@@ -413,14 +381,6 @@
               currentObj.isContinuous = '0';
             }
             currentObj.locationData = response.data.location;
-            if (currentObj.locationData) {
-              currentObj.form.location = currentObj.locationData.city + ", ";
-              if (response.data.location.state) {
-                currentObj.form.location += currentObj.locationData.state + ", ";
-              }
-              currentObj.form.location += currentObj.locationData.country;
-
-            }
             if (response.data.tags.length > 0) {
               for (var i = 0; i < response.data.tags.length; i++) {
                 currentObj.hashtag.values.push("#" + response.data.tags[i].name);
