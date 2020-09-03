@@ -27,6 +27,7 @@
                         <hr v-if="canHide">
                         <div style="height: 40em; width: 100%" class="mt-2">
                             <l-map
+                                    ref="map"
                                     v-if="showMap"
                                     :zoom="zoom"
                                     :center="center"
@@ -45,7 +46,7 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
-                                          @click="activitySelected(marker)"
+                                          @click="markerSelected(marker)"
                                 >
                                     <!-- Popups -->
                                     <l-popup id="leaflet-tooltip"
@@ -61,6 +62,7 @@
                                 </l-marker>
                             </l-map>
                         </div>
+
                         <!-- Footer Slot -->
                         <b-row>
                             <b-col>
@@ -105,12 +107,10 @@
                 iconAnchor: [10, 30],
             });
             const redMarker = L.icon({
-                iconUrl: require('@/assets/red_man.png'),
+                iconUrl: require('@/assets/red-marker-icon.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('@/assets/red_man.png'),
-                iconSize: [65, 65],
-                iconAnchor: [10, 0],
-                shadowAnchor: [-10,-15]
+                iconRetinaUrl: require('@/assets/red-marker-icon.png'),
+                iconAnchor: [10, 30],
             });
             return {
                 showMap: true,
@@ -125,6 +125,8 @@
                 markers: [],
                 blueMarker: blueMarker,
                 redMarker: redMarker,
+
+                userGeoLocation: null
             };
         },
         methods: {
@@ -145,7 +147,7 @@
              * Updates the center of the map using lat and lng
              **/
             setMapCenter(lat, lng) {
-                this.centerUpdate(L.latLng(lng, lat));
+                this.centerUpdate(L.latLng(lat, lng));
             },
 
             /**
@@ -198,16 +200,28 @@
                 return false
             },
             /**
-             * Updates the map tiles when the map is visible
-             * This is a pretty gross fix to the map tiles not loading bug but it works -Will
+             * Updates the map's viewing size when map container size changes. For instance
+             * in a tab.
              **/
             refreshMap() {
+                let map = this.$refs.map;
                 setTimeout(function () {
-                    window.dispatchEvent(new Event('resize'))
+                    map.mapObject.invalidateSize();
                 }, 100);
             },
 
-            activitySelected(marker) {
+            updateMapToUserGeoLocation() {
+                let _this = this;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    _this.userGeoLocation = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    };
+                    _this.$emit('userLocationUpdate', _this.userGeoLocation);
+                });
+            },
+
+            markerSelected(marker) {
                 this.center = marker.position
             }
         },
@@ -221,6 +235,10 @@
                 // entire view has been re-rendered
                 this.refreshMap();
             })
+        },
+
+        mounted() {
+            this.updateMapToUserGeoLocation();
         }
     };
 </script>
