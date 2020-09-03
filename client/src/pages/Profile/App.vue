@@ -220,7 +220,7 @@
 
             addUserLocationToMap() {
                 if(this.location !== null) {
-                    this.$refs.map.createMarker(1, 0, this.location.latitude, this.location.longitude);
+                    this.$refs.map.createMarker(1, 1, this.location.latitude, this.location.longitude);
                     this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
                 }
             },
