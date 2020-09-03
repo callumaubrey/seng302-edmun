@@ -45,13 +45,14 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
-                                          @click="activitySelected(marker.position)"
+                                          @click="activitySelected(marker)"
                                 >
                                     <!-- Popups -->
-                                    <l-tooltip id="leaflet-tooltip"
-                                               :options='{ interactive: true, offset: [2, -36], direction: "top"}'
-                                               v-if="marker.displayPopUp"
+                                    <l-popup id="leaflet-tooltip"
+                                               :options='{interactive: true, offset: [2, -26], direction: "top"}'
+                                               v-if="marker.displayPopup"
                                     >
+
                                         <!-- Popup Content -->
                                         <b-container style="max-height: 6.5em; overflow: hidden">
                                             <b>
@@ -60,7 +61,7 @@
                                             <hr style="margin: 0.25em">
                                             <label>{{marker.content}}</label>
                                         </b-container>
-                                    </l-tooltip>
+                                    </l-popup>
                                 </l-marker>
                             </l-map>
                         </div>
@@ -80,7 +81,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LPopup} from "vue2-leaflet";
 
     export default {
         name: "Example",
@@ -88,7 +89,7 @@
             LMap,
             LTileLayer,
             LMarker,
-            LTooltip
+            LPopup
         },
         props: {
             canHide: {
@@ -208,8 +209,8 @@
                 }, 100);
             },
 
-            activitySelected(activityPosition) {
-                this.center = activityPosition
+            activitySelected(marker) {
+                this.center = marker.position
             }
         },
 
