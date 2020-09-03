@@ -65,7 +65,6 @@
                                 </l-marker>
                             </l-map>
                         </div>
-
                         <!-- Footer Slot -->
                         <b-row>
                             <b-col>
@@ -84,7 +83,7 @@
     import {LMap, LTileLayer, LMarker, LPopup} from "vue2-leaflet";
 
     export default {
-        name: "Example",
+        name: "MapPane",
         components: {
             LMap,
             LTileLayer,
@@ -106,14 +105,16 @@
             const blueMarker = L.icon({
                 iconUrl: require('leaflet/dist/images/marker-icon.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+                iconRetinaUrl: require('leaflet/dist/images/marker-icon.png'),
                 iconAnchor: [10, 30],
             });
             const redMarker = L.icon({
-                iconUrl: require('@/assets/red-marker-icon.png'),
+                iconUrl: require('@/assets/red_man.png'),
                 shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-                iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-                iconAnchor: [10, 35],
+                iconRetinaUrl: require('@/assets/red_man.png'),
+                iconSize: [65, 65],
+                iconAnchor: [10, 0],
+                shadowAnchor: [-10,-15]
             });
             return {
                 showMap: true,
@@ -163,7 +164,7 @@
                 //Check inputs and set position and icon
                 let icon = null
                 let coordinates = [lat, lng]
-                if (iconColour == 1) {
+                if (iconColour === 1) {
                     icon = this.redMarker
                 } else {
                     icon = this.blueMarker
