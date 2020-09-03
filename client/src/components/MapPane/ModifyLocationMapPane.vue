@@ -132,6 +132,10 @@
                 if(!this.markerOnMap) {
                     this.$refs.map.setMapCenter(coords.lat, coords.lng);
                 }
+            },
+
+            refreshMap: function () {
+                this.$refs.map.refreshMap()
             }
         },
 

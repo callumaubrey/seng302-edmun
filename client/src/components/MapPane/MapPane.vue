@@ -188,12 +188,13 @@
                 return false
             },
             /**
-             * Updates the map tiles when the map is visible
-             * This is a pretty gross fix to the map tiles not loading bug but it works -Will
+             * Updates the map's viewing size when map container size changes. For instance
+             * in a tab.
              **/
             refreshMap() {
+                let map = this.$refs.map;
                 setTimeout(function () {
-                    window.dispatchEvent(new Event('resize'))
+                    map.mapObject.invalidateSize();
                 }, 100);
             },
 
@@ -213,6 +214,7 @@
          * Refresh the map everytime the map is rendered by vue.
          */
         updated: function () {
+
             this.$nextTick(function () {
                 // Code that will run only after the
                 // entire view has been re-rendered

@@ -346,7 +346,7 @@
                     </b-row>
                 </b-container>
             </div>
-            <b-collapse id="collapse-6">
+            <b-collapse id="collapse-6" @show="$refs.map.refreshMap()">
                 <b-container>
                     <hr>
                     <b-form-text>
@@ -356,7 +356,7 @@
                         </span>
                         <span class="text-danger" v-if="locationForm.state === false">{{locationForm.error_message}}</span>
                     </b-form-text>
-                    <ModifyLocationMapPane :can-hide="false" v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
+                    <ModifyLocationMapPane ref="map" :can-hide="false" v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
                 </b-container>
             </b-collapse>
             <hr>
