@@ -1,7 +1,6 @@
 package com.springvuegradle.team6.models.repositories;
 
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,16 +10,16 @@ import javax.persistence.PersistenceContext;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.tomcat.jni.Local;
-import org.hibernate.search.FullTextQuery;
-import org.hibernate.search.bridge.StringBridge;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.Unit;
+import org.hibernate.search.spatial.DistanceSortField;
 
 public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepository {
   @PersistenceContext private EntityManager em;
+  private static final String CONTINUOUS = "continuous";
 
   /**
    * Searches for a list of activities that match the given parameters and returns a list of
@@ -52,7 +51,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       int limit,
       int offset,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius) {
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
@@ -67,7 +69,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             limit,
             offset,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius);
 
     List<Activity> result = new ArrayList<>();
     if (jpaQuery != null) {
@@ -102,7 +107,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       LocalDateTime startDate,
       LocalDateTime endDate,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius) {
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
             terms,
@@ -116,7 +124,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             -1,
             -1,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius);
 
     Integer count = 0;
     if (jpaQuery != null) {
@@ -137,7 +148,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       int limit,
       int offset,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -200,10 +214,27 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       }
     }
 
-    if (finalQuery != null) {
-      org.apache.lucene.search.Sort sort =
-          new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+    if (longitude != null && latitude != null && radius != null) {
+      BooleanJunction locationQuery = addLocationQuery(queryBuilder, longitude, latitude, radius);
+      if (finalQuery == null) {
+        finalQuery = locationQuery.createQuery();
+      } else {
+        finalQuery =
+            queryBuilder.bool().must(finalQuery).must(locationQuery.createQuery()).createQuery();
+      }
+    }
 
+    if (finalQuery != null) {
+      org.apache.lucene.search.Sort sort;
+      if (longitude != null && latitude != null && radius != null) {
+        sort =
+            new Sort(
+                new DistanceSortField(latitude, longitude, "location"),
+                SortField.FIELD_SCORE,
+                new SortField("id", SortField.Type.STRING, true));
+      } else {
+        sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+      }
       org.hibernate.search.jpa.FullTextQuery jpaQuery =
           fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
 
@@ -297,10 +328,10 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     BooleanJunction booleanJunction = queryBuilder.bool();
 
     Query query;
-    if (time.equals("continuous")) {
-      query = queryBuilder.keyword().onField("continuous").matching(true).createQuery();
+    if (time.equals(CONTINUOUS)) {
+      query = queryBuilder.keyword().onField(CONTINUOUS).matching(true).createQuery();
     } else {
-      query = queryBuilder.keyword().onField("continuous").matching(false).createQuery();
+      query = queryBuilder.keyword().onField(CONTINUOUS).matching(false).createQuery();
       if (startDate != null) {
         Query startDateQuery =
             queryBuilder.range().onField("startTime").above(startDate).createQuery();
@@ -351,5 +382,20 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       booleanJunction.should(ownActivityQuery);
       return booleanJunction;
     }
+  }
+
+  private BooleanJunction addLocationQuery(
+      QueryBuilder queryBuilder, Double longitude, Double latitude, Integer radius) {
+    BooleanJunction booleanJunction = queryBuilder.bool();
+    org.apache.lucene.search.Query luceneQuery =
+        queryBuilder
+            .spatial()
+            .onField("location")
+            .within(radius, Unit.KM)
+            .ofLatitude(latitude)
+            .andLongitude(longitude)
+            .createQuery();
+    booleanJunction.must(luceneQuery);
+    return booleanJunction;
   }
 }

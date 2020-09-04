@@ -35,6 +35,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.SortableField;
+import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -158,7 +159,11 @@ public class Activity {
   @Column(columnDefinition = "datetime")
   private LocalDateTime endTime;
 
-  @ManyToOne private Location location;
+  @Spatial
+  @IndexedEmbedded(depth = 1)
+  @SortableField
+  @ManyToOne
+  private Location location;
 
   @Column(columnDefinition = "datetime default NOW()")
   private LocalDateTime creationDate;

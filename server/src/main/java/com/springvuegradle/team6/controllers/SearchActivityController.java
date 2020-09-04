@@ -79,6 +79,9 @@ public class SearchActivityController {
       @RequestParam(name = "end-date", required = false) String endDate,
       @RequestParam(name = "offset", required = false) Integer offset,
       @RequestParam(name = "limit", required = false) Integer limit,
+      @RequestParam(name = "lon", required = false) Double longitude,
+      @RequestParam(name = "lat", required = false) Double latitude,
+      @RequestParam(name = "radius", required = false) Integer radius,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -92,16 +95,16 @@ public class SearchActivityController {
 
     String[] activityTypesArray = null;
     if (activityTypes != null) {
-      activityTypesArray = activityTypes.replaceAll("%20", " ").split(" ");
+      activityTypesArray = activityTypes.replace("%20", " ").split(" ");
     }
 
     String[] hashtagsArray = null;
     if (hashtags != null) {
-      hashtagsArray = hashtags.replaceAll("%20", " ").split(" ");
+      hashtagsArray = hashtags.replace("%20", " ").split(" ");
     }
 
     if (activityName != null) {
-      activityName = activityName.replaceAll("%20", " ");
+      activityName = activityName.replace("%20", " ");
     }
 
     if (activityTypesMethod != null) {
@@ -115,7 +118,7 @@ public class SearchActivityController {
     LocalDateTime startDateLDT = null;
     LocalDateTime endDateLDT = null;
 
-    if (time != null && time.toLowerCase().equals("duration")) {
+    if (time != null && time.equalsIgnoreCase("duration")) {
 
       if (startDate != null) {
         String[] startDateArray = startDate.split("-");
@@ -171,7 +174,10 @@ public class SearchActivityController {
             limit,
             offset,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius);
     List<SearchActivityResponse> results = new ArrayList<>();
     for (Activity activity : activityList) {
       SearchActivityResponse result =
@@ -223,6 +229,9 @@ public class SearchActivityController {
       @RequestParam(name = "time", required = false) String time,
       @RequestParam(name = "start-date", required = false) String startDate,
       @RequestParam(name = "end-date", required = false) String endDate,
+      @RequestParam(name = "lon", required = false) Double longitude,
+      @RequestParam(name = "lat", required = false) Double latitude,
+      @RequestParam(name = "radius", required = false) Integer radius,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -236,16 +245,16 @@ public class SearchActivityController {
 
     String[] activityTypesArray = null;
     if (activityTypes != null) {
-      activityTypesArray = activityTypes.replaceAll("%20", " ").split(" ");
+      activityTypesArray = activityTypes.replace("%20", " ").split(" ");
     }
 
     String[] hashtagsArray = null;
     if (hashtags != null) {
-      hashtagsArray = hashtags.replaceAll("%20", " ").split(" ");
+      hashtagsArray = hashtags.replace("%20", " ").split(" ");
     }
 
     if (activityName != null) {
-      activityName = activityName.replaceAll("%20", " ");
+      activityName = activityName.replace("%20", " ");
     }
 
     if (activityTypesMethod != null) {
@@ -259,7 +268,7 @@ public class SearchActivityController {
     LocalDateTime startDateLDT = null;
     LocalDateTime endDateLDT = null;
 
-    if (time != null && time.toLowerCase().equals("duration")) {
+    if (time != null && time.equalsIgnoreCase("duration")) {
 
       if (startDate != null) {
         String[] startDateArray = startDate.split("-");
@@ -305,7 +314,10 @@ public class SearchActivityController {
             startDateLDT,
             endDateLDT,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius);
     return new ResponseEntity(count, HttpStatus.OK);
   }
 }
