@@ -47,16 +47,19 @@
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
+                                          @close="marker.showTooltip = true"
                                 >
-                                    <l-tooltip id="leaflet-tool-tip" :options='{interactive: true, offset: [2, -26], direction: "top"}'>
+                                    <l-tooltip v-show="marker.showTooltip"  id="leaflet-tool-tip" :options='{ offset: [2, -35], direction: "top"}'>
                                         <b-container style="max-height: 6.5em; overflow: hidden" align="centre">
                                             <b>{{marker.title}} <br></b>
                                             <b>This is the hover</b>
+                                            <b v-if="marker.showTooltip === true">yeet</b>
                                         </b-container>
                                     </l-tooltip>
                                     <!-- Popups -->
                                     <l-popup   id="leaflet-popup"
                                                :options='{interactive: true, offset: [2, -26], direction: "top"}'
+                                               @popupopen="hideTooltip(marker)" @popupclose="showTooltip(marker)"
                                     >
 
                                         <!-- Popup Content -->
@@ -137,6 +140,13 @@
             };
         },
         methods: {
+
+            hideTooltip(marker) {
+                marker.showTooltip = false;
+            },
+            showTooltip(marker) {
+                marker.showTooltip = true;
+            },
             /**
              * Updates the zoom of the map
              **/
@@ -230,7 +240,9 @@
             },
 
             markerSelected(marker) {
+                console.log(marker.showTooltip);
                 this.center = marker.position;
+                marker.showTooltip = false;
             }
         },
 
