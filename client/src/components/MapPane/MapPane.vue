@@ -19,6 +19,10 @@
                         <!-- Header Slot -->
                         <b-row>
                             <b-col>
+                                <!-- Testing buttons to create random locations and remove the last added location -->
+<!--                                                <b-button @click="createMarker('m' + (markers.length + 1), 1, -44 + Math.random(), 172 + Math.random(), 'This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run', 'Run', true)">Add Marker</b-button>-->
+<!--                                                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
+<!--                                                <b-button @click="refreshMap()">Refresh Map</b-button>-->
                                 <slot name="header"></slot>
                             </b-col>
                         </b-row>
@@ -48,23 +52,21 @@
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
                                 >
-                                    <l-tooltip id="leaflet-tool-tip" :options='{interactive: true, offset: [2, -26], direction: "top"}'>
-                                        <b-container style="max-height: 6.5em; overflow: hidden" align="centre">
-                                            <b>{{marker.title}} <br></b>
-                                            <b>This is the hover</b>
+                                    <!-- Popups -->
+                                    <l-tooltip id="popUp"
+                                               :options='{ interactive: true, offset: [2, -36], direction: "top"}'
+                                               v-if="marker.displayPopup"
+                                    >
+                                        <!-- Popup Content -->
+                                        <b-container style="max-height: 6.5em; overflow: hidden">
+                                            <b>
+                                                {{marker.title}}
+                                            </b>
+                                            <hr style="margin: 0.25em">
+                                            <label>{{marker.content}}</label>
                                         </b-container>
                                     </l-tooltip>
-                                    <!-- Popups -->
-                                    <l-popup   id="leaflet-popup"
-                                               :options='{interactive: true, offset: [2, -26], direction: "top"}'
-                                    >
 
-                                        <!-- Popup Content -->
-                                        <b-container style="max-height: 6.5em; overflow: hidden" align="centre">
-                                            <b>{{marker.title}} <br></b>
-                                            <a @click=$router.push(marker.content)>Go to Activity</a>
-                                        </b-container>
-                                    </l-popup>
                                 </l-marker>
                             </l-map>
                         </div>
@@ -84,7 +86,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LPopup, LTooltip} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -92,7 +94,6 @@
             LMap,
             LTileLayer,
             LMarker,
-            LPopup,
             LTooltip
         },
         props: {
@@ -133,7 +134,8 @@
                 blueMarker: blueMarker,
                 redMarker: redMarker,
 
-                userGeoLocation: null
+                userGeoLocation: null,
+                showTooltip: true
             };
         },
         methods: {
@@ -231,6 +233,7 @@
 
             markerSelected(marker) {
                 this.center = marker.position;
+                this.showTooltip = false
             }
         },
 
@@ -256,7 +259,7 @@
         margin-right: 0.5em
     }
 
-    .leaflet-pop-up {
+    .leaflet-tooltip {
         padding-left: 0em;
         padding-right: 0em;
         min-width: 14em;
@@ -266,4 +269,5 @@
         min-height: 8em;
         text-justify: distribute;
     }
+
 </style>
