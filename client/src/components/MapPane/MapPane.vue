@@ -233,7 +233,6 @@
 
             markerSelected(marker) {
                 this.center = marker.position;
-                this.showTooltip = false
             }
         },
 
@@ -269,5 +268,4 @@
         min-height: 8em;
         text-justify: distribute;
     }
-
 </style>
