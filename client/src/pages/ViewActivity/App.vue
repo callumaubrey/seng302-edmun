@@ -201,6 +201,7 @@ const App = {
   data: function () {
     return {
       //isActivityOwner: false,
+      activity: null,
       userData: "",
       isLoggedIn: false,
       userName: "",
@@ -298,6 +299,7 @@ const App = {
         if (res.data == "Activity is archived") {
           this.archived = true;
         } else {
+          vueObj.activity = res.data;
           vueObj.activityOwner = res.data.profile;
           vueObj.activityName = res.data.activityName;
           vueObj.description = res.data.description;
@@ -380,6 +382,7 @@ const App = {
             + start.dayOfMonth + ' ' + '24:00').toString();
       }
       currentObj.startTime = startDate;
+      currentObj.activity.startTime = startDate;
 
       let endTime = this.getCorrectTimeFormat(end)
       let endDate = new Date(end.year + "-" + end.monthValue + '-'
@@ -399,6 +402,7 @@ const App = {
         }
       }
       currentObj.activityTypes = result;
+      currentObj.activity.activityTypes = result;
     },
     clickHashtag(hashtag) {
       hashtag = hashtag.substring(1);
@@ -415,11 +419,12 @@ const App = {
       let map = this.$refs.mapPane;
       // checking if user has a location to put on the map
       if (userLocation.data !== null) {
-        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude);
+        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude, this.profileId, this.activityOwner.firstname, true);
       }
       // checking if activity has a location to put on the map
       if (this.location !== null) {
-        map.createMarker(2, 2, this.location.latitude, this.location.longitude);
+
+        map.createMarker(2, 2, this.location.latitude, this.location.longitude,this.activity, this.activityName,true);
         map.setMapCenter(this.location.latitude, this.location.longitude);
       }
     }

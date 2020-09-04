@@ -63,7 +63,8 @@
                                                 {{marker.title}}
                                             </b>
                                             <hr style="margin: 0.25em">
-                                            <label>{{marker.content}}</label>
+                                            <span>{{marker.content.activityTypes}} <br></span>
+                                            <span>{{marker.content.startTime}}</span>
                                         </b-container>
                                     </l-tooltip>
 
