@@ -19,20 +19,27 @@ export default {
      * @param pagination_offset Integer offsets search results
      * @param pagination_limit Integer limits number of results returned
      */
-    searchActivities: function(instance,
-                               search_query=null,
-                               types = [],
-                               types_method_and = true,
-                               hashtags = [],
-                               hashtags_method_and = true,
-                               activity_mode_filter="all",
-                               start_date=null,
-                               end_date=null,
-                               pagination_offset=0,
-                               pagination_limit=10) {
+    searchActivities: function (instance,
+        search_query = null,
+        types = [],
+        types_method_and = true,
+        hashtags = [],
+        hashtags_method_and = true,
+        activity_mode_filter = "all",
+        start_date = null,
+        end_date = null,
+        pagination_offset = 0,
+        pagination_limit = 10,
+        longitude = null,
+        latitude = null,
+        radius = null
+    ) {
 
-        let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
-            hashtags_method_and, activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit);
+        let query_params_str = this.getSearchActivitiesQueryParams(search_query,
+            types, types_method_and, hashtags,
+            hashtags_method_and, activity_mode_filter, start_date, end_date,
+            pagination_offset, pagination_limit,
+            longitude, latitude, radius);
         query_params_str = query_params_str.replace(/%2C/g, '%20');
 
         return instance.get('/activities?' + query_params_str);
@@ -51,18 +58,24 @@ export default {
      * @param start_date Date if activity_mode_filter is "Duration" then this filters any activities that start before this Date.
      * @param end_date Date if activity_mode_filter is "Duration" then this filters any activities that end after this Date.
      */
-    searchActivitiesPageCount: function(instance,
-                               search_query=null,
-                               types = [],
-                               types_method_and = true,
-                               hashtags = [],
-                               hashtags_method_and = true,
-                               activity_mode_filter="all",
-                               start_date=null,
-                               end_date=null) {
+    searchActivitiesPageCount: function (instance,
+        search_query = null,
+        types = [],
+        types_method_and = true,
+        hashtags = [],
+        hashtags_method_and = true,
+        activity_mode_filter = "all",
+        start_date = null,
+        end_date = null,
+        longitude = null,
+        latitude = null,
+        radius = null) {
 
-        let query_params_str = this.getSearchActivitiesQueryParams(search_query, types, types_method_and, hashtags,
-            hashtags_method_and, activity_mode_filter, start_date, end_date, null, null);
+        let query_params_str = this.getSearchActivitiesQueryParams(search_query,
+            types, types_method_and, hashtags,
+            hashtags_method_and, activity_mode_filter, start_date, end_date,
+            null, null,
+            longitude, latitude, radius);
         query_params_str = query_params_str.replace(/%2C/g, '%20');
 
         return instance.get('/activities/count?' + query_params_str);
@@ -82,28 +95,34 @@ export default {
      * @param pagination_offset Integer offsets search results
      * @param pagination_limit Integer limits number of results returned
      */
-    getSearchActivitiesQueryParams: function(search_query=null,
-                                   types = [],
-                                   types_method_and = true,
-                                   hashtags = [],
-                                   hashtags_method_and = true,
-                                   activity_mode_filter="all",
-                                   start_date=null,
-                                   end_date=null,
-                                   pagination_offset=0,
-                                   pagination_limit=10) {
+    getSearchActivitiesQueryParams: function (search_query = null,
+        types = [],
+        types_method_and = true,
+        hashtags = [],
+        hashtags_method_and = true,
+        activity_mode_filter = "all",
+        start_date = null,
+        end_date = null,
+        pagination_offset = 0,
+        pagination_limit = 10,
+        longitude = null,
+        latitude = null,
+        radius = null) {
         // Build dictionary of query parameters
         let params = {
-            'name':search_query,
-            'types':types,
-            'types-method':types_method_and ? "AND" : "OR",
+            'name': search_query,
+            'types': types,
+            'types-method': types_method_and ? "AND" : "OR",
             'hashtags': hashtags,
             'hashtags-method': hashtags_method_and ? "AND" : "OR",
             'time': activity_mode_filter,
             'start-date': start_date,
             'end-date': end_date,
             'offset': pagination_offset,
-            'limit': pagination_limit
+            'limit': pagination_limit,
+            'lon': longitude,
+            'lat': latitude,
+            'radius': radius
         };
 
         // Check parameters are valid
@@ -128,13 +147,19 @@ export default {
             delete params['types-method'];
         }
 
-        if(params['hashtags'].length === 0) {
+        if (params['hashtags'].length === 0) {
             delete params['hashtags'];
             delete params['hashtags-method'];
         }
 
-        if(params['time'] === 'all') {
+        if (params['time'] === 'all') {
             delete params['time'];
+        }
+
+        if (params['radius'] === null) {
+            delete params['radius'];
+            delete params['lat'];
+            delete params['lon'];
         }
 
         // Construct params into valid string for url
@@ -151,17 +176,55 @@ export default {
         let data = {};
         let params = new URLSearchParams(query);
 
-        if (params.has('name')) data['search_query'] = params.get('name');
-        if (params.has('types')) data['types'] = params.get('types').split(',');
-        if (params.has('types-method')) data['types_method_and'] = params.get('types-method') === "AND";
-        if (params.has('hashtags')) data['hashtags'] = params.get('hashtags').split(',');
-        if (params.has('hashtags-method')) data['hashtags_method_and'] = params.get('hashtags-method') === "AND";
-        if (params.has('time')) data['activity_mode_filter'] = params.get('time');
-        else data['activity_mode_filter'] = "all";
-        if (params.has('start-date')) data['start_date'] = params.get('start-date');
-        if (params.has('end-date')) data['end_date'] = params.get('end-date');
-        if (params.has('offset')) data['pagination_offset'] = parseInt(params.get('offset'));
-        if (params.has('limit')) data['pagination_limit'] = parseInt(params.get('limit'));
+        if (params.has('name')) {
+            data['search_query'] = params.get('name');
+        }
+        if (params.has('types')) {
+            data['types'] = params.get('types').split(',');
+        }
+        if (params.has('types-method')) {
+            data['types_method_and'] = params.get(
+                'types-method') === "AND";
+        }
+        if (params.has('hashtags')) {
+            data['hashtags'] = params.get(
+                'hashtags').split(',');
+        }
+        if (params.has(
+            'hashtags-method')) {
+            data['hashtags_method_and'] = params.get(
+                'hashtags-method') === "AND";
+        }
+        if (params.has('time')) {
+            data['activity_mode_filter'] = params.get(
+                'time');
+        } else {
+            data['activity_mode_filter'] = "all";
+        }
+        if (params.has('start-date')) {
+            data['start_date'] = params.get(
+                'start-date');
+        }
+        if (params.has('end-date')) {
+            data['end_date'] = params.get('end-date');
+        }
+        if (params.has('offset')) {
+            data['pagination_offset'] = parseInt(
+                params.get('offset'));
+        }
+        if (params.has('limit')) {
+            data['pagination_limit'] = parseInt(
+                params.get('limit'));
+        }
+        if (params.has('lon')) {
+            data['longitude'] = params.get('lon');
+        }
+        if (params.has('lat')) {
+            data['latitude'] = params.get('lat');
+        }
+        if (params.has('radius')) {
+            data['radius'] = params.get('radius');
+        }
 
         return data;
     }
