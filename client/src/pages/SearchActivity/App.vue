@@ -143,6 +143,8 @@ export default {
           limit: 10,
           count: 0
         },
+
+        // marker location
         location: {
           longitude: null,
           latitude: null,

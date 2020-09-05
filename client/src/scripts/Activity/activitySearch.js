@@ -18,6 +18,9 @@ export default {
      * @param end_date Date if activity_mode_filter is "Duration" then this filters any activities that end after this Date.
      * @param pagination_offset Integer offsets search results
      * @param pagination_limit Integer limits number of results returned
+     * @param longitude Double marker location longitude
+     * @param latitude Double marker location latitude
+     * @param radius Integer radial distance from marker
      */
     searchActivities: function (instance,
         search_query = null,
@@ -57,6 +60,9 @@ export default {
      * @param activity_mode_filter String for activity mode filtering must match "all", "continuous", "duration"
      * @param start_date Date if activity_mode_filter is "Duration" then this filters any activities that start before this Date.
      * @param end_date Date if activity_mode_filter is "Duration" then this filters any activities that end after this Date.
+     * @param longitude Double marker location longitude
+     * @param latitude Double marker location latitude
+     * @param radius Integer radial distance from marker
      */
     searchActivitiesPageCount: function (instance,
         search_query = null,
@@ -94,6 +100,9 @@ export default {
      * @param end_date Date if activity_mode_filter is "Duration" then this filters any activities that end after this Date.
      * @param pagination_offset Integer offsets search results
      * @param pagination_limit Integer limits number of results returned
+     * @param longitude Double marker location longitude
+     * @param latitude Double marker location latitude
+     * @param radius Double radial distance from marker
      */
     getSearchActivitiesQueryParams: function (search_query = null,
         types = [],
@@ -126,23 +135,41 @@ export default {
         };
 
         // Check parameters are valid
-        if(params['time'] !== "all" && params['time'] !== "continuous" && params['time'] !== "duration") {
+        if (params['time'] !== "all" && params['time'] !== "continuous"
+            && params['time'] !== "duration") {
             throw "activity_mode_filter is of invalid string, must be 'continuous', 'duration', 'all'"
         }
 
         // Cull Irrelevant parameters
-        if (params['name'] === null || params['name'].length === 0) delete params['name'];
-        if (params['start-date'] === null) delete params['start-date'];
-        if (params['end-date'] === null) delete params['end-date'];
-        if (params['offset'] === null) delete params['offset'];
-        if (params['limit'] === null) delete params['limit'];
+        if (params['name'] === null || params['name'].length
+            === 0) {
+            delete params['name'];
+        }
+        if (params['start-date'] === null) {
+            delete params['start-date'];
+        }
+        if (params['end-date'] === null) {
+            delete params['end-date'];
+        }
+        if (params['offset'] === null) {
+            delete params['offset'];
+        }
+        if (params['limit'] === null) {
+            delete params['limit'];
+        }
+        if (params['radius'] === null || params['lat'] === null || params['lon']
+            === null) {
+            delete params['radius'];
+            delete params['lat'];
+            delete params['lon'];
+        }
 
-        if(params['time'] !== "duration") {
+        if (params['time'] !== "duration") {
             delete params['start-date'];
             delete params['end-date'];
         }
 
-        if(params['types'].length === 0) {
+        if (params['types'].length === 0) {
             delete params['types'];
             delete params['types-method'];
         }
@@ -154,12 +181,6 @@ export default {
 
         if (params['time'] === 'all') {
             delete params['time'];
-        }
-
-        if (params['radius'] === null) {
-            delete params['radius'];
-            delete params['lat'];
-            delete params['lon'];
         }
 
         // Construct params into valid string for url
