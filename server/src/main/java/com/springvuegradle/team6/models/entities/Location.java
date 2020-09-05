@@ -26,6 +26,8 @@ public class Location implements Serializable, Coordinates {
   @Latitude private Double latitude = 0d;
   @Longitude private Double longitude = 0d;
 
+  @Transient private String name;
+
   public Location() {}
 
   /**
@@ -53,5 +55,13 @@ public class Location implements Serializable, Coordinates {
 
   public void setLongitude(double longitude) {
     this.longitude = longitude;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

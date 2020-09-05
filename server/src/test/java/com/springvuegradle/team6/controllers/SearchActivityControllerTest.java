@@ -700,4 +700,215 @@ public class SearchActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(
         172.6006563, arr.getJSONObject(2).getJSONObject("location").getDouble("longitude"));
   }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=181&lat=0&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=-181&lat=0&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=180&lat=0&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=-180&lat=0&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=91&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=-91&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=90&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=-90&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByHashtagsInvalidMethodReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?hashtags=running%20walking&hashtags-method=not")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByActivityTypesInvalidMethodReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=not")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesOffsetUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&offset=-1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesOffsetOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&offset=0").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesLimitUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&limit=-1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesLimitOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&limit=0").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByTimeInvalidReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?time=nothing").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationStartDateInvalidFormatReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=20201010")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationEndDateInvalidFormatReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&end-date=20201010")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationStartDateInvalidDateReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=2020-20-10")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationEndDateInvalidDateReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&end-date=2020-20-10")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
 }
