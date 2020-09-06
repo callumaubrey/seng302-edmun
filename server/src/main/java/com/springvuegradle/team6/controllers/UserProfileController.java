@@ -128,6 +128,11 @@ public class UserProfileController {
       @PathVariable Integer id,
       @Valid @RequestBody EditProfileRequest request,
       HttpSession session) {
+
+    // Update Location
+    updateLocation(id, request.location, session);
+
+
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
       Profile edit = p.get();

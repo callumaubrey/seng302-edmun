@@ -128,16 +128,5 @@ public class EditProfileRequest {
             }
             profile.setPassports(validPassports);
             profile.setActivityTypes(this.activityTypes);
-
-        if(this.location != null) {
-            Optional<Location> optionalLocation = locationRepository.findByLatitudeAndLongitude(this.location.latitude, this.location.longitude);
-            if (optionalLocation.isPresent()) {
-                profile.setPrivateLocation(optionalLocation.get());
-            } else {
-                Location newLocation = new Location(this.location.latitude, this.location.longitude);
-                locationRepository.save(newLocation);
-                profile.setPrivateLocation(newLocation);
-            }
-        }
     }
 }
