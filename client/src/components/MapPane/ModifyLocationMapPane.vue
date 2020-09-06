@@ -11,13 +11,13 @@
                 <!-- Location Autocomplete In Map Header -->
                 <template v-slot:header>
                     <b-row>
-                        <b-col cols="11">
+                        <b-col>
                             <LocationAutocomplete ref="location_input"
                                                   :priority-geo-location="priorityGeoLocation"
                                                   :given-location="address"
                                                   @emitLocation="textLocationSelected"></LocationAutocomplete>
                         </b-col>
-                        <b-col cols="1">
+                        <b-col col sm="2">
                             <b-button block variant="primary" :disabled="!markerOnMap"
                                       @click="clearLocation">Clear</b-button>
                         </b-col>
@@ -58,7 +58,7 @@
             },
             iconColourId: {
                 type: Number,
-                default: 0
+                default: 1
             },
             address: {
                 type: String,
