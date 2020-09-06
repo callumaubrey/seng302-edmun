@@ -3,7 +3,6 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
-import com.springvuegradle.team6.models.entities.NamedLocation;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
@@ -12,11 +11,9 @@ import com.springvuegradle.team6.requests.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import javax.servlet.http.HttpSession;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -521,7 +518,7 @@ class UserProfileControllerTest {
     location = locationRepository.save(location);
 
     Profile profile = profileRepository.findById(id);
-    profile.setLocation(location);
+    profile.setPrivateLocation(location);
     profileRepository.save(profile);
 
     String getUrl = "/profiles/%d/location";
@@ -681,8 +678,55 @@ class UserProfileControllerTest {
   void getProfileWithLatitudeAndLongitudeReturnsAddressString() throws Exception {
     MockHttpSession session = new MockHttpSession();
 
-    Location location = new Location(-43.527531, 172.581472);
-    location = locationRepository.save(location);
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    // Set Location
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = ((JSONObject)obj.get("location")).get("name").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeReturnsPublicLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
 
     Set<Email> emails = new HashSet<>();
     Email email = new Email("johnydoe1@gmail.com");
@@ -695,39 +739,48 @@ class UserProfileControllerTest {
     profile.setDob("2010-01-01");
     profile.setPassword("Password1");
     profile.setGender("male");
-    profile.setLocation(location);
     profile = profileRepository.save(profile);
+
 
     LoginRequest loginRequest = new LoginRequest();
     loginRequest.email = "johnydoe1@gmail.com";
     loginRequest.password = "Password1";
     mvc.perform(
-        post("/login/")
-            .content(mapper.writeValueAsString(loginRequest))
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().isOk());
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
 
     String response =
-        mvc.perform(
-            get("/profiles/" + profile.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
+            mvc.perform(
+                    get("/profiles/" + profile.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    String address = obj.get("address").toString();
-    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
+
+    // Expecting location centered on true address
+    String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
+    String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("-43.527531", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("172.581472", lon);
   }
 
   @Test
   void getProfileWithLatitudeAndLongitudeAnotherProfileReturnsHiddenAddressString() throws Exception {
     MockHttpSession session = new MockHttpSession();
-
-    Location location = new Location(-43.527531, 172.581472);
-    location = locationRepository.save(location);
 
     Set<Email> emails = new HashSet<>();
     Email email = new Email("johnydoe2@gmail.com");
@@ -740,11 +793,8 @@ class UserProfileControllerTest {
     profile.setDob("2010-01-01");
     profile.setPassword("Password1");
     profile.setGender("male");
-    profile.setLocation(location);
     profile = profileRepository.save(profile);
 
-    Location location2 = new Location(-43.527531, 172.581472);
-    location2 = locationRepository.save(location2);
 
     Set<Email> emails2 = new HashSet<>();
     Email email2 = new Email("johnydoe1@gmail.com");
@@ -757,18 +807,37 @@ class UserProfileControllerTest {
     profile2.setDob("2010-01-01");
     profile2.setPassword("Password1");
     profile2.setGender("male");
-    profile2.setLocation(location2);
     profile2 = profileRepository.save(profile2);
 
+    // Login as profile 1
     LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe2@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Login as profile 2
+    loginRequest = new LoginRequest();
     loginRequest.email = "johnydoe1@gmail.com";
     loginRequest.password = "Password1";
     mvc.perform(
-        post("/login/")
-            .content(mapper.writeValueAsString(loginRequest))
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().isOk());
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
 
     String response =
         mvc.perform(
@@ -780,8 +849,87 @@ class UserProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    String address = obj.get("address").toString();
+    String address = ((JSONObject)obj.get("location")).get("name").toString();
     org.junit.jupiter.api.Assertions.assertEquals("Canterbury, New Zealand", address);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeAnotherProfileReturnsHiddenLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe2@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("johnydoe1@gmail.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("John");
+    profile2.setLastname("Doe1");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2 = profileRepository.save(profile2);
+
+    // Login as profile 1
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe2@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Login as profile 2
+    loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+            mvc.perform(
+                    get("/profiles/" + profile.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+
+    // Expecting location centered on canterbury
+    String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
+    String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("-43.5239611", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("172.58031843822513", lon);
   }
 
   @Test
@@ -790,9 +938,6 @@ class UserProfileControllerTest {
       roles = {"USER", "ADMIN"})
   void getProfileWithLatitudeAndLongitudeAsAdminReturnsFullAddress() throws Exception {
     MockHttpSession session = new MockHttpSession();
-
-    Location location = new Location(-43.527531, 172.581472);
-    location = locationRepository.save(location);
 
     Set<Email> emails = new HashSet<>();
     Email email = new Email("johnydoe1@gmail.com");
@@ -805,7 +950,6 @@ class UserProfileControllerTest {
     profile.setDob("2010-01-01");
     profile.setPassword("Password1");
     profile.setGender("male");
-    profile.setLocation(location);
     profile = profileRepository.save(profile);
 
     LoginRequest loginRequest = new LoginRequest();
@@ -818,6 +962,14 @@ class UserProfileControllerTest {
             .session(session))
         .andExpect(status().isOk());
 
+    // Set Location
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
     String response =
         mvc.perform(
             get("/profiles/" + profile.getId())
@@ -828,7 +980,7 @@ class UserProfileControllerTest {
             .getResponse()
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
-    String address = obj.get("address").toString();
+    String address =((JSONObject)obj.get("location")).get("name").toString();
     org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
   }
 }
