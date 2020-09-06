@@ -16,6 +16,7 @@ public class Location implements Serializable {
 
   @Id @GeneratedValue private long locationID = 0;
 
+  private String name = "";
   private double latitude = 0;
   private double longitude = 0;
 
@@ -46,5 +47,13 @@ public class Location implements Serializable {
 
   public void setLongitude(double longitude) {
     this.longitude = longitude;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

@@ -6,6 +6,7 @@ import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.services.LocationService;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 
@@ -74,7 +75,8 @@ public class CreateProfileRequest {
     public Profile generateProfile(
             EmailRepository emailRepository,
             CountryRepository countryRepository,
-            LocationRepository locationRepository
+            LocationRepository locationRepository,
+            LocationService locationService
     ) {
         Profile profile = new Profile();
         profile.setFirstname(firstname);
@@ -118,8 +120,7 @@ public class CreateProfileRequest {
         }
 
         if(this.location != null) {
-            locationRepository.save(this.location);
-            profile.setLocation(this.location);
+            locationService.updateProfileLocation(profile, this.location, locationRepository);
         }
 
         return profile;
