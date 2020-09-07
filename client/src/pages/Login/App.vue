@@ -52,6 +52,7 @@
         <b-container class="b-container">
             <b-link to="/register" id="signup-link">Sign up for Edmun</b-link>
         </b-container>
+        <ActivityDistanceSlider></ActivityDistanceSlider>
 
     </div>
 
@@ -61,10 +62,12 @@
 import NavBar from '@/components/NavBar.vue';
 import api from '@/Api';
 import {mutations} from "../../store";
+import ActivityDistanceSlider from "../../components/ActivityDistanceSlider";
 
 export default {
   components: {
-    NavBar
+    NavBar,
+      ActivityDistanceSlider
   },
   computed: {
     emailState() {
