@@ -11,7 +11,6 @@
                     </h4>
                 </b-col>
             </b-row>
-
             <!-- Map and slots -->
             <b-row>
                 <b-col>
@@ -19,14 +18,10 @@
                         <!-- Header Slot -->
                         <b-row>
                             <b-col>
-                                <!-- Testing buttons to create random locations and remove the last added location -->
-<!--                                                <b-button @click="createMarker('m' + (markers.length + 1), 1, -44 + Math.random(), 172 + Math.random(), 'This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run This is a nice run', 'Run', true)">Add Marker</b-button>-->
-<!--                                                <b-button @click="removeMarker('m' + markers.length)">Remove Marker</b-button>-->
-<!--                                                <b-button @click="refreshMap()">Refresh Map</b-button>-->
+
                                 <slot name="header"></slot>
                             </b-col>
                         </b-row>
-
                         <!-- Map -->
                         <hr v-if="canHide">
                         <div style="height: 40em; width: 100%" class="mt-2">
@@ -52,12 +47,9 @@
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
                                 >
-                                    <!-- Popups -->
                                     <l-tooltip id="popUp"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
-                                               v-if="marker.displayPopup"
                                     >
-                                        <!-- Popup Content -->
                                         <b-container style="max-height: 6.5em; overflow: hidden">
                                             <b>
                                                 {{marker.title}}
@@ -67,7 +59,6 @@
                                             <span>{{marker.content.startTime}}</span>
                                         </b-container>
                                     </l-tooltip>
-
                                 </l-marker>
                             </l-map>
                         </div>
@@ -166,12 +157,15 @@
              * iconColour: used as a key for what icon to display. red = 1, blue = other
              * lat: latitude of the marker
              * lng: longitude of the marker
+             * content: content of the tooltip
+             * title: title of the tooltip
+             *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title, displayPopup) {
+            createMarker(id, iconColour, lat, lng, content, title) {
                 //Check inputs and set position and icon
-                let icon = null
-                let coordinates = [lat, lng]
+                let icon = null;
+                let coordinates = [lat, lng];
                 if (iconColour === 1) {
                     icon = this.redMarker
                 } else {
@@ -186,11 +180,10 @@
                     icon: icon,
                     // content will have to be the url to router push to eg /profiles/profileID/activities/activityID
                     content: content,
-                    title: title,
-                    displayPopup: displayPopup,
-                    showTooltip: true
+                    title: title
                 })
             },
+
             /**
              * Removes a marker by id
              **/
@@ -203,7 +196,7 @@
                 //Loops over markers and removes a marker with the same id
                 for (marker of this.markers) {
                     if (marker.id == id) {
-                        this.markers.splice(i)
+                        this.markers.splice(i);
                         return true
                     }
                     i += 1
@@ -221,6 +214,9 @@
                 }, 100);
             },
 
+            /**
+             * If no markers are available, the map centers on the currently logged in users geo location
+             **/
             updateMapToUserGeoLocation() {
                 let _this = this;
                 navigator.geolocation.getCurrentPosition((pos) => {
@@ -232,6 +228,9 @@
                 });
             },
 
+            /**
+             * Focuses the map to the marker selected
+             **/
             markerSelected(marker) {
                 this.center = marker.position;
             }

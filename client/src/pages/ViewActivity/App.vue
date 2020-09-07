@@ -419,12 +419,12 @@ const App = {
       let map = this.$refs.mapPane;
       // checking if user has a location to put on the map
       if (userLocation.data !== null) {
-        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude, this.profileId, this.activityOwner.firstname, true);
+        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude, this.profileId, this.activityOwner.firstname);
       }
       // checking if activity has a location to put on the map
       if (this.location !== null) {
 
-        map.createMarker(2, 2, this.location.latitude, this.location.longitude,this.activity, this.activityName,true);
+        map.createMarker(2, 2, this.location.latitude, this.location.longitude,this.activity, this.activityName);
         map.setMapCenter(this.location.latitude, this.location.longitude);
       }
     }
