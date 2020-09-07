@@ -10,14 +10,23 @@
         name: "SearchLocationMapPane",
         components: {MapPane},
         props: {
+            /**
+             * The radius of the circle overlay measured in meters
+             */
             radius: {
                 type: Number,
                 default: null
             },
+            /**
+             * An array of [lat, lng] used for where to position and center the circle overlay
+             */
             center: {
                 type: Array,
                 default: null
             },
+            /**
+             * The activities to be displayed on the map
+             */
             activities: {
                 type: Array,
                 default: null
@@ -32,6 +41,7 @@
              * activities on page are changed (after each API call)
              */
             addMarkers(){
+                //TODO: change the content of the marker below to display the activities Start time and activity type instead of the description (Once u42-t3 is merged)
                 for (const activity of this.activities){
                     this.$refs.map.createMarker(activity.id, 2, activity.location.latitude, activity.location.longitude, activity.description, activity.name, true)
                 }
