@@ -86,6 +86,9 @@ public class SearchActivityController {
    *     activity can have in the results
    * @param offset how many activities to skip in the results
    * @param limit how many activities to return in the results
+   * @param longitude the longitude coordinate of the location of the activity
+   * @param latitude the latitude coordinate of the location of the activity
+   * @param radius the radius of the the circle centred at the location coordinate
    * @param session the logged in session
    * @return list of activities based on the search parameters
    */
@@ -131,7 +134,10 @@ public class SearchActivityController {
           @Max(value = 90, message = "latitude must be between -90 and 90 inclusive")
           @Min(value = -90, message = "latitude must be between -90 and 90 inclusive")
           Double latitude,
-      @RequestParam(name = "radius", required = false) Integer radius,
+      @RequestParam(name = "radius", required = false)
+          @Min(value = 1, message = "radius must be between 1 and 200 inclusive (in kilometers)")
+          @Max(value = 200, message = "radius must be between 1 and 200 inclusive (in kilometers)")
+          Integer radius,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -201,6 +207,16 @@ public class SearchActivityController {
       }
     }
 
+    if ((longitude != null && latitude == null) || (longitude == null && latitude != null)) {
+      return new ResponseEntity<>(
+          "Longitude and Latitude must both be provided for searching by location",
+          HttpStatus.BAD_REQUEST);
+    }
+
+    if (radius == null) {
+      radius = 1;
+    }
+
     if (offset == null) {
       offset = -1;
     }
@@ -255,8 +271,8 @@ public class SearchActivityController {
   }
 
   /**
-   * This endpoint is used for finding how many activities will return from the specifed parameters.
-   * Anyone that is logged in can use this endpoint.
+   * This endpoint is used for finding how many activities will return from the specified
+   * parameters. Anyone that is logged in can use this endpoint.
    *
    * @param activityName name to search for
    * @param activityTypes activity types to search for
@@ -269,6 +285,9 @@ public class SearchActivityController {
    *     any activity can have in the results
    * @param endDate if duration is selected, the endDate specified the latest ending date any
    *     activity can have in the results
+   * @param longitude the longitude coordinate of the location of the activity
+   * @param latitude the latitude coordinate of the location of the activity
+   * @param radius the radius of the the circle centred at the location coordinate
    * @param session the logged in session
    * @return number of activities that will return based on the search parameters.
    */
@@ -379,6 +398,16 @@ public class SearchActivityController {
                 59,
                 999);
       }
+    }
+
+    if ((longitude != null && latitude == null) || (longitude == null && latitude != null)) {
+      return new ResponseEntity<>(
+          "Longitude and Latitude must both be provided for searching by location",
+          HttpStatus.BAD_REQUEST);
+    }
+
+    if (radius == null) {
+      radius = 1;
     }
 
     Integer count =

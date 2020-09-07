@@ -702,6 +702,101 @@ public class SearchActivityControllerTest {
   }
 
   @Test
+  void getActivitiesByLocationNoRadiusUsesDefaultRadiusReturnOneResult() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=201")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=200")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=0")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=1")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusIsDecimalReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=1.2")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationWithLatitudeNoLongitudeReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?lat=0").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationWithLongitudeNoLatitudeReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?lon=0").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
   void getActivitiesByLocationInvalidLongitudeOverMaxReturnBadRequest() throws Exception {
     String response =
         mvc.perform(
