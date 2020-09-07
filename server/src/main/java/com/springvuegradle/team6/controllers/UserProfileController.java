@@ -130,8 +130,9 @@ public class UserProfileController {
       HttpSession session) {
 
     // Update Location
-    updateLocation(id, request.location, session);
-
+    if (request.location != null) {
+      updateLocation(id, request.location, session);
+    }
 
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
