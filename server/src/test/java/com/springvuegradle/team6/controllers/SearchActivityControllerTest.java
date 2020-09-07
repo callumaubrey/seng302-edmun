@@ -8,11 +8,13 @@ import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
 import io.cucumber.java.hu.Ha;
@@ -57,6 +59,8 @@ public class SearchActivityControllerTest {
   @Autowired private TagRepository tagRepository;
 
   @Autowired private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired private LocationRepository locationRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -135,6 +139,10 @@ public class SearchActivityControllerTest {
     Set<Tag> tags = new HashSet<>();
     tags.add(running);
     activity.setTags(tags);
+    // Kaikoura
+    Location location = new Location(-42.3994929, 173.6800878);
+    locationRepository.save(location);
+    activity.setLocation(location);
     activityRepository.save(activity);
 
     Activity activity1 = new Activity();
@@ -154,6 +162,10 @@ public class SearchActivityControllerTest {
     Set<Tag> tags1 = new HashSet<>();
     tags1.add(walking);
     activity1.setTags(tags1);
+    // 290 Blenheim Road
+    Location location1 = new Location(-43.5383822, 172.5843095);
+    locationRepository.save(location1);
+    activity1.setLocation(location1);
     activityRepository.save(activity1);
 
     Activity activity2 = new Activity();
@@ -173,6 +185,10 @@ public class SearchActivityControllerTest {
     Set<Tag> tags2 = new HashSet<>();
     tags2.add(running);
     activity2.setTags(tags2);
+    // 116 Blenheim Road
+    Location location2 = new Location(-43.53702, 172.6006563);
+    locationRepository.save(location2);
+    activity2.setLocation(location2);
     activityRepository.save(activity2);
 
     Activity activity3 = new Activity();
@@ -195,6 +211,10 @@ public class SearchActivityControllerTest {
     tags3.add(running);
     tags3.add(canterbury);
     activity3.setTags(tags3);
+    // 216 Blenheim Road
+    Location location3 = new Location(-43.5376602, 172.5912131);
+    locationRepository.save(location3);
+    activity3.setLocation(location3);
     activityRepository.save(activity3);
 
     Activity activity4 = new Activity();
@@ -318,11 +338,12 @@ public class SearchActivityControllerTest {
   }
 
   @Test
-  void getActivitiesByActivityTypesWithOrResultsSizeMatchesCountReturnFourActivities() throws Exception {
+  void getActivitiesByActivityTypesWithOrResultsSizeMatchesCountReturnFourActivities()
+      throws Exception {
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or")
-                .session(session))
+                MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or")
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -333,17 +354,15 @@ public class SearchActivityControllerTest {
 
     String response2 =
         mvc.perform(
-            MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
-                .session(session))
+                MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
     Integer count = Integer.parseInt(response2);
     org.junit.jupiter.api.Assertions.assertEquals(4, count);
-
   }
-
 
   @Test
   void getActivitiesWithOffsetReturnTwoResults() throws Exception {
@@ -379,8 +398,8 @@ public class SearchActivityControllerTest {
   void getActivitiesWithOffsetThreeReturnOneResults() throws Exception {
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or&offset=3")
-                .session(session))
+                MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or&offset=3")
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -390,13 +409,13 @@ public class SearchActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
   }
 
-
   @Test
   void getActivitiesWithLimitWithOffsetReturnTwoResultsCountReturnsFour() throws Exception {
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=or&limit=2&offset=1")
-                .session(session))
+                MockMvcRequestBuilders.get(
+                        "/activities?types=run%20walk&types-method=or&limit=2&offset=1")
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -407,8 +426,8 @@ public class SearchActivityControllerTest {
 
     String response2 =
         mvc.perform(
-            MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
-                .session(session))
+                MockMvcRequestBuilders.get("/activities/count?types=run%20walk&types-method=or")
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -416,8 +435,6 @@ public class SearchActivityControllerTest {
     Integer count = Integer.parseInt(response2);
     org.junit.jupiter.api.Assertions.assertEquals(4, count);
   }
-
-
 
   @Test
   void getActivitiesWithLimitWithOffsetReturnOneResults() throws Exception {
@@ -624,5 +641,369 @@ public class SearchActivityControllerTest {
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+  @Test
+  void getActivitiesByLocationReturnOneResult() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=1")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+  @Test
+  void getActivitiesByLocationReturnMultipleResults() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=172.5912131&lat=-43.5376602&radius=2")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+  }
+
+  @Test
+  void getActivitiesByLocationReturnMultipleResultsInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?lon=172.5912131&lat=-43.5376602&radius=2") // 216 Blenheim Road
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5376602, arr.getJSONObject(0).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5912131, arr.getJSONObject(0).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5383822, arr.getJSONObject(1).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5843095, arr.getJSONObject(1).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.53702, arr.getJSONObject(2).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.6006563, arr.getJSONObject(2).getJSONObject("location").getDouble("longitude"));
+  }
+
+  @Test
+  void getActivitiesByLocationNoRadiusUsesDefaultRadiusReturnOneResult() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=201")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=200")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=0")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=1")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidRadiusIsDecimalReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=173.6800878&lat=-42.3994929&radius=1.2")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationWithLatitudeNoLongitudeReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?lat=0").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationWithLongitudeNoLatitudeReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?lon=0").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=181&lat=0&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=-181&lat=0&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=180&lat=0&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLongitudeOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=-180&lat=0&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOverMaxReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=91&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=-91&radius=1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOnMaxReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=90&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByLocationInvalidLatitudeOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=0&lat=-90&radius=1").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByHashtagsInvalidMethodReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?hashtags=running%20walking&hashtags-method=not")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByActivityTypesInvalidMethodReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?types=run%20walk&types-method=not")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesOffsetUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&offset=-1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesOffsetOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&offset=0").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesLimitUnderMinReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&limit=-1").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesLimitOnMinReturnOk() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=run&limit=0").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByTimeInvalidReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?time=nothing").session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationStartDateInvalidFormatReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=20201010")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationEndDateInvalidFormatReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&end-date=20201010")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationStartDateInvalidDateReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&start-date=2020-20-10")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
+
+  @Test
+  void getActivitiesByDurationEndDateInvalidDateReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&end-date=2020-20-10")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
   }
 }
