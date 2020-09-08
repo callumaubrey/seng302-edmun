@@ -180,32 +180,6 @@
 
                   <b-row>
                     <b-col>
-                      <b-form-group
-                          description="Please enter the location you want to search for and select from the dropdown"
-                          id="location-input-group"
-                          invalid-feedback="The location of the activity must be chosen from the drop down"
-                          label="Location"
-                          label-for="location-input">
-                        <b-form-input :state="validateState('location')"
-                                      autocomplete="off"
-                                      class="form-control"
-                                      id="location-input"
-                                      name="location-input"
-                                      placeholder="Search for a city/county"
-                                      type="text"
-                                      v-model="$v.form.location.$model"
-                                      v-on:input="locationData=null"
-                                      v-on:keyup="getLocationData(form.location)">
-                        </b-form-input>
-                        <div :key="i.place_id" v-for="i in locations">
-                          <b-input :value=i.display_name class="clickable" type="button"
-                                   v-on:click="selectLocation(i)"></b-input>
-                        </div>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
-                  <b-row>
-                    <b-col>
                       <label>Select sharing</label>
                       <b-form-select :options="options" size="sm"
                                      v-model=selectedVisibility></b-form-select>
@@ -238,7 +212,12 @@
                 </b-form>
               </b-container>
             </b-tab>
-
+            <ActivityLocationTab ref="map"
+                                 :can-hide="false"
+                                 :user-lat="userLat"
+                                 :user-long="userLong"
+                                 @locationSelect="updateLocation"
+            ></ActivityLocationTab>
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
               <ActivityMetricsEditor ref="metric_editor"></ActivityMetricsEditor>
@@ -262,6 +241,7 @@ import AdminMixin from "../../mixins/AdminMixin";
 import api from '@/Api'
 import {store} from "../../store";
 import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
 export default {
   mixins: [validationMixin, locationMixin],
@@ -269,6 +249,7 @@ export default {
     ActivityMetricsEditor,
     NavBar,
     SearchTag,
+    ActivityLocationTab,
   },
   data() {
     return {
@@ -277,13 +258,14 @@ export default {
       isContinuous: 1,
       profileId: null,
       activityTypes: [],
+      userLat: null,
+      userLong: null,
       form: {
         name: null,
         description: null,
         selectedActivityType: 0,
         selectedActivityTypes: [],
         date: null,
-        location: null
       },
       durationForm: {
         startDate: null,
@@ -324,22 +306,6 @@ export default {
         }
       },
       date: {},
-      location: {
-        locationValidate() {
-          if (this.locations.length == 0 || this.locations == null) {
-            if (this.locationData != null && (this.form.location != null || this.form.location
-                != "")) {
-              return true;
-            } else if (this.locationData == null && (this.form.location == null
-                || this.form.location == "")) {
-              return true;
-            } else {
-              return false;
-            }
-          }
-          return false;
-        }
-      }
     },
     durationForm: {
       startDate: {
@@ -455,24 +421,6 @@ export default {
 
       }
     },
-    selectLocation(location) {
-      this.form.location = location.display_name;
-      this.locations = [];
-
-      if (location !== null) {
-        let data = {
-          latitude: null,
-          longitude: null,
-        };
-        if (location.latitude) {
-          data.latitude = parseFloat(location.latitude)
-        }
-        if (location.longitude) {
-          data.longitude = parseFloat(location.longitude)
-        }
-        this.locationData = data;
-      }
-    },
     onSubmit() {
       this.$v.form.$touch();
       let currentObj = this;
@@ -504,7 +452,7 @@ export default {
           currentObj.activityErrorMessage = "";
           currentObj.activityUpdateMessage = "'" + currentObj.form.name
               + "' was successfully added to your activities";
-          store.newNotification('Activity created successfully', 'success', 4)
+          store.newNotification('Activity created successfully', 'success', 4);
           currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
         })
         .catch(function (error) {
@@ -590,7 +538,7 @@ export default {
       return [startDateISO, endDateISO];
 
     },
-    getUserId: function () {
+    getUserId: async function () {
       let currentObj = this;
       api.getProfileId()
       .then(function (response) {
@@ -607,6 +555,29 @@ export default {
       })
       .catch(function () {
       });
+    },
+    /**
+     * Gets the users location details, if any, for the map tab marker
+     * @returns {Promise<void>}
+     */
+    getUserLocation: async function () {
+      let currentObj = this;
+      await api.getLocation(this.profileId)
+        .then(function (response) {
+          currentObj.userLat = response.data.latitude;
+          currentObj.userLong = response.data.longitude;
+        }).catch(function () {
+      });
+    },
+    /**
+     * sets the location data for the activity from the coords emitted
+     * @param coords emitted from map component
+     */
+    updateLocation: function (coords) {
+      this.locationData = {
+        latitude: coords.lat,
+        longitude: coords.lng
+      };
     },
     goToActivities() {
       const profileId = this.$route.params.id;
@@ -634,7 +605,8 @@ export default {
   mounted: async function () {
     await this.checkAuthorized();
     this.getActivities();
-    this.getUserId();
+    await this.getUserId();
+    await this.getUserLocation();
     this.getUserName();
   }
 }
