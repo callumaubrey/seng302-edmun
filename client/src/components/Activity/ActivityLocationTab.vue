@@ -11,13 +11,13 @@
                     <!-- Location Autocomplete In Map Header -->
                     <template v-slot:header>
                         <b-row>
-                            <b-col cols="11">
+                            <b-col cols="10">
                                 <LocationAutocomplete ref="location_input"
                                                       :priority-geo-location="priorityGeoLocation"
                                                       :given-location="address"
                                                       @emitLocation="textLocationSelected"></LocationAutocomplete>
                             </b-col>
-                            <b-col cols="1">
+                            <b-col cols="2">
                                 <b-button block variant="primary" :disabled="!markerOnMap"
                                           @click="clearLocation">Clear</b-button>
                             </b-col>
@@ -133,8 +133,8 @@
                     this.$refs.map.createMarker(1, 0, this.originalLat, this.originalLong);
                     this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
                 }
+                this.$refs.location_input.clearLocation();
             },
-
             /**
              * On Map getting users geo location update Location Autocomplete
              * for priority geo location searching.
