@@ -2,6 +2,11 @@ package com.springvuegradle.team6.models.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Latitude;
+import org.hibernate.search.annotations.Longitude;
+import org.hibernate.search.annotations.Spatial;
+import org.hibernate.search.spatial.Coordinates;
 
 /**
  * Location is a base class for defining a location in the world. It has three members: locationID:
@@ -10,15 +15,18 @@ import java.io.Serializable;
  * used to define a users location but it can be extended to be used for instance for vertices in
  * event routes.
  */
+@Indexed
+@Spatial
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Location implements Serializable {
+public class Location implements Serializable, Coordinates {
 
   @Id @GeneratedValue private long locationID = 0;
 
-  private double latitude = 0;
-  private double longitude = 0;
-  private String name = "";
+  @Latitude private Double latitude = 0d;
+  @Longitude private Double longitude = 0d;
+
+  @Transient private String name;
 
   public Location() {}
 
@@ -33,11 +41,11 @@ public class Location implements Serializable {
     setLongitude(longitude);
   }
 
-  public double getLatitude() {
+  public Double getLatitude() {
     return latitude;
   }
 
-  public double getLongitude() {
+  public Double getLongitude() {
     return longitude;
   }
 

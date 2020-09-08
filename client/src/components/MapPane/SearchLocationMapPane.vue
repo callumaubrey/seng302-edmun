@@ -1,0 +1,75 @@
+<template>
+    <div>
+        <map-pane ref="map" :can-hide="false" :displayCircle="true" @onMapClick="mapClicked"></map-pane>
+    </div>
+</template>
+
+<script>
+    import MapPane from "./MapPane";
+    export default {
+        name: "SearchLocationMapPane",
+        components: {MapPane},
+        props: {
+            /**
+             * The radius of the circle overlay measured in meters
+             */
+            radius: {
+                type: Number,
+                default: null
+            },
+            /**
+             * An array of [lat, lng] used for where to position and center the circle overlay
+             */
+            center: {
+                type: Array,
+                default: null
+            },
+            /**
+             * The activities to be displayed on the map
+             */
+            activities: {
+                type: Array,
+                default: null
+            }
+        },
+        data: function () {
+            return {
+            }
+        },
+        methods: {
+            /**Adds markers to the map to be called whenever
+             * activities on page are changed (after each API call)
+             */
+            addMarkers(){
+                //TODO: change the content of the marker below to display the activities Start time and activity type instead of the description (Once u42-t3 is merged)
+                for (const activity of this.activities){
+                    this.$refs.map.createMarker(activity.id, 2, activity.location.latitude, activity.location.longitude, activity.description, activity.name, true)
+                }
+            },
+            /**Updates the circle overlay, center(lat, long) and radius
+             * To be called whenever the radius slider changes
+             */
+            updateCircle(){
+                this.$refs.map.updateCircle(this.center[0], this.center[1], this.radius)
+            },
+            /**
+             * When the map is clicked the center of the circle is changed and the circle is updated
+             * and then the new center is emitted for use in activity search query
+             * @param event the map click event
+             */
+            mapClicked(event) {
+                this.center = [event.latlng.lat, event.latlng.lng]
+                this.updateCircle()
+                this.$emit('locationChange', this.center)
+            }
+        },
+        mounted() {
+            this.updateCircle()
+            this.addMarkers()
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>
