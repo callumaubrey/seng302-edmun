@@ -233,6 +233,7 @@
              **/
             markerSelected(marker) {
                 this.center = marker.position;
+                this.$emit('markerSelected', marker.content.id);
             }
         },
 
