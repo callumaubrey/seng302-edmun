@@ -18,6 +18,7 @@ public class Location implements Serializable {
 
   private double latitude = 0;
   private double longitude = 0;
+  private String name = "";
 
   public Location() {}
 
@@ -46,5 +47,13 @@ public class Location implements Serializable {
 
   public void setLongitude(double longitude) {
     this.longitude = longitude;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }
