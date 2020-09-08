@@ -40,6 +40,11 @@
                                         :url="url"
                                         :attribution="attribution"
                                 />
+                                <l-circle v-if="displayCircle"
+                                        :lat-lng="circle.center"
+                                        :radius="circle.radius"
+                                        :color="circle.color"
+                                />
                                 <l-marker v-for="marker in markers"
                                           :key="marker.id"
                                           :visible="marker.visible"
@@ -78,7 +83,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -86,7 +91,8 @@
             LMap,
             LTileLayer,
             LMarker,
-            LTooltip
+            LTooltip,
+            LCircle
         },
         props: {
             canHide: {
@@ -96,6 +102,10 @@
             title: {
                 type: String,
                 default: "Map"
+            },
+            displayCircle: {
+                type: Boolean,
+                default: false
             }
         },
         data() {
@@ -127,7 +137,11 @@
                 redMarker: redMarker,
 
                 userGeoLocation: null,
-                showTooltip: true
+                circle: {
+                    center: [-43.530629, 172.625955],
+                    radius: 4500,
+                    color: '#3388ff',
+                }
             };
         },
         methods: {
@@ -136,6 +150,11 @@
              **/
             zoomUpdate(zoom) {
                 this.zoom = zoom
+            },
+            updateCircle(lat, lng, radius) {
+                this.circle.center = [lat, lng];
+                this.circle.radius = radius;
+                this.displayCircle = true;
             },
             /**
              * Updates the center of the map
