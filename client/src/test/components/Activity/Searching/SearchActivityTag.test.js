@@ -1,7 +1,7 @@
 import {createLocalVue, mount} from '@vue/test-utils';
 import Component from '@/components/Activity/SearchActivityTag.vue';
 import {BootstrapVue} from "bootstrap-vue";
-import api from '@/../../../../Api'
+import api from '@/Api.js'
 
 const localVue = createLocalVue();
 localVue.use(BootstrapVue);
