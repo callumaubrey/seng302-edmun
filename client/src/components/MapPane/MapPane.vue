@@ -162,14 +162,12 @@
             centerUpdate(center) {
                 this.center = center
             },
-
             /**
              * Updates the center of the map using lat and lng
              **/
             setMapCenter(lat, lng) {
                 this.centerUpdate(L.latLng(lat, lng));
             },
-
             /**
              * Creates a marker on the map.
              * id: The way the marker is deleted
@@ -197,12 +195,10 @@
                     position: coordinates,
                     visible: true,
                     icon: icon,
-                    // content will have to be the url to router push to eg /profiles/profileID/activities/activityID
                     content: content,
                     title: title
                 })
             },
-
             /**
              * Removes a marker by id
              **/
@@ -210,8 +206,8 @@
                 if (this.markers.length < 1) {
                     return false;
                 }
-                var i = 0;
-                var marker;
+                let i = 0;
+                let marker;
                 //Loops over markers and removes a marker with the same id
                 for (marker of this.markers) {
                     if (marker.id == id) {
@@ -232,7 +228,6 @@
                     map.mapObject.invalidateSize();
                 }, 100);
             },
-
             /**
              * If no markers are available, the map centers on the currently logged in users geo location
              **/
@@ -246,7 +241,6 @@
                     _this.$emit('userLocationUpdate', _this.userGeoLocation);
                 });
             },
-
             /**
              * Focuses the map to the marker selected
              **/
@@ -255,7 +249,6 @@
                 this.$emit('markerSelected', marker.content.id);
             }
         },
-
         /**
          * Refresh the map everytime the map is rendered by vue.
          */
@@ -266,7 +259,6 @@
                 this.refreshMap();
             })
         },
-
         mounted() {
             this.updateMapToUserGeoLocation();
         }

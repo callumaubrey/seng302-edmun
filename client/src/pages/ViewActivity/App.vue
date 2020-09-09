@@ -200,7 +200,6 @@ const App = {
   },
   data: function () {
     return {
-      //isActivityOwner: false,
       activity: null,
       userData: "",
       isLoggedIn: false,
