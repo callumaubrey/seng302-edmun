@@ -11,7 +11,6 @@
                     </h4>
                 </b-col>
             </b-row>
-
             <!-- Map and slots -->
             <b-row>
                 <b-col>
@@ -19,10 +18,10 @@
                         <!-- Header Slot -->
                         <b-row>
                             <b-col>
+
                                 <slot name="header"></slot>
                             </b-col>
                         </b-row>
-
                         <!-- Map -->
                         <hr v-if="canHide">
                         <div style="height: 40em; width: 100%" class="mt-2">
@@ -53,21 +52,18 @@
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
                                 >
-                                    <!-- Popups -->
-                                    <l-popup id="leaflet-tooltip"
-                                               :options='{interactive: true, offset: [2, -26], direction: "top"}'
-                                               v-if="marker.displayPopup"
+                                    <l-tooltip id="popUp"
+                                               :options='{ interactive: true, offset: [2, -36], direction: "top"}'
                                     >
-
-                                        <!-- Popup Content -->
                                         <b-container style="max-height: 6.5em; overflow: hidden">
                                             <b>
                                                 {{marker.title}}
                                             </b>
                                             <hr style="margin: 0.25em">
-                                            <label>{{marker.content}}</label>
+                                            <span>{{marker.content.activityTypes}} <br></span>
+                                            <span>{{marker.content.startTime}}</span>
                                         </b-container>
-                                    </l-popup>
+                                    </l-tooltip>
                                 </l-marker>
                             </l-map>
                         </div>
@@ -87,7 +83,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LPopup, LCircle} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -95,7 +91,7 @@
             LMap,
             LTileLayer,
             LMarker,
-            LPopup,
+            LTooltip,
             LCircle
         },
         props: {
@@ -166,26 +162,27 @@
             centerUpdate(center) {
                 this.center = center
             },
-
             /**
              * Updates the center of the map using lat and lng
              **/
             setMapCenter(lat, lng) {
                 this.centerUpdate(L.latLng(lat, lng));
             },
-
             /**
              * Creates a marker on the map.
              * id: The way the marker is deleted
              * iconColour: used as a key for what icon to display. red = 1, blue = other
              * lat: latitude of the marker
              * lng: longitude of the marker
+             * content: content of the tooltip
+             * title: title of the tooltip
+             *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title, displayPopup) {
+            createMarker(id, iconColour, lat, lng, content, title) {
                 //Check inputs and set position and icon
-                let icon = null
-                let coordinates = [lat, lng]
+                let icon = null;
+                let coordinates = [lat, lng];
                 if (iconColour === 1) {
                     icon = this.redMarker
                 } else {
@@ -199,8 +196,7 @@
                     visible: true,
                     icon: icon,
                     content: content,
-                    title: title,
-                    displayPopup: displayPopup
+                    title: title
                 })
             },
             /**
@@ -210,12 +206,12 @@
                 if (this.markers.length < 1) {
                     return false;
                 }
-                var i = 0;
-                var marker;
+                let i = 0;
+                let marker;
                 //Loops over markers and removes a marker with the same id
                 for (marker of this.markers) {
                     if (marker.id == id) {
-                        this.markers.splice(i)
+                        this.markers.splice(i);
                         return true
                     }
                     i += 1
@@ -232,7 +228,9 @@
                     map.mapObject.invalidateSize();
                 }, 100);
             },
-
+            /**
+             * If no markers are available, the map centers on the currently logged in users geo location
+             **/
             updateMapToUserGeoLocation() {
                 let _this = this;
                 navigator.geolocation.getCurrentPosition((pos) => {
@@ -243,12 +241,14 @@
                     _this.$emit('userLocationUpdate', _this.userGeoLocation);
                 });
             },
-
+            /**
+             * Focuses the map to the marker selected
+             **/
             markerSelected(marker) {
-                this.center = marker.position
+                this.center = marker.position;
+                this.$emit('markerSelected', marker.content.id);
             }
         },
-
         /**
          * Refresh the map everytime the map is rendered by vue.
          */
@@ -259,7 +259,6 @@
                 this.refreshMap();
             })
         },
-
         mounted() {
             this.updateMapToUserGeoLocation();
         }
