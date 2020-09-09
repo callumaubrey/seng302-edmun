@@ -98,51 +98,55 @@
 
 <script>
 
-  import NavBar from "../../components/NavBar";
-  import SearchActivityList from "../../components/Activity/SearchActivityList";
-  import Api from "../../Api";
-  import SearchActivityApi from "../../scripts/Activity/activitySearch";
-  import ActivityNameSearch from "../../components/ActivityNameSearch";
-  import SearchActivityTag from "../../components/Activity/SearchActivityTag";
-  import ActivityTypeSearchBox from "../../components/ActivityTypeSearchBox";
-  import ActivityContinuousDurationSearchBox from "../../components/ActivityContinuousDurationSearchBox";
+import NavBar from "../../components/NavBar";
+import SearchActivityList from "../../components/Activity/SearchActivityList";
+import Api from "../../Api";
+import SearchActivityApi from "../../scripts/Activity/activitySearch";
+import ActivityNameSearch from "../../components/ActivityNameSearch";
+import SearchActivityTag from "../../components/Activity/SearchActivityTag";
+import ActivityTypeSearchBox from "../../components/ActivityTypeSearchBox";
+import ActivityContinuousDurationSearchBox
+  from "../../components/ActivityContinuousDurationSearchBox";
 
-
-  export default {
-    name: "App.vue",
-    components: {
-      ActivityContinuousDurationSearchBox,
-      SearchActivityTag, ActivityNameSearch, NavBar, SearchActivityList, ActivityTypeSearchBox},
-    data: function() {
-      return {
-        isLoggedIn: false,
-        userName: "",
-
-        hasSearched: false,
-        showAdvancedSettings: false,
-        search_data: {
-          search_query: '',
-
-          search_mode_filter: 'all',
-          duration_limit: {
-            start_date: null,
-            end_date: null
-          },
-          hashtags: {
-            values: [],
-            method: "AND"
-          },
-          types: {
-            values: [],
-            method: "AND"
-          },
-
-          pagination: {
-            offset: 1,
-            limit: 10,
-            count: 0
-          }
+export default {
+  name: "App.vue",
+  components: {
+    ActivityContinuousDurationSearchBox,
+    SearchActivityTag, ActivityNameSearch, NavBar, SearchActivityList, ActivityTypeSearchBox
+  },
+  data: function () {
+    return {
+      isLoggedIn: false,
+      userName: "",
+      hasSearched: false,
+      showAdvancedSettings: false,
+      search_data: {
+        search_query: '',
+        search_mode_filter: 'all',
+        duration_limit: {
+          start_date: null,
+          end_date: null
         },
+        hashtags: {
+            values: [],
+            method: "AND"
+        },
+        types: {
+          values: [],
+          method: "AND"
+        },
+        pagination: {
+          offset: 1,
+          limit: 10,
+          count: 0
+        },
+        // marker location
+        location: {
+          longitude: null,
+          latitude: null,
+          radius: null
+        }
+      },
         activity_data: []
       }
     },
@@ -172,15 +176,18 @@
 
         // Get Activities
         Api.getActivitiesBySearch(this.search_data.search_query,
-                                  this.search_data.types.values,
-                                  this.search_data.types.method === "AND",
-                                  this.search_data.hashtags.values,
-                                  this.search_data.hashtags.method === "AND",
-                                  this.search_data.search_mode_filter,
-                                  this.search_data.duration_limit.start_date,
-                                  this.search_data.duration_limit.end_date,
-                                  row_offset,
-                                  row_limit).then((response) => {
+            this.search_data.types.values,
+            this.search_data.types.method === "AND",
+            this.search_data.hashtags.values,
+            this.search_data.hashtags.method === "AND",
+            this.search_data.search_mode_filter,
+            this.search_data.duration_limit.start_date,
+            this.search_data.duration_limit.end_date,
+            row_offset,
+            row_limit,
+            this.search_data.location.longitude,
+            this.search_data.location.latitude,
+            this.search_data.location.radius).then((response) => {
           this.activity_data = response.data.results;
         }).catch((error) => {
           console.log(error);
@@ -188,13 +195,16 @@
 
         // Get Activity count
         Api.getActivityCountBySearch(this.search_data.search_query,
-                this.search_data.types.values,
-                this.search_data.types.method === "AND",
-                this.search_data.hashtags.values,
-                this.search_data.hashtags.method === "AND",
-                this.search_data.search_mode_filter,
-                this.search_data.duration_limit.start_date,
-                this.search_data.duration_limit.end_date).then((response) => {
+            this.search_data.types.values,
+            this.search_data.types.method === "AND",
+            this.search_data.hashtags.values,
+            this.search_data.hashtags.method === "AND",
+            this.search_data.search_mode_filter,
+            this.search_data.duration_limit.start_date,
+            this.search_data.duration_limit.end_date,
+            this.search_data.location.longitude,
+            this.search_data.location.latitude,
+            this.search_data.location.radius).then((response) => {
           this.search_data.pagination.count = response.data / 2;
         }).catch((error) => {
           console.log(error);
@@ -202,15 +212,18 @@
 
         // Set URL to the search query
         let query = SearchActivityApi.getSearchActivitiesQueryParams(this.search_data.search_query,
-                this.search_data.types.values,
-                this.search_data.types.method === "AND",
-                this.search_data.hashtags.values,
-                this.search_data.hashtags.method === "AND",
-                this.search_data.search_mode_filter,
-                this.search_data.duration_limit.start_date,
-                this.search_data.duration_limit.end_date,
-                this.search_data.pagination.offset,
-                this.search_data.pagination.limit);
+            this.search_data.types.values,
+            this.search_data.types.method === "AND",
+            this.search_data.hashtags.values,
+            this.search_data.hashtags.method === "AND",
+            this.search_data.search_mode_filter,
+            this.search_data.duration_limit.start_date,
+            this.search_data.duration_limit.end_date,
+            this.search_data.pagination.offset,
+            this.search_data.pagination.limit,
+            this.search_data.location.longitude,
+            this.search_data.location.latitude,
+            this.search_data.location.radius);
 
         history.pushState(
                 {},
@@ -235,19 +248,62 @@
       loadQueryIntoFields() {
         let params = SearchActivityApi.getSearchActivtyParamsFromQueryURL(this.$route.query);
 
-        if(params.search_query !== undefined) this.search_data.search_query = params.search_query;
-        if(params.types !== undefined) this.search_data.types.values = params.types;
-        if(params.types_method_and !== undefined) this.search_data.types.method = params.types_method_and ? "AND" : "OR";
-        if(params.hashtags !== undefined) this.search_data.hashtags.values = params.hashtags;
-        if(params.hashtags_method_and !== undefined) this.search_data.hashtags.method = params.hashtags_method_and ? "AND" : "OR";
-        if(params.activity_mode_filter !== undefined) this.search_data.search_mode_filter = params.activity_mode_filter;
-        if(params.start_date !== undefined) this.search_data.duration_limit.start_date = params.start_date;
-        if(params.end_date !== undefined) this.search_data.duration_limit.end_date = params.end_date;
-        if(params.pagination_offset !== undefined) this.search_data.pagination.offset = params.pagination_offset;
-        if(params.pagination_limit !== undefined) this.search_data.pagination.limit = params.pagination_limit;
+        if (params.search_query !== undefined) {
+          this.search_data.search_query = params.search_query;
+        }
+        if (params.types !== undefined) {
+          this.search_data.types.values = params.types;
+        }
+        if (params.types_method_and
+            !== undefined) {
+          this.search_data.types.method = params.types_method_and ? "AND" : "OR";
+        }
+        if (params.hashtags !== undefined) {
+          this.search_data.hashtags.values = params.hashtags;
+        }
+        if (params.hashtags_method_and
+            !== undefined) {
+          this.search_data.hashtags.method = params.hashtags_method_and ? "AND"
+              : "OR";
+        }
+        if (params.activity_mode_filter
+            !== undefined) {
+          this.search_data.search_mode_filter = params.activity_mode_filter;
+        }
+        if (params.start_date
+            !== undefined) {
+          this.search_data.duration_limit.start_date = params.start_date;
+        }
+        if (params.end_date
+            !== undefined) {
+          this.search_data.duration_limit.end_date = params.end_date;
+        }
+        if (params.pagination_offset
+            !== undefined) {
+          this.search_data.pagination.offset = params.pagination_offset;
+        }
+        if (params.pagination_limit
+            !== undefined) {
+          this.search_data.pagination.limit = params.pagination_limit;
+        }
+        if (params.lon !== undefined) {
+          this.search_data.location.longitude = params.longitude;
+        }
+        if (params.lat !== undefined) {
+          this.search_data.location.latitude = params.latitude;
+        }
+        if (params.radius !== undefined) {
+          this.search_data.location.radius = params.radius
+        }
 
-        if(this.search_data.search_mode_filter === "continuous") this.$refs.ActivityModeInput.toggleContinuousStateButton();
-        if(this.search_data.search_mode_filter === "duration") this.$refs.ActivityModeInput.toggleDurationStateButton();
+        if (this.search_data.search_mode_filter
+            === "continuous") {
+          this.$refs.ActivityModeInput.toggleContinuousStateButton();
+        }
+        if (this.search_data.search_mode_filter
+            === "duration") {
+          this.$refs.ActivityModeInput.toggleDurationStateButton();
+        }
       },
 
       updateHashTagValues(values) {
