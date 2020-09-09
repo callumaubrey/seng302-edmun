@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Service
 public class GoogleAPIService {
     // API key is automatically set
     @Value("#{environment.GOOGLE_API_KEY}")
