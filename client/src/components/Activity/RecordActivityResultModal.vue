@@ -54,20 +54,20 @@
 </template>
 
 <script>
-  import RecordActivityResultForm from "@/components/Activity/RecordActivityResultForm";
-  import api from "@/Api";
+import RecordActivityResultForm from "@/components/Activity/RecordActivityResultForm";
+import api from "@/Api";
 
-  export default {
-    name: "RecordActivityResultModal",
-    components: {
-      RecordActivityResultForm
-    },
-    props: ['profileId', 'activityId', 'loggedInId'],
-    data() {
-      return {
-        createResultForm: {
-          metric_id: null,
-          user_id: null,
+export default {
+  name: "RecordActivityResultModal",
+  components: {
+    RecordActivityResultForm
+  },
+  props: ['profileId', 'activityId', 'loggedInId'],
+  data() {
+    return {
+      createResultForm: {
+        metric_id: null,
+        user_id: null,
           special_metric: null,
           result: null,
           result_finish: null,
@@ -89,27 +89,26 @@
        * Calls GET all activity results of user endpoint
        */
       getActivityResultsForUser() {
-        api.getUserActivityResults(this.profileId, this.activityId).then((res) => {
-          let result;
-          for (result of res.data) {
-            result.title = this.metricDict[result.metric_id].title;
-            result.description = this.metricDict[result.metric_id].description;
-            result.isEditMode = false
-            if (result.type === 'TimeDuration') {
-              result.result = this.convertToReadableDurationFormat(result.result)
+        for (let metricId of Object.keys(this.metricDict)) {
+          api.getUserActivityResults(this.loggedInId, this.activityId, metricId).then((res) => {
+            let result;
+            for (result of res.data) {
+              result.title = this.metricDict[result.metric_id].title;
+              result.description = this.metricDict[result.metric_id].description;
+              result.isEditMode = false;
+              if (result.type === 'TimeDuration') {
+                result.result = this.convertToReadableDurationFormat(result.result)
+              }
+              this.resultList.push(result)
             }
-            this.resultList.push(result)
-          }
-        })
-        .catch(() => {
-          this.userHasNoResultsMessage = "User has no activity results";
-        })
+          })
+        }
       },
       /**
        * Calls GET all metrics of activity endpoint
        */
       getAllMetricsForActivity() {
-        api.getActivityMetrics(this.loggedInId, this.activityId).then((res) => {
+        api.getActivityMetrics(this.profileId, this.activityId).then((res) => {
           let metric;
           for (metric of res.data) {
             this.metricDict[metric.id] = metric;
@@ -146,6 +145,7 @@
         } else if (val === 'create') {
           this.makeToast("Activity result is successfully created", 'success')
         }
+        this.$root.$emit('table-update')
       },
       /**
        * Makes a toast notification

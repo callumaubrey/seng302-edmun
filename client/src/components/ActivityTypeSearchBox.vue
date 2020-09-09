@@ -63,9 +63,9 @@
         <label style="margin-right:10px;">Search Method: </label>
         <b-form-radio-group id="activityTypesSearchMethods" v-model="method"
                             aria-describedby="activityTypesSearchMethodsHelp" @change=emitMethod>
-          <b-form-radio id="radio-and" class="searchByRadio" value="AND">And
+          <b-form-radio id="activity-type-radio-and" class="searchByRadio" value="AND">And
           </b-form-radio>
-          <b-form-radio id="radio-or" class="searchByRadio" value="OR">Or
+          <b-form-radio id="activity-type-radio-or" class="searchByRadio" value="OR">Or
           </b-form-radio>
         </b-form-radio-group>
       </b-form>

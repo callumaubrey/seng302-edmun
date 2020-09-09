@@ -34,6 +34,7 @@ import static java.lang.Integer.parseInt;
 @RestController
 @RequestMapping("")
 public class FollowController {
+
   private final ProfileRepository profileRepository;
   private final ActivityRepository activityRepository;
   private final ActivityRoleRepository activityRoleRepository;
@@ -43,8 +44,8 @@ public class FollowController {
   /**
    * Constructor for FollowController class which gets the profile, email and role repository
    *
-   * @param profileRepository the profile repository
-   * @param activityRepository the activity repository
+   * @param profileRepository             the profile repository
+   * @param activityRepository            the activity repository
    * @param subscriptionHistoryRepository the subscriptionHistory repository
    */
   FollowController(
@@ -64,9 +65,9 @@ public class FollowController {
    * The user follows/subscribes to the activity. Creates new subscription history row between user
    * and activity and also adds a new activity role for user as a follower
    *
-   * @param profileId id of the user subscribing
+   * @param profileId  id of the user subscribing
    * @param activityId id of the activity being subscribed to
-   * @param session current http session
+   * @param session    current http session
    * @return Response entity if successful will be ok (2xx) or (4xx) if unsuccessful
    */
   @PostMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
@@ -113,9 +114,9 @@ public class FollowController {
   /**
    * Checks if the user is subscribed to the activity
    *
-   * @param profileId id of the user that is unsubscribing
+   * @param profileId  id of the user that is unsubscribing
    * @param activityId id of the activity being unsubscribed from
-   * @param session current http session
+   * @param session    current http session
    * @return Boolean true if user is subscribed, false if the user is unsubscribed
    */
   @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
@@ -143,9 +144,9 @@ public class FollowController {
    * activity was restricted, and if the activity was public then the role is simply removed as all
    * users have access to a public activity.
    *
-   * @param profileId id of the user that is unsubscribing
+   * @param profileId  id of the user that is unsubscribing
    * @param activityId id of the activity being unsubscribed from
-   * @param session current http session
+   * @param session    current http session
    * @return Response entity if successfull will be ok (2xx) or (4xx) if unsuccessful
    */
   @DeleteMapping("profiles/{profileId}/subscriptions/activities/{activityId}")
@@ -203,10 +204,10 @@ public class FollowController {
   /**
    * Checks the user is logged in, that the user exists and is the author of the activity
    *
-   * @param profileId the profileId to check
+   * @param profileId  the profileId to check
    * @param activityId the activityId to check
-   * @param email the email String to check against a users profile
-   * @param session the HttpSession
+   * @param email      the email String to check against a users profile
+   * @param session    the HttpSession
    * @return null if everything is OK. ResponseEntity if not
    */
   private ResponseEntity<String> checkUserIsAuthorAndExists(
@@ -243,10 +244,10 @@ public class FollowController {
    * user does not have a role and they are given a role higher than access then it also subscribes
    * them to the activity.
    *
-   * @param profileId id of creator of activity
-   * @param activityId if of activity
+   * @param profileId               id of creator of activity
+   * @param activityId              if of activity
    * @param editSubscriptionRequest information to edit subscription
-   * @param session the session of the active user
+   * @param session                 the session of the active user
    * @return response entity, 200 if successful.
    */
   @PutMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
@@ -334,10 +335,10 @@ public class FollowController {
    * To delete the activity role of the email in the request from the activity and deletes their
    * subscription
    *
-   * @param profileId the user who's subscription and role that is changing
+   * @param profileId  the user who's subscription and role that is changing
    * @param activityId the id of the activity
-   * @param request the request with the email to delete
-   * @param session the session of the active user
+   * @param request    the request with the email to delete
+   * @param session    the session of the active user
    * @return the response, 200 if successfully deleted.
    */
   @DeleteMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
@@ -390,10 +391,10 @@ public class FollowController {
   /**
    * This endpoint gets the role of the user associated to the email in the body.
    *
-   * @param profileId owner of the activity
+   * @param profileId  owner of the activity
    * @param activityId activity
-   * @param request the request with the email of the user we want to check
-   * @param session session
+   * @param request    the request with the email of the user we want to check
+   * @param session    session
    * @return
    */
   @GetMapping("/profiles/{profileId}/activities/{activityId}/subscriber")
@@ -440,7 +441,7 @@ public class FollowController {
    * have a role in the activity will be granted access
    *
    * @param activityId id of the activity
-   * @param session current http session
+   * @param session    current http session
    * @return Lists with users associated to a specific role
    */
   @GetMapping("activities/{activityId}/members")
@@ -520,7 +521,7 @@ public class FollowController {
    * Retrieves count of all types of members accociated with an activity
    *
    * @param activityId id of the activity
-   * @param session current http session
+   * @param session    current http session
    * @return Count of users accociated with on an activity
    */
   @GetMapping("activities/{activityId}/membercount")
@@ -552,32 +553,40 @@ public class FollowController {
   }
 
   /**
-   * Checks if users is a participant of an activity
-   * @param profileId user in activity
+   * Checks if users is a participant of an activity. There are three states which need
+   *
+   * @param profileId  user in activity
    * @param activityId activity user may participate in
-   * @param session current http session
+   * @param session    current http session
    * @return boolean if user is a participant
    */
   @GetMapping("profiles/{profileId}/subscriptions/activities/{activityId}/participate")
   public ResponseEntity<String> getIsUserParticipantInActivity(
-          @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
+      @PathVariable int profileId, @PathVariable int activityId, HttpSession session) {
     // Check if user has access to view activity info
-    ResponseEntity<String> authorisedResponse = UserSecurityService.checkActivityViewingPermission(activityId, session,
+    ResponseEntity<String> authorisedResponse = UserSecurityService
+        .checkActivityViewingPermission(activityId, session,
             activityRepository, activityRoleRepository);
-    if(authorisedResponse != null) {
+    if (authorisedResponse != null) {
       return authorisedResponse;
     }
 
     // Check if user is participant
     JSONObject response = new JSONObject();
 
-    ActivityRole userRole = activityRoleRepository.findByProfile_IdAndActivity_Id(profileId, activityId);
-    if (userRole != null && userRole.getActivityRoleType() == ActivityRoleType.Participant) {
-      response.appendField("participant", true);
-    } else {
-      response.appendField("participant", false);
-    }
+    ActivityRole userRole = activityRoleRepository
+        .findByProfile_IdAndActivity_Id(profileId, activityId);
 
+    if (userRole != null && userRole.getActivityRoleType() == ActivityRoleType.Participant) {
+      response.appendField("participant", "true");
+      return new ResponseEntity(response, HttpStatus.OK);
+    }
+    if (userRole != null && (userRole.getActivityRoleType() == ActivityRoleType.Creator
+        || userRole.getActivityRoleType() == ActivityRoleType.Organiser)) {
+      response.appendField("participant", "null");
+      return new ResponseEntity(response, HttpStatus.OK);
+    }
+    response.appendField("participant", "false");
     return new ResponseEntity(response, HttpStatus.OK);
   }
 

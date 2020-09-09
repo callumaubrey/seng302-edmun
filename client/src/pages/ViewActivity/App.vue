@@ -27,7 +27,7 @@
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"></FollowerSummary>
         <b-row align-h="center">
-          <ShareActivity :modal="parseInt(profileId) === parseInt(activityOwner.id)"
+          <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
                          :visibility="visibility"
                          :profileId="profileId"
                          :activityId="$route.params.activityId"
@@ -135,8 +135,20 @@
                 </b-card>
               </b-col>
             </b-row>
-
-            <!-- Participants -->
+            <b-row align-h="center">
+              <b-col cols="9">
+                <b-card style="margin: 1em">
+                  <b-row align-h="center">
+                    <b-col>
+                      <MapPane ref="mapPane" v-if="this.location"></MapPane>
+                      <b-card-body v-else>No Location</b-card-body>
+                    </b-col>
+                  </b-row>
+                </b-card>
+              </b-col>
+            </b-row>
+          </b-tab>
+          <b-tab title="Participants">
             <b-row align-h="center">
               <b-col cols="9">
                 <b-card style="margin: 1em" title="Participants:">
@@ -171,10 +183,12 @@ import RecordActivityResultModal from "@/components/Activity/RecordActivityResul
 import api from '@/Api'
 import AdminMixin from "../../mixins/AdminMixin";
 import ActivityResults from "../../components/ActivityResults";
+import MapPane from "../../components/MapPane/MapPane";
 
 const App = {
   name: "App",
   components: {
+    MapPane,
     ActivityResults,
     NavBar,
     FollowUnfollow,
@@ -186,12 +200,12 @@ const App = {
   },
   data: function () {
     return {
-      //isActivityOwner: false,
+      activity: null,
       userData: "",
       isLoggedIn: false,
       userName: "",
       loggedInId: null,
-      profileId: null,
+      profileId: null, 
       activityName: "",
       description: "",
       activityTypes: [],
@@ -284,6 +298,7 @@ const App = {
         if (res.data == "Activity is archived") {
           this.archived = true;
         } else {
+          vueObj.activity = res.data;
           vueObj.activityOwner = res.data.profile;
           vueObj.activityName = res.data.activityName;
           vueObj.description = res.data.description;
@@ -295,13 +310,6 @@ const App = {
           vueObj.visibility = res.data.visibilityType;
           if (res.data.visibilityType == null) {
             vueObj.visibility = "Public"
-          }
-          if (vueObj.location != null) {
-            vueObj.locationString = vueObj.location.city + ", ";
-            if (vueObj.location.state) {
-              vueObj.locationString += vueObj.location.state + ", ";
-            }
-            vueObj.locationString += vueObj.location.country;
           }
           if (res.data.tags.length > 0) {
             for (var i = 0; i < res.data.tags.length; i++) {
@@ -317,6 +325,11 @@ const App = {
           }
           this.getActivityTypeDisplay(vueObj);
           this.getMetrics(res.data.profile.id);
+          if (vueObj.location) {
+            this.$nextTick(function () {
+              this.setUpMap();
+            });
+          }
         }
         vueObj.locationDataLoading = false;
       }).catch((err) => {
@@ -368,6 +381,7 @@ const App = {
             + start.dayOfMonth + ' ' + '24:00').toString();
       }
       currentObj.startTime = startDate;
+      currentObj.activity.startTime = startDate;
 
       let endTime = this.getCorrectTimeFormat(end)
       let endDate = new Date(end.year + "-" + end.monthValue + '-'
@@ -387,15 +401,31 @@ const App = {
         }
       }
       currentObj.activityTypes = result;
+      currentObj.activity.activityTypes = result;
     },
     clickHashtag(hashtag) {
       hashtag = hashtag.substring(1);
-      this.$router.push("/hashtag/" + hashtag);
+      let queryString = "?hashtags=%23" + hashtag + "&hashtags-method=AND&offset=1&limit=10"
+      this.$router.push("/activities/search" + queryString);
     },
     forceRerender(value) {
       this.visibility = value;
       this.shareActivityKey += 1;
       this.followSummaryKey += 1;
+    },
+    async setUpMap() {
+      let userLocation = await api.getLocation(this.profileId);
+      let map = this.$refs.mapPane;
+      // checking if user has a location to put on the map
+      if (userLocation.data !== null) {
+        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude, this.profileId, this.activityOwner.firstname);
+      }
+      // checking if activity has a location to put on the map
+      if (this.location !== null) {
+
+        map.createMarker(2, 2, this.location.latitude, this.location.longitude,this.activity, this.activityName);
+        map.setMapCenter(this.location.latitude, this.location.longitude);
+      }
     }
 
   }

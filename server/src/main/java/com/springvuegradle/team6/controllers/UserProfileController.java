@@ -1,12 +1,13 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
@@ -15,8 +16,10 @@ import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -59,19 +62,22 @@ public class UserProfileController {
   private final CountryRepository countryRepository;
   private final RoleRepository roleRepository;
   private final EmailRepository emailRepository;
-  private final NamedLocationRepository locationRepository;
+  private final LocationRepository locationRepository;
+  private final LocationService locationService;
 
   UserProfileController(
       ProfileRepository rep,
       CountryRepository countryRepository,
       EmailRepository emailRepository,
       RoleRepository roleRep,
-      NamedLocationRepository locationRepository) {
+      LocationRepository locationRepository,
+      LocationService locationService) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
     this.emailRepository = emailRepository;
     this.locationRepository = locationRepository;
+    this.locationService = locationService;
   }
 
   /**
@@ -93,7 +99,25 @@ public class UserProfileController {
     }
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
-      return ResponseEntity.ok(p.get());
+      Profile profile = p.get();
+      if (profile.getLocation() != null) {
+        double lat = profile.getLocation().getLatitude();
+        double lng = profile.getLocation().getLongitude();
+        String address;
+        if ((int) session.getAttribute("id") == id || UserSecurityService.checkIsAdmin()) {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, false);
+        } else {
+          address = locationService.getLocationAddressFromLatLng(lat, lng, true);
+        }
+
+        if (address != null) {
+          ObjectMapper mapper = new ObjectMapper();
+          Map<String, Object> map = mapper.convertValue(profile, Map.class);
+          map.put("address", address);
+          return ResponseEntity.ok(map);
+        }
+      }
+      return ResponseEntity.ok(profile);
     } else {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
     }
@@ -104,7 +128,8 @@ public class UserProfileController {
    * be logged in. New data is contained in request body, empty fields are unchanged
    *
    * @param request EditProfileRequest form with Id of profile to edit and new info to update
-   * @return returns response entity with details of update
+   * @return returns response entity with details of update or 404 if not found or bad request if
+   *     incorrect request body
    */
   @PutMapping("/{id}")
   public ResponseEntity<String> updateProfile(
@@ -121,9 +146,14 @@ public class UserProfileController {
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
-
-      // Edit profile
-      request.editProfileFromRequest(edit, countryRepository, emailRepository, locationRepository);
+      // Tries to edit profile using request body as an EditProfileRequest if fails returns 400
+      // error
+      try {
+        request.editProfileFromRequest(
+            edit, countryRepository, emailRepository, locationRepository);
+      } catch (Exception e) {
+        return new ResponseEntity<>("Error in request body", HttpStatus.BAD_REQUEST);
+      }
       ResponseEntity<String> editEmailsResponse =
           EditEmailsRequest.editEmails(
               edit, emailRepository, request.additionalemail, request.primaryemail);
@@ -189,8 +219,8 @@ public class UserProfileController {
   }
 
   /**
-   * Return all emails based on the profileId
-   * Can be used by any logged in user
+   * Return all emails based on the profileId Can be used by any logged in user
+   *
    * @param session The logged in session
    * @param profileId The profileId of emails that you want
    * @return
@@ -320,7 +350,7 @@ public class UserProfileController {
    * Put request to update user's location
    *
    * @param id user id under query
-   * @param location location of type NamedLocation
+   * @param location location of type Location
    * @param session Http session
    * @return ResponseEntity will return 200 success if user is authorised to update location, else
    *     return 404 response if user is not found
@@ -343,14 +373,12 @@ public class UserProfileController {
       }
 
       // Update location
-      Optional<NamedLocation> optionalNamedLocation =
-          locationRepository.findByCountryAndStateAndCity(
-              location.country, location.state, location.city);
-      if (optionalNamedLocation.isPresent()) {
-        profile.setLocation(optionalNamedLocation.get());
+      Optional<Location> optionalLocation =
+          locationRepository.findByLatitudeAndLongitude(location.latitude, location.longitude);
+      if (optionalLocation.isPresent()) {
+        profile.setLocation(optionalLocation.get());
       } else {
-        NamedLocation newLocation =
-            new NamedLocation(location.country, location.state, location.city);
+        Location newLocation = new Location(location.latitude, location.longitude);
         locationRepository.save(newLocation);
         profile.setLocation(newLocation);
       }
@@ -391,6 +419,24 @@ public class UserProfileController {
       return ResponseEntity.ok("OK");
     } else {
       return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @RequestMapping(value="/{id}/location", method=RequestMethod.GET)
+  public ResponseEntity getLocation(@PathVariable Integer id, HttpSession session) {
+    Optional<Profile> p = repository.findById(id);
+    if (p.isPresent()) {
+      Profile profile = p.get();
+
+      // Check if authorised
+      ResponseEntity<String> authorisedResponse =
+              UserSecurityService.checkAuthorised(id, session, repository);
+      if (authorisedResponse != null) {
+        return authorisedResponse;
+      }
+      return ResponseEntity.ok(profile.getLocation());
+    } else {
+      return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
     }
   }
 }

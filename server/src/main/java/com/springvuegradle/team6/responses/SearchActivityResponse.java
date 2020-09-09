@@ -1,27 +1,25 @@
 package com.springvuegradle.team6.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.NamedLocation;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.VisibilityType;
+import com.springvuegradle.team6.models.entities.*;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
 public class SearchActivityResponse {
 
   public SearchActivityResponse(
-      String activityName,
-      Integer activityId,
-      Integer profileId,
-      String description,
-      Set<ActivityType> activityTypes,
-      Set<Tag> hashtags,
-      boolean continuous,
-      LocalDateTime startTime,
-      LocalDateTime endTime,
-      NamedLocation location,
-      VisibilityType visibilityType) {
+          String activityName,
+          Integer activityId,
+          Integer profileId,
+          String description,
+          Set<ActivityType> activityTypes,
+          Set<Tag> hashtags,
+          boolean continuous,
+          LocalDateTime startTime,
+          LocalDateTime endTime,
+          Location location,
+          VisibilityType visibilityType) {
     this.activityName = activityName;
     this.activityId = activityId;
     this.profileId = profileId;
@@ -35,10 +33,10 @@ public class SearchActivityResponse {
     this.visibilityType = visibilityType;
   }
 
-  @JsonProperty("activity_name")
+  @JsonProperty("activityName")
   public String activityName;
 
-  @JsonProperty("activity_id")
+  @JsonProperty("id")
   public Integer activityId;
 
   @JsonProperty("profile_id")
@@ -47,24 +45,24 @@ public class SearchActivityResponse {
   @JsonProperty("description")
   public String description;
 
-  @JsonProperty("activity_types")
+  @JsonProperty("activityTypes")
   public Set<ActivityType> activityTypes;
 
-  @JsonProperty("hashtags")
+  @JsonProperty("tags")
   public Set<Tag> hashtags;
 
   @JsonProperty("continuous")
   public boolean continuous;
 
-  @JsonProperty("start_date_time")
+  @JsonProperty("startTime")
   public LocalDateTime startTime;
 
-  @JsonProperty("end_date_time")
+  @JsonProperty("endTime")
   public LocalDateTime endTime;
 
   @JsonProperty("location")
-  public NamedLocation location;
+  public Location location;
 
-  @JsonProperty("visibility")
+  @JsonProperty("visibilityType")
   public VisibilityType visibilityType;
 }

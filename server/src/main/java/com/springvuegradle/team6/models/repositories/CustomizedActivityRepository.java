@@ -18,7 +18,10 @@ public interface CustomizedActivityRepository {
       int limit,
       int offset,
       int profileId,
-      boolean isAdmin);
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius);
 
   Integer searchActivityCount(
       String terms,
@@ -29,8 +32,9 @@ public interface CustomizedActivityRepository {
       String time,
       LocalDateTime startDate,
       LocalDateTime endDate,
-      int limit,
-      int offset,
       int profileId,
-      boolean isAdmin);
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius);
 }

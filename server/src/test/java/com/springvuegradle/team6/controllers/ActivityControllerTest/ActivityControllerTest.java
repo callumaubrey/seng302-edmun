@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -309,9 +310,8 @@ class ActivityControllerTest {
             + "  ],\n"
             + "  \"continuous\": true,\n"
             + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"state\": \"Canterbury\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
+            + " \t\"latitude\": 45.3814198,\n"
+            + " \t\"longitude\": 103.43334\n"
             + "  }"
             + ""
             + "}";
@@ -324,7 +324,7 @@ class ActivityControllerTest {
   }
 
   @Test
-  void createActivityWithLocationNoStateReturnStatusIsCreated() throws Exception {
+  void createActivityLongitudeOutOfBounds() throws Exception {
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -333,8 +333,169 @@ class ActivityControllerTest {
             + "  ],\n"
             + "  \"continuous\": true,\n"
             + " \"location\": {\n"
-            + " \t\"city\": \"Christchurch\",\n"
-            + " \t\"country\": \"New Zealand\"\n"
+            + " \t\"latitude\": 45.32,\n"
+            + " \t\"longitude\": 180.1\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityLongitudeOnEdgeOfBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 54.45,\n"
+            + " \t\"longitude\": 180.0\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityLongitudeOutsideNegativeBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": -34.1,\n"
+            + " \t\"longitude\": -180.1\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityLongitudeOnEdgeOfNegativeBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": -20.0,\n"
+            + " \t\"longitude\": -180.0\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityLatitudeOutOfBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 90.1,\n"
+            + " \t\"longitude\": 45.2\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityLatitudeOnEdgeOfBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": 90.0,\n"
+            + " \t\"longitude\": 45.2\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createActivityLatitudeOutsideNegativeBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": -90.1,\n"
+            + " \t\"longitude\": 45.2\n"
+            + "  }"
+            + ""
+            + "}";
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void createActivityLatitudeOnEdgeOfNegativeBounds() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + " \"location\": {\n"
+            + " \t\"latitude\": -90.0,\n"
+            + " \t\"longitude\": 45.2\n"
             + "  }"
             + ""
             + "}";

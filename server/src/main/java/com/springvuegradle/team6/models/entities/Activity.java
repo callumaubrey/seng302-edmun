@@ -24,6 +24,7 @@ import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.persister.entity.Loadable;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -33,6 +34,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Parameter;
+import org.hibernate.search.annotations.SortableField;
+import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -92,11 +95,9 @@ public class Activity {
                 request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
       }
     }
-
     if (request.location != null) {
-      this.location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
+      Location location = new Location(request.location.latitude, request.location.longitude);
+      this.setLocation(location);
     }
     if (request.visibility != null) {
       setVisibilityTypeByString(request.visibility);
@@ -118,6 +119,7 @@ public class Activity {
   @Id
   @GeneratedValue
   @Column(name = "id")
+  @SortableField
   private Integer id;
 
   @ManyToOne
@@ -157,7 +159,11 @@ public class Activity {
   @Column(columnDefinition = "datetime")
   private LocalDateTime endTime;
 
-  @ManyToOne private NamedLocation location;
+  @Spatial
+  @IndexedEmbedded(depth = 1)
+  @SortableField
+  @ManyToOne
+  private Location location;
 
   @Column(columnDefinition = "datetime default NOW()")
   private LocalDateTime creationDate;
@@ -256,11 +262,11 @@ public class Activity {
     this.profile = profile;
   }
 
-  public NamedLocation getLocation() {
+  public Location getLocation() {
     return location;
   }
 
-  public void setLocation(NamedLocation location) {
+  public void setLocation(Location location) {
     this.location = location;
   }
 
