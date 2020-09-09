@@ -20,6 +20,8 @@ public class GoogleAPIServiceTestConfiguration {
     @Bean
     @Primary
     public GoogleAPIService googleAPIService() {
-      return new GoogleAPIService(Mockito.mock(RestTemplate.class));
+      GoogleAPIService service = new GoogleAPIService(null);
+      service.setRestTemplate(Mockito.mock(RestTemplate.class));
+      return service;
     }
 }

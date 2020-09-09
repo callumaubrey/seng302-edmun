@@ -64,4 +64,20 @@ public class GoogleAPIServiceMocking {
         anyDouble(), anyDouble(), eq(null)))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
+
+  /**
+   * Sets api mocking to return data contained in resource json file.
+   * @param testJsonFilename json file stored in src/resources
+   *                         For example if you had a file "src/resources/controllers/test.json"
+   *                         then testJsonFilename='controllers/test.json'
+   * @param status Status to return from api
+   * @throws IOException if resource file does not exist
+   */
+  public void mockReverseGeocode(String testJsonFilename, HttpStatus status) throws IOException {
+    String expectedJson = getResourceAsString(testJsonFilename);
+    Mockito.when(service.template.getForEntity(
+        eq(GoogleAPIService.URL_REVERSE_GEOCODE), eq(String.class),
+        anyDouble(), anyDouble(), eq(null)))
+        .thenReturn(new ResponseEntity<>(expectedJson, status));
+  }
 }

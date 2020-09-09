@@ -34,9 +34,16 @@ public class GoogleAPIService {
   protected RestTemplate template;
 
   public GoogleAPIService(RestTemplateBuilder builder) {
-    this.template = builder.build();
+    if (builder != null) {
+      this.template = builder.build();
+    }
   }
-  public GoogleAPIService(RestTemplate template) {
+
+  /**
+   * Manually set rest template. Used for testing.
+   * @param template rest template
+   */
+  public void setRestTemplate(RestTemplate template) {
     this.template = template;
   }
 
