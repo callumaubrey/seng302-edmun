@@ -12,6 +12,7 @@ import com.springvuegradle.team6.requests.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
@@ -44,6 +47,9 @@ class UserProfileControllerTest {
   @Autowired private EmailRepository emailRepository;
 
   @Autowired private LocationRepository locationRepository;
+
+  @Autowired
+  private GoogleAPIServiceMocking googleAPIService;
 
   private CreateProfileRequest getDummyProfile() {
     CreateProfileRequest validRequest = new CreateProfileRequest();
@@ -545,6 +551,7 @@ class UserProfileControllerTest {
     MockHttpSession session = new MockHttpSession();
     int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
+
     String updateUrl = "/profiles/%d/location";
     updateUrl = String.format(updateUrl, id);
 
@@ -555,6 +562,7 @@ class UserProfileControllerTest {
     locationUpdateRequest.latitude = latitude;
     locationUpdateRequest.longitude = longitude;
 
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put(updateUrl)
                 .content(mapper.writeValueAsString(locationUpdateRequest))
@@ -703,6 +711,7 @@ class UserProfileControllerTest {
         .andExpect(status().isOk());
 
     // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put("/profiles/" + profile.getId() + "/location")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -721,7 +730,7 @@ class UserProfileControllerTest {
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
     String address = ((JSONObject)obj.get("location")).get("name").toString();
-    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
   }
 
   @Test
@@ -753,6 +762,7 @@ class UserProfileControllerTest {
             .andExpect(status().isOk());
 
     // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put("/profiles/" + profile.getId() + "/location")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -774,8 +784,8 @@ class UserProfileControllerTest {
     // Expecting location centered on true address
     String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
     String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
-    org.junit.jupiter.api.Assertions.assertEquals("-43.527531", lat);
-    org.junit.jupiter.api.Assertions.assertEquals("172.581472", lon);
+    org.junit.jupiter.api.Assertions.assertEquals("-43.527593", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("172.5814724", lon);
   }
 
   @Test
@@ -821,6 +831,7 @@ class UserProfileControllerTest {
             .andExpect(status().isOk());
 
     // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put("/profiles/" + profile.getId() + "/location")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -896,6 +907,7 @@ class UserProfileControllerTest {
             .andExpect(status().isOk());
 
     // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put("/profiles/" + profile.getId() + "/location")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -928,8 +940,8 @@ class UserProfileControllerTest {
     // Expecting location centered on canterbury
     String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
     String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
-    org.junit.jupiter.api.Assertions.assertEquals("-43.5239611", lat);
-    org.junit.jupiter.api.Assertions.assertEquals("172.58031843822513", lon);
+    org.junit.jupiter.api.Assertions.assertEquals("-43.7542275", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("171.1637245", lon);
   }
 
   @Test
@@ -963,6 +975,7 @@ class UserProfileControllerTest {
         .andExpect(status().isOk());
 
     // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put("/profiles/" + profile.getId() + "/location")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -981,6 +994,6 @@ class UserProfileControllerTest {
             .getContentAsString();
     JSONObject obj = new JSONObject(response);
     String address =((JSONObject)obj.get("location")).get("name").toString();
-    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Canterbury, New Zealand", address);
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
   }
 }

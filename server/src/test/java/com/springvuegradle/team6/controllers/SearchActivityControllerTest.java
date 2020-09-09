@@ -17,6 +17,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import io.cucumber.java.hu.Ha;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,11 +43,13 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -63,6 +66,9 @@ public class SearchActivityControllerTest {
   @Autowired private LocationRepository locationRepository;
 
   @Autowired private MockMvc mvc;
+
+  @Autowired
+  private GoogleAPIServiceMocking googleAPIService;
 
   private int id;
 
@@ -236,6 +242,9 @@ public class SearchActivityControllerTest {
     activityRole.setActivityRoleType(ActivityRoleType.Access);
     activityRole.setProfile(profile);
     activityRoleRepository.save(activityRole);
+
+    // Setup api mocking of google api to prevent error on calls.
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
   }
 
   @Test
