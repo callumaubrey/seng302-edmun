@@ -66,23 +66,23 @@
 </template>
 
 <script>
-    import 'bootstrap/dist/css/bootstrap.css'
-    import 'bootstrap-vue/dist/bootstrap-vue.css'
-    import {mutations, store} from "../store";
-    import api from '@/Api';
-    import AdminMixin from "../mixins/AdminMixin";
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import {mutations, store} from "../store";
+import api from '@/Api';
+import AdminMixin from "../mixins/AdminMixin";
 
-    const NavBar = {
-        name: 'NavBar',
-        components: {},
-        props: ['isLoggedIn', 'hideElements', 'loggedInId'],
-        data: function () {
-            return {
-                userName: "",
-                name: "",
-                searchBy: 1,
-                searchQuery: "",
-                searchOptions: [
+const NavBar = {
+  name: 'NavBar',
+  components: {},
+  props: ['isLoggedIn', 'hideElements', 'loggedInId'],
+  data: function () {
+    return {
+      userName: "",
+      name: "",
+      searchBy: 1,
+      searchQuery: "",
+      searchOptions: [
                     {value: 1, text: 'Users'},
                     {value: 2, text: 'Activities'}
                 ],
@@ -173,8 +173,8 @@
     }
 
     .nav-bar {
-        margin-bottom: 50px;
-        margin-right: 0px;
+      margin-bottom: 50px;
+      margin-right: 0;
     }
 
     .collapsed > .when-opened,
