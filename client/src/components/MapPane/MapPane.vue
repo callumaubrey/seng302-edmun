@@ -53,6 +53,7 @@
                                           @click="markerSelected(marker)"
                                 >
                                     <l-tooltip id="popUp"
+                                               v-if="marker.title != null"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
                                     >
                                         <b-container style="max-height: 6.5em; overflow: hidden">

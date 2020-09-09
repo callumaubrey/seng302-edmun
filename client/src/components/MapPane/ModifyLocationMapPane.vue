@@ -14,7 +14,6 @@
                         <b-col>
                             <LocationAutocomplete ref="location_input"
                                                   :priority-geo-location="priorityGeoLocation"
-                                                  :given-location="address"
                                                   @emitLocation="textLocationSelected"></LocationAutocomplete>
                         </b-col>
                         <b-col col sm="2">
@@ -108,7 +107,7 @@
             updateMarker: function(lat, lng) {
                 this.markerOnMap = true;
                 this.$refs.map.removeMarker(1);
-                this.$refs.map.createMarker(1, this.iconColourId, lat, lng);
+                this.$refs.map.createMarker(1, this.iconColourId, lat, lng, null, null);
             },
 
             /**
@@ -136,6 +135,10 @@
 
             refreshMap: function () {
                 this.$refs.map.refreshMap()
+            },
+
+            setLocationText(val) {
+                this.$refs.location_input.locationText = val;
             }
         },
 
@@ -144,6 +147,9 @@
                 // Set Marker on map and center map on it
                 this.updateMarker(this.value.lat, this.value.lng);
                 this.$refs.map.setMapCenter(this.value.lat, this.value.lng);
+
+                console.log(this.value);
+                this.setLocationText(this.value.name);
             }
         }
     }
