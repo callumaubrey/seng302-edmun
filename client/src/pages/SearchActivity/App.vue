@@ -118,12 +118,10 @@ export default {
     return {
       isLoggedIn: false,
       userName: "",
-
       hasSearched: false,
       showAdvancedSettings: false,
       search_data: {
         search_query: '',
-
         search_mode_filter: 'all',
         duration_limit: {
           start_date: null,
@@ -137,13 +135,11 @@ export default {
           values: [],
           method: "AND"
         },
-
         pagination: {
           offset: 1,
           limit: 10,
           count: 0
         },
-
         // marker location
         location: {
           longitude: null,
