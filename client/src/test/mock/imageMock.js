@@ -1,1 +1,0 @@
-module.exports = '@/assets/goatonly_navbar.png';

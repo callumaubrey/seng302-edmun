@@ -12,7 +12,6 @@ module.exports = {
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
         '\\.(css|less|sass|scss)$': '<rootDir>/src/test/mock/styleMock.js',   //<-- add this line to fix css import problem
-        "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/src/test/mock/imageMock.js",
     },
     transformIgnorePatterns: [
         'node_modules/(?!(bootstrap-vue)/)', // <-- add this line to fix SyntaxError: Unexpected token import
