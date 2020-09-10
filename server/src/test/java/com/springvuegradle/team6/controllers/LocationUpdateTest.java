@@ -1,23 +1,27 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
+import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
@@ -29,8 +33,13 @@ public class LocationUpdateTest {
     @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
+    private GoogleAPIServiceMocking googleAPIService;
+
     @Test
     void testEditProfileLocationUpdate() throws Exception {
+        googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+
         MockHttpSession session = new MockHttpSession();
         int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
         TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
@@ -88,6 +97,8 @@ public class LocationUpdateTest {
 
     @Test
     void updateLocation() throws Exception {
+        googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+
         MockHttpSession session = new MockHttpSession();
         int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
         TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);
@@ -119,6 +130,8 @@ public class LocationUpdateTest {
 
     @Test
     void deleteLocation() throws Exception {
+        googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+
         MockHttpSession session = new MockHttpSession();
         int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
         TestDataGenerator.loginJohnDoeUser(mvc, mapper, session);

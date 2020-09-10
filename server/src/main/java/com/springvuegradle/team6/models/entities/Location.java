@@ -26,7 +26,7 @@ public class Location implements Serializable, Coordinates {
   @Latitude private Double latitude = 0d;
   @Longitude private Double longitude = 0d;
 
-  @Transient private String name;
+  private String name;
 
   public Location() {}
 
