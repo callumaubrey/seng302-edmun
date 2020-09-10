@@ -356,7 +356,8 @@
                         </span>
                         <span class="text-danger" v-if="locationForm.state === false">{{locationForm.error_message}}</span>
                     </b-form-text>
-                    <ModifyLocationMapPane ref="map" :can-hide="false" v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
+                    <ModifyLocationMapPane ref="map" :can-hide="false"
+                                           v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
                 </b-container>
             </b-collapse>
             <hr>
@@ -900,6 +901,7 @@
 
                         if (response.data.location) {
                             vueObj.locationForm.value = {
+                                name: response.data.location.name,
                                 lat: response.data.location.latitude,
                                 lng: response.data.location.longitude};
                         }

@@ -1,14 +1,13 @@
 package com.springvuegradle.team6.services;
 
-import net.minidev.json.JSONArray;
+import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIService;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * This service is used to communicate to the photon api
@@ -16,73 +15,62 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class LocationService {
 
-  private final RestTemplate restTemplate;
+  @Autowired
+  private final GoogleAPIService apiService;
 
-  public LocationService(RestTemplateBuilder restTemplateBuilder) {
-    this.restTemplate = restTemplateBuilder.build();
+  public LocationService(GoogleAPIService service) {
+    this.apiService = service;
   }
 
   /**
-   * Gets an address string from latitude and longitude using photon API
-   *
-   * @param lat double latitude
-   * @param lng double longitude
-   * @param hideDetails boolean to specify if should return full address or not
-   * @return address string or null if errors are present
+   * Get location address from lat and lng
+   * @param latitude location lat
+   * @param longitude location lng
+   * @param hideDetails hides specific address
+   * @return String formatted address
    */
-  public String getLocationAddressFromLatLng(double lat, double lng, boolean hideDetails) {
-    // Send API request
-    String url = "https://photon.komoot.de/reverse?lon={lng}&lat={lat}";
-    ResponseEntity<String> response = this.restTemplate.getForEntity(url, String.class, lng, lat);
-    if (response.getStatusCode() != HttpStatus.OK) {
-      return null;
+  public String getLocationAddressFromLatLng(Double latitude, Double longitude, boolean hideDetails) {
+    JSONObject response = apiService.reverseGeocode(new Location(latitude, longitude));
+    if (response == null) return "";
+
+    String address = "";
+    if (hideDetails) {
+      address =  apiService.parseReverseGeocodeObfuscated(response).getName();
+    } else {
+      address = apiService.parseReverseGeocodeDetailed(response).getName();
     }
 
-    // Parse JSON
-    JSONObject responseJson = null;
-    try {
-      responseJson = (JSONObject) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(response.getBody());
-    } catch (ParseException e) {
-      // Json is not in a valid format
-      return null;
+    return address;
+  }
+
+
+  /**
+   * Adds location to profile json. Option to make obfuscate the location for user security
+   * @param profile Profile to set locations for
+   * @param privateLocation private Location to set for profile
+   * @param locationRepository location repository to save locations to
+   */
+  public void updateProfileLocation(Profile profile, Location privateLocation, LocationRepository locationRepository) {
+
+    // Set Private and Public Location to null if null
+    if (privateLocation == null) {
+      profile.setPrivateLocation(null);
+      profile.setPublicLocation(null);
+      return;
     }
 
-    // Process JSON
-    JSONArray features = (JSONArray) responseJson.get("features");
-    if (features.isEmpty()) {
-      return null;
-    }
+    // Get OSM feature at location coordinates
+    JSONObject response = apiService.reverseGeocode(privateLocation);
+    if (response == null) return;
 
-    JSONObject primaryFeature = (JSONObject) features.get(0);
-    JSONObject properties = (JSONObject) primaryFeature.get("properties");
-    String country = properties.getAsString("country");
-    String state = properties.getAsString("state");
-    String street = properties.getAsString("street");
-    String housenumber = properties.getAsString("housenumber");
-    String city = properties.getAsString("city");
+    // Generate coordinates for locations
+    Location publicLocation = apiService.parseReverseGeocodeObfuscated(response);
+    privateLocation = apiService.parseReverseGeocodeDetailed(response);
 
-    // Build address string
-    StringBuilder address = new StringBuilder();
-    if (street != null && !hideDetails) {
-      if (housenumber != null) {
-        address.append(housenumber);
-        address.append(" ");
-      }
-      address.append(street);
-      address.append(", ");
-    }
-    if (city != null) {
-      address.append(city);
-      address.append(", ");
-    }
-    if (state != null) {
-      address.append(state);
-      address.append(", ");
-    }
-    if (country != null) {
-      address.append(country);
-    }
-
-    return address.toString();
+    // Set Locations
+    if (publicLocation != null) locationRepository.save(publicLocation);
+    locationRepository.save(privateLocation);
+    profile.setPublicLocation(publicLocation);
+    profile.setPrivateLocation(privateLocation);
   }
 }

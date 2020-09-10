@@ -1,0 +1,469 @@
+{
+  "plus_code" : {
+    "compound_code" : "FHCJ+XH Christchurch, Canterbury, New Zealand",
+    "global_code" : "4V8JFHCJ+XH"
+  },
+  "results" : [
+    {
+      "address_components" : [
+        {
+          "long_name" : "46",
+          "short_name" : "46",
+          "types" : [ "street_number" ]
+        },
+        {
+          "long_name" : "Balgay Street",
+          "short_name" : "Balgay St",
+          "types" : [ "route" ]
+        },
+        {
+          "long_name" : "Upper Riccarton",
+          "short_name" : "Upper Riccarton",
+          "types" : [ "political", "sublocality", "sublocality_level_1" ]
+        },
+        {
+          "long_name" : "Christchurch",
+          "short_name" : "Christchurch",
+          "types" : [ "locality", "political" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        },
+        {
+          "long_name" : "8041",
+          "short_name" : "8041",
+          "types" : [ "postal_code" ]
+        }
+      ],
+      "formatted_address" : "46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand",
+      "geometry" : {
+        "location" : {
+          "lat" : -43.527593,
+          "lng" : 172.5814724
+        },
+        "location_type" : "ROOFTOP",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.52624401970849,
+            "lng" : 172.5828213802915
+          },
+          "southwest" : {
+            "lat" : -43.52894198029149,
+            "lng" : 172.5801234197085
+          }
+        }
+      },
+      "place_id" : "ChIJSw6qosGKMW0RruFydm2ILjs",
+      "plus_code" : {
+        "compound_code" : "FHCJ+XH Christchurch, Canterbury, New Zealand",
+        "global_code" : "4V8JFHCJ+XH"
+      },
+      "types" : [ "street_address" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "46",
+          "short_name" : "46",
+          "types" : [ "street_number" ]
+        },
+        {
+          "long_name" : "Balgay Street",
+          "short_name" : "Balgay St",
+          "types" : [ "route" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        },
+        {
+          "long_name" : "8041",
+          "short_name" : "8041",
+          "types" : [ "postal_code" ]
+        }
+      ],
+      "formatted_address" : "46 Balgay Street, Canterbury 8041, New Zealand",
+      "geometry" : {
+        "location" : {
+          "lat" : -43.5276193,
+          "lng" : 172.5811348
+        },
+        "location_type" : "RANGE_INTERPOLATED",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.52627031970849,
+            "lng" : 172.5824837802915
+          },
+          "southwest" : {
+            "lat" : -43.52896828029149,
+            "lng" : 172.5797858197085
+          }
+        }
+      },
+      "place_id" : "Eh00NiBCYWxnYXkgU3RyZWV0LCBOZXcgWmVhbGFuZCIaEhgKFAoSCadhEKTBijFtEdvKb-zpzlGjEC4",
+      "types" : [ "street_address" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "33-51",
+          "short_name" : "33-51",
+          "types" : [ "street_number" ]
+        },
+        {
+          "long_name" : "Balgay Street",
+          "short_name" : "Balgay St",
+          "types" : [ "route" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        },
+        {
+          "long_name" : "8041",
+          "short_name" : "8041",
+          "types" : [ "postal_code" ]
+        }
+      ],
+      "formatted_address" : "33-51 Balgay Street, Canterbury 8041, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -43.5269362,
+            "lng" : 172.5813288
+          },
+          "southwest" : {
+            "lat" : -43.5288747,
+            "lng" : 172.5810229
+          }
+        },
+        "location" : {
+          "lat" : -43.5279052,
+          "lng" : 172.5811773
+        },
+        "location_type" : "GEOMETRIC_CENTER",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.5265564697085,
+            "lng" : 172.5825248302915
+          },
+          "southwest" : {
+            "lat" : -43.52925443029149,
+            "lng" : 172.5798268697085
+          }
+        }
+      },
+      "place_id" : "ChIJp2EQpMGKMW0R2spv7OnOUaM",
+      "types" : [ "route" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "Upper Riccarton",
+          "short_name" : "Upper Riccarton",
+          "types" : [ "political", "sublocality", "sublocality_level_1" ]
+        },
+        {
+          "long_name" : "Christchurch",
+          "short_name" : "Christchurch",
+          "types" : [ "locality", "political" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        },
+        {
+          "long_name" : "8041",
+          "short_name" : "8041",
+          "types" : [ "postal_code" ]
+        }
+      ],
+      "formatted_address" : "Upper Riccarton, Christchurch 8041, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -43.5239765,
+            "lng" : 172.5879046
+          },
+          "southwest" : {
+            "lat" : -43.5400184,
+            "lng" : 172.5670558
+          }
+        },
+        "location" : {
+          "lat" : -43.5386568,
+          "lng" : 172.581128
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.5239765,
+            "lng" : 172.5879046
+          },
+          "southwest" : {
+            "lat" : -43.5400184,
+            "lng" : 172.5670558
+          }
+        }
+      },
+      "place_id" : "ChIJSUAXNb-KMW0RYLt5hIbvAAU",
+      "types" : [ "political", "sublocality", "sublocality_level_1" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "8041",
+          "short_name" : "8041",
+          "types" : [ "postal_code" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Canterbury 8041, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -43.5037972,
+            "lng" : 172.6040009
+          },
+          "southwest" : {
+            "lat" : -43.5417921,
+            "lng" : 172.5589294
+          }
+        },
+        "location" : {
+          "lat" : -43.5261634,
+          "lng" : 172.5780878
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.5037972,
+            "lng" : 172.6040009
+          },
+          "southwest" : {
+            "lat" : -43.5417921,
+            "lng" : 172.5589294
+          }
+        }
+      },
+      "place_id" : "ChIJhTmA28KKMW0RmP2Ola_VCWk",
+      "types" : [ "postal_code" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "Christchurch",
+          "short_name" : "Christchurch",
+          "types" : [ "locality", "political" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Christchurch, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -43.3963397,
+            "lng" : 172.7993602
+          },
+          "southwest" : {
+            "lat" : -43.7939872,
+            "lng" : 172.424527
+          }
+        },
+        "location" : {
+          "lat" : -43.5319957,
+          "lng" : 172.6396575
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.3963397,
+            "lng" : 172.7993602
+          },
+          "southwest" : {
+            "lat" : -43.7939872,
+            "lng" : 172.424527
+          }
+        }
+      },
+      "place_id" : "ChIJAe3FY0gvMm0RRZl5hIbvAAU",
+      "types" : [ "locality", "political" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "Christchurch City",
+          "short_name" : "Christchurch City",
+          "types" : [ "administrative_area_level_2", "political" ]
+        },
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Christchurch City, Canterbury, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -43.3898898,
+            "lng" : 173.1302034
+          },
+          "southwest" : {
+            "lat" : -43.9016726,
+            "lng" : 172.3615276
+          }
+        },
+        "location" : {
+          "lat" : -43.7537975,
+          "lng" : 172.7778579
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -43.3898898,
+            "lng" : 173.1302034
+          },
+          "southwest" : {
+            "lat" : -43.9016726,
+            "lng" : 172.3615276
+          }
+        }
+      },
+      "place_id" : "ChIJ72GAH_uFMW0RMFZ5hIbvAAQ",
+      "types" : [ "administrative_area_level_2", "political" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "Canterbury",
+          "short_name" : "Canterbury",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Canterbury, New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -41.9073832,
+            "lng" : 174.2641024
+          },
+          "southwest" : {
+            "lat" : -45.0809293,
+            "lng" : 169.5424976
+          }
+        },
+        "location" : {
+          "lat" : -43.7542275,
+          "lng" : 171.1637245
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -41.9073832,
+            "lng" : 174.2641024
+          },
+          "southwest" : {
+            "lat" : -45.0809293,
+            "lng" : 169.5424976
+          }
+        }
+      },
+      "place_id" : "ChIJA9l1eDPYLW0RgeJpMTBkdzM",
+      "types" : [ "administrative_area_level_1", "political" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "New Zealand",
+          "short_name" : "NZ",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "New Zealand",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : -28.8773225,
+            "lng" : -175.1235077
+          },
+          "southwest" : {
+            "lat" : -52.7224663,
+            "lng" : 165.7437641
+          }
+        },
+        "location" : {
+          "lat" : -40.900557,
+          "lng" : 174.885971
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : -28.8773225,
+            "lng" : -175.1235077
+          },
+          "southwest" : {
+            "lat" : -52.7224663,
+            "lng" : 165.7437641
+          }
+        }
+      },
+      "place_id" : "ChIJh5Z3Fw4gLG0RM0dqdeIY1rE",
+      "types" : [ "country", "political" ]
+    }
+  ],
+  "status" : "OK"
+}

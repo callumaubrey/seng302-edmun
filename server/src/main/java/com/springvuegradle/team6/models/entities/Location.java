@@ -37,7 +37,6 @@ public class Location implements Serializable, Coordinates {
   @Longitude
   private Double longitude = 0d;
 
-  @Transient
   private String name;
 
   @ManyToOne
