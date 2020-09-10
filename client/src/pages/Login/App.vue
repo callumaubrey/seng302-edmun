@@ -64,7 +64,7 @@ import {mutations} from "../../store";
 
 export default {
   components: {
-    NavBar,
+    NavBar
   },
   computed: {
     emailState() {
