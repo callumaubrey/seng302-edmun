@@ -564,8 +564,6 @@ public class ActivityController {
       }
       activity.setTags(hashtags);
     }
-
-    addMetricsToActivity(activity, request.metrics);
   }
 
   /**
@@ -585,6 +583,27 @@ public class ActivityController {
       }
       activity.setMetrics(metrics);
     }
+  }
+
+  private List<ActivityQualificationMetric> editMetricsToActivity(
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    if (requestMetrics != null) {
+      for (ActivityQualificationMetric metric : requestMetrics) {
+        List<ActivityResult> results =
+            activityResultRepository.findSingleMetricResultsOnActivity(
+                activity.getId(), metric.getId());
+        if (results.size() == 0) {
+          metric.setActivity(activity);
+          activityQualificationMetricRepository.save(metric);
+          metrics.add(metric);
+        } else {
+          return null;
+        }
+      }
+      activity.setMetrics(metrics);
+    }
+    return metrics;
   }
 
   /**
@@ -665,6 +684,13 @@ public class ActivityController {
         editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       }
       editActivityFromRequest(request, activity);
+
+      List<ActivityQualificationMetric> metrics = editMetricsToActivity(activity, request.metrics);
+      if (metrics == null) {
+        return new ResponseEntity("You cannot edit a metric that already has results", HttpStatus.BAD_REQUEST);
+      } else {
+        activity.setMetrics(metrics);
+      }
 
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
