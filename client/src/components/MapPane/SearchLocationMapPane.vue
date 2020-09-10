@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <map-pane ref="map" :can-hide="false" :displayCircle="true" @onMapClick="mapClicked"></map-pane>
+    <div class="h-100 w-100">
+        <map-pane ref="map" :maximise="true" :can-hide="false" :displayCircle="true" @onMapClick="mapClicked"></map-pane>
     </div>
 </template>
 

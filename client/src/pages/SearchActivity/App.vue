@@ -1,97 +1,106 @@
 <template>
   <div>
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
-    <b-container>
-      <h1>Search Activities</h1>
-      <hr>
+    <b-container fluid class="content_container">
+      <b-row class="content_row">
 
-      <!-- Search Bar -->
-      <b-row class="mb-3">
-        <b-col cols="10">
-          <ActivityNameSearch v-model="search_data.search_query"></ActivityNameSearch>
-        </b-col>
-        <b-col cols="2">
-          <b-button block size="lg" variant="primary" @click="search()">Search</b-button>
-        </b-col>
-      </b-row>
+        <!-- Search Settings -->
+        <b-col cols="4" class="activity_settings_column">
+          <h1 class="mt-2">Search Activities</h1>
+          <hr>
 
-      <b-card body-class="p-2">
-        <!-- Clickable Header -->
-        <b-row class="clickable">
-          <b-col @click="showAdvancedSettings=!showAdvancedSettings">
-            <h5 class="mb-0">
-              <i v-if="showAdvancedSettings" class="fas fa-caret-down"></i>
-              <i v-else class="fas fa-caret-right"></i>
-              Advanced Settings
-            </h5>
-          </b-col>
-        </b-row>
-
-        <!-- Advanced Settings -->
-        <b-collapse v-model="showAdvancedSettings">
-
-          <!-- Activity Mode input -->
-          <b-row class="my-3">
-            <b-col>
-              <ActivityContinuousDurationSearchBox ref="ActivityModeInput"
-                                                   :start-date-prop="search_data.duration_limit.start_date"
-                                                   :end-date-prop="search_data.duration_limit.end_date"
-                                                    v-on:selected="updateModeFilter"
-                                                    v-on:dates="updateDurationDates"></ActivityContinuousDurationSearchBox>
-            </b-col>
-          </b-row>
-
-          <!-- Hash tag input -->
+          <!-- Search Bar -->
           <b-row class="mb-3">
-            <b-col>
-              <SearchActivityTag :max-entries="30" :title-label="'Hashtags'"
-                                 :child-search-method="search_data.hashtags.method"
-                                 :values="search_data.hashtags.values"
-                                 :help-text="'Max 30 hashtags'"
-                                 :input-character-limit="140"
-                                 :input-placeholder="'Search by hashtag'"
-                                 v-on:emitTags="updateHashTagValues"
-                                 v-on:emitSearchMethod="updateHashTagMethod"></SearchActivityTag>
+            <b-col cols="9">
+              <ActivityNameSearch v-model="search_data.search_query"></ActivityNameSearch>
+            </b-col>
+            <b-col cols="3">
+              <b-button block size="lg" variant="primary" @click="search()">Search</b-button>
             </b-col>
           </b-row>
 
-          <!-- Activity search input -->
+          <b-card body-class="p-2">
+            <!-- Clickable Header -->
+            <b-row class="clickable">
+              <b-col @click="showAdvancedSettings=!showAdvancedSettings">
+                <h5 class="mb-0">
+                  <i v-if="showAdvancedSettings" class="fas fa-caret-down"></i>
+                  <i v-else class="fas fa-caret-right"></i>
+                  Advanced Settings
+                </h5>
+              </b-col>
+            </b-row>
+
+            <!-- Advanced Settings -->
+            <b-collapse v-model="showAdvancedSettings">
+
+              <!-- Activity Mode input -->
+              <b-row class="my-3">
+                <b-col>
+                  <ActivityContinuousDurationSearchBox ref="ActivityModeInput"
+                                                       :start-date-prop="search_data.duration_limit.start_date"
+                                                       :end-date-prop="search_data.duration_limit.end_date"
+                                                        v-on:selected="updateModeFilter"
+                                                        v-on:dates="updateDurationDates"></ActivityContinuousDurationSearchBox>
+                </b-col>
+              </b-row>
+
+              <!-- Hash tag input -->
+              <b-row class="mb-3">
+                <b-col>
+                  <SearchActivityTag :max-entries="30" :title-label="'Hashtags'"
+                                     :child-search-method="search_data.hashtags.method"
+                                     :values="search_data.hashtags.values"
+                                     :help-text="'Max 30 hashtags'"
+                                     :input-character-limit="140"
+                                     :input-placeholder="'Search by hashtag'"
+                                     v-on:emitTags="updateHashTagValues"
+                                     v-on:emitSearchMethod="updateHashTagMethod"></SearchActivityTag>
+                </b-col>
+              </b-row>
+
+              <!-- Activity search input -->
+              <b-row>
+                <b-col>
+                  <ActivityTypeSearchBox :selected-options="search_data.types.values"
+                  v-on:selectedActivityTypes="updateTypeValues"
+                  v-on:activityTypeMethod="updateTypeMethod"></ActivityTypeSearchBox>
+                </b-col>
+              </b-row>
+
+            </b-collapse>
+
+          </b-card>
+          <hr>
+
+          <!-- Activity List -->
+          <SearchActivityList v-bind:activity_data="activity_data"></SearchActivityList>
+
+          <!-- No Results Message -->
+          <b-row v-if="hasSearched && search_data.pagination.count === 0" style="height: 1000px">
+            <b-col class="text-center">
+              <h2>No results</h2>
+            </b-col>
+          </b-row>
+
+          <!-- Pagination -->
           <b-row>
             <b-col>
-              <ActivityTypeSearchBox :selected-options="search_data.types.values"
-              v-on:selectedActivityTypes="updateTypeValues"
-              v-on:activityTypeMethod="updateTypeMethod"></ActivityTypeSearchBox>
+              <b-pagination
+                      v-model="search_data.pagination.offset"
+                      :total-rows="search_data.pagination.count"
+                      :per-page="search_data.pagination.limit"
+                      align="center"
+                      @change="newPageSelected"
+              ></b-pagination>
             </b-col>
           </b-row>
+        </b-col>
 
-        </b-collapse>
-
-      </b-card>
-      <hr>
-
-      <!-- Activity List -->
-      <SearchActivityList v-bind:activity_data="activity_data"></SearchActivityList>
-
-      <!-- No Results Message -->
-      <b-row v-if="hasSearched && search_data.pagination.count === 0">
-        <b-col class="text-center">
-          <h2>No results</h2>
+        <b-col cols="8" class="p-0" style="background-color: red">
+          <SearchLocationMapPane></SearchLocationMapPane>
         </b-col>
       </b-row>
-
-      <!-- Pagination -->
-      <b-row>
-        <b-col>
-          <b-pagination
-                  v-model="search_data.pagination.offset"
-                  :total-rows="search_data.pagination.count"
-                  :per-page="search_data.pagination.limit"
-                  align="center"
-                  @change="newPageSelected"
-          ></b-pagination>
-        </b-col>
-      </b-row>
-
     </b-container>
   </div>
 </template>
@@ -107,10 +116,12 @@ import SearchActivityTag from "../../components/Activity/SearchActivityTag";
 import ActivityTypeSearchBox from "../../components/ActivityTypeSearchBox";
 import ActivityContinuousDurationSearchBox
   from "../../components/ActivityContinuousDurationSearchBox";
+import SearchLocationMapPane from "../../components/MapPane/SearchLocationMapPane";
 
 export default {
   name: "App.vue",
   components: {
+    SearchLocationMapPane,
     ActivityContinuousDurationSearchBox,
     SearchActivityTag, ActivityNameSearch, NavBar, SearchActivityList, ActivityTypeSearchBox
   },
@@ -354,5 +365,22 @@ export default {
 <style scoped>
   .clickable {
     cursor: pointer;
+  }
+
+  .content_container {
+    margin-top: -50px;
+    height: calc(100vh - 66px);
+    max-height: calc(100vh - 66px);
+    /** This is kinda of a dirty way to fill page height. It requires knowing the navbar height. If it was
+    to change this page would break. However alternatives would be harder to understand and quite complicated**/
+  }
+
+  .content_row {
+    max-height: inherit;
+  }
+
+  .activity_settings_column {
+    overflow-y: scroll;
+    max-height: inherit;
   }
 </style>
