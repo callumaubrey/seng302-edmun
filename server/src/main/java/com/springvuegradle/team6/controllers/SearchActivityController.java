@@ -2,6 +2,7 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.SortActivity;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.responses.SearchActivityResponse;
 import com.springvuegradle.team6.security.UserSecurityService;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
 
 @RestController
 @CrossOrigin(
@@ -73,6 +73,9 @@ public class SearchActivityController {
    * This endpoint is used for searching for an activity. Anyone that is logged in can use this
    * endpoint.
    *
+   * <p>API example:
+   * /activities?name=biking&hashtags=biking_is_cool%20hotday&hashtags-method=or&types=bike%20run&types-method=and&time=duration&start-date=20200812&end-date=20201029&limit=10&offset=0&lon=10.0234&lat=52.23423&radius=10&sort=closest_location
+   *
    * @param activityName name to search for
    * @param activityTypes activity types to search for
    * @param activityTypesMethod the method of searching activity types (OR or AND)
@@ -89,6 +92,7 @@ public class SearchActivityController {
    * @param longitude the longitude coordinate of the location of the activity
    * @param latitude the latitude coordinate of the location of the activity
    * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @param session the logged in session
    * @return list of activities based on the search parameters
    */
@@ -138,6 +142,7 @@ public class SearchActivityController {
           @Min(value = 1, message = "radius must be between 1 and 200 inclusive (in kilometers)")
           @Max(value = 200, message = "radius must be between 1 and 200 inclusive (in kilometers)")
           Integer radius,
+      @RequestParam(name = "sort", required = false) String sortActivity,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -146,6 +151,22 @@ public class SearchActivityController {
     }
 
     Integer profileId = (Integer) id;
+
+    SortActivity sortActivityEnum = null;
+    if (sortActivity != null) {
+      try {
+        sortActivityEnum = SortActivity.valueOf(sortActivity.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        return new ResponseEntity<>("Sort method provided does not exist", HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    if (sortActivityEnum != null
+        && sortActivityEnum.isLocationSort()
+        && (longitude == null || latitude == null)) {
+      return new ResponseEntity<>(
+          "Cannot sort by location when no original location is provided", HttpStatus.BAD_REQUEST);
+    }
 
     boolean isAdmin = UserSecurityService.checkIsAdmin();
 
@@ -241,7 +262,8 @@ public class SearchActivityController {
             isAdmin,
             longitude,
             latitude,
-            radius);
+            radius,
+            sortActivityEnum);
     List<SearchActivityResponse> results = new ArrayList<>();
     for (Activity activity : activityList) {
       Location location = activity.getLocation();
@@ -274,6 +296,9 @@ public class SearchActivityController {
    * This endpoint is used for finding how many activities will return from the specified
    * parameters. Anyone that is logged in can use this endpoint.
    *
+   * <p>API example:
+   * /activities/count?name=biking&hashtags=biking_is_cool%20hotday&hashtags-method=or&types=bike%20run&types-method=and&time=duration&start-date=20200812&end-date=20201029&lon=10.0234&lat=52.23423&radius=10sort=closest_location
+   *
    * @param activityName name to search for
    * @param activityTypes activity types to search for
    * @param activityTypesMethod the method of searching activity types (OR or AND)
@@ -288,6 +313,7 @@ public class SearchActivityController {
    * @param longitude the longitude coordinate of the location of the activity
    * @param latitude the latitude coordinate of the location of the activity
    * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @param session the logged in session
    * @return number of activities that will return based on the search parameters.
    */
@@ -329,6 +355,7 @@ public class SearchActivityController {
           @Min(value = -90, message = "latitude must be between -90 and 90 inclusive")
           Double latitude,
       @RequestParam(name = "radius", required = false) Integer radius,
+      @RequestParam(name = "sort", required = false) String sortActivity,
       HttpSession session) {
 
     Object id = session.getAttribute("id");
@@ -337,6 +364,22 @@ public class SearchActivityController {
     }
 
     Integer profileId = (Integer) id;
+
+    SortActivity sortActivityEnum = null;
+    if (sortActivity != null) {
+      try {
+        sortActivityEnum = SortActivity.valueOf(sortActivity.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        return new ResponseEntity<>("Sort method provided does not exist", HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    if (sortActivityEnum != null
+        && sortActivityEnum.isLocationSort()
+        && (longitude == null || latitude == null)) {
+      return new ResponseEntity<>(
+          "Cannot sort by location when no original location is provided", HttpStatus.BAD_REQUEST);
+    }
 
     boolean isAdmin = UserSecurityService.checkIsAdmin();
 
@@ -369,8 +412,6 @@ public class SearchActivityController {
 
       if (startDate != null) {
         String[] startDateArray = startDate.split("-");
-        // YYYY-MM-DD
-        // 0123456789
         String startYear = startDateArray[0];
         String startMonth = startDateArray[1];
         String startDay = startDateArray[2];
@@ -424,7 +465,8 @@ public class SearchActivityController {
             isAdmin,
             longitude,
             latitude,
-            radius);
+            radius,
+            sortActivityEnum);
     return new ResponseEntity<>(count, HttpStatus.OK);
   }
 }

@@ -24,7 +24,6 @@ import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
-import org.hibernate.persister.entity.Loadable;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -61,6 +60,7 @@ public class Activity {
   // Constants
   public static final int NAME_MAX_LENGTH = 128;
   public static final int DESCRIPTION_MAX_LENGTH = 2048;
+  private static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
   /** This constructor is used for testing purposes only */
   public Activity() {
@@ -87,17 +87,17 @@ public class Activity {
       if (request.startTime != null) {
         this.startTime =
             LocalDateTime.parse(
-                request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+                request.startTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
       }
       if (request.endTime != null) {
         this.endTime =
             LocalDateTime.parse(
-                request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+                request.endTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
       }
     }
     if (request.location != null) {
-      Location location = new Location(request.location.latitude, request.location.longitude);
-      this.setLocation(location);
+      Location newLocation = new Location(request.location.latitude, request.location.longitude);
+      this.setLocation(newLocation);
     }
     if (request.visibility != null) {
       setVisibilityTypeByString(request.visibility);
@@ -152,10 +152,12 @@ public class Activity {
   private boolean continuous;
 
   @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
   @Column(columnDefinition = "datetime")
   private LocalDateTime startTime;
 
   @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
   @Column(columnDefinition = "datetime")
   private LocalDateTime endTime;
 
@@ -230,7 +232,7 @@ public class Activity {
 
   public void setStartTimeByString(String startTime) {
     this.startTime =
-        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
   }
 
   public LocalDateTime getEndTime() {
@@ -243,7 +245,7 @@ public class Activity {
 
   public void setEndTimeByString(String endTime) {
     this.endTime =
-        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
   }
 
   public Integer getId() {
@@ -323,7 +325,7 @@ public class Activity {
 
     Activity activity = (Activity) o;
 
-    return this.id == activity.getId();
+    return this.id.equals(activity.getId());
   }
 
   @Override
