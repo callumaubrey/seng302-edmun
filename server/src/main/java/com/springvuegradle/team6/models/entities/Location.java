@@ -30,7 +30,7 @@ public class Location implements Serializable, Coordinates {
 
   @Id
   @GeneratedValue
-  private static final long LOCATION_ID = 0;
+  private final long location_id = 0;
 
   @Latitude
   private Double latitude = 0d;
