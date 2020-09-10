@@ -1,6 +1,10 @@
 <template>
     <div class="h-100 w-100">
-        <map-pane ref="map" :maximise="true" :can-hide="false" :displayCircle="true" @onMapClick="mapClicked"></map-pane>
+        <map-pane ref="map"
+                  :maximise="true" :can-hide="false"
+                  :displayCircle="displayCircle"
+                  @userLocationUpdate="centerOnUserLocation"
+                  @onMapClick="mapClicked"></map-pane>
     </div>
 </template>
 
@@ -15,14 +19,14 @@
              */
             radius: {
                 type: Number,
-                default: null
+                default: 50
             },
             /**
              * An array of [lat, lng] used for where to position and center the circle overlay
              */
             center: {
                 type: Array,
-                default: null
+                default: () => { return [-43.530629, 172.625955] }
             },
             /**
              * The activities to be displayed on the map
@@ -30,6 +34,13 @@
             activities: {
                 type: Array,
                 default: null
+            },
+            /**
+             * Show Circle on map
+             **/
+            displayCircle: {
+                type: Boolean,
+                default: false
             }
         },
         data: function () {
@@ -58,14 +69,28 @@
              * @param event the map click event
              */
             mapClicked(event) {
-                this.center = [event.latlng.lat, event.latlng.lng]
-                this.updateCircle()
+                this.center = [event.latlng.lat, event.latlng.lng];
+                this.updateCircle();
                 this.$emit('locationChange', this.center)
+            },
+
+            /**
+             * When the map has location access this method is called to center the circle
+             * on the users location.
+             * @param event latlng object
+             */
+            centerOnUserLocation(event) {
+                this.center = [event.lat, event.lng];
+            }
+        },
+        watch: {
+            radius: function() {
+                this.updateCircle();
             }
         },
         mounted() {
-            this.updateCircle()
-            this.addMarkers()
+            this.updateCircle();
+            this.addMarkers();
         }
     }
 </script>

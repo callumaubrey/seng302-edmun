@@ -51,7 +51,6 @@
         </b-form-tags>
       </b-col>
       <b-col class="method-col">
-        <label style="margin-right:10px;">Search Method: </label>
         <b-form-radio-group id="activityTagSearchMethods" v-model="childSearchMethod" @change="emitSearchMethod" >
           <b-form-radio id="activity-tag-radio-and" class="searchByRadio" value="AND"  >And
           </b-form-radio>

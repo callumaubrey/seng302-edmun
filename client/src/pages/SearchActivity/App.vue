@@ -60,7 +60,7 @@
               </b-row>
 
               <!-- Activity search input -->
-              <b-row>
+              <b-row class="mb-3">
                 <b-col>
                   <ActivityTypeSearchBox :selected-options="search_data.types.values"
                   v-on:selectedActivityTypes="updateTypeValues"
@@ -68,6 +68,22 @@
                 </b-col>
               </b-row>
 
+              <!-- Activity Distance Slider -->
+              <b-row>
+                <b-col>
+                  <b-card body-class="px-3 pt-2 pb-0">
+                    <b-row class="pb-2">
+                      <b-col>
+                        <b-checkbox v-model="search_data.location.enabled">
+                          Search Radius:
+                        </b-checkbox>
+                      </b-col>
+                    </b-row>
+                    <ActivityDistanceSlider v-model="search_data.location.radius"
+                            :disabled="!search_data.location.enabled"></ActivityDistanceSlider>
+                  </b-card>
+                </b-col>
+              </b-row>
             </b-collapse>
 
           </b-card>
@@ -98,7 +114,9 @@
         </b-col>
 
         <b-col cols="8" class="p-0" style="background-color: red">
-          <SearchLocationMapPane></SearchLocationMapPane>
+          <SearchLocationMapPane :radius="search_data.location.radius*1000"
+                                 :display-circle="search_data.location.enabled">
+          </SearchLocationMapPane>
         </b-col>
       </b-row>
     </b-container>
@@ -117,10 +135,12 @@ import ActivityTypeSearchBox from "../../components/ActivityTypeSearchBox";
 import ActivityContinuousDurationSearchBox
   from "../../components/ActivityContinuousDurationSearchBox";
 import SearchLocationMapPane from "../../components/MapPane/SearchLocationMapPane";
+import ActivityDistanceSlider from "../../components/ActivityDistanceSlider";
 
 export default {
   name: "App.vue",
   components: {
+    ActivityDistanceSlider,
     SearchLocationMapPane,
     ActivityContinuousDurationSearchBox,
     SearchActivityTag, ActivityNameSearch, NavBar, SearchActivityList, ActivityTypeSearchBox
@@ -151,11 +171,11 @@ export default {
           limit: 10,
           count: 0
         },
-        // marker location
         location: {
+          enabled: false,
           longitude: null,
           latitude: null,
-          radius: null
+          radius: 50
         }
       },
         activity_data: []

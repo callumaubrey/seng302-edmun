@@ -159,7 +159,6 @@
             updateCircle(lat, lng, radius) {
                 this.circle.center = [lat, lng];
                 this.circle.radius = radius;
-                this.displayCircle = true;
             },
             /**
              * Updates the center of the map
