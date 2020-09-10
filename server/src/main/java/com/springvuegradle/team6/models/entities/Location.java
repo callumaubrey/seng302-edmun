@@ -8,7 +8,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
@@ -41,6 +41,7 @@ public class Location implements Serializable, Coordinates {
 
   @ManyToOne
   @JoinColumn(name = "path_id")
+  @JsonIgnore
   private Path path;
 
   public Location() {
