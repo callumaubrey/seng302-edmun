@@ -92,35 +92,27 @@ public class UserProfileController {
   @GetMapping("/{id}")
   public ResponseEntity getProfile(@PathVariable Integer id, HttpSession session)
       throws JsonProcessingException {
+
+    // Check if user can view profile
     ResponseEntity<String> canViewResponse =
         UserSecurityService.checkViewingPermission(id, session, repository);
     if (canViewResponse != null) {
       return canViewResponse;
     }
-    Optional<Profile> p = repository.findById(id);
-    if (p.isPresent()) {
-      Profile profile = p.get();
-      if (profile.getLocation() != null) {
-        double lat = profile.getLocation().getLatitude();
-        double lng = profile.getLocation().getLongitude();
-        String address;
-        if ((int) session.getAttribute("id") == id || UserSecurityService.checkIsAdmin()) {
-          address = locationService.getLocationAddressFromLatLng(lat, lng, false);
-        } else {
-          address = locationService.getLocationAddressFromLatLng(lat, lng, true);
-        }
 
-        if (address != null) {
-          ObjectMapper mapper = new ObjectMapper();
-          Map<String, Object> map = mapper.convertValue(profile, Map.class);
-          map.put("address", address);
-          return ResponseEntity.ok(map);
-        }
-      }
-      return ResponseEntity.ok(profile);
-    } else {
+    // Get Profile
+    Optional<Profile> p = repository.findById(id);
+    if (p.isEmpty()) {
       return new ResponseEntity<>("User does not exist", HttpStatus.NOT_FOUND);
     }
+    Profile profile = p.get();
+
+    // Check if user is authorised to view private location
+    int sessionId = Integer.parseInt(session.getAttribute("id").toString());
+    boolean authorised = UserSecurityService.checkIsAdminOrCreator(sessionId, id);
+
+    // Return Json
+    return ResponseEntity.ok(profile.getJSON(authorised));
   }
 
   /**
@@ -136,6 +128,12 @@ public class UserProfileController {
       @PathVariable Integer id,
       @Valid @RequestBody EditProfileRequest request,
       HttpSession session) {
+
+    // Update Location
+    if (request.location != null) {
+      updateLocation(id, request.location, session);
+    }
+
     Optional<Profile> p = repository.findById(id);
     if (p.isPresent()) {
       Profile edit = p.get();
@@ -284,7 +282,7 @@ public class UserProfileController {
   public ResponseEntity createProfile(
       @Valid @RequestBody CreateProfileRequest request, HttpSession session) {
     Profile profile =
-        request.generateProfile(emailRepository, countryRepository, locationRepository);
+        request.generateProfile(emailRepository, countryRepository, locationRepository, locationService);
     profile.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 
     // Check if primary email is being used by another user
@@ -347,7 +345,8 @@ public class UserProfileController {
   }
 
   /**
-   * Put request to update user's location
+   * Put request to update user's location.
+   * Generates public and private profile locations with names
    *
    * @param id user id under query
    * @param location location of type Location
@@ -372,16 +371,18 @@ public class UserProfileController {
         return authorisedResponse;
       }
 
-      // Update location
-      Optional<Location> optionalLocation =
-          locationRepository.findByLatitudeAndLongitude(location.latitude, location.longitude);
-      if (optionalLocation.isPresent()) {
-        profile.setLocation(optionalLocation.get());
-      } else {
-        Location newLocation = new Location(location.latitude, location.longitude);
-        locationRepository.save(newLocation);
-        profile.setLocation(newLocation);
-      }
+      // Remove previous location
+      Location privateLocation = profile.getPrivateLocation();
+      Location publicLocation = profile.getPublicLocation();
+      profile.setPrivateLocation(null);
+      profile.setPublicLocation(null);
+      repository.save(profile);
+      if(privateLocation != null) locationRepository.delete(privateLocation);
+      if(publicLocation != null) locationRepository.delete(publicLocation);
+
+      // Add new location
+      Location newLocation = new Location(location.latitude, location.longitude);
+      locationService.updateProfileLocation(profile, newLocation, locationRepository);
 
       repository.save(profile);
 
@@ -413,7 +414,8 @@ public class UserProfileController {
       }
 
       // Update location
-      profile.setLocation(null);
+      profile.setPrivateLocation(null);
+      profile.setPublicLocation(null);
       repository.save(profile);
 
       return ResponseEntity.ok("OK");
@@ -434,7 +436,7 @@ public class UserProfileController {
       if (authorisedResponse != null) {
         return authorisedResponse;
       }
-      return ResponseEntity.ok(profile.getLocation());
+      return ResponseEntity.ok(profile.getPrivateLocation());
     } else {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
     }

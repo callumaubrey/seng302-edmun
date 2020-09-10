@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
-import javax.validation.constraints.Email;
 import java.util.*;
 
 public class EditProfileRequest {
@@ -129,16 +128,5 @@ public class EditProfileRequest {
             }
             profile.setPassports(validPassports);
             profile.setActivityTypes(this.activityTypes);
-
-        if(this.location != null) {
-            Optional<Location> optionalLocation = locationRepository.findByLatitudeAndLongitude(this.location.latitude, this.location.longitude);
-            if (optionalLocation.isPresent()) {
-                profile.setLocation(optionalLocation.get());
-            } else {
-                Location newLocation = new Location(this.location.latitude, this.location.longitude);
-                locationRepository.save(newLocation);
-                profile.setLocation(newLocation);
-            }
-        }
     }
 }
