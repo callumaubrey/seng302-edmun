@@ -61,14 +61,14 @@ public class LocationService {
 
     // Get OSM feature at location coordinates
     JSONObject response = apiService.reverseGeocode(privateLocation);
-    if(response == null) return;
+    if (response == null) return;
 
     // Generate coordinates for locations
     Location publicLocation = apiService.parseReverseGeocodeObfuscated(response);
     privateLocation = apiService.parseReverseGeocodeDetailed(response);
 
     // Set Locations
-    if(publicLocation != null) locationRepository.save(publicLocation);
+    if (publicLocation != null) locationRepository.save(publicLocation);
     locationRepository.save(privateLocation);
     profile.setPublicLocation(publicLocation);
     profile.setPrivateLocation(privateLocation);

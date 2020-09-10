@@ -108,8 +108,8 @@ public class UserProfileController {
     Profile profile = p.get();
 
     // Check if user is authorised to view private location
-    int session_id = Integer.parseInt(session.getAttribute("id").toString());
-    boolean authorised = UserSecurityService.checkIsAdminOrCreator(session_id, id);
+    int sessionId = Integer.parseInt(session.getAttribute("id").toString());
+    boolean authorised = UserSecurityService.checkIsAdminOrCreator(sessionId, id);
 
     // Return Json
     return ResponseEntity.ok(profile.getJSON(authorised));

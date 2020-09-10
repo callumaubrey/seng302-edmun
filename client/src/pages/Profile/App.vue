@@ -104,7 +104,7 @@
 
                     <b-tab title="Location Info" @click="addUserLocationToMap">
                         <b-card style="margin: 1em">
-                            <h4 v-if="location.name" class="text-center">
+                            <h4 v-if="location && location.name" class="text-center">
                                 {{location.name}}
                             </h4>
                             <map-pane ref="map" :can-hide="true"></map-pane>

@@ -147,8 +147,6 @@
                 // Set Marker on map and center map on it
                 this.updateMarker(this.value.lat, this.value.lng);
                 this.$refs.map.setMapCenter(this.value.lat, this.value.lng);
-
-                console.log(this.value);
                 this.setLocationText(this.value.name);
             }
         }

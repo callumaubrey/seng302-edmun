@@ -76,7 +76,7 @@ public class GoogleAPIService {
     }
 
     // Check status code
-    if(responseJson.getAsString("status").equals("REQUEST_DENIED")) {
+    if (responseJson.getAsString("status").equals("REQUEST_DENIED")) {
       Logger.getLogger("ExternalAPI").log(Level.SEVERE, "GOOGLE API KEY set incorrectly. Requests Failed");
       throw new HttpServerErrorException(HttpStatus.UNAUTHORIZED);
     }
