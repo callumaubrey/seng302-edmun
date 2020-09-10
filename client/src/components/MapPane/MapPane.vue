@@ -45,6 +45,21 @@
                                         :radius="circle.radius"
                                         :color="circle.color"
                                 />
+
+                                <!--Routing-->
+                                <l-polyline :lat-lngs="routePoints">
+                                </l-polyline>
+                                <l-marker v-for="point in routePoints"
+                                          :key="point._index"
+                                          :visible="true"
+                                          :lat-lng="point"
+                                          :icon="blueMarker"
+                                          draggable
+                                          @move="test(point)"
+                                          ref="markersRef"
+                                >
+                                </l-marker>
+
                                 <l-marker v-for="marker in markers"
                                           :key="marker.id"
                                           :visible="marker.visible"
@@ -83,7 +98,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -92,7 +107,8 @@
             LTileLayer,
             LMarker,
             LTooltip,
-            LCircle
+            LCircle,
+            LPolyline
         },
         props: {
             canHide: {
@@ -141,7 +157,9 @@
                     center: [-43.530629, 172.625955],
                     radius: 4500,
                     color: '#3388ff',
-                }
+                },
+                routePoints: [[40.0, 175.2], [8.3, 30.7], [-43.530629, 172.625955]],
+                markerObjects: {},
             };
         },
         methods: {
@@ -247,7 +265,26 @@
             markerSelected(marker) {
                 this.center = marker.position;
                 this.$emit('markerSelected', marker.content.id);
-            }
+            },
+            // editRoutePoint(point) {
+            //     let i = 0;
+            //     let marker;
+            //     //Loops over markers and removes a marker with the same id
+            //     for (marker of this.routePoints) {
+            //         if (marker !== point) {
+            //             this.routePoints[i] = point
+            //             return true
+            //         }
+            //         i += 1
+            //     }
+            // }
+            // getMarkers() {
+            //     this.$nextTick(() => {
+            //         this.markerObjects = this.$refs.markersRef.map(ref => ref.mapObject._latlng)
+            //         alert(this.markerObjects)
+            //         alert(this.markerObjects[0]._latlng.lat)
+            //     })
+            // },
         },
         /**
          * Refresh the map everytime the map is rendered by vue.
@@ -261,6 +298,7 @@
         },
         mounted() {
             this.updateMapToUserGeoLocation();
+            this.getMarkers()
         }
     };
 </script>
