@@ -1,6 +1,6 @@
 <template>
   <b-row align-v="center">
-    <b-col cols="10">
+    <b-col>
       <b-form-tags v-model="selectedOptions" no-outer-focus
                    size="lg">
         <template v-slot="{ tags, disabled, addTag, removeTag }">
@@ -58,7 +58,7 @@
 
       </b-form-tags>
     </b-col>
-    <b-col cols="2">
+    <b-col style="flex: 0 0 50px;">
       <b-form inline>
         <b-form-radio-group id="activityTypesSearchMethods" v-model="method"
                             aria-describedby="activityTypesSearchMethodsHelp" @change=emitMethod>

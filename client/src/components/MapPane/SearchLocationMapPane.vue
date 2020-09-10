@@ -69,9 +69,11 @@
              * @param event the map click event
              */
             mapClicked(event) {
-                this.center = [event.latlng.lat, event.latlng.lng];
-                this.updateCircle();
-                this.$emit('locationChange', this.center)
+                if(this.displayCircle) {
+                    this.center = [event.latlng.lat, event.latlng.lng];
+                    this.updateCircle();
+                    this.$emit('locationChange', this.center);
+                }
             },
 
             /**

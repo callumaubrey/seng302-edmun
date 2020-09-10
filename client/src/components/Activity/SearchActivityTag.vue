@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-row>
-      <b-col cols="10">
+      <b-col>
         <b-form-text>{{ helpText }}</b-form-text>
         <b-form-tags v-model="values" no-outer-focus
                      style="margin: 0; padding: 0; background-color: initial; border: 0">
@@ -252,6 +252,7 @@
 
   .method-col {
     padding-top: 30px;
+    flex: 0 0 50px;
   }
 
 </style>
