@@ -148,13 +148,14 @@
                 userData: '',
                 passports: [],
                 activities: [],
+                myActivities: [],
                 additionalEmails: [],
                 isLoggedIn: '',
                 userName: "",
                 locations: [],
                 userRoles: [],
                 profileId: '',
-                location: '',
+                location: null,
                 dob: '',
                 loggedInIsAdmin: false,
                 hidden: null
@@ -181,7 +182,7 @@
                     });
             },
             getProfileData: async function () {
-                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 let currentObj = this;
                 api.getProfile(this.$route.params.id)
                     .then(function (response) {
@@ -207,6 +208,7 @@
 
                         currentObj.location = response.data.location;
                         currentObj.checkHideElements();
+
                     })
                     // eslint-disable-next-line no-unused-vars
                     .catch(function (error) {
@@ -217,14 +219,13 @@
                         }
                     });
             },
-
             addUserLocationToMap() {
-                if(this.location !== null) {
-                    this.$refs.map.createMarker(1, 1, this.location.latitude, this.location.longitude);
+                if (this.location !== null) {
+                    this.$refs.map.createMarker(1, 1, this.location.latitude, this.location.longitude, this.userData, this.userName); // this line needs to also give the english address to title, no API for it atm
                     this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
                 }
+                this.getMyActivities();
             },
-
             getCorrectDateFormat: function (date, currentObj) {
                 const dobCorrectFormat = new Date(date + "T00:00");
                 currentObj.dob = dobCorrectFormat.toLocaleDateString();
@@ -237,7 +238,6 @@
                     currentObj.hidden = true;
                 }
             },
-
             getUserId: function () {
                 let currentObj = this;
                 api.getProfileId()
@@ -252,6 +252,21 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
+            getMyActivities: function () {
+                let obj = this;
+                let map = obj.$refs.map;
+                map.refreshMap();
+                const profileId = obj.profileId;
+                api.getActivities(profileId)
+                    .then(function (response) {
+                      obj.myActivities = response.data;
+                      for (let i = 0; i < obj.myActivities.length; i++) {
+                          let activity = obj.myActivities[i];
+                          let routeString = "/profiles/" + profileId + "/activities/" + activity.id;
+                          map.createMarker(i, 2, activity.location.latitude, activity.location.longitude, routeString, activity.activityName)
+                      }
+                    })
+            }
         },
         watch: {
             $route: function () {
