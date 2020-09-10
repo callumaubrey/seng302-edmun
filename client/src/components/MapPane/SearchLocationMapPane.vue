@@ -53,8 +53,13 @@
              */
             addMarkers(){
                 //TODO: change the content of the marker below to display the activities Start time and activity type instead of the description (Once u42-t3 is merged)
+                this.$refs.map.clearMarkers();
                 for (const activity of this.activities){
-                    this.$refs.map.createMarker(activity.id, 2, activity.location.latitude, activity.location.longitude, activity.description, activity.name, true)
+                    let content = {
+                        activityTypes: activity.activityTypes,
+                        startTime: activity.startTime
+                    };
+                    this.$refs.map.createMarker(activity.id, 2, activity.location.latitude, activity.location.longitude, content, activity.activityName)
                 }
             },
             /**Updates the circle overlay, center(lat, long) and radius
@@ -83,17 +88,28 @@
              */
             centerOnUserLocation(event) {
                 this.center = [event.lat, event.lng];
+                this.$emit('locationChange', this.center);
             }
         },
         watch: {
             radius: function() {
                 this.updateCircle();
+            },
+            activities: function () {
+                this.addMarkers();
             }
+        },
+        model: {
+            prop: 'center',
+            event: 'locationChange'
         },
         mounted() {
             this.updateCircle();
-            this.addMarkers();
-        }
+            setTimeout(() => {
+                this.$refs.map.refreshMap();
+                console.log("Refreshed");
+            }, 100)
+        },
     }
 </script>
 

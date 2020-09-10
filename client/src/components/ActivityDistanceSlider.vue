@@ -12,7 +12,7 @@
             </b-col>
             <b-col align="center">
                 <label :class="{'text-secondary': disabled}">
-                    {{Math.round(distance)}} km
+                    {{distance}} km
                 </label>
             </b-col>
         </b-row>
@@ -70,7 +70,7 @@
             emitDistance: function () {
                 // Apply easing to distance value
                 let interpolation = this.raw_value * this.raw_value;
-                this.distance = interpolation * (this.maxSliderValue - this.minSliderValue) + this.minSliderValue;
+                this.distance = Math.round(interpolation * (this.maxSliderValue - this.minSliderValue) + this.minSliderValue);
 
                 this.$emit('distanceChange', this.distance);
             }

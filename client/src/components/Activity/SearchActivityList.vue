@@ -18,18 +18,12 @@
           <!-- Title -->
           <b-col class="title">{{activity.activityName}}</b-col>
 
-          <b-col>
-            <span v-if="!activity.continuous" class="date float-right">
+          <b-col v-if="!activity.continuous">
+            <span  class="date float-right">
               {{getDurationTimeSummary(activity)}}
             </span>
           </b-col>
 
-          <b-col>
-            <!-- Location -->
-            <span v-if="activity.location" class="float-right text-secondary activity-location-text">
-                      {{activity.location.city}}, {{activity.location.state}}, {{activity.location.country}}
-                  </span>
-          </b-col>
           <b-col cols="0.2" class="activity-type-icon-collection float-right">
             <ActivityTypeIcon v-for="type in activity.activityTypes" :key="type"
                               :type_name="type" class="float-right"></ActivityTypeIcon>

@@ -75,7 +75,7 @@
                     <b-row class="pb-2">
                       <b-col>
                         <b-checkbox v-model="search_data.location.enabled">
-                          Search Radius:
+                          Search Radius
                         </b-checkbox>
                       </b-col>
                     </b-row>
@@ -93,7 +93,7 @@
           <SearchActivityList v-bind:activity_data="activity_data"></SearchActivityList>
 
           <!-- No Results Message -->
-          <b-row v-if="hasSearched && search_data.pagination.count === 0" style="height: 1000px">
+          <b-row v-if="hasSearched && search_data.pagination.count === 0">
             <b-col class="text-center">
               <h2>No results</h2>
             </b-col>
@@ -114,7 +114,10 @@
         </b-col>
 
         <b-col cols="8" class="p-0" style="background-color: red">
-          <SearchLocationMapPane :radius="search_data.location.radius*1000"
+          <SearchLocationMapPane ref="map"
+                                 :radius="search_data.location.radius*1000"
+                                 :activities="activity_data"
+                                 v-model="search_data.location.center"
                                  :display-circle="search_data.location.enabled">
           </SearchLocationMapPane>
         </b-col>
@@ -173,8 +176,8 @@ export default {
         },
         location: {
           enabled: false,
-          longitude: null,
           latitude: null,
+          longitude: null,
           radius: 50
         }
       },
@@ -205,6 +208,13 @@ export default {
         let row_offset = (this.search_data.pagination.offset - 1) * (this.search_data.pagination.limit) * 2;
         let row_limit = this.search_data.pagination.limit + 1;
 
+        // Location Data
+        let location_data = {
+          latitude: this.search_data.location.enabled ? this.search_data.location.center[0] : null,
+          longitude: this.search_data.location.enabled ? this.search_data.location.center[1] : null,
+          radius: this.search_data.location.enabled ?  Math.round(this.search_data.location.radius): null
+        };
+
         // Get Activities
         Api.getActivitiesBySearch(this.search_data.search_query,
             this.search_data.types.values,
@@ -216,9 +226,9 @@ export default {
             this.search_data.duration_limit.end_date,
             row_offset,
             row_limit,
-            this.search_data.location.longitude,
-            this.search_data.location.latitude,
-            this.search_data.location.radius).then((response) => {
+            location_data.longitude,
+            location_data.latitude,
+            location_data.radius).then((response) => {
           this.activity_data = response.data.results;
         }).catch((error) => {
           console.log(error);
@@ -233,9 +243,9 @@ export default {
             this.search_data.search_mode_filter,
             this.search_data.duration_limit.start_date,
             this.search_data.duration_limit.end_date,
-            this.search_data.location.longitude,
-            this.search_data.location.latitude,
-            this.search_data.location.radius).then((response) => {
+            location_data.longitude,
+            location_data.latitude,
+            location_data.radius).then((response) => {
           this.search_data.pagination.count = response.data / 2;
         }).catch((error) => {
           console.log(error);
@@ -252,9 +262,9 @@ export default {
             this.search_data.duration_limit.end_date,
             this.search_data.pagination.offset,
             this.search_data.pagination.limit,
-            this.search_data.location.longitude,
-            this.search_data.location.latitude,
-            this.search_data.location.radius);
+            location_data.longitude,
+            location_data.latitude,
+            location_data.radius);
 
         history.pushState(
                 {},
@@ -318,10 +328,10 @@ export default {
           this.search_data.pagination.limit = params.pagination_limit;
         }
         if (params.lon !== undefined) {
-          this.search_data.location.longitude = params.longitude;
+          this.search_data.location.center[1] = params.longitude;
         }
         if (params.lat !== undefined) {
-          this.search_data.location.latitude = params.latitude;
+          this.search_data.location.center[0] = params.latitude;
         }
         if (params.radius !== undefined) {
           this.search_data.location.radius = params.radius
@@ -378,6 +388,7 @@ export default {
       this.loadQueryIntoFields();
       this.getUser();
       this.loadActivities();
+
     }
   }
 </script>
@@ -396,6 +407,7 @@ export default {
   }
 
   .content_row {
+    height: inherit;
     max-height: inherit;
   }
 

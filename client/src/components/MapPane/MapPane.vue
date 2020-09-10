@@ -61,8 +61,13 @@
                                                 {{marker.title}}
                                             </b>
                                             <hr style="margin: 0.25em">
-                                            <span>{{marker.content.activityTypes}} <br></span>
                                             <span>{{marker.content.startTime}}</span>
+                                            <span class="text-center">
+                                            <ActivityTypeIcon v-for="type in marker.content.activityTypes"
+                                                              style="font-size: 1.5em"
+                                                              :key="type"
+                                                              :type_name="type"></ActivityTypeIcon>
+                                            </span>
                                         </b-container>
                                     </l-tooltip>
                                 </l-marker>
@@ -85,10 +90,12 @@
 <script>
     import L from "leaflet";
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
+    import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
 
     export default {
         name: "MapPane",
         components: {
+            ActivityTypeIcon,
             LMap,
             LTileLayer,
             LMarker,
@@ -221,6 +228,12 @@
                     i += 1
                 }
                 return false
+            },
+            /**
+             * Clear all markers
+             **/
+            clearMarkers() {
+                this.markers = [];
             },
             /**
              * Updates the map's viewing size when map container size changes. For instance
