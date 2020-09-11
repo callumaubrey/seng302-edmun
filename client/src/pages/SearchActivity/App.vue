@@ -11,10 +11,10 @@
 
           <!-- Search Bar -->
           <b-row class="mb-3">
-            <b-col cols="9">
+            <b-col class="pr-0">
               <ActivityNameSearch v-model="search_data.search_query"></ActivityNameSearch>
             </b-col>
-            <b-col cols="3">
+            <b-col style="flex: 0 0 50px;">
               <b-button block size="lg" variant="primary" @click="search()">Search</b-button>
             </b-col>
           </b-row>
