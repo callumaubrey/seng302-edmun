@@ -6,7 +6,10 @@
 
         <!-- Search Settings -->
         <b-col cols="4" class="activity_settings_column">
-          <h1 class="mt-2">Search Activities</h1>
+          <h1 class="mt-2">
+            Search Activities
+            <i v-if="loadingData" class="text-primary fas fa-circle-notch fa-spin"></i>
+          </h1>
           <hr>
 
           <!-- Search Bar -->
@@ -153,6 +156,7 @@ export default {
       isLoggedIn: false,
       userName: "",
       hasSearched: false,
+      loadingData: false,
       showAdvancedSettings: false,
       search_data: {
         search_query: '',
@@ -216,6 +220,7 @@ export default {
         };
 
         // Get Activities
+        this.loadingData = true;
         Api.getActivitiesBySearch(this.search_data.search_query,
             this.search_data.types.values,
             this.search_data.types.method === "AND",
@@ -230,6 +235,7 @@ export default {
             location_data.latitude,
             location_data.radius).then((response) => {
           this.activity_data = response.data.results;
+          this.loadingData = false;
         }).catch((error) => {
           console.log(error);
         });
