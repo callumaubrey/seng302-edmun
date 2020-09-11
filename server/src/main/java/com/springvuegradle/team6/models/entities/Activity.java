@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -24,7 +25,6 @@ import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
-import org.hibernate.persister.entity.Loadable;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -48,21 +48,23 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
     name = "activityAnalyzer",
     tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
     filters = {
-      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-      @TokenFilterDef(
-          factory = EdgeNGramFilterFactory.class,
-          params = {
-            @Parameter(name = "minGramSize", value = "3"),
-            @Parameter(name = "maxGramSize", value = "30")
-          })
+        @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+        @TokenFilterDef(
+            factory = EdgeNGramFilterFactory.class,
+            params = {
+                @Parameter(name = "minGramSize", value = "3"),
+                @Parameter(name = "maxGramSize", value = "30")
+            })
     })
-public class Activity {
+public class Activity implements Serializable {
 
   // Constants
   public static final int NAME_MAX_LENGTH = 128;
   public static final int DESCRIPTION_MAX_LENGTH = 2048;
 
-  /** This constructor is used for testing purposes only */
+  /**
+   * This constructor is used for testing purposes only
+   */
   public Activity() {
     Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
