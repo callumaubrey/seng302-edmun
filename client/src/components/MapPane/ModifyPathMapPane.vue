@@ -30,27 +30,35 @@
             mapClicked(event) {
                 const currObj = this
                 const marker = this.$refs.map.markers[this.$refs.map.markers.length-1]
+                let listOfWayPoints = []
                 if (this.autoRoute =="true" && marker != null) {
+                    for (var waypoint of this.$refs.map.markers){
+                        listOfWayPoints.push([waypoint.position[1], waypoint.position[0]])
+                    }
+                    listOfWayPoints.push([event.latlng.lng, event.latlng.lat])
                     axios.post("https://api.openrouteservice.org/v2/directions/driving-car/geojson" ,
                         {
-                            coordinates: [[marker.position[1], marker.position[0]],
-                                [event.latlng.lng, event.latlng.lat]]
+                            coordinates: listOfWayPoints,
                         }, {headers : {Authorization : "5b3ce3597851110001cf6248183abbef295f42049b13e7a011f98247"}})
                     .then(function (res) {
+                        currObj.$refs.map.createMarker(currObj.count, 0, event.latlng.lat, event.latlng.lng, "", "")
+                        currObj.$refs.map.routePoints = []
                         for (var iii of res.data.features[0].geometry.coordinates) {
                           currObj.$refs.map.routePoints.push([iii[1], iii[0]])
                         }
-                        this.$refs.map.createMarker(this.count, 0, event.latlng.lat, event.latlng.lng, "", "")
                     })
                 }else {
                     this.$refs.map.routePoints.push([event.latlng.lat, event.latlng.lng])
                     this.$refs.map.createMarker(this.count, 0, event.latlng.lat, event.latlng.lng, "", "")
                 }
+
+
                 if (this.$refs.map.routePoints.length == 0) {
                     this.canChangeSelection = true
                 }else {
                     this.canChangeSelection = false
                 }
+                currObj.count += 1
 
 
             }
