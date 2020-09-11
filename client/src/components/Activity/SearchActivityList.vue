@@ -2,6 +2,7 @@
   <div>
     <b-card v-for="activity in activity_data" :key="activity.id"
             @click="gotoActivity(activity.profile_id, activity.id)"
+            @mouseenter="$emit('activityHover', activity)"
             class="activity-card rounded mb-3">
       <b-card-body class="activity-card-body" >
         <b-row>

@@ -93,7 +93,9 @@
           <hr>
 
           <!-- Activity List -->
-          <SearchActivityList v-bind:activity_data="activity_data"></SearchActivityList>
+          <SearchActivityList v-bind:activity_data="activity_data"
+                              @activityHover="activityHoverOver"
+          ></SearchActivityList>
 
           <!-- No Results Message -->
           <b-row v-if="hasSearched && search_data.pagination.count === 0">
@@ -281,6 +283,12 @@ export default {
 
       search() {
         this.loadActivities();
+      },
+
+      activityHoverOver(activity) {
+        if(activity.location != null) {
+          this.$refs.map.setMapCenter(activity.location.latitude, activity.location.longitude);
+        }
       },
 
 

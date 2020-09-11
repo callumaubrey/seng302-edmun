@@ -70,6 +70,13 @@
             updateCircle(){
                 this.$refs.map.updateCircle(this.center[0], this.center[1], this.radius)
             },
+
+            /**
+             * Focus map on marker
+             **/
+            setMapCenter(lat, lng) {
+                this.$refs.map.setMapCenter(lat, lng);
+            },
             /**
              * When the map is clicked the center of the circle is changed and the circle is updated
              * and then the new center is emitted for use in activity search query
