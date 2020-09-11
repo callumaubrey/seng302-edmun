@@ -55,6 +55,8 @@
                 //TODO: change the content of the marker below to display the activities Start time and activity type instead of the description (Once u42-t3 is merged)
                 this.$refs.map.clearMarkers();
                 for (const activity of this.activities){
+                    if (activity.location == null) continue;
+
                     let content = {
                         activityTypes: activity.activityTypes,
                         startTime: activity.startTime
