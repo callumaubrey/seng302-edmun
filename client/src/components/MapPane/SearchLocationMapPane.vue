@@ -72,10 +72,14 @@
             },
 
             /**
-             * Focus map on marker
+             * Passthrough methods
              **/
             setMapCenter(lat, lng) {
                 this.$refs.map.setMapCenter(lat, lng);
+            },
+
+            refreshMap() {
+                this.$refs.map.refreshMap();
             },
             /**
              * When the map is clicked the center of the circle is changed and the circle is updated
@@ -116,7 +120,6 @@
             this.updateCircle();
             setTimeout(() => {
                 this.$refs.map.refreshMap();
-                console.log("Refreshed");
             }, 100)
         },
     }

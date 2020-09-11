@@ -2,10 +2,14 @@
   <div>
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
     <b-container fluid class="content_container">
+
       <b-row class="content_row">
 
         <!-- Search Settings -->
-        <b-col cols="4" class="activity_settings_column">
+        <b-col :cols="showMap ? 4 : 6"
+               style="float: none; margin: 0 auto;"
+               class="activity_settings_column">
+          <MapExpandButton class="map-show-button" v-model="showMap"></MapExpandButton>
           <h1 class="mt-2">
             Search Activities
             <i v-if="loadingData" class="text-primary fas fa-circle-notch fa-spin"></i>
@@ -118,7 +122,7 @@
           </b-row>
         </b-col>
 
-        <b-col cols="8" class="p-0" style="background-color: red">
+        <b-col :cols="showMap ? 8 : 0" :class="{'p-0': true, 'col-hidden': !showMap}">
           <SearchLocationMapPane ref="map"
                                  :radius="search_data.location.radius*1000"
                                  :activities="activity_data"
@@ -144,10 +148,12 @@ import ActivityContinuousDurationSearchBox
   from "../../components/ActivityContinuousDurationSearchBox";
 import SearchLocationMapPane from "../../components/MapPane/SearchLocationMapPane";
 import ActivityDistanceSlider from "../../components/ActivityDistanceSlider";
+import MapExpandButton from "../../components/MapPane/MapExpandButton";
 
 export default {
   name: "App.vue",
   components: {
+    MapExpandButton,
     ActivityDistanceSlider,
     SearchLocationMapPane,
     ActivityContinuousDurationSearchBox,
@@ -160,6 +166,7 @@ export default {
       hasSearched: false,
       loadingData: false,
       showAdvancedSettings: false,
+      showMap: true,
       search_data: {
         search_query: '',
         search_mode_filter: 'all',
@@ -397,12 +404,20 @@ export default {
 
 
     },
+    watch: {
+      showMap: function (val) {
+        if(val) {
+          setTimeout(() => {
+            this.$refs.map.refreshMap();
+          }, 500)
+        }
+      }
+    },
 
     mounted() {
       this.loadQueryIntoFields();
       this.getUser();
       this.loadActivities();
-
     }
   }
 </script>
@@ -428,5 +443,21 @@ export default {
   .activity_settings_column {
     overflow-y: scroll;
     max-height: inherit;
+  }
+
+  .row [class*='col-'] {
+    transition: flex 0.5s ease-in-out, max-width .5s ease-in-out;
+  }
+
+  .col-hidden {
+    width: 0px;
+    max-width: 0px;
+  }
+
+  .map-show-button {
+    font-size: 3rem;
+    position: absolute;
+    z-index: 100;
+    right: 15px;
   }
 </style>
