@@ -683,6 +683,14 @@ public class ActivityMetricController {
 
     activityResultRepository.delete(activityResult);
 
+    int metricId = activityResult.getMetricId();
+    List<ActivityResult> results = activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    if (results.size() == 0) {
+      ActivityQualificationMetric metric = activityQualificationMetricRepository.getOne(metricId);
+      metric.setEditable(false);
+      activityQualificationMetricRepository.save(metric);
+    }
+
     return new ResponseEntity("Activity result deleted", HttpStatus.OK);
   }
 }
