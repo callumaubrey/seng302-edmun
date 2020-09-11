@@ -6,7 +6,10 @@
         <b-form-checkbox value="true">Auto route</b-form-checkbox>
       </b-form-checkbox-group>
     </b-form-group>
-    <b-button @click="resetMarkers()">Reset</b-button>
+    <b-button @click="resetMarkerAndPoint()">Reset</b-button>
+    <div v-if="this.autoRoute == 'false'">
+      <b-button @click="prevPoint()">Back</b-button>
+    </div>
     <map-pane @onMapClick="mapClicked" ref="map"></map-pane>
   </div>
 </template>
@@ -54,9 +57,16 @@ export default {
         this.canChangeSelection = false
       }
     },
-    resetMarkers() {
+    resetMarkerAndPoint() {
       this.$refs.map.markers = [];
       this.$refs.map.routePoints = [];
+      this.canChangeSelection = true;
+    },
+    prevPoint() {
+      if (this.$refs.map.markers.length > 1) {
+        this.$refs.map.markers.pop();
+        this.$refs.map.routePoints.pop();
+      }
     }
   },
   mounted() {
