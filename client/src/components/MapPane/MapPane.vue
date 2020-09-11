@@ -49,16 +49,16 @@
                                 <!--Routing-->
                                 <l-polyline :lat-lngs="routePoints">
                                 </l-polyline>
-                                <l-marker v-for="point in routePoints"
-                                          :key="point._index"
-                                          :visible="true"
-                                          :lat-lng="point"
-                                          :icon="blueMarker"
-                                          draggable
-                                          @move="test(point)"
-                                          ref="markersRef"
-                                >
-                                </l-marker>
+<!--                                <l-marker v-for="point in routePoints"-->
+<!--                                          :key="point._index"-->
+<!--                                          :visible="true"-->
+<!--                                          :lat-lng="point"-->
+<!--                                          :icon="blueMarker"-->
+<!--                                          draggable-->
+<!--                                          @move="test(point)"-->
+<!--                                          ref="markersRef"-->
+<!--                                >-->
+<!--                                </l-marker>-->
 
                                 <l-marker v-for="marker in markers"
                                           :key="marker.id"
@@ -69,6 +69,7 @@
                                 >
                                     <l-tooltip id="popUp"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
+                                               v-if="tooltip"
                                     >
                                         <b-container style="max-height: 6.5em; overflow: hidden">
                                             <b>
@@ -158,8 +159,9 @@
                     radius: 4500,
                     color: '#3388ff',
                 },
-                routePoints: [[40.0, 175.2], [8.3, 30.7], [-43.530629, 172.625955]],
+                routePoints: [],
                 markerObjects: {},
+                tooltip: true
             };
         },
         methods: {
@@ -298,7 +300,6 @@
         },
         mounted() {
             this.updateMapToUserGeoLocation();
-            this.getMarkers()
         }
     };
 </script>
