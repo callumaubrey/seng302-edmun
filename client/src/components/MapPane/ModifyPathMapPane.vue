@@ -1,7 +1,8 @@
 <template>
   <div>
     <b-form-group label="Using sub-components:">
-      <b-form-checkbox-group id="checkbox-group-2" v-model="autoRoute" name="flavour-2" v-if="canChangeSelection">
+      <b-form-checkbox-group id="checkbox-group-2" v-model="autoRoute" name="flavour-2"
+                             v-if="canChangeSelection">
         <b-form-checkbox value="false">Selection</b-form-checkbox>
         <b-form-checkbox value="true">Auto route</b-form-checkbox>
       </b-form-checkbox-group>
@@ -67,8 +68,7 @@ export default {
       currObj.count += 1
 
     },
-
-  resetMarkerAndPoint() {
+    resetMarkerAndPoint() {
       this.$refs.map.markers = [];
       this.$refs.map.routePoints = [];
       this.canChangeSelection = true;
@@ -84,12 +84,4 @@ export default {
     this.$refs.map.tooltip = false
   }
 }
-
 </script>
-
-
-
-
-<style scoped>
-
-</style>
