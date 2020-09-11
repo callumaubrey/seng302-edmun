@@ -17,6 +17,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import io.cucumber.java.hu.Ha;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,6 +31,7 @@ import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,11 +44,13 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -63,6 +67,8 @@ public class SearchActivityControllerTest {
   @Autowired private LocationRepository locationRepository;
 
   @Autowired private MockMvc mvc;
+
+  @Autowired private GoogleAPIServiceMocking googleAPIService;
 
   private int id;
 
@@ -205,7 +211,7 @@ public class SearchActivityControllerTest {
             "2020-04-05T15:50:41+1300", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
     activity3.setEndTime(
         LocalDateTime.parse(
-            "2020-04-07T15:50:41+1300", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
+            "2020-04-07T16:50:41+1300", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")));
     activity3.setProfile(profile);
     Set<Tag> tags3 = new HashSet<>();
     tags3.add(running);
@@ -236,6 +242,9 @@ public class SearchActivityControllerTest {
     activityRole.setActivityRoleType(ActivityRoleType.Access);
     activityRole.setProfile(profile);
     activityRoleRepository.save(activityRole);
+
+    // Setup api mocking of google api to prevent error on calls.
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
   }
 
   @Test
@@ -1005,5 +1014,227 @@ public class SearchActivityControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
+  }
+
+  @Test
+  void getActivitySortByEarliestStartDateReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&sort=EARLIEST_START_DATE")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    LocalDateTime startDate =
+        LocalDateTime.parse(
+            arr.getJSONObject(0).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime startDate1 =
+        LocalDateTime.parse(
+            arr.getJSONObject(1).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime startDate2 =
+        LocalDateTime.parse(
+            arr.getJSONObject(2).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        startDate.isBefore(startDate1) || startDate.isEqual(startDate1));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        startDate1.isBefore(startDate2) || startDate1.isEqual(startDate2));
+  }
+
+  @Test
+  void getActivitySortByLatestStartDateReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&sort=latest_start_date")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    LocalDateTime startDate =
+        LocalDateTime.parse(
+            arr.getJSONObject(0).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime startDate1 =
+        LocalDateTime.parse(
+            arr.getJSONObject(1).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime startDate2 =
+        LocalDateTime.parse(
+            arr.getJSONObject(2).getString("startTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        startDate.isAfter(startDate1) || startDate.isEqual(startDate1));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        startDate1.isAfter(startDate2) || startDate1.isEqual(startDate2));
+  }
+
+  @Test
+  void getActivitySortByEarliestEndDateReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&sort=EARLIEST_end_DATE")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    LocalDateTime endDate =
+        LocalDateTime.parse(
+            arr.getJSONObject(0).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime endDate1 =
+        LocalDateTime.parse(
+            arr.getJSONObject(1).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime endDate2 =
+        LocalDateTime.parse(
+            arr.getJSONObject(2).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        endDate.isBefore(endDate1) || endDate.isEqual(endDate1));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        endDate1.isBefore(endDate2) || endDate1.isEqual(endDate2));
+  }
+
+  @Test
+  void getActivitySortByLatestEndDateReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?time=duration&sort=latest_end_date")
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    LocalDateTime endDate =
+        LocalDateTime.parse(
+            arr.getJSONObject(0).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime endDate1 =
+        LocalDateTime.parse(
+            arr.getJSONObject(1).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTime endDate2 =
+        LocalDateTime.parse(
+            arr.getJSONObject(2).getString("endTime"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        endDate.isAfter(endDate1) || endDate.isEqual(endDate1));
+    org.junit.jupiter.api.Assertions.assertTrue(
+        endDate1.isAfter(endDate2) || endDate1.isEqual(endDate2));
+  }
+
+  @Test
+  void getActivitiesSortByClosestLocationReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?lon=172.5912131&lat=-43.5376602&radius=2&sort=closest_location") // 216 Blenheim Road
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5376602, arr.getJSONObject(0).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5912131, arr.getJSONObject(0).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5383822, arr.getJSONObject(1).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5843095, arr.getJSONObject(1).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.53702, arr.getJSONObject(2).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.6006563, arr.getJSONObject(2).getJSONObject("location").getDouble("longitude"));
+  }
+
+  @Test
+  void getActivitiesSortByFurthestLocationReturnInCorrectOrder() throws Exception {
+    String response =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?lon=172.5912131&lat=-43.5376602&radius=2&sort=furthest_location") // 216 Blenheim Road
+                    .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5376602, arr.getJSONObject(2).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5912131, arr.getJSONObject(2).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.5383822, arr.getJSONObject(1).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.5843095, arr.getJSONObject(1).getJSONObject("location").getDouble("longitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        -43.53702, arr.getJSONObject(0).getJSONObject("location").getDouble("latitude"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        172.6006563, arr.getJSONObject(0).getJSONObject("location").getDouble("longitude"));
+  }
+
+  @Test
+  void getActivityInvalidSortReturnBadRequest() throws Exception {
+    String mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/activities?time=duration&sort=some_sort_that_does_not_exist")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Assertions.assertEquals("Sort method provided does not exist", mvcResponse);
+  }
+
+  @Test
+  void getActivityLocationSortWithoutLongitudeReturnBadRequest() throws Exception {
+    String mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lon=90&radius=10&sort=furthest_location")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Assertions.assertEquals(
+        "Cannot sort by location when no original location is provided", mvcResponse);
+  }
+
+  @Test
+  void getActivityLocationSortWithoutLatitudeReturnBadRequest() throws Exception {
+    String mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.get("/activities?lat=90&radius=10&sort=furthest_location")
+                    .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Assertions.assertEquals(
+        "Cannot sort by location when no original location is provided", mvcResponse);
   }
 }

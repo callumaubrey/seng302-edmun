@@ -1,7 +1,14 @@
 package com.springvuegradle.team6.models.entities;
 
-import javax.persistence.*;
 import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
@@ -21,19 +28,29 @@ import org.hibernate.search.spatial.Coordinates;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Location implements Serializable, Coordinates {
 
-  @Id @GeneratedValue private long locationID = 0;
+  @Id
+  @GeneratedValue
+  private final long location_id = 0;
 
-  @Latitude private Double latitude = 0d;
-  @Longitude private Double longitude = 0d;
+  @Latitude
+  private Double latitude = 0d;
+  @Longitude
+  private Double longitude = 0d;
 
-  @Transient private String name;
+  private String name;
 
-  public Location() {}
+  @ManyToOne
+  @JoinColumn(name = "path_id")
+  @JsonIgnore
+  private Path path;
+
+  public Location() {
+  }
 
   /**
    * Sets a location using a specific latitude and longitude
    *
-   * @param latitude Global coordinate latitude
+   * @param latitude  Global coordinate latitude
    * @param longitude Global coordinate longitude
    */
   public Location(double latitude, double longitude) {
