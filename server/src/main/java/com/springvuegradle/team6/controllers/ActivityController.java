@@ -50,19 +50,19 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @CrossOrigin(
     origins = {
-      "http://localhost:9000",
-      "http://localhost:9500",
-      "https://csse-s302g7.canterbury.ac.nz/test",
-      "https://csse-s302g7.canterbury.ac.nz/prod"
+        "http://localhost:9000",
+        "http://localhost:9500",
+        "https://csse-s302g7.canterbury.ac.nz/test",
+        "https://csse-s302g7.canterbury.ac.nz/prod"
     },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
-      RequestMethod.GET,
-      RequestMethod.POST,
-      RequestMethod.DELETE,
-      RequestMethod.PUT,
-      RequestMethod.PATCH
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.DELETE,
+        RequestMethod.PUT,
+        RequestMethod.PATCH
     })
 @RestController
 @RequestMapping("")
@@ -564,6 +564,8 @@ public class ActivityController {
       }
       activity.setTags(hashtags);
     }
+
+    addMetricsToActivity(activity, request.metrics);
   }
 
   /**
@@ -585,27 +587,6 @@ public class ActivityController {
     }
   }
 
-  private List<ActivityQualificationMetric> editMetricsToActivity(
-      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
-    List<ActivityQualificationMetric> metrics = new ArrayList<>();
-    if (requestMetrics != null) {
-      for (ActivityQualificationMetric metric : requestMetrics) {
-        List<ActivityResult> results =
-            activityResultRepository.findSingleMetricResultsOnActivity(
-                activity.getId(), metric.getId());
-        if (results.size() == 0) {
-          metric.setActivity(activity);
-          activityQualificationMetricRepository.save(metric);
-          metrics.add(metric);
-        } else {
-          return null;
-        }
-      }
-      activity.setMetrics(metrics);
-    }
-    return metrics;
-  }
-
   /**
    * This method will deal with the different cases of visibility and which roles to delete and
    * which users to unsubscribe
@@ -617,13 +598,13 @@ public class ActivityController {
 
     if (activity.getVisibilityType() == VisibilityType.Restricted
         && request.visibility.equals(
-            "public")) { // access roles dont need to exist if going from restricted to public;
+        "public")) { // access roles dont need to exist if going from restricted to public;
       activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
     } else if (!(activity.getVisibilityType() == VisibilityType.Public
-            && request.visibility.equals("public"))
+        && request.visibility.equals("public"))
         && !(activity.getVisibilityType() == VisibilityType.Restricted
-            && request.visibility.equals(
-                "restricted"))) { // This checks if there was no change in visibility.
+        && request.visibility.equals(
+        "restricted"))) { // This checks if there was no change in visibility.
       activityRoleRepository.deleteAllActivityRolesExceptOwner(
           activity.getId(), activity.getProfile().getId());
       subscriptionHistoryRepository.unSubscribeAllButCreator(
@@ -684,13 +665,6 @@ public class ActivityController {
         editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       }
       editActivityFromRequest(request, activity);
-
-      List<ActivityQualificationMetric> metrics = editMetricsToActivity(activity, request.metrics);
-      if (metrics == null) {
-        return new ResponseEntity("You cannot edit a metric that already has results", HttpStatus.BAD_REQUEST);
-      } else {
-        activity.setMetrics(metrics);
-      }
 
       String postJson = mapper.writeValueAsString(activity);
       if (!preJson.equals(postJson)) {
