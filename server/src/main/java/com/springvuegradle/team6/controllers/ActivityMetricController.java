@@ -214,6 +214,12 @@ public class ActivityMetricController {
           "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
     }
 
+    List<ActivityResult> results = activityResultRepository.findSingleMetricResultsOnActivity(activityId, metric.getId());
+    if (results.size() > 0) {
+      metric.setEditable(false);
+      activityQualificationMetricRepository.save(metric);
+    }
+
     ActivityHistory activityHistory = new ActivityHistory(activity, message);
     activityHistoryRepository.save(activityHistory);
 
@@ -685,9 +691,9 @@ public class ActivityMetricController {
 
     int metricId = activityResult.getMetricId();
     List<ActivityResult> results = activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
-    if (results.size() > 0) {
+    if (results.size() == 0) {
       ActivityQualificationMetric metric = activityQualificationMetricRepository.getOne(metricId);
-      metric.setEditable(false);
+      metric.setEditable(true);
       activityQualificationMetricRepository.save(metric);
     }
 
