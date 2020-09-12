@@ -194,14 +194,14 @@
               </b-container>
             </b-tab>
 
-            <!--<ActivityLocationTab ref="map"
+            <ActivityLocationTab ref="map"
                                  :can-hide="false"
                                  :user-lat="userLat"
                                  :user-long="userLong"
                                  @locationSelect="updateLocation"
                                  :activity-lat="locationData.latitude"
                                  :activity-long="locationData.longitude"
-            ></ActivityLocationTab>-->
+            ></ActivityLocationTab>
 
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
@@ -225,7 +225,7 @@
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
     import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-    //import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+    import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
     export default {
       mixins: [validationMixin, locationMixin],
@@ -234,7 +234,7 @@
         SearchTag,
         NavBar,
         ForbiddenMessage,
-        //ActivityLocationTab
+        ActivityLocationTab
       },
       data() {
         return {
