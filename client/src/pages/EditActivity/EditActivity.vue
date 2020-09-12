@@ -216,28 +216,28 @@
 </template>
 
 <script>
-    import NavBar from "@/components/NavBar.vue";
-    import SearchTag from "../../components/SearchTag";
-    import ForbiddenMessage from "../../components/ForbiddenMessage";
-    import {validationMixin} from "vuelidate";
-    import {required} from 'vuelidate/lib/validators';
-    import locationMixin from "../../mixins/locationMixin";
-    import AdminMixin from "../../mixins/AdminMixin";
-    import api from '@/Api'
-    import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-    import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import NavBar from "@/components/NavBar.vue";
+import SearchTag from "../../components/SearchTag";
+import ForbiddenMessage from "../../components/ForbiddenMessage";
+import {validationMixin} from "vuelidate";
+import {required} from 'vuelidate/lib/validators';
+import locationMixin from "../../mixins/locationMixin";
+import AdminMixin from "../../mixins/AdminMixin";
+import api from '@/Api'
+import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
-    export default {
-      mixins: [validationMixin, locationMixin],
-      components: {
-        ActivityMetricsEditor,
-        SearchTag,
-        NavBar,
-        ForbiddenMessage,
-        ActivityLocationTab
-      },
-      data() {
-        return {
+export default {
+  mixins: [validationMixin, locationMixin],
+  components: {
+    ActivityMetricsEditor,
+    SearchTag,
+    NavBar,
+    ForbiddenMessage,
+    ActivityLocationTab
+  },
+  data() {
+    return {
           isLoggedIn: false,
           userName: '',
           isContinuous: '',
@@ -483,45 +483,23 @@
           }
         },
         getISODates: function () {
-          console.log(this.durationForm.startDate)
-          let startDate = new Date(this.durationForm.startDate);
-          let endDate = new Date(this.durationForm.endDate);
-
-          // wind it back to previous date to align with local date time
-          startDate.setDate(startDate.getDate() - 1);
-          endDate.setDate(endDate.getDate() - 1);
-
-          if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
-            startDate = new Date(
-                this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
+          let startDateISO;
+          if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+              || this.durationForm.startTime === "") {
+            startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+          } else {
+            startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+                + ":00+1200";
           }
 
-          if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
-            endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
+          let endDateISO;
+          if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
+              || this.durationForm.endTime === "") {
+            endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
+          } else {
+            endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
           }
 
-          let startDateISO = startDate.toISOString().slice(0, -5);
-          let endDateISO = endDate.toISOString().slice(0, -5);
-
-          var currentTime = new Date();
-          const offset = (currentTime.getTimezoneOffset());
-
-          const currentTimezone = (offset / 60) * -1;
-          if (currentTimezone !== 0) {
-            startDateISO += currentTimezone > 0 ? '+' : '';
-            endDateISO += currentTimezone > 0 ? '+' : '';
-          }
-          startDateISO += currentTimezone.toString() + "00";
-          endDateISO += currentTimezone.toString() + "00";
-
-          if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
-            startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
-                startDateISO.length);
-          }
-          if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
-            endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
-                endDateISO.length);
-          }
           return [startDateISO, endDateISO];
         },
         convertISOtoDateTime: function (ISODate) {

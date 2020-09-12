@@ -367,9 +367,6 @@ const App = {
         minute = '0' + dateObject.minute;
       }
       let time = hour  + ':' + minute;
-      if (time === "00:00") {
-        time = null;
-      }
       return time;
     },
     getCorrectDateFormat: function (start, end, currentObj) {
@@ -377,8 +374,9 @@ const App = {
       let startDate = new Date(start.year + "-" + start.monthValue + '-'
           + start.dayOfMonth + ' ' + startTime).toString();
       if (startTime == null) {
+        console.log(start)
         startDate = new Date(start.year + "-" + start.monthValue + '-'
-            + start.dayOfMonth + ' ' + '24:00').toString();
+            + start.dayOfMonth + ' ' + '00:00').toString();
       }
       currentObj.startTime = startDate;
       currentObj.activity.startTime = startDate;
@@ -388,7 +386,7 @@ const App = {
           + end.dayOfMonth + ' ' + this.getCorrectTimeFormat(end) ).toString();
       if (endTime == null) {
         endDate = new Date(end.year + "-" + end.monthValue + '-'
-            + end.dayOfMonth + ' ' + '24:00' ).toString();
+            + end.dayOfMonth + ' ' + '00:00').toString();
       }
       currentObj.endTime = endDate;
     },
