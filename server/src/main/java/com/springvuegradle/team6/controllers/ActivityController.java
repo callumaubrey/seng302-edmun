@@ -565,7 +565,7 @@ public class ActivityController {
       activity.setTags(hashtags);
     }
 
-    addMetricsToActivity(activity, request.metrics);
+    editMetricsToActivity(activity, request.metrics);
   }
 
   /**
@@ -584,6 +584,43 @@ public class ActivityController {
         metrics.add(metric);
       }
       activity.setMetrics(metrics);
+    }
+  }
+
+  private void editMetricsToActivity(
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
+    List<ActivityQualificationMetric> newMetrics = new ArrayList<>();
+    List<ActivityQualificationMetric> dbMetrics = activityQualificationMetricRepository.findByActivity_Id(activity.getId());
+    if (requestMetrics != null) {
+      if (dbMetrics.size() == 0) {
+        for (ActivityQualificationMetric requestMetric : requestMetrics) {
+          // Adding
+          requestMetric.setActivity(activity);
+          activityQualificationMetricRepository.save(requestMetric);
+          newMetrics.add(requestMetric);
+        }
+      } else {
+        for (ActivityQualificationMetric requestMetric : requestMetrics) {
+          for (ActivityQualificationMetric metric : dbMetrics) {
+            if (requestMetric.getId() == 0) {
+              // Adding
+              requestMetric.setActivity(activity);
+              activityQualificationMetricRepository.save(requestMetric);
+              newMetrics.add(requestMetric);
+            } else {
+              if (metric.getId() == requestMetric.getId()) {
+                // Editing
+                activityQualificationMetricRepository.save(requestMetric);
+                newMetrics.add(requestMetric);
+              } else {
+                // Deleting
+                activityQualificationMetricRepository.delete(metric);
+              }
+            }
+          }
+        }
+      }
+      activity.setMetrics(newMetrics);
     }
   }
 
