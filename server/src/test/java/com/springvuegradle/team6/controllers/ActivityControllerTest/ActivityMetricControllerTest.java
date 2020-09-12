@@ -16,6 +16,7 @@ import com.springvuegradle.team6.models.entities.ActivityResultDuration;
 import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
+import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -3009,5 +3011,56 @@ public class ActivityMetricControllerTest {
             metric.getId())
             .session(session))
         .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void editActivityMetricsIsOk() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("OriginalTitle");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"id\": \"" + metric.getId() + "\", \"unit\": \"Count\", \"title\": \"NewTitle\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals("NewTitle", newMetric.getTitle());
   }
 }
