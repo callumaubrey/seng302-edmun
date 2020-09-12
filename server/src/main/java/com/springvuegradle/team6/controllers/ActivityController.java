@@ -664,6 +664,19 @@ public class ActivityController {
       if (request.visibility != null) {
         editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       }
+
+      if (request.metrics != null) {
+        for (ActivityQualificationMetric metric : request.metrics) {
+          if (metric.getId() != 0) {
+            ActivityQualificationMetric savedMetric =
+                activityQualificationMetricRepository.findById(metric.getId()).get();
+            if (!checkTwoMetricsAreTheSame(savedMetric, metric) && !savedMetric.getEditable()) {
+              return new ResponseEntity<>("Can not edit this activity", HttpStatus.BAD_REQUEST);
+            }
+            }
+        }
+        activity.setMetrics(request.metrics);
+      }
       editActivityFromRequest(request, activity);
 
       String postJson = mapper.writeValueAsString(activity);
@@ -683,6 +696,12 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+  public boolean checkTwoMetricsAreTheSame(ActivityQualificationMetric metric1, ActivityQualificationMetric metric2){
+    return metric1.getRankByAsc() == metric2
+        .getRankByAsc() && metric1.getTitle().equals(metric2.getTitle()) && metric1.getDescription()
+        .equals(metric2.getDescription()) && metric1.getUnit().name()
+        .equals(metric2.getUnit().name());
   }
 
   /**
