@@ -565,7 +565,7 @@ public class ActivityController {
       activity.setTags(hashtags);
     }
 
-    editMetricsToActivity(activity, request.metrics);
+    editMetricsFromRequest(activity, request.metrics);
   }
 
   /**
@@ -587,7 +587,15 @@ public class ActivityController {
     }
   }
 
-  private void editMetricsToActivity(
+  /**
+   * Edits a metric if metric ID matches one already on that activity
+   * Adds a metric if metric ID = 0 or if there are none in the DB
+   * Set the activities metrics to the newly edited/added list of metrics
+   *
+   * @param activity Activity object
+   * @param requestMetrics list of ActivityQualificationMetric objects
+   */
+  private void editMetricsFromRequest(
       Activity activity, List<ActivityQualificationMetric> requestMetrics) {
     List<ActivityQualificationMetric> newMetrics = new ArrayList<>();
     List<ActivityQualificationMetric> dbMetrics = activityQualificationMetricRepository.findByActivity_Id(activity.getId());
@@ -601,25 +609,18 @@ public class ActivityController {
         }
       } else {
         for (ActivityQualificationMetric metric : dbMetrics) {
-          if (requestMetrics.size() == 0) {
-            activityQualificationMetricRepository.delete(metric);
-          } else {
-            for (ActivityQualificationMetric requestMetric : requestMetrics) {
-              if (requestMetric.getId() == 0) {
-                // Adding
+          for (ActivityQualificationMetric requestMetric : requestMetrics) {
+            if (requestMetric.getId() == 0) {
+              // Adding
+              requestMetric.setActivity(activity);
+              activityQualificationMetricRepository.save(requestMetric);
+              newMetrics.add(requestMetric);
+            } else {
+              if (metric.getId() == requestMetric.getId() && metric.getEditable() == true) {
+                // Editing
                 requestMetric.setActivity(activity);
                 activityQualificationMetricRepository.save(requestMetric);
                 newMetrics.add(requestMetric);
-              } else {
-                if (metric.getId() == requestMetric.getId()) {
-                  // Editing
-                  requestMetric.setActivity(activity);
-                  activityQualificationMetricRepository.save(requestMetric);
-                  newMetrics.add(requestMetric);
-                } else {
-                  // Deleting
-                  activityQualificationMetricRepository.delete(metric);
-                }
               }
             }
           }
@@ -628,8 +629,6 @@ public class ActivityController {
       activity.setMetrics(newMetrics);
     }
   }
-
-
 
   /**
    * This method will deal with the different cases of visibility and which roles to delete and
@@ -656,6 +655,16 @@ public class ActivityController {
     }
   }
 
+  /**
+   * Deletes an activity metric if editable and if logged
+   * in user is the activity owner
+   *
+   * @param profileId profileId of activity owner
+   * @param activityId activity ID
+   * @param metricId metricId
+   * @param session HttpSession
+   * @return ResponseEntity 200 if OK else 4xx client error
+   */
   @DeleteMapping("/profiles/{profileId}/activities/{activityId}/{metricId}")
   public ResponseEntity deleteActivityMetric(
       @PathVariable Integer profileId,
