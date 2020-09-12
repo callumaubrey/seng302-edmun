@@ -600,21 +600,26 @@ public class ActivityController {
           newMetrics.add(requestMetric);
         }
       } else {
-        for (ActivityQualificationMetric requestMetric : requestMetrics) {
-          for (ActivityQualificationMetric metric : dbMetrics) {
-            if (requestMetric.getId() == 0) {
-              // Adding
-              requestMetric.setActivity(activity);
-              activityQualificationMetricRepository.save(requestMetric);
-              newMetrics.add(requestMetric);
-            } else {
-              if (metric.getId() == requestMetric.getId()) {
-                // Editing
+        for (ActivityQualificationMetric metric : dbMetrics) {
+          if (requestMetrics.size() == 0) {
+            activityQualificationMetricRepository.delete(metric);
+          } else {
+            for (ActivityQualificationMetric requestMetric : requestMetrics) {
+              if (requestMetric.getId() == 0) {
+                // Adding
+                requestMetric.setActivity(activity);
                 activityQualificationMetricRepository.save(requestMetric);
                 newMetrics.add(requestMetric);
               } else {
-                // Deleting
-                activityQualificationMetricRepository.delete(metric);
+                if (metric.getId() == requestMetric.getId()) {
+                  // Editing
+                  requestMetric.setActivity(activity);
+                  activityQualificationMetricRepository.save(requestMetric);
+                  newMetrics.add(requestMetric);
+                } else {
+                  // Deleting
+                  activityQualificationMetricRepository.delete(metric);
+                }
               }
             }
           }
@@ -623,6 +628,8 @@ public class ActivityController {
       activity.setMetrics(newMetrics);
     }
   }
+
+
 
   /**
    * This method will deal with the different cases of visibility and which roles to delete and
@@ -647,6 +654,57 @@ public class ActivityController {
       subscriptionHistoryRepository.unSubscribeAllButCreator(
           activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
     }
+  }
+
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/{metricId}")
+  public ResponseEntity deleteActivityMetric(
+      @PathVariable Integer profileId,
+      @PathVariable Integer activityId,
+      @PathVariable Integer metricId,
+      HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+    if (!optionalActivity.isPresent()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    ResponseEntity<String> activityAuthorizedResponse =
+        this.checkAuthorisedToEditActivity(activity, session);
+    if (activityAuthorizedResponse != null) {
+      return activityAuthorizedResponse;
+    }
+
+    ActivityQualificationMetric metric = activityQualificationMetricRepository.getOne(metricId);
+    if (metric == null) {
+      return new ResponseEntity("No such metric", HttpStatus.BAD_REQUEST);
+    }
+
+    boolean matchesActivity = false;
+    for (ActivityQualificationMetric metricActivity : activity.getMetrics()) {
+      if (metricActivity.getId() == metric.getId()) {
+        matchesActivity = true;
+      }
+    }
+
+    if (!matchesActivity) {
+      return new ResponseEntity("Metric does not belong to that activity", HttpStatus.BAD_REQUEST);
+    }
+
+    if (metric.getEditable() == false) {
+      return new ResponseEntity("This metric cannot be deleted", HttpStatus.BAD_REQUEST);
+    }
+
+    activityQualificationMetricRepository.delete(metric);
+
+    return new ResponseEntity("Metric deleted", HttpStatus.OK);
   }
 
   /**
