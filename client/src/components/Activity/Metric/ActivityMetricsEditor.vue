@@ -20,7 +20,7 @@
                     <b-col cols="6">
                         <label>Type</label>
                         <b-select v-model="metric.unit" :options="type_options" :id="`metric-unit-select-${index}`"
-                                  :state="metric.unit.length > 0" :disabled="!metric.editable">
+                                  :state="metric.unit.length > 0" :disabled="!metric.editable && metric.id">
                         </b-select>
                     </b-col>
                     <b-col cols="6">
@@ -76,6 +76,8 @@
 
             createEmptyMetricForm() {
                 return  {
+                    id: null,
+                    editable: true,
                     title: '',
                     unit: '',
                     rank_asc: null,
