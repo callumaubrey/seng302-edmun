@@ -2772,4 +2772,153 @@ public class ActivityMetricControllerTest {
     String value = object.getString("value");
     org.junit.jupiter.api.Assertions.assertEquals(30, Integer.parseInt(value));
   }
+
+  @Test
+  void createActivityResultCountMetricIsNotEditable() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonString =
+        "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result",
+            profile1.getId(),
+            activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals(true, metric.getEditable());
+    Assert.assertEquals(false, newMetric.getEditable());
+  }
+
+  @Test
+  void addMultipleResultsAndDeleteAllMetricIsEditable() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonString =
+        "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": \"10\"\n" + "}";
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result",
+            profile1.getId(),
+            activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result",
+            profile1.getId(),
+            activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result",
+            profile1.getId(),
+            activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> results = activityResultRepository.findSingleUsersResultsOnActivity(activityId,profile1.getId());
+    for (ActivityResult result : results) {
+      mvc.perform(
+          MockMvcRequestBuilders.delete(
+              "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+              activity.getProfile().getId(),
+              activity.getId(),
+              result.getId())
+              .session(session))
+          .andExpect(status().isOk());
+    }
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals(true, newMetric.getEditable());
+  }
 }
