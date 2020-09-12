@@ -12,7 +12,7 @@
                     </b-col>
 
                     <b-col cols="3" class="text-right">
-                        <i :id="`metric-remove-button-${index}`" @click="removeMetricForm(index)" v-if="metric.editable" class="fas fa-times-circle text-danger activity-metric-close-button"></i>
+                        <i :id="`metric-remove-button-${index}`" @click="removeMetricForm(index, metric)" v-if="metric.editable" class="fas fa-times-circle text-danger activity-metric-close-button"></i>
                     </b-col>
                 </b-row>
 
@@ -56,16 +56,19 @@
 </template>
 
 <script>
+  import Api from "@/Api";
     export default {
         name: "ActivityMetricsEditor",
-
+        props: {
+          profileId: Number,
+          activityId: Number
+        },
         data: () => {
             return {
                 metric_data: [],
                 type_options: ['TimeStartFinish', 'TimeDuration', 'Count', 'Distance']
             }
         },
-
         methods: {
             isMetricFormEmpty(metric) {
                 return metric.title.length === 0 &&
@@ -85,8 +88,17 @@
                 }
             },
 
-            removeMetricForm(index) {
+            removeMetricForm(index, metric) {
                 this.metric_data.splice(index, 1);
+                if (metric.id) {
+                  Api.deleteMetric(this.profileId, this.activityId, metric.id)
+                    .then(() => {
+                      console.log("Deleted metric");
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    })
+                }
             },
 
             addNewMetricForm() {
