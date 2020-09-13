@@ -55,22 +55,44 @@
 
         let displayName;
 
-        let area = '';
-        if (obj.city) {
-          area = ", " + obj.city;
-        } else if (obj.state) {
-          area = ", " + obj.state;
+        let properties = [];
+        switch (obj.osm_value) {
+          case "house":
+            properties.push(obj.housenumber + " " + obj.street);
+            if (obj.city) {
+              properties.push(obj.city);
+            }
+            if (obj.state) {
+              properties.push(obj.state);
+            }
+            properties.push(obj.country);
+            displayName = properties.join(", ");
+            break;
+          case "residential":
+            properties.push(obj.name);
+            if (obj.city) {
+              properties.push(obj.city);
+            }
+            if (obj.state) {
+              properties.push(obj.state);
+            }
+            properties.push(obj.country);
+            displayName = properties.join(", ");
+            break;
+          case "country":
+            displayName = obj.country;
+            break;
+          default:
+            properties.push(obj.name);
+            if (obj.city) {
+              properties.push(obj.city)
+            }
+            if (obj.state) {
+              properties.push(obj.state);
+            }
+            properties.push(obj.country);
+              displayName = properties.join(", ");
         }
-
-        if (obj.osm_value === "house") {
-          displayName = obj.housenumber + " " + obj.street + area + ", " + obj.country;
-        } else if (obj.osm_value === "suburb" || obj.osm_value === "city" || obj.osm_value
-            === "residential") {
-          displayName = obj.name + area + ", " + obj.country;
-        } else if (obj.osm_value === "country") {
-          displayName = obj.country;
-        }
-
         return {
           "lng": geo[0],
           "lat": geo[1],
