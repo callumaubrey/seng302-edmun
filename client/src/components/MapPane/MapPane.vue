@@ -48,32 +48,34 @@
                                         :radius="circle.radius"
                                         :color="circle.color"
                                 />
-                                <l-marker v-for="marker in markers"
-                                          :key="marker.id"
-                                          :visible="marker.visible"
-                                          :lat-lng="marker.position"
-                                          :icon="marker.icon"
-                                          @click="markerSelected(marker)"
-                                >
-                                    <l-tooltip id="popUp"
-                                               v-if="marker.title != null"
-                                               :options='{ interactive: true, offset: [2, -36], direction: "top"}'
+                                <v-marker-cluster>
+                                    <l-marker v-for="marker in markers"
+                                              :key="marker.id"
+                                              :visible="marker.visible"
+                                              :lat-lng="marker.position"
+                                              :icon="marker.icon"
+                                              @click="markerSelected(marker)"
                                     >
-                                        <b-container style="max-height: 6.5em; overflow: hidden">
-                                            <b>
-                                                {{marker.title}}
-                                            </b>
-                                            <hr style="margin: 0.25em">
-                                            <span>{{marker.content.startTime}}</span>
-                                            <span class="text-center">
-                                            <ActivityTypeIcon v-for="type in marker.content.activityTypes"
-                                                              style="font-size: 1.5em"
-                                                              :key="type"
-                                                              :type_name="type"></ActivityTypeIcon>
-                                            </span>
-                                        </b-container>
-                                    </l-tooltip>
-                                </l-marker>
+                                        <l-tooltip id="popUp"
+                                                   v-if="marker.title != null"
+                                                   :options='{ interactive: true, offset: [2, -36], direction: "top"}'
+                                        >
+                                            <b-container style="max-height: 6.5em; overflow: hidden">
+                                                <b>
+                                                    {{marker.title}}
+                                                </b>
+                                                <hr style="margin: 0.25em">
+                                                <span>{{marker.content.startTime}}</span>
+                                                <span class="text-center">
+                                                <ActivityTypeIcon v-for="type in marker.content.activityTypes"
+                                                                  style="font-size: 1.5em"
+                                                                  :key="type"
+                                                                  :type_name="type"></ActivityTypeIcon>
+                                                </span>
+                                            </b-container>
+                                        </l-tooltip>
+                                    </l-marker>
+                                </v-marker-cluster>
                             </l-map>
                         </div>
 
@@ -93,6 +95,7 @@
 <script>
     import L from "leaflet";
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
+    import Vue2LeafletMarkerCluster from 'vue2-leaflet-markercluster'
     import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
 
     export default {
@@ -103,7 +106,8 @@
             LTileLayer,
             LMarker,
             LTooltip,
-            LCircle
+            LCircle,
+            'v-marker-cluster': Vue2LeafletMarkerCluster
         },
         props: {
             canHide: {
@@ -285,6 +289,8 @@
     };
 </script>
 <style>
+    @import "~leaflet.markercluster/dist/MarkerCluster.css";
+    @import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
     .button {
         margin-left: 0.5em;
         margin-right: 0.5em
