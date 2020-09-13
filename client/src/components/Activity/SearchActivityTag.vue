@@ -96,7 +96,9 @@
        */
       setInput(value) {
         this.value = value;
-        this.selected = true;
+
+        // Clicking shows enough intent to add the hashtag.
+        this.addTag(this.value);
       },
       /**
        * adds hashtag to list of hashtags and calls emit tags function
@@ -111,6 +113,7 @@
           this.values.push(value);
           this.value = "";
           this.emitTagsToParent();
+          this.hashtag.options = [];
         }
       },
       /**
@@ -253,6 +256,21 @@
   .method-col {
     padding-top: 30px;
     flex: 0 0 50px;
+  }
+
+  .autocomplete-item {
+    cursor: pointer !important;
+    background-color: white;
+  }
+
+  .autocomplete-item:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+
+  }
+
+  .autocomplete-item:hover {
+    background-color: lightgrey;
   }
 
 </style>
