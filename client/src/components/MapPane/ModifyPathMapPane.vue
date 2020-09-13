@@ -56,6 +56,7 @@ export default {
     getRoutePoints(coordinates){
       const currObj = this
       let apiInput = this.$refs.map.getAllMarkersCoords()
+      // console.log(apiInput)
       if (coordinates.length != 0){
         //For some reason api takes [lng,lat] points rather than [lat,lng] points, hence reverse()
         apiInput.push([coordinates[1], coordinates[0]])
