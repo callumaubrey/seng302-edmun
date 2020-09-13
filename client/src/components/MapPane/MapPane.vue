@@ -40,6 +40,23 @@
                                         :url="url"
                                         :attribution="attribution"
                                 />
+                                <LControl v-if="pathOverlay" class="control-overlay">
+                                    <b-col>
+                                        <b-row>
+                                            <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Back</b-button>
+                                            <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset</b-button>
+                                        </b-row>
+                                        <b-row>
+                                            <b-form-radio-group id="checkbox-group-2" v-model="$parent.autoRoute" name="flavour-2"
+                                                                   v-if="$parent.canChangeSelection">
+                                                <b-form-radio value="false">Selection</b-form-radio>
+                                                <b-form-radio value="true">Auto route</b-form-radio>
+                                            </b-form-radio-group>
+                                        </b-row>
+                                    </b-col>
+
+
+                                </LControl>
                                 <l-circle v-if="displayCircle"
                                         :lat-lng="circle.center"
                                         :radius="circle.radius"
@@ -91,7 +108,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
 
     export default {
         name: "MapPane",
@@ -101,7 +118,8 @@
             LMarker,
             LTooltip,
             LCircle,
-            LPolyline
+            LPolyline,
+            LControl
         },
         props: {
             canHide: {
@@ -113,6 +131,10 @@
                 default: "Map"
             },
             displayCircle: {
+                type: Boolean,
+                default: false
+            },
+            pathOverlay: {
                 type: Boolean,
                 default: false
             }
@@ -131,6 +153,21 @@
                 iconRetinaUrl: require('@/assets/red-marker-icon.png'),
                 iconAnchor: [10, 30],
             });
+            const pathMarker = L.icon({
+                iconUrl: require('@/assets/path-marker.png'),
+                iconRetinaUrl: require('@/assets/path-marker.png'),
+                iconAnchor: [8, 8],
+            });
+            const pathStartMarker = L.icon({
+                iconUrl: require('@/assets/path-start-marker.png'),
+                iconRetinaUrl: require('@/assets/path-start-marker.png'),
+                iconAnchor: [10, 30],
+            });
+            const pathEndMarker = L.icon({
+                iconUrl: require('@/assets/path-end-marker.png'),
+                iconRetinaUrl: require('@/assets/path-end-marker.png'),
+                iconAnchor: [10, 30],
+            });
             return {
                 showMap: true,
                 zoom: 13,
@@ -144,6 +181,9 @@
                 markers: [],
                 blueMarker: blueMarker,
                 redMarker: redMarker,
+                pathMarker: pathMarker,
+                pathStartMarker: pathStartMarker,
+                pathEndMarker: pathEndMarker,
 
                 userGeoLocation: null,
                 circle: {
@@ -183,7 +223,7 @@
             /**
              * Creates a marker on the map.
              * id: The way the marker is deleted
-             * iconColour: used as a key for what icon to display. red = 1, blue = other
+             * iconColour: used as a key for what icon to display. red = 1, pathMarker = 3, blue = other
              * lat: latitude of the marker
              * lng: longitude of the marker
              * content: content of the tooltip
@@ -197,7 +237,11 @@
                 let coordinates = [lat, lng];
                 if (iconColour === 1) {
                     icon = this.redMarker
-                } else {
+                }
+                if (iconColour === 3) {
+                    icon = this.pathStartMarker
+                }
+                else {
                     icon = this.blueMarker
                 }
 
@@ -226,12 +270,12 @@
              **/
             updateStartFinishMarkers() {
                 if (this.markers.length == 2) {
-                    this.markers[0].icon = this.redMarker
-                    this.markers[1].icon = this.redMarker
+                    this.markers[0].icon = this.pathStartMarker
+                    this.markers[1].icon = this.pathEndMarker
                 }
                 if (this.markers.length > 2) {
-                    this.markers[this.markers.length - 2].icon = this.blueMarker
-                    this.markers[this.markers.length - 1].icon = this.redMarker
+                    this.markers[this.markers.length - 2].icon = this.pathMarker
+                    this.markers[this.markers.length - 1].icon = this.pathEndMarker
                 }
             },
 
@@ -356,5 +400,15 @@
         max-height: 8em;
         min-height: 8em;
         text-justify: distribute;
+    }
+
+    .control-overlay {
+        background: #fff;
+        padding: 0 0.5em;
+        border: 1px solid #aaa;
+        border-radius: 0.1em;
+        opacity: 80%;
+        padding: 0.5em;
+        margin: 0.5em;
     }
 </style>
