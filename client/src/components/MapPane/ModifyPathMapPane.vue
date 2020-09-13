@@ -1,17 +1,6 @@
 <template>
   <div>
-    <b-form-group label="Using sub-components:">
-      <b-form-checkbox-group id="checkbox-group-2" v-model="autoRoute" name="flavour-2"
-                             v-if="canChangeSelection">
-        <b-form-checkbox value="false">Selection</b-form-checkbox>
-        <b-form-checkbox value="true">Auto route</b-form-checkbox>
-      </b-form-checkbox-group>
-    </b-form-group>
-    <b-button @click="resetMarkerAndPoint()">Reset</b-button>
-    <div>
-      <b-button @click="prevPoint()">Back</b-button>
-    </div>
-    <map-pane @onMapClick="mapClicked" ref="map"></map-pane>
+    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
   </div>
 </template>
 
@@ -41,7 +30,7 @@ export default {
       } else {
         this.$refs.map.routePoints.push([event.latlng.lat, event.latlng.lng])
       }
-      this.$refs.map.createMarker(this.count, 1, event.latlng.lat, event.latlng.lng, "", "")
+      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng)
       this.$refs.map.updateStartFinishMarkers()
 
       if (this.$refs.map.routePoints.length == 0) {
