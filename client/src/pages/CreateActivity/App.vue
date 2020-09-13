@@ -478,6 +478,7 @@ export default {
           start_time: isoDates[0],
           visibility: this.selectedVisibility,
           end_time: isoDates[1],
+          location: this.locationData,
           hashtags: this.hashtag.values,
           metrics: this.$refs.metric_editor.getMetricData()
         };

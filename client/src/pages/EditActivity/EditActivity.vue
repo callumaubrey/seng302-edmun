@@ -78,6 +78,7 @@
                     <b-col>
                       <b-form-group id="start-time-input-group" label="Start Time"
                                     label-for="start-time-input">
+                        <b-form-text>Default start time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('startTime')"
                             id="start-time-input"
@@ -89,6 +90,7 @@
                     <b-col>
                       <b-form-group id="end-time-input-group" label="End Time"
                                     label-for="end-time-input">
+                        <b-form-text>Default end time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('endTime')"
                             aria-describedby="end-time-feedback"
@@ -456,7 +458,7 @@ export default {
               return;
             }
             const isoDates = this.getISODates();
-            let data = {
+            data = {
               activity_name: this.form.name,
               description: this.form.description,
               activity_type: this.form.selectedActivityTypes,
