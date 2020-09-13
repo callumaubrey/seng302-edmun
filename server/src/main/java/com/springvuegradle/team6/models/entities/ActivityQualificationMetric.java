@@ -17,36 +17,45 @@ public class ActivityQualificationMetric {
   @Id
   @GeneratedValue
   private int id;
+
   /**
    * The title of the qualification metric
    */
   @NotNull(message = "Metric title cannot be null")
   private String title;
+
   /**
    * The description of the qualification metric
    */
   private String description;
+
   /**
    * The activity this instance is associated with
    */
   @ManyToOne
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
+
   /**
    * Boolean to rank metrics in different orders. Default value is false
    */
   @JsonProperty("rank_asc")
   private boolean rankByAsc;
+
   /**
    * The Unit Enmun associated with this instance
    */
   @NotNull(message = "Metric unit cannot be null")
   private Unit unit;
 
+  /**
+   * This boolean is used to check if a metric can be edited or not
+   * Default as true and when a result is added it becomes false
+   */
+  private boolean editable = true;
+
   public ActivityQualificationMetric() {
   }
-
-  // ==========SETTERS==============
 
   public void setActivity(Activity activity) {
     this.activity = activity;
@@ -66,9 +75,12 @@ public class ActivityQualificationMetric {
 
   public void setTitle(String title) {this.title = title; }
 
-  // =========GETTERS================
+  public void setEditable(boolean editable) {
+    this.editable = editable;
+  }
+
   public int getId() {
-    return id;
+    return this.id;
   }
 
   public Unit getUnit() {
@@ -85,5 +97,9 @@ public class ActivityQualificationMetric {
 
   public boolean getRankByAsc() {
     return this.rankByAsc;
+  }
+
+  public boolean getEditable() {
+    return this.editable;
   }
 }
