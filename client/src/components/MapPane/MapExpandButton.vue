@@ -1,6 +1,6 @@
 <template>
     <span>
-        <i v-if="state" class="far map-expand-button text-secondary fa-caret-square-right" @click="toggleButton"></i>
+        <i v-if="value" class="far map-expand-button text-secondary fa-caret-square-right" @click="toggleButton"></i>
         <i v-else class="far map-expand-button text-secondary fa-caret-square-left" @click="toggleButton"></i>
     </span>
 </template>
@@ -9,24 +9,13 @@
     export default {
         name: "MapExpandButton",
 
-        data: function () {
-            return {
-                state: true
-            }
-        },
-
-        prop: {
-            value: {
-                type: Boolean,
-                default: true
-            }
+        props: {
+            value: Boolean
         },
 
         methods: {
             toggleButton() {
-                this.value = !this.value;
-                this.state = this.value;
-                this.$emit('input', this.value)
+                this.$emit('input', !this.value)
             }
         }
     }
@@ -35,6 +24,7 @@
 <style scoped>
     .map-expand-button {
         opacity: 0.25;
+        cursor: pointer;
     }
 
     .map-expand-button:hover {
