@@ -36,10 +36,11 @@ export default {
     mapClicked(event) {
       const currObj = this
       const marker = this.$refs.map.getLatestMarker()
+      const coordinates = [event.latlng.lat, event.latlng.lng]
       if (this.autoRoute == "true" && marker != null) {
-        this.getRoutePoints(event)
+        this.getRoutePoints(coordinates)
       } else {
-        this.$refs.map.routePoints.push([event.latlng.lat, event.latlng.lng])
+        this.$refs.map.routePoints.push(coordinates)
       }
       this.$refs.map.createMarker(this.count, 1, event.latlng.lat, event.latlng.lng, "", "")
       this.$refs.map.updateStartFinishMarkers()
@@ -50,17 +51,29 @@ export default {
         this.canChangeSelection = false
       }
       currObj.count += 1
-
     },
-    getRoutePoints(event){
+    clickOnMarker(marker) {
+      const latitude = marker[0]
+      const longitude = marker[1]
+      if (this.autoRoute == "true" && marker != null) {
+        this.getRoutePoints(marker)
+      } else {
+        this.$refs.map.routePoints.push(marker)
+      }
+      this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", "")
+      this.$refs.map.updateStartFinishMarkers()
+    },
+
+    getRoutePoints(coordinates){
       const currObj = this
-      let markerCoords = this.$refs.map.getAllMarkersCoords()
-      if (event != false){
-        markerCoords.push([event.latlng.lng, event.latlng.lat])
+      let apiInput = this.$refs.map.getAllMarkersCoords()
+      if (coordinates.length != 0){
+        //For some reason api takes [lng,lat] points rather than [lat,lng] points, hence reverse()
+        apiInput.push([coordinates[1], coordinates[0]])
       }
       axios.post("https://api.openrouteservice.org/v2/directions/driving-car/geojson",
           {
-            coordinates: markerCoords,
+            coordinates: apiInput,
           },
           {headers: {Authorization: "5b3ce3597851110001cf6248183abbef295f42049b13e7a011f98247"}})
       .then(function (res) {
@@ -88,9 +101,10 @@ export default {
           if (this.$refs.map.markers.length == 1) {
             this.$refs.map.setRoutePoints([])
           }else {
-            this.getRoutePoints(false)
+            this.getRoutePoints([])
           }
         }
+        this.$refs.map.updateStartFinishMarkers()
       }
     }
   },
