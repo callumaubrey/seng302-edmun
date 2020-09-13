@@ -56,6 +56,8 @@
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
+                                          draggable
+                                          @dragend="editMarker"
                                 >
                                     <l-tooltip id="popUp"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
@@ -311,18 +313,11 @@
                     this.$parent.clickOnMarker(marker.position)
                 }
             },
-            // editRoutePoint(point) {
-            //     let i = 0;
-            //     let marker;
-            //     //Loops over markers and removes a marker with the same id
-            //     for (marker of this.routePoints) {
-            //         if (marker !== point) {
-            //             this.routePoints[i] = point
-            //             return true
-            //         }
-            //         i += 1
-            //     }
-            // }
+            editMarker(marker) {
+                console.log(marker.position)
+                console.log(marker)
+                console.log(marker.target._latlng)
+            }
             // getMarkers() {
             //     this.$nextTick(() => {
             //         this.markerObjects = this.$refs.markersRef.map(ref => ref.mapObject._latlng)
