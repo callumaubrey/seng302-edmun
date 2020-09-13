@@ -40,7 +40,10 @@
                                         :url="url"
                                         :attribution="attribution"
                                 />
-                                <l-circle v-if="displayCircle"
+                                <l-circle v-if="displayCircle
+                                                && circle.center[0] != null
+                                                && circle.center[1] != null
+                                                && circle.radius != null"
                                         :lat-lng="circle.center"
                                         :radius="circle.radius"
                                         :color="circle.color"

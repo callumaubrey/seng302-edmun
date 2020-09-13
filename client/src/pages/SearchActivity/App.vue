@@ -189,8 +189,10 @@ export default {
         },
         location: {
           enabled: false,
-          latitude: null,
-          longitude: null,
+          center: {
+            lat: null,
+            lng: null
+          },
           radius: 50
         }
       },
@@ -221,10 +223,11 @@ export default {
         let row_offset = (this.search_data.pagination.offset - 1) * (this.search_data.pagination.limit) * 2;
         let row_limit = this.search_data.pagination.limit + 1;
 
+
         // Location Data
         let location_data = {
-          latitude: this.search_data.location.enabled ? this.search_data.location.center[0] : null,
-          longitude: this.search_data.location.enabled ? this.search_data.location.center[1] : null,
+          latitude: this.search_data.location.enabled ? this.search_data.location.center.lat : null,
+          longitude: this.search_data.location.enabled ? this.search_data.location.center.lng : null,
           radius: this.search_data.location.enabled ?  Math.round(this.search_data.location.radius): null
         };
 
@@ -348,13 +351,15 @@ export default {
             !== undefined) {
           this.search_data.pagination.limit = params.pagination_limit;
         }
-        if (params.lon !== undefined) {
-          this.search_data.location.center[1] = params.longitude;
+
+        if (params.longitude !== undefined) {
+          this.search_data.location.center.lng = params.longitude;
         }
-        if (params.lat !== undefined) {
-          this.search_data.location.center[0] = params.latitude;
+        if (params.latitude !== undefined) {
+          this.search_data.location.center.lat = params.latitude;
         }
         if (params.radius !== undefined) {
+          this.search_data.location.enabled = true;
           this.search_data.location.radius = params.radius
         }
 
@@ -415,8 +420,8 @@ export default {
     },
 
     mounted() {
-      this.loadQueryIntoFields();
       this.getUser();
+      this.loadQueryIntoFields();
       this.loadActivities();
     }
   }

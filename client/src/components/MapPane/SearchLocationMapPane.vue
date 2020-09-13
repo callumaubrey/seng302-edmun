@@ -22,11 +22,10 @@
                 default: 50
             },
             /**
-             * An array of [lat, lng] used for where to position and center the circle overlay
+             * An object of [lat, lng] used for where to position and center the circle overlay
              */
             center: {
-                type: Array,
-                default: () => { return [-43.530629, 172.625955] }
+                type: Object
             },
             /**
              * The activities to be displayed on the map
@@ -68,7 +67,7 @@
              * To be called whenever the radius slider changes
              */
             updateCircle(){
-                this.$refs.map.updateCircle(this.center[0], this.center[1], this.radius)
+                this.$refs.map.updateCircle(this.center.lat, this.center.lng, this.radius)
             },
 
             /**
@@ -88,9 +87,7 @@
              */
             mapClicked(event) {
                 if(this.displayCircle) {
-                    this.center = [event.latlng.lat, event.latlng.lng];
-                    this.updateCircle();
-                    this.$emit('locationChange', this.center);
+                    this.$emit('locationChange', event.latlng);
                 }
             },
 
@@ -100,12 +97,16 @@
              * @param event latlng object
              */
             centerOnUserLocation(event) {
-                this.center = [event.lat, event.lng];
-                this.$emit('locationChange', this.center);
+                if (this.center.lat == null) {
+                    this.$emit('locationChange', event);
+                }
             }
         },
         watch: {
             radius: function() {
+                this.updateCircle();
+            },
+            center: function() {
                 this.updateCircle();
             },
             activities: function () {
