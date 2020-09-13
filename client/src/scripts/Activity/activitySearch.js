@@ -35,14 +35,15 @@ export default {
         pagination_limit = 10,
         longitude = null,
         latitude = null,
-        radius = null
+        radius = null,
+                                sort = null
     ) {
 
         let query_params_str = this.getSearchActivitiesQueryParams(search_query,
             types, types_method_and, hashtags,
             hashtags_method_and, activity_mode_filter, start_date, end_date,
             pagination_offset, pagination_limit,
-            longitude, latitude, radius);
+            longitude, latitude, radius, sort);
         query_params_str = query_params_str.replace(/%2C/g, '%20');
 
         return instance.get('/activities?' + query_params_str);
@@ -116,7 +117,8 @@ export default {
         pagination_limit = 10,
         longitude = null,
         latitude = null,
-        radius = null) {
+        radius = null,
+        sort = null) {
         // Build dictionary of query parameters
         let params = {
             'name': search_query,
@@ -131,7 +133,8 @@ export default {
             'limit': pagination_limit,
             'lon': longitude,
             'lat': latitude,
-            'radius': radius
+            'radius': radius,
+            'sort': sort
         };
 
         // Check parameters are valid
@@ -181,6 +184,16 @@ export default {
 
         if (params['time'] === 'all') {
             delete params['time'];
+        }
+
+        if (params['sort'] === null) {
+            delete params['sort'];
+        }
+
+        if (params['sort'] == 'closest_location' || params['sort'] == 'furthest_location') {
+            if (longitude === null || latitude === null) {
+                delete params['sort'];
+            }
         }
 
         // Construct params into valid string for url
