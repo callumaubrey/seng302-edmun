@@ -2943,6 +2943,9 @@ public class ActivityMetricControllerTest {
             metric.getId())
             .session(session))
         .andExpect(status().isOk());
+
+    List<ActivityQualificationMetric> metrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+    Assert.assertEquals(0, metrics.size());
   }
 
   @Test
@@ -2965,6 +2968,9 @@ public class ActivityMetricControllerTest {
             metric.getId())
             .session(session))
         .andExpect(status().is4xxClientError());
+
+    List<ActivityQualificationMetric> metrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+    Assert.assertEquals(1, metrics.size());
   }
 
   @Test
@@ -3011,5 +3017,8 @@ public class ActivityMetricControllerTest {
             metric.getId())
             .session(session))
         .andExpect(status().is4xxClientError());
+
+    List<ActivityQualificationMetric> metrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+    Assert.assertEquals(1, metrics.size());
   }
 }
