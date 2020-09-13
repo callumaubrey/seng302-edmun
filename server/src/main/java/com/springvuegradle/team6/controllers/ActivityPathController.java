@@ -56,7 +56,6 @@ public class ActivityPathController {
                          @PathVariable int activityId,
                          @RequestBody @Valid EditPathRequest request,
                          HttpSession session) {
-        // add new path, do it this way cause the way the path is ordered is by their IDs
         Object id = session.getAttribute("id");
         if (id == null) {
             return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
@@ -69,7 +68,7 @@ public class ActivityPathController {
         }
         Activity activity = optionalActivity.get();
 
-        if (activity.getProfile().getId() != id) {
+        if (!activity.getProfile().getId().equals((Integer) id)) {
             return new ResponseEntity<>(
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
