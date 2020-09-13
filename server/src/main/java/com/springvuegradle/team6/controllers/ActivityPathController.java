@@ -79,7 +79,7 @@ public class ActivityPathController {
             pathRepository.delete(oldPath);
         }
 
-        Path newPath = new Path(activity,request.getCoordinates(), request.getPathType());
+        Path newPath = request.generatePath(activity);
         newPath = pathRepository.save(newPath);
 
         activity.setPath(newPath);
