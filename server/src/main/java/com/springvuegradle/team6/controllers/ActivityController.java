@@ -772,6 +772,9 @@ public class ActivityController {
       if (request.metrics != null) {
         for (ActivityQualificationMetric metric : request.metrics) {
           if (metric.getId() != 0) {
+            if (metric.getId() != 0 && activityQualificationMetricRepository.findById(metric.getId()).isEmpty()) {
+              return new ResponseEntity<>("Metric does not exist to be edited", HttpStatus.BAD_REQUEST);
+            }
             ActivityQualificationMetric savedMetric =
                 activityQualificationMetricRepository.findById(metric.getId()).get();
             if (!checkTwoMetricsAreTheSame(savedMetric, metric) && !savedMetric.getEditable()) {
