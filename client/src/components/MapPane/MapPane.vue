@@ -49,16 +49,6 @@
                                 <!--Routing-->
                                 <l-polyline :lat-lngs="routePoints">
                                 </l-polyline>
-<!--                                <l-marker v-for="point in routePoints"-->
-<!--                                          :key="point._index"-->
-<!--                                          :visible="true"-->
-<!--                                          :lat-lng="point"-->
-<!--                                          :icon="blueMarker"-->
-<!--                                          draggable-->
-<!--                                          @move="test(point)"-->
-<!--                                          ref="markersRef"-->
-<!--                                >-->
-<!--                                </l-marker>-->
 
                                 <l-marker v-for="marker in markers"
                                           :key="marker.id"
@@ -218,6 +208,55 @@
                     content: content,
                     title: title
                 })
+            },
+
+            /**
+             * Gets latest marker that the user has inputted
+             *
+             **/
+            getLatestMarker() {
+                return this.markers[this.markers.length - 1]
+            },
+
+            /**
+             * Sets latest markers icon color to blue
+             *
+             **/
+            updateStartFinishMarkers() {
+                if (this.markers.length == 2) {
+                    this.markers[0].icon = this.redMarker
+                    this.markers[1].icon = this.redMarker
+                }
+                if (this.markers.length > 2) {
+                    this.markers[this.markers.length - 2].icon = this.blueMarker
+                    this.markers[this.markers.length - 1].icon = this.redMarker
+                }
+            },
+
+            /**
+             * Returns all markers longitude and latitude in a list
+             *
+             **/
+            getAllMarkersCoords() {
+                let coords = []
+                for (let marker of this.markers) {
+                    coords.push([marker.position[1], marker.position[0]])
+                }
+                return coords
+            },
+            /**
+             * Sets route points with given parameter
+             *
+             **/
+            setRoutePoints(routePoints) {
+              this.routePoints = routePoints
+            },
+            /**
+             * Sets markers with given parameter
+             *
+             **/
+            setMarkers(markers) {
+                this.markers = markers
             },
             /**
              * Removes a marker by id
