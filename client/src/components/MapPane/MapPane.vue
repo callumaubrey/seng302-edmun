@@ -348,8 +348,12 @@
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
-                this.center = marker.position;
-                this.$emit('markerSelected', marker.content.id);
+                if(this.routePoints == []) {
+                    this.center = marker.position;
+                    this.$emit('markerSelected', marker.content.id);
+                }else {
+                    this.$parent.clickOnMarker(marker.position)
+                }
             },
             // editRoutePoint(point) {
             //     let i = 0;
