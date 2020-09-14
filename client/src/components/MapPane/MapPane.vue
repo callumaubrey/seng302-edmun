@@ -1,6 +1,6 @@
 <template>
-    <b-row>
-        <b-col>
+    <b-row v-bind:class="{ fill_space: maximise}">
+        <b-col v-bind:class="{ fill_space: maximise}">
             <!-- Toggle Header -->
             <b-row style="cursor:pointer;" v-if="canHide">
                 <b-col @click="()=>{showMap=!showMap; refreshMap()}">
@@ -12,9 +12,9 @@
                 </b-col>
             </b-row>
             <!-- Map and slots -->
-            <b-row>
-                <b-col>
-                    <b-collapse v-model="showMap">
+            <b-row v-bind:class="{ fill_space: maximise}">
+                <b-col v-bind:class="{ fill_space: maximise}">
+                    <b-collapse v-model="showMap" v-bind:class="{ fill_space: maximise}">
                         <!-- Header Slot -->
                         <b-row>
                             <b-col>
@@ -24,7 +24,7 @@
                         </b-row>
                         <!-- Map -->
                         <hr v-if="canHide">
-                        <div style="height: 40em; width: 100%" class="mt-2">
+                        <div style="height: 40em; width: 100%" v-bind:class="{ fill_space: maximise, 'mt-2': !maximise}">
                             <l-map
                                     ref="map"
                                     v-if="showMap"
@@ -40,6 +40,10 @@
                                         :url="url"
                                         :attribution="attribution"
                                 />
+                                <l-circle v-if="displayCircle
+                                                && circle.center[0] != null
+                                                && circle.center[1] != null
+                                                && circle.radius != null"
                                 <LControl v-if="pathOverlay" class="control-overlay">
                                     <b-col>
                                         <b-row>
@@ -77,8 +81,8 @@
                                           @dragend="editMarker($event, marker)"
                                 >
                                     <l-tooltip id="popUp"
+                                               v-if="marker.title != null && tooltip"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
-                                               v-if="tooltip"
                                     >
                                         <b-container style="max-height: 6.5em; overflow: hidden">
                                             <b>
@@ -87,6 +91,12 @@
                                             <hr style="margin: 0.25em">
                                             <span>{{marker.content.activityTypes}} <br></span>
                                             <span>{{marker.content.startTime}}</span>
+                                            <span class="text-center">
+                                            <ActivityTypeIcon v-for="type in marker.content.activityTypes"
+                                                              style="font-size: 1.5em"
+                                                              :key="type"
+                                                              :type_name="type"></ActivityTypeIcon>
+                                            </span>
                                         </b-container>
                                     </l-tooltip>
                                 </l-marker>
@@ -109,10 +119,12 @@
 <script>
     import L from "leaflet";
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
+    import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
 
     export default {
         name: "MapPane",
         components: {
+            ActivityTypeIcon,
             LMap,
             LTileLayer,
             LMarker,
@@ -131,6 +143,10 @@
                 default: "Map"
             },
             displayCircle: {
+                type: Boolean,
+                default: false
+            },
+            maximise: {
                 type: Boolean,
                 default: false
             },
@@ -207,7 +223,6 @@
             updateCircle(lat, lng, radius) {
                 this.circle.center = [lat, lng];
                 this.circle.radius = radius;
-                this.displayCircle = true;
             },
             /**
              * Updates the center of the map
@@ -262,7 +277,6 @@
                     draggable: draggable
                 })
             },
-
             /**
              * Gets latest marker that the user has inputted
              *
@@ -350,6 +364,13 @@
                     i += 1
                 }
                 return false
+            },
+
+            /**
+             * Clear all markers
+             **/
+            clearMarkers() {
+                this.markers = [];
             },
 
             /**
@@ -447,5 +468,12 @@
         opacity: 80%;
         padding: 0.5em;
         margin: 0.5em;
+    }
+
+    .fill_space {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 </style>

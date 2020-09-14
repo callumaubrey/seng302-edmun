@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.models.repositories;
 
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.SortActivity;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,9 +18,16 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.Unit;
 import org.hibernate.search.spatial.DistanceSortField;
 
+/**
+ * Implements CustomizedActivityRepository
+ * @see com.springvuegradle.team6.models.repositories.CustomizedActivityRepository
+ **/
 public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepository {
   @PersistenceContext private EntityManager em;
   private static final String CONTINUOUS = "continuous";
+  private static final String START_TIME = "startTime";
+  private static final String END_TIME = "endTime";
+  private static final String LOCATION = "location";
 
   /**
    * Searches for a list of activities that match the given parameters and returns a list of
@@ -40,6 +48,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param longitude the longitude coordinate of the location of the activity
    * @param latitude the latitude coordinate of the location of the activity
    * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @return List of activities satisfying the parameters
    */
   @Override
@@ -58,7 +67,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       boolean isAdmin,
       Double longitude,
       Double latitude,
-      Integer radius) {
+      Integer radius,
+      SortActivity sortActivity) {
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
@@ -76,7 +86,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             isAdmin,
             longitude,
             latitude,
-            radius);
+            radius,
+            sortActivity);
 
     List<Activity> result = new ArrayList<>();
     if (jpaQuery != null) {
@@ -102,6 +113,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param longitude the longitude coordinate of the location of the activity
    * @param latitude the latitude coordinate of the location of the activity
    * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @return a count of the number of activities
    */
   @Override
@@ -118,7 +130,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       boolean isAdmin,
       Double longitude,
       Double latitude,
-      Integer radius) {
+      Integer radius,
+      SortActivity sortActivity) {
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
             terms,
@@ -135,7 +148,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             isAdmin,
             longitude,
             latitude,
-            radius);
+            radius,
+            sortActivity);
 
     int count = 0;
     if (jpaQuery != null) {
@@ -163,6 +177,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param longitude the longitude coordinate of the location of the activity
    * @param latitude the latitude coordinate of the location of the activity
    * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @return FullTextQuery containing results
    */
   private org.hibernate.search.jpa.FullTextQuery searchActivityQuery(
@@ -180,7 +195,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       boolean isAdmin,
       Double longitude,
       Double latitude,
-      Integer radius) {
+      Integer radius,
+      SortActivity sortActivity) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -253,16 +269,8 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     }
 
     if (finalQuery != null) {
-      org.apache.lucene.search.Sort sort;
-      if (longitude != null && latitude != null && radius != null) {
-        sort =
-            new Sort(
-                new DistanceSortField(latitude, longitude, "location"),
-                SortField.FIELD_SCORE,
-                new SortField("id", SortField.Type.STRING, true));
-      } else {
-        sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
-      }
+      org.apache.lucene.search.Sort sort = sortingMethod(sortActivity, latitude, longitude);
+
       org.hibernate.search.jpa.FullTextQuery jpaQuery =
           fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
 
@@ -362,11 +370,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       query = queryBuilder.keyword().onField(CONTINUOUS).matching(false).createQuery();
       if (startDate != null) {
         Query startDateQuery =
-            queryBuilder.range().onField("startTime").above(startDate).createQuery();
+            queryBuilder.range().onField(START_TIME).above(startDate).createQuery();
         booleanJunction.must(startDateQuery);
       }
       if (endDate != null) {
-        Query endDateQuery = queryBuilder.range().onField("endTime").below(endDate).createQuery();
+        Query endDateQuery = queryBuilder.range().onField(END_TIME).below(endDate).createQuery();
         booleanJunction.must(endDateQuery);
       }
     }
@@ -429,12 +437,78 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     org.apache.lucene.search.Query luceneQuery =
         queryBuilder
             .spatial()
-            .onField("location")
+            .onField(LOCATION)
             .within(radius, Unit.KM)
             .ofLatitude(latitude)
             .andLongitude(longitude)
             .createQuery();
     booleanJunction.must(luceneQuery);
     return booleanJunction;
+  }
+
+  /**
+   * Given parameters, figure out the sorting method to use for sorting the final query.
+   *
+   * @param sortActivity the sorting method desired
+   * @param latitude the latitude coordinate of the search location
+   * @param longitude the longitude coordinate of the search location
+   * @return the sort
+   */
+  private org.apache.lucene.search.Sort sortingMethod(
+      SortActivity sortActivity, Double latitude, Double longitude) {
+    org.apache.lucene.search.Sort sort;
+    if (sortActivity != null) {
+      switch (sortActivity) {
+        case EARLIEST_START_DATE:
+          sort =
+              new Sort(
+                  new SortField(START_TIME, SortField.Type.STRING),
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        case LATEST_START_DATE:
+          sort =
+              new Sort(
+                  new SortField(START_TIME, SortField.Type.STRING, true),
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        case EARLIEST_END_DATE:
+          sort =
+              new Sort(
+                  new SortField(END_TIME, SortField.Type.STRING),
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        case LATEST_END_DATE:
+          sort =
+              new Sort(
+                  new SortField(END_TIME, SortField.Type.STRING, true),
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        case CLOSEST_LOCATION:
+          sort =
+              new Sort(
+                  new DistanceSortField(latitude, longitude, LOCATION),
+                  SortField.FIELD_SCORE,
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        case FURTHEST_LOCATION:
+          sort =
+              new Sort(
+                  new DistanceSortField(latitude, longitude, LOCATION, true),
+                  SortField.FIELD_SCORE,
+                  new SortField("id", SortField.Type.STRING, true));
+          break;
+        default:
+          sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+      }
+    } else if (longitude != null && latitude != null) {
+      sort =
+          new Sort(
+              new DistanceSortField(latitude, longitude, LOCATION),
+              SortField.FIELD_SCORE,
+              new SortField("id", SortField.Type.STRING, true));
+    } else {
+      sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+    }
+    return sort;
   }
 }

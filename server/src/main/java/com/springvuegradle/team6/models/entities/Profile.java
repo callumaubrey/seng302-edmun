@@ -2,6 +2,10 @@ package com.springvuegradle.team6.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
@@ -63,8 +67,6 @@ public class Profile {
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   private Set<Email> emails = new HashSet<>();
 
-  ;
-
   private String password;
 
   private String bio;
@@ -75,7 +77,13 @@ public class Profile {
 
   private Integer fitness;
 
-  @ManyToOne private Location location;
+  @ManyToOne
+  @JsonIgnore
+  private Location privateLocation;
+
+  @ManyToOne
+  @JsonIgnore
+  private Location publicLocation;
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
@@ -285,8 +293,16 @@ public class Profile {
     throw new RoleNotFoundException();
   }
 
-  public Location getLocation() {
-    return location;
+  public Location getPrivateLocation() {
+    return privateLocation;
+  }
+
+  public Location getPublicLocation() {
+    return publicLocation;
+  }
+
+  public void setPublicLocation(Location publicLocation) {
+    this.publicLocation = publicLocation;
   }
 
   public void setSubscriptions(final Collection<Activity> subscriptions) {
@@ -310,8 +326,8 @@ public class Profile {
     }
   }
 
-  public void setLocation(Location location) {
-    this.location = location;
+  public void setPrivateLocation(Location privateLocation) {
+    this.privateLocation = privateLocation;
   }
 
   /**
@@ -398,5 +414,27 @@ public class Profile {
   /** Clears all emails except for the primary email in emails */
   private void clearNonPrimaryEmails() {
     emails.removeIf(email -> !email.isPrimary());
+  }
+
+
+  /**
+   * Generates profile map of json values set for private viewing or public viewing.
+   * This method is not a perfect solution however other solutions would require
+   * wide architectural changes
+   * @param viewPrivate add private members to json
+   * @return profile json map
+   */
+  public Map<String, Object> getJSON(boolean viewPrivate) {
+    // Generate map
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> profileJson = mapper.convertValue(this, Map.class);
+
+    if(viewPrivate) {
+      profileJson.put("location", mapper.convertValue(privateLocation, Map.class));
+    } else {
+      profileJson.put("location", mapper.convertValue(publicLocation, Map.class));
+    }
+
+    return profileJson;
   }
 }

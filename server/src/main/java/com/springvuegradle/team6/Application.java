@@ -18,6 +18,7 @@ import java.util.Collections;
 public class Application {
 
 	public static void main(String[] args) {
+		System.setProperty("spring.profiles.default", "production");
 		SpringApplication.run(Application.class, args);
 	}
 

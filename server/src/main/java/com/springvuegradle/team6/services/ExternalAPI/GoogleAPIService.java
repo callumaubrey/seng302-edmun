@@ -5,9 +5,13 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Profile("production")
+@Service
 public class GoogleAPIService {
   // API key is automatically set
   @Value("#{environment.GOOGLE_API_KEY}")
@@ -23,9 +29,21 @@ public class GoogleAPIService {
   // URL API Constants
   protected static final String URL_REVERSE_GEOCODE = "https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={key}";
 
-  private RestTemplate template;
+  @Autowired
+  private RestTemplateBuilder builder;
+  protected RestTemplate template;
 
-  public GoogleAPIService(RestTemplate template) {
+  public GoogleAPIService(RestTemplateBuilder builder) {
+    if (builder != null) {
+      this.template = builder.build();
+    }
+  }
+
+  /**
+   * Manually set rest template. Used for testing.
+   * @param template rest template
+   */
+  public void setRestTemplate(RestTemplate template) {
     this.template = template;
   }
 
@@ -35,7 +53,7 @@ public class GoogleAPIService {
    * @return JSONObject of data recieved from the api
    * @throws HttpServerErrorException when api is unavailable
    */
-  public JSONObject reverseGeocode(Location location) {
+  public JSONObject reverseGeocode(Location location) throws HttpServerErrorException {
     // Call API
     ResponseEntity<String> response = template.getForEntity(URL_REVERSE_GEOCODE, String.class,
         location.getLatitude(), location.getLongitude(), API_KEY);
@@ -48,13 +66,22 @@ public class GoogleAPIService {
     }
 
     // Parse JSON
+    JSONObject responseJson;
     try {
-      return (JSONObject) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(response.getBody());
+      responseJson = (JSONObject) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(response.getBody());
     } catch (ParseException e) {
       Logger.getLogger("ExternalAPI").log(Level.SEVERE, "Could not parse Google reverse geocode API json");
       Logger.getLogger("ExternalAPI").log(Level.SEVERE, response.getBody());
       throw new HttpServerErrorException(HttpStatus.EXPECTATION_FAILED);
     }
+
+    // Check status code
+    if (responseJson.getAsString("status").equals("REQUEST_DENIED")) {
+      Logger.getLogger("ExternalAPI").log(Level.SEVERE, "GOOGLE API KEY set incorrectly. Requests Failed");
+      throw new HttpServerErrorException(HttpStatus.UNAUTHORIZED);
+    }
+
+    return responseJson;
   }
 
   /**
