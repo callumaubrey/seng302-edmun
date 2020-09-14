@@ -238,13 +238,13 @@ export default {
                 params.get('limit'));
         }
         if (params.has('lon')) {
-            data['longitude'] = params.get('lon');
+            data['longitude'] = parseFloat(params.get('lon'));
         }
         if (params.has('lat')) {
-            data['latitude'] = params.get('lat');
+            data['latitude'] = parseFloat(params.get('lat'));
         }
         if (params.has('radius')) {
-            data['radius'] = params.get('radius');
+            data['radius'] = parseInt(params.get('radius'));
         }
 
         return data;

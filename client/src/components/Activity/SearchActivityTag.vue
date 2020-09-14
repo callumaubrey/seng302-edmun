@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-row>
-      <b-col cols="10">
+      <b-col>
         <b-form-text>{{ helpText }}</b-form-text>
         <b-form-tags v-model="values" no-outer-focus
                      style="margin: 0; padding: 0; background-color: initial; border: 0">
@@ -51,7 +51,6 @@
         </b-form-tags>
       </b-col>
       <b-col class="method-col">
-        <label style="margin-right:10px;">Search Method: </label>
         <b-form-radio-group id="activityTagSearchMethods" v-model="childSearchMethod" @change="emitSearchMethod" >
           <b-form-radio id="activity-tag-radio-and" class="searchByRadio" value="AND"  >And
           </b-form-radio>
@@ -97,7 +96,9 @@
        */
       setInput(value) {
         this.value = value;
-        this.selected = true;
+
+        // Clicking shows enough intent to add the hashtag.
+        this.addTag(this.value);
       },
       /**
        * adds hashtag to list of hashtags and calls emit tags function
@@ -112,6 +113,7 @@
           this.values.push(value);
           this.value = "";
           this.emitTagsToParent();
+          this.hashtag.options = [];
         }
       },
       /**
@@ -253,6 +255,22 @@
 
   .method-col {
     padding-top: 30px;
+    flex: 0 0 50px;
+  }
+
+  .autocomplete-item {
+    cursor: pointer !important;
+    background-color: white;
+  }
+
+  .autocomplete-item:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+
+  }
+
+  .autocomplete-item:hover {
+    background-color: lightgrey;
   }
 
 </style>

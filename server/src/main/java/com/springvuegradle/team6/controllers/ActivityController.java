@@ -50,19 +50,19 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @CrossOrigin(
     origins = {
-      "http://localhost:9000",
-      "http://localhost:9500",
-      "https://csse-s302g7.canterbury.ac.nz/test",
-      "https://csse-s302g7.canterbury.ac.nz/prod"
+        "http://localhost:9000",
+        "http://localhost:9500",
+        "https://csse-s302g7.canterbury.ac.nz/test",
+        "https://csse-s302g7.canterbury.ac.nz/prod"
     },
     allowCredentials = "true",
     allowedHeaders = "://",
     methods = {
-      RequestMethod.GET,
-      RequestMethod.POST,
-      RequestMethod.DELETE,
-      RequestMethod.PUT,
-      RequestMethod.PATCH
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.DELETE,
+        RequestMethod.PUT,
+        RequestMethod.PATCH
     })
 @RestController
 @RequestMapping("")
@@ -565,7 +565,7 @@ public class ActivityController {
       activity.setTags(hashtags);
     }
 
-    addMetricsToActivity(activity, request.metrics);
+    editMetricsFromRequest(activity, request.metrics);
   }
 
   /**
@@ -588,6 +588,49 @@ public class ActivityController {
   }
 
   /**
+   * Edits a metric if metric ID matches one already on that activity
+   * Adds a metric if metric ID = 0 or if there are none in the DB
+   * Set the activities metrics to the newly edited/added list of metrics
+   *
+   * @param activity Activity object
+   * @param requestMetrics list of ActivityQualificationMetric objects
+   */
+  private void editMetricsFromRequest(
+      Activity activity, List<ActivityQualificationMetric> requestMetrics) {
+    List<ActivityQualificationMetric> newMetrics = new ArrayList<>();
+    List<ActivityQualificationMetric> dbMetrics = activityQualificationMetricRepository.findByActivity_Id(activity.getId());
+    if (requestMetrics != null) {
+      if (dbMetrics.size() == 0) {
+        for (ActivityQualificationMetric requestMetric : requestMetrics) {
+          // Adding
+          requestMetric.setActivity(activity);
+          activityQualificationMetricRepository.save(requestMetric);
+          newMetrics.add(requestMetric);
+        }
+      } else {
+        for (ActivityQualificationMetric metric : dbMetrics) {
+          for (ActivityQualificationMetric requestMetric : requestMetrics) {
+            if (requestMetric.getId() == 0) {
+              // Adding
+              requestMetric.setActivity(activity);
+              activityQualificationMetricRepository.save(requestMetric);
+              newMetrics.add(requestMetric);
+            } else {
+              if (metric.getId() == requestMetric.getId() && metric.getEditable() == true) {
+                // Editing
+                requestMetric.setActivity(activity);
+                activityQualificationMetricRepository.save(requestMetric);
+                newMetrics.add(requestMetric);
+              }
+            }
+          }
+        }
+      }
+      activity.setMetrics(newMetrics);
+    }
+  }
+
+  /**
    * This method will deal with the different cases of visibility and which roles to delete and
    * which users to unsubscribe
    *
@@ -598,18 +641,79 @@ public class ActivityController {
 
     if (activity.getVisibilityType() == VisibilityType.Restricted
         && request.visibility.equals(
-            "public")) { // access roles dont need to exist if going from restricted to public;
+        "public")) { // access roles dont need to exist if going from restricted to public;
       activityRoleRepository.deleteAllAccessRolesOfActivity(activity.getId());
     } else if (!(activity.getVisibilityType() == VisibilityType.Public
-            && request.visibility.equals("public"))
+        && request.visibility.equals("public"))
         && !(activity.getVisibilityType() == VisibilityType.Restricted
-            && request.visibility.equals(
-                "restricted"))) { // This checks if there was no change in visibility.
+        && request.visibility.equals(
+        "restricted"))) { // This checks if there was no change in visibility.
       activityRoleRepository.deleteAllActivityRolesExceptOwner(
           activity.getId(), activity.getProfile().getId());
       subscriptionHistoryRepository.unSubscribeAllButCreator(
           activity.getId(), activity.getProfile().getId(), LocalDateTime.now());
     }
+  }
+
+  /**
+   * Deletes an activity metric if editable and if logged
+   * in user is the activity owner
+   *
+   * @param profileId profileId of activity owner
+   * @param activityId activity ID
+   * @param metricId metricId
+   * @param session HttpSession
+   * @return ResponseEntity 200 if OK else 4xx client error
+   */
+  @DeleteMapping("/profiles/{profileId}/activities/{activityId}/{metricId}")
+  public ResponseEntity deleteActivityMetric(
+      @PathVariable Integer profileId,
+      @PathVariable Integer activityId,
+      @PathVariable Integer metricId,
+      HttpSession session) {
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+
+    if (!optionalActivity.isPresent()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+
+    Activity activity = optionalActivity.get();
+
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(profileId, session, profileRepository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    ResponseEntity<String> activityAuthorizedResponse =
+        this.checkAuthorisedToEditActivity(activity, session);
+    if (activityAuthorizedResponse != null) {
+      return activityAuthorizedResponse;
+    }
+
+    ActivityQualificationMetric metric = activityQualificationMetricRepository.getOne(metricId);
+    if (metric == null) {
+      return new ResponseEntity("No such metric", HttpStatus.BAD_REQUEST);
+    }
+
+    boolean matchesActivity = false;
+    for (ActivityQualificationMetric metricActivity : activity.getMetrics()) {
+      if (metricActivity.getId() == metric.getId()) {
+        matchesActivity = true;
+      }
+    }
+
+    if (!matchesActivity) {
+      return new ResponseEntity("Metric does not belong to that activity", HttpStatus.BAD_REQUEST);
+    }
+
+    if (metric.getEditable() == false) {
+      return new ResponseEntity("This metric cannot be deleted", HttpStatus.BAD_REQUEST);
+    }
+
+    activityQualificationMetricRepository.delete(metric);
+
+    return new ResponseEntity("Metric deleted", HttpStatus.OK);
   }
 
   /**
@@ -664,6 +768,22 @@ public class ActivityController {
       if (request.visibility != null) {
         editActivityVisibilityHandling(request, activity); // this handles the visibility logic
       }
+
+      if (request.metrics != null) {
+        for (ActivityQualificationMetric metric : request.metrics) {
+          if (metric.getId() != 0) {
+            if (metric.getId() != 0 && activityQualificationMetricRepository.findById(metric.getId()).isEmpty()) {
+              return new ResponseEntity<>("Metric does not exist to be edited", HttpStatus.BAD_REQUEST);
+            }
+            ActivityQualificationMetric savedMetric =
+                activityQualificationMetricRepository.findById(metric.getId()).get();
+            if (!checkTwoMetricsAreTheSame(savedMetric, metric) && !savedMetric.getEditable()) {
+              return new ResponseEntity<>("Can not edit this activity", HttpStatus.BAD_REQUEST);
+            }
+            }
+        }
+        activity.setMetrics(request.metrics);
+      }
       editActivityFromRequest(request, activity);
 
       String postJson = mapper.writeValueAsString(activity);
@@ -683,6 +803,12 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+  public boolean checkTwoMetricsAreTheSame(ActivityQualificationMetric metric1, ActivityQualificationMetric metric2){
+    return metric1.getRankByAsc() == metric2
+        .getRankByAsc() && metric1.getTitle().equals(metric2.getTitle()) && metric1.getDescription()
+        .equals(metric2.getDescription()) && metric1.getUnit().name()
+        .equals(metric2.getUnit().name());
   }
 
   /**

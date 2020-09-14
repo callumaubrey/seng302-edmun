@@ -80,11 +80,11 @@ const NavBar = {
     return {
       userName: "",
       name: "",
-      searchBy: 1,
+      searchBy: 2,
       searchQuery: "",
       searchOptions: [
-                    {value: 1, text: 'Users'},
-                    {value: 2, text: 'Activities'}
+                    {value: 2, text: 'Activities'},
+                    {value: 1, text: 'Users'}
                 ],
                 profileId: "",
                 loggedInIsAdmin: null,
@@ -146,12 +146,18 @@ const NavBar = {
             },
 
             search() {
-                if (this.searchQuery === '') {
-                    this.$router.push('/profiles');
-                } else if (this.searchBy == 1) {
-                    this.$router.push('/profiles?fullname=' + this.searchQuery);
+                if (this.searchBy == 1) {
+                    if (this.searchQuery === '') {
+                        this.$router.push('/profiles');
+                    } else {
+                        this.$router.push('/profiles?fullname=' + this.searchQuery);
+                    }
                 } else if (this.searchBy == 2) {
-                    this.$router.push('/activities/search?name=' + this.searchQuery);
+                    if (this.searchQuery === '') {
+                        this.$router.push('/activities/search');
+                    } else {
+                        this.$router.push('/activities/search?name=' + this.searchQuery);
+                    }
                 }
             },
 
