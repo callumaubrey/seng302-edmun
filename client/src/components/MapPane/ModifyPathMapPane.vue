@@ -26,7 +26,7 @@ export default {
       const currObj = this
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
-      if (this.autoRoute == "true" && marker != null) {
+      if (this.autoRoute == "true" && marker) {
         this.getRoutePoints(coordinates)
       } else {
         this.$refs.map.routePoints.push(coordinates)
@@ -55,7 +55,6 @@ export default {
     },
 
     handleDragEvent(index, newCoords) {
-      this.$refs.map.markers[index].position = newCoords
       if (this.autoRoute != "true") {
         this.$refs.map.editSingleRoutePoint(newCoords, index)
         this.$refs.map.routePoints.push(newCoords)
@@ -87,8 +86,13 @@ export default {
         currObj.$refs.map.setRoutePoints(newRoutePoints)
       })
       .catch(function () {
-        currObj.$refs.map.markers.pop();
-        currObj.$refs.map.updateStartFinishMarkers()
+        if (currObj.$refs.map.savedMarkers != null) {
+          currObj.$refs.map.revertMarkers()
+        }
+        else {
+          currObj.$refs.map.markers.pop();
+          currObj.$refs.map.updateStartFinishMarkers()
+        }
       })
     },
     resetMarkerAndPoint() {

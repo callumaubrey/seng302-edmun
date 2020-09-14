@@ -193,7 +193,8 @@
                 },
                 routePoints: [],
                 markerObjects: {},
-                tooltip: true
+                tooltip: true,
+                savedMarkers: null
             };
         },
         methods: {
@@ -264,6 +265,17 @@
             },
 
             /**
+             * Gets latest marker that the user has inputted
+             *
+             **/
+            revertMarkers() {
+                const oldCoordinates = this.savedMarkers[0]
+                const index = this.savedMarkers[1]
+                this.markers[index].position = oldCoordinates
+                this.savedMarkers = null
+            },
+
+            /**
              * Sets latest markers icon color to blue
              *
              **/
@@ -273,7 +285,7 @@
                     this.markers[1].icon = this.pathEndMarker
                 }
                 if (this.markers.length > 2) {
-                    this.markers[this.markers.length - 2].icon = this.pathMarker
+                    this.markers[this.markers.length - 2].icon = this.blueMarker
                     this.markers[this.markers.length - 1].icon = this.pathEndMarker
                 }
             },
@@ -377,6 +389,8 @@
                         index = i
                     }
                 }
+                this.savedMarkers = [this.markers[index].position, index]
+                this.markers[index].position = newCoords
                 this.$parent.handleDragEvent(index, newCoords)
             },
         },
