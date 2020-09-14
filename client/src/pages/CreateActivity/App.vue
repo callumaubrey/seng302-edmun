@@ -13,7 +13,11 @@
           <b-tabs card>
 
             <!-- Activity Info Editing -->
-            <b-tab active title="Activity Info">
+            <b-tab active>
+              <template v-slot:title>
+                <b-icon v-if="formError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Info
+              </template>
               <b-container fluid>
 
                 <b-form @submit.stop.prevent="onSubmit" novalidate>
@@ -21,14 +25,14 @@
                     <b-col>
                       <b-form-group>
                         <b-form-radio-group id="duration-type-group" v-model="isContinuous">
-                          <b-form-radio name="duration-type" value="1">Continuous</b-form-radio>
-                          <b-form-radio name="duration-type" value="0">Duration</b-form-radio>
+                          <b-form-radio name="duration-type" value="0">Continuous</b-form-radio>
+                          <b-form-radio name="duration-type" value="1">Duration</b-form-radio>
                         </b-form-radio-group>
                       </b-form-group>
                     </b-col>
                   </b-row>
 
-                  <b-row v-if="isContinuous == '0'">
+                  <b-row v-if="isContinuous === '1'">
                     <b-col>
                       <b-form-group id="start-date-input-group" label="Start Date"
                                     label-for="start-date-input">
@@ -66,7 +70,7 @@
                   </b-row>
 
                   <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;"
-                         v-if="isContinuous == '0'">
+                         v-if="isContinuous === '1'">
                     <b-col>
                       <b-form-group id="start-time-input-group" label="Start Time"
                                     label-for="start-time-input">
@@ -183,28 +187,18 @@
                       <label>Select sharing</label>
                       <b-form-select :options="options" size="sm"
                                      v-model=selectedVisibility></b-form-select>
-                        <br><br>
+                      <br><br>
                     </b-col>
                   </b-row>
 
-                  <!-- Submission button -->
-                  <b-row class="py-2">
-                    <b-col sm="10">
-                      <b-button type="submit" variant="primary">Submit</b-button>
-                    </b-col>
-                    <b-col sm="2">
-                      <b-button @click="goToActivities" class="float-right">Your Activities
-                      </b-button>
-                    </b-col>
-                  </b-row>
 
                   <!-- Error Messages -->
                   <b-row class="py-2">
                     <b-col>
-                      <b-form-valid-feedback :state='activityUpdateMessage != ""'>
+                      <b-form-valid-feedback :state='activityUpdateMessage !== ""'>
                         {{ activityUpdateMessage }}
                       </b-form-valid-feedback>
-                      <b-form-invalid-feedback :state='activityErrorMessage == ""'>
+                      <b-form-invalid-feedback :state='activityErrorMessage === ""'>
                         {{ activityErrorMessage }}
                       </b-form-invalid-feedback>
                     </b-col>
@@ -212,19 +206,41 @@
                 </b-form>
               </b-container>
             </b-tab>
-            <ActivityLocationTab ref="map"
-                                 :can-hide="false"
-                                 :user-lat="userLat"
-                                 :user-long="userLong"
-                                 @locationSelect="updateLocation"
-            ></ActivityLocationTab>
+            <b-tab>
+              <template v-slot:title>
+                <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Location
+              </template>
+              <ActivityLocationTab ref="map"
+                                   :can-hide="false"
+                                   :user-lat="userLat"
+                                   :user-long="userLong"
+                                   @locationSelect="updateLocation"
+              ></ActivityLocationTab>
+            </b-tab>
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
+              <template v-slot:title>
+                <b-icon v-if="metricError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Metrics
+              </template>
               <ActivityMetricsEditor ref="metric_editor"></ActivityMetricsEditor>
             </b-tab>
           </b-tabs>
 
         </b-card>
+
+        <!-- Submission button -->
+        <b-row class="py-2">
+          <b-col sm="10">
+            <b-button type="submit" v-on:click="onSubmit" variant="primary">Submit</b-button>
+          </b-col>
+          <b-col sm="2">
+            <b-button @click="goToActivities" class="float-right">Cancel
+            </b-button>
+          </b-col>
+        </b-row>
+
 
       </b-col>
     </b-row>
@@ -232,390 +248,396 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
-import SearchTag from "../../components/SearchTag";
-import {validationMixin} from "vuelidate";
-import {required} from 'vuelidate/lib/validators';
-import locationMixin from "../../mixins/locationMixin";
-import AdminMixin from "../../mixins/AdminMixin";
-import api from '@/Api'
-import {store} from "../../store";
-import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+  import NavBar from "@/components/NavBar.vue";
+  import SearchTag from "../../components/SearchTag";
+  import {validationMixin} from "vuelidate";
+  import {required} from 'vuelidate/lib/validators';
+  import locationMixin from "../../mixins/locationMixin";
+  import AdminMixin from "../../mixins/AdminMixin";
+  import api from '@/Api'
+  import {store} from "../../store";
+  import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+  import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
-export default {
-  mixins: [validationMixin, locationMixin],
-  components: {
-    ActivityMetricsEditor,
-    NavBar,
-    SearchTag,
-    ActivityLocationTab,
-  },
-  data() {
-    return {
-      isLoggedIn: true,
-      userName: '',
-      isContinuous: 1,
-      profileId: null,
-      activityTypes: [],
-      userLat: null,
-      userLong: null,
+  export default {
+    mixins: [validationMixin, locationMixin],
+    components: {
+      ActivityMetricsEditor,
+      NavBar,
+      SearchTag,
+      ActivityLocationTab,
+    },
+    data() {
+      return {
+        isLoggedIn: true,
+        userName: '',
+        isContinuous: '0',
+        profileId: null,
+        activityTypes: [],
+        userLat: null,
+        userLong: null,
+        formError: false,
+        metricError: false,
+        mapError: false,
+        form: {
+          name: null,
+          description: null,
+          selectedActivityType: 0,
+          selectedActivityTypes: [],
+          date: null,
+        },
+        durationForm: {
+          startDate: null,
+          endDate: null,
+          startTime: null,
+          endTime: null
+        },
+        activityUpdateMessage: "",
+        activityErrorMessage: "",
+        locationData: null,
+        loggedInIsAdmin: false,
+        hashtag: {
+          options: [],
+          values: [],
+        },
+        selectedVisibility: 'Public',
+        options: [
+          {value: 'Private', text: 'Private'},
+          {value: 'Restricted', text: 'Restricted'},
+          {value: 'Public', text: 'Public'}
+        ],
+
+      }
+    },
+    validations: {
       form: {
-        name: null,
-        description: null,
-        selectedActivityType: 0,
-        selectedActivityTypes: [],
-        date: null,
+        name: {
+          required
+        },
+        description: {},
+        selectedActivityType: {
+          required,
+          validateActivityType() {
+            return this.form.selectedActivityTypes.length >= 1;
+
+          }
+        },
+        date: {},
       },
       durationForm: {
-        startDate: null,
-        endDate: null,
-        startTime: null,
-        endTime: null
-      },
-      activityUpdateMessage: "",
-      activityErrorMessage: "",
-      locationData: null,
-      loggedInIsAdmin: false,
-      hashtag: {
-        options: [],
-        values: [],
-      },
-      selectedVisibility: 'Public',
-      options: [
-        {value: 'Private', text: 'Private'},
-        {value: 'Restricted', text: 'Restricted'},
-        {value: 'Public', text: 'Public'}
-      ],
+        startDate: {
+          required,
+          dateValidate(val) {
 
-    }
-  },
-  validations: {
-    form: {
-      name: {
-        required
-      },
-      description: {},
-      selectedActivityType: {
-        required,
-        validateActivityType() {
-          if (this.form.selectedActivityTypes.length < 1) {
-            return false
+            return val >= new Date().toISOString().split('T')[0];
           }
-          return true
-        }
-      },
-      date: {},
-    },
-    durationForm: {
-      startDate: {
-        required,
-        dateValidate(val) {
+        },
+        endDate: {
+          required,
+          dateValidate(val) {
+            let startDate = new Date(this.durationForm.startDate);
+            let endDate = new Date(val);
+            return endDate >= startDate;
 
-          return val >= new Date().toISOString().split('T')[0];
-        }
-      },
-      endDate: {
-        required,
-        dateValidate(val) {
-          let startDate = new Date(this.durationForm.startDate);
-          let endDate = new Date(val);
-          if (endDate < startDate) {
-            return false;
           }
-          return true;
-        }
-      },
-      startTime: {},
-      endTime: {
-        timeValidate(val) {
-          let startTime = this.durationForm.startTime;
-          //let startDate = new Date(this.durationForm.startDate);
-          //let endDate = new Date(this.durationForm.endDate);
-          if (this.durationForm.startDate == this.durationForm.endDate) {
-            if (val && startTime) {
-              let splitStartTime = startTime.split(":");
-              let splitEndTime = val.split(":");
-              let startTimeObj = new Date();
-              startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
-              let endTimeObj = new Date();
-              endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
-              if (endTimeObj <= startTimeObj) {
-                return false;
+        },
+        startTime: {},
+        endTime: {
+          timeValidate(val) {
+            let startTime = this.durationForm.startTime;
+            //let startDate = new Date(this.durationForm.startDate);
+            //let endDate = new Date(this.durationForm.endDate);
+            if (this.durationForm.startDate === this.durationForm.endDate) {
+              if (val && startTime) {
+                let splitStartTime = startTime.split(":");
+                let splitEndTime = val.split(":");
+                let startTimeObj = new Date();
+                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                let endTimeObj = new Date();
+                endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+                if (endTimeObj <= startTimeObj) {
+                  return false;
+                }
               }
             }
+            return true;
           }
-          return true;
-        }
+        },
       },
     },
-  },
-  methods: {
-    manageTags: function (value) {
-      this.hashtag.values = value;
-      this.hashtag.options = [];
-    },
-    autocompleteInput: function (value) {
-      let pattern = /^#?[a-zA-Z0-9_]*$/;
-      if (!pattern.test(value)) {
+    methods: {
+      manageTags: function (value) {
+        this.hashtag.values = value;
         this.hashtag.options = [];
-        return;
-      }
-      if (value[0] == "#") {
-        value = value.substr(1);
-      }
-      if (value.length > 2) {
-        let vue = this;
-        api.getHashtagAutocomplete(value)
-        .then(function (response) {
-          let results = response.data.results;
-          for (let i = 0; i < results.length; i++) {
-            results[i] = "#" + results[i];
+      },
+      autocompleteInput: function (value) {
+        let pattern = /^#?[a-zA-Z0-9_]*$/;
+        if (!pattern.test(value)) {
+          this.hashtag.options = [];
+          return;
+        }
+        if (value[0] === "#") {
+          value = value.substr(1);
+        }
+        if (value.length > 2) {
+          let vue = this;
+          api.getHashtagAutocomplete(value)
+              .then(function (response) {
+                let results = response.data.results;
+                for (let i = 0; i < results.length; i++) {
+                  results[i] = "#" + results[i];
+                }
+                vue.hashtag.options = results;
+              })
+              .catch(function () {
+
+              });
+        } else {
+          this.hashtag.options = [];
+        }
+      },
+      getActivities: function () {
+        let currentObj = this;
+        api.getProfileActivityTypes()
+            .then(function (response) {
+              currentObj.activityTypes = response.data;
+            })
+            .catch(function (error) {
+              console.log(error.response.data);
+            });
+      },
+      deleteActivityType: function (activityType) {
+        this.$delete(this.form.selectedActivityTypes,
+            this.form.selectedActivityTypes.indexOf(activityType));
+        const selectedActivityLength = this.form.selectedActivityTypes.length;
+        if (selectedActivityLength === 0) {
+          this.$v.form.selectedActivityType.$model = null
+        } else {
+          this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivityLength
+          - 1]
+        }
+
+      },
+      validateState(name) {
+        const {$dirty, $error} = this.$v.form[name];
+        return $dirty ? !$error : null;
+      },
+      validateDurationState(name) {
+        const {$dirty, $error} = this.$v.durationForm[name];
+        return $dirty ? !$error : null;
+      },
+      addActivityType() {
+        if (this.form.selectedActivityType === 0) {
+          return;
+        }
+
+        if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
+          this.form.selectedActivityTypes.push(this.form.selectedActivityType);
+
+        }
+      },
+      onSubmit() {
+        this.$v.form.$touch();
+        let currentObj = this;
+        let userId = this.profileId;
+        if (this.loggedInIsAdmin) {
+          userId = this.$route.params.id;
+        }
+        if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1) {
+          this.formError = true;
+        } else {
+          if (this.isContinuous === '0') {
+            this.formError = false;
           }
-          vue.hashtag.options = results;
-        })
-        .catch(function () {
-
-        });
-      } else {
-        this.hashtag.options = [];
-      }
-    },
-    getActivities: function () {
-      let currentObj = this;
-      api.getProfileActivityTypes()
-      .then(function (response) {
-        currentObj.activityTypes = response.data;
-      })
-      .catch(function (error) {
-        console.log(error.response.data);
-      });
-    },
-    deleteActivityType: function (activityType) {
-      this.$delete(this.form.selectedActivityTypes,
-          this.form.selectedActivityTypes.indexOf(activityType));
-      const selectedActivityLength = this.form.selectedActivityTypes.length;
-      if (selectedActivityLength === 0) {
-        this.$v.form.selectedActivityType.$model = null
-      } else {
-        this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivityLength
-        - 1]
-      }
-
-    },
-    validateState(name) {
-      const {$dirty, $error} = this.$v.form[name];
-      return $dirty ? !$error : null;
-    },
-    validateDurationState(name) {
-      const {$dirty, $error} = this.$v.durationForm[name];
-      return $dirty ? !$error : null;
-    },
-    addActivityType() {
-      if (this.form.selectedActivityType == 0) {
-        return;
-      }
-
-      if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
-        this.form.selectedActivityTypes.push(this.form.selectedActivityType);
-
-      }
-    },
-    onSubmit() {
-      this.$v.form.$touch();
-      let currentObj = this;
-      let userId = this.profileId;
-      if (this.loggedInIsAdmin) {
-        userId = this.$route.params.id;
-      }
-
-      if (this.isContinuous == '1') {
-
-        // Check if data is valid
-        if (this.$v.form.$anyError || !this.$refs.metric_editor.validateMetricData()) {
+        }
+        if (this.isContinuous !== '0') {
+          this.$v.durationForm.$touch();
+          this.formError = !!this.$v.durationForm.$anyError;
+        }
+        this.mapError = !this.$refs.map.validLocation;
+        this.metricError = !this.$refs.metric_editor.validateMetricData();
+        if (this.formError || this.mapError || this.metricError) {
           return;
         }
 
-        let data = {
-          activity_name: this.form.name,
-          description: this.form.description,
-          activity_type: this.form.selectedActivityTypes,
-          continuous: true,
-          location: this.locationData,
-          hashtags: this.hashtag.values,
-          visibility: this.selectedVisibility,
-          metrics: this.$refs.metric_editor.getMetricData()
-        };
-        api.createActivity(userId, data)
-        .then(function (res) {
-          const activityId = res.data;
-          currentObj.activityErrorMessage = "";
-          currentObj.activityUpdateMessage = "'" + currentObj.form.name
-              + "' was successfully added to your activities";
-          store.newNotification('Activity created successfully', 'success', 4);
-          currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-        })
-        .catch(function (error) {
-          currentObj.activityUpdateMessage = "";
-          currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
-              + ". Please try again";
-          console.log(error);
-        });
+        if (this.isContinuous === '0') {
 
-      } else {
-        this.$v.durationForm.$touch();
-        if (this.$v.durationForm.$anyError || !this.$refs.metric_editor.validateMetricData()) {
-          return;
+          let data = {
+            activity_name: this.form.name,
+            description: this.form.description,
+            activity_type: this.form.selectedActivityTypes,
+            continuous: true,
+            location: this.locationData,
+            hashtags: this.hashtag.values,
+            visibility: this.selectedVisibility,
+            metrics: this.$refs.metric_editor.getMetricData()
+          };
+          api.createActivity(userId, data)
+              .then(function (res) {
+                const activityId = res.data;
+                store.newNotification('Activity created successfully', 'success', 4);
+                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+              })
+              .catch(function (error) {
+                store.newNotification("Failed to create activity: " + error.response.data
+                    + ". Please try again", 'danger', 4)
+              });
+
+        } else {
+          this.$v.durationForm.$touch();
+          if (this.$v.durationForm.$anyError) {
+            this.formError = true;
+            return;
+          } else {
+            this.formError = false;
+          }
+          const isoDates = this.getDates();
+          let data = {
+            activity_name: this.form.name,
+            description: this.form.description,
+            activity_type: this.form.selectedActivityTypes,
+            continuous: false,
+            start_time: isoDates[0],
+            visibility: this.selectedVisibility,
+            end_time: isoDates[1],
+            hashtags: this.hashtag.values,
+            metrics: this.$refs.metric_editor.getMetricData()
+          };
+          api.createActivity(userId, data)
+              .then(function (res) {
+                const activityId = res.data;
+                store.newNotification('Activity created successfully', 'success', 4)
+                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+              })
+              .catch(function (error) {
+                store.newNotification("Failed to update activity: " + error.response.data
+                    + ". Please try again", 'danger', 4)
+              });
         }
-        const isoDates = this.getDates();
-        let data = {
-          activity_name: this.form.name,
-          description: this.form.description,
-          activity_type: this.form.selectedActivityTypes,
-          continuous: false,
-          start_time: isoDates[0],
-          visibility: this.selectedVisibility,
-          end_time: isoDates[1],
-          hashtags: this.hashtag.values,
-          metrics: this.$refs.metric_editor.getMetricData()
-        };
-        api.createActivity(userId, data)
-        .then(function (res) {
-          const activityId = res.data;
-          currentObj.activityErrorMessage = "";
-          store.newNotification('Activity created successfully', 'success', 4)
-          currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-        })
-        .catch(function (error) {
-          currentObj.activityUpdateMessage = "";
-          currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
-              + ". Please try again";
-        });
-      }
-    },
+      },
 
-    getDates: function () {
-      let startDate = new Date(this.durationForm.startDate);
-      let endDate = new Date(this.durationForm.endDate);
+      getDates: function () {
+        let startDate = new Date(this.durationForm.startDate);
+        let endDate = new Date(this.durationForm.endDate);
 
-      // wind it back to previous date to align with local date time
-      startDate.setDate(startDate.getDate() - 1);
-      endDate.setDate(endDate.getDate() - 1);
+        // wind it back to previous date to align with local date time
+        startDate.setDate(startDate.getDate() - 1);
+        endDate.setDate(endDate.getDate() - 1);
 
-      if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
-        startDate = new Date(
-            this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
-      }
-
-      if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
-        endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
-      }
-      let startDateISO = startDate.toISOString().slice(0, -5);
-      let endDateISO = endDate.toISOString().slice(0, -5);
-
-      var currentTime = new Date();
-      const offset = (currentTime.getTimezoneOffset());
-
-      const currentTimezone = (offset / 60) * -1;
-      if (currentTimezone !== 0) {
-        startDateISO += currentTimezone > 0 ? '+' : '';
-        endDateISO += currentTimezone > 0 ? '+' : '';
-      }
-      startDateISO += currentTimezone.toString() + "00";
-      endDateISO += currentTimezone.toString() + "00";
-
-      if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
-        startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
-            startDateISO.length);
-      }
-      if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
-        endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
-            endDateISO.length);
-      }
-
-      return [startDateISO, endDateISO];
-
-    },
-    getUserId: async function () {
-      let currentObj = this;
-      api.getProfileId()
-      .then(function (response) {
-        currentObj.profileId = response.data;
-      })
-      .catch(function () {
-      });
-    },
-    getUserName: function () {
-      let currentObj = this;
-      api.getFirstName()
-      .then(function (response) {
-        currentObj.userName = response.data;
-      })
-      .catch(function () {
-      });
-    },
-    /**
-     * Gets the users location details, if any, for the map tab marker
-     * @returns {Promise<void>}
-     */
-    getUserLocation: async function () {
-      let currentObj = this;
-      await api.getLocation(this.profileId)
-        .then(function (response) {
-          currentObj.userLat = response.data.latitude;
-          currentObj.userLong = response.data.longitude;
-        }).catch(function () {
-      });
-    },
-    /**
-     * sets the location data for the activity from the coords emitted
-     * @param coords emitted from map component
-     */
-    updateLocation: function (coords) {
-      this.locationData = {
-        latitude: coords.lat,
-        longitude: coords.lng
-      };
-    },
-    goToActivities() {
-      const profileId = this.$route.params.id;
-      this.$router.push('/profiles/' + profileId + '/activities');
-    },
-    checkAuthorized: async function () {
-      let currentObj = this;
-      this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
-      return api.getProfileId()
-      .then(function (response) {
-        currentObj.profileId = response.data;
-        if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)
-            && !currentObj.loggedInIsAdmin) {
-          currentObj.$router.push("/login");
+        if (this.durationForm.startTime !== "" && this.durationForm.startTime != null) {
+          startDate = new Date(
+              this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
         }
-      })
-      .catch(function () {
-      });
+
+        if (this.durationForm.endTime !== "" && this.durationForm.startTime != null) {
+          endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
+        }
+        let startDateISO = startDate.toISOString().slice(0, -5);
+        let endDateISO = endDate.toISOString().slice(0, -5);
+
+        var currentTime = new Date();
+        const offset = (currentTime.getTimezoneOffset());
+
+        const currentTimezone = (offset / 60) * -1;
+        if (currentTimezone !== 0) {
+          startDateISO += currentTimezone > 0 ? '+' : '';
+          endDateISO += currentTimezone > 0 ? '+' : '';
+        }
+        startDateISO += currentTimezone.toString() + "00";
+        endDateISO += currentTimezone.toString() + "00";
+
+        if (this.durationForm.startTime === "" || this.durationForm.startTime == null) {
+          startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
+              startDateISO.length);
+        }
+        if (this.durationForm.endTime === "" || this.durationForm.endTime == null) {
+          endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
+              endDateISO.length);
+        }
+
+        return [startDateISO, endDateISO];
+
+      },
+      getUserId: async function () {
+        let currentObj = this;
+        api.getProfileId()
+            .then(function (response) {
+              currentObj.profileId = response.data;
+            })
+            .catch(function () {
+            });
+      },
+      getUserName: function () {
+        let currentObj = this;
+        api.getFirstName()
+            .then(function (response) {
+              currentObj.userName = response.data;
+            })
+            .catch(function () {
+            });
+      },
+      /**
+       * Gets the users location details, if any, for the map tab marker
+       * @returns {Promise<void>}
+       */
+      getUserLocation: async function () {
+        let currentObj = this;
+        await api.getLocation(this.profileId)
+            .then(function (response) {
+              currentObj.userLat = response.data.latitude;
+              currentObj.userLong = response.data.longitude;
+            }).catch(function () {
+            });
+      },
+      /**
+       * sets the location data for the activity from the coords emitted
+       * @param coords emitted from map component
+       */
+      updateLocation: function (coords) {
+        this.locationData = {
+          latitude: coords.lat,
+          longitude: coords.lng
+        };
+      },
+      goToActivities() {
+        const profileId = this.$route.params.id;
+        this.$router.push('/profiles/' + profileId + '/activities');
+      },
+      checkAuthorized: async function () {
+        let currentObj = this;
+        this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
+        return api.getProfileId()
+            .then(function (response) {
+              currentObj.profileId = response.data;
+              if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)
+                  && !currentObj.loggedInIsAdmin) {
+                currentObj.$router.push("/login");
+              }
+            })
+            .catch(function () {
+            });
+      },
+      onChildClick: function (val) {
+        this.selectedVisibility = val
+      }
+
     },
-    onChildClick: function (val) {
-      this.selectedVisibility = val
+    mounted: async function () {
+      await this.checkAuthorized();
+      this.getActivities();
+      await this.getUserId();
+      await this.getUserLocation();
+      this.getUserName();
     }
-
-  },
-  mounted: async function () {
-    await this.checkAuthorized();
-    this.getActivities();
-    await this.getUserId();
-    await this.getUserLocation();
-    this.getUserName();
   }
-}
 </script>
 
 <style scoped>
-[v-cloak] {
-  display: none;
-}
+  [v-cloak] {
+    display: none;
+  }
 
-.clickable {
-  cursor: pointer;
-}
+  .clickable {
+    cursor: pointer;
+  }
 </style>
