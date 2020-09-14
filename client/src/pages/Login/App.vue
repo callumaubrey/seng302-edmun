@@ -49,9 +49,6 @@
                 <b-button type="submit" variant="primary">Submit</b-button>
             </b-form>
         </div>
-        <b-container class="b-container">
-            <b-link to="/register" id="signup-link">Sign up for Edmun</b-link>
-        </b-container>
 
     </div>
 
@@ -141,6 +138,7 @@ export default {
         padding: 5px 40px 15px 20px;
         border: 1px solid lightgrey;
         border-radius: 3px;
+        max-width: 600px;
     }
 
     #user-error-feedback {
@@ -151,6 +149,9 @@ export default {
     .b-container {
         background-color: white;
         border: 0 white;
+
+        background-repeat:no-repeat;
+        background-size: 100% 100%;
     }
 
 </style>
