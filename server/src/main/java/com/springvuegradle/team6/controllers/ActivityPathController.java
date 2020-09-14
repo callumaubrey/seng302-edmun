@@ -93,7 +93,7 @@ public class ActivityPathController {
         if (!isOrganiser) {
             ResponseEntity<String> checkAuthorisedResponse =
             UserSecurityService.checkAuthorised(profileId, session, profileRepository);
-            if (checkAuthorisedResponse.getStatusCode() != null) {
+            if (checkAuthorisedResponse != null && checkAuthorisedResponse.getStatusCode() != null) {
                 return checkAuthorisedResponse;
             }
         }
@@ -111,8 +111,11 @@ public class ActivityPathController {
         }
 
         Path path = new Path(activity, locations, request.type);
+
         path = pathRepository.save(path);
 
-        return new ResponseEntity(path.getId(), HttpStatus.CREATED);
+        Path path2 = pathRepository.findByActivity_Id(activityId);
+
+        return new ResponseEntity(path2.getLocations().size(), HttpStatus.CREATED);
     }
 }
