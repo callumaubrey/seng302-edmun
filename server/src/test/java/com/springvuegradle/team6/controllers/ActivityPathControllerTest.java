@@ -115,6 +115,31 @@ public class ActivityPathControllerTest {
     }
 
     @Test
+    void editPathWithInvalidPathType() throws Exception {
+        String jsonString =
+                "{\n"
+                        + "  \"coordinates\": [ \n"
+                        + "     {\n"
+                        + "          \"latitude\": -43.525650,\n"
+                        + "          \"longitude\": 172.639847\n"
+                        + "     },\n"
+                        + "     {\n"
+                        + "          \"latitude\": -43.825650,\n"
+                        + "          \"longitude\": 172.839847\n"
+                        + "     }\n"
+                        + "  ],\n"
+                        + "  \"pathType\": \"random\"\n"
+                        + "}";
+
+        mvc.perform(
+                MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/path", id, activityId)
+                        .content(jsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void editPathWithInvalidCoordinates() throws Exception {
         String jsonString =
                 "{\n"
@@ -136,11 +161,50 @@ public class ActivityPathControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
+    }
 
-        Path path = pathRepository.findByActivity_Id(activityId);
-        Assert.assertEquals("200.525650", path.getLocations().get(0).getLatitude().toString());
-        Assert.assertEquals(PathType.STRAIGHT, path.getType());
+    @Test
+    void editPathWithoutAuthorization() throws Exception {
+        String jsonString =
+                "{\r\n  \"lastname\": \"Random\",\r\n  \"firstname\": \"Poly\",\r\n  \"middlename\": \"Michelle\",\r\n  \"nickname\": \"Pino\",\r\n  \"primary_email\": \"random@pocket.com\",\r\n  \"password\": \"Password1\",\r\n  \"bio\": \"Poly Pocket is so tiny.\",\r\n  \"date_of_birth\": \"2000-11-11\",\r\n  \"gender\": \"female\"\r\n}";
+
+        mvc.perform(
+                MockMvcRequestBuilders.post("/profiles")
+                        .content(jsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().isCreated())
+                .andDo(print());
+
+        String body =
+                mvc.perform(get("/profiles/id").session(session))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+         int profileId = Integer.parseInt(body);
+
+        String pathString =
+                "{\n"
+                        + "  \"coordinates\": [ \n"
+                        + "     {\n"
+                        + "          \"latitude\": -43.525650,\n"
+                        + "          \"longitude\": 172.639847\n"
+                        + "     },\n"
+                        + "     {\n"
+                        + "          \"latitude\": -43.825650,\n"
+                        + "          \"longitude\": 172.839847\n"
+                        + "     }\n"
+                        + "  ],\n"
+                        + "  \"pathType\": \"straight\"\n"
+                        + "}";
+
+        mvc.perform(
+                MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/path", profileId, activityId)
+                        .content(pathString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().isUnauthorized());
     }
 
 }

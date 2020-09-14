@@ -47,4 +47,8 @@ public class EditPathRequest {
         }
         return finalPath;
     }
+
+    public List<PathCoordinateRequest> getCoordinates() { return coordinates; }
+
+    public String getPathType() { return pathType; }
 }

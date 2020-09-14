@@ -2,9 +2,11 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Path;
+import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.requests.EditPathRequest;
+import com.springvuegradle.team6.requests.PathCoordinateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -77,12 +80,16 @@ public class ActivityPathController {
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
         }
+        if (!validatePathRequest(request.getCoordinates(), request.getPathType())) {
+            return new ResponseEntity<>(
+                    "Coordinates are not valid",
+                    HttpStatus.BAD_REQUEST);
+        }
 
         Path oldPath = pathRepository.findByActivity_Id(activityId);
         if (oldPath != null) {
             pathRepository.delete(oldPath);
         }
-
         Path newPath = request.generatePath(activity, locationRepository, pathRepository);
         newPath = pathRepository.save(newPath);
 
@@ -90,5 +97,25 @@ public class ActivityPathController {
         activityRepository.save(activity);
 
         return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
+    }
+
+    public boolean validatePathRequest(List<PathCoordinateRequest> coordinates, String type) {
+        boolean valid = true;
+        for (PathCoordinateRequest coordinate : coordinates) {
+            if (coordinate.getLatitude() < -90 || coordinate.getLatitude() > 90) {
+                valid = false;
+                break;
+            }
+            if (coordinate.getLongitude() < -180 || coordinate.getLongitude() > 180) {
+                valid = false;
+                break;
+            }
+        }
+        if (!type.equals("straight")) {
+            if (!type.equals("defined")) {
+                valid = false;
+            }
+        }
+        return valid;
     }
 }
