@@ -44,6 +44,10 @@
                                                 && circle.center[0] != null
                                                 && circle.center[1] != null
                                                 && circle.radius != null"
+                                          :lat-lng="circle.center"
+                                          :radius="circle.radius"
+                                          :color="circle.color"
+                                />
                                 <LControl v-if="pathOverlay" class="control-overlay">
                                     <b-col>
                                         <b-row>
@@ -58,8 +62,6 @@
                                             </b-form-radio-group>
                                         </b-row>
                                     </b-col>
-
-
                                 </LControl>
                                 <l-circle v-if="displayCircle"
                                         :lat-lng="circle.center"
@@ -81,7 +83,7 @@
                                           @dragend="editMarker($event, marker)"
                                 >
                                     <l-tooltip id="popUp"
-                                               v-if="marker.title != null && tooltip"
+                                               v-if="marker.title != null"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
                                     >
                                         <b-container style="max-height: 6.5em; overflow: hidden">
@@ -209,7 +211,6 @@
                 },
                 routePoints: [],
                 markerObjects: {},
-                tooltip: true,
                 savedMarkers: null
             };
         },

@@ -32,7 +32,7 @@ export default {
         this.$refs.map.routePoints.push(coordinates)
       }
       this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng,
-          "", "", true)
+          "", null, true)
       this.$refs.map.updateStartFinishMarkers()
 
       if (this.$refs.map.routePoints.length == 0) {
@@ -52,7 +52,7 @@ export default {
       } else {
         this.$refs.map.routePoints.push(marker)
       }
-      this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", "")
+      this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
       this.$refs.map.updateStartFinishMarkers()
     },
 
@@ -121,8 +121,5 @@ export default {
       }
     }
   },
-  mounted() {
-    this.$refs.map.tooltip = false
-  }
 }
 </script>
