@@ -10,7 +10,7 @@ public class PathCoordinateRequest {
     @NotNull
     @NotEmpty
     @JsonProperty("latitude")
-    private Double latitiude;
+    private Double latitude;
 
     @NotNull
     @NotEmpty
@@ -21,6 +21,6 @@ public class PathCoordinateRequest {
         return longitude;
     }
     public Double getLatitude() {
-        return latitiude;
+        return latitude;
     }
 }

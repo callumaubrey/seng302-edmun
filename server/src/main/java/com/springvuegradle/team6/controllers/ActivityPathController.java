@@ -41,14 +41,18 @@ public class ActivityPathController {
     private final ProfileRepository profileRepository;
     private final ActivityRepository activityRepository;
     private final PathRepository pathRepository;
+    private final LocationRepository locationRepository;
+
 
     ActivityPathController(
             ProfileRepository profileRepository,
             ActivityRepository activityRepository,
-            PathRepository pathRepository) {
+            PathRepository pathRepository,
+            LocationRepository locationRepository) {
         this.profileRepository = profileRepository;
         this.activityRepository = activityRepository;
         this.pathRepository = pathRepository;
+        this.locationRepository = locationRepository;
     }
 
     @PutMapping("/profiles/{profileId}/activities/{activityId}/path")
@@ -79,7 +83,7 @@ public class ActivityPathController {
             pathRepository.delete(oldPath);
         }
 
-        Path newPath = request.generatePath(activity);
+        Path newPath = request.generatePath(activity, locationRepository, pathRepository);
         newPath = pathRepository.save(newPath);
 
         activity.setPath(newPath);

@@ -2,6 +2,7 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Path;
+import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.PathRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -98,7 +99,7 @@ public class ActivityPathControllerTest {
                         + "          \"longitude\": 172.839847\n"
                         + "     }\n"
                         + "  ],\n"
-                        + "  \"pathType\": \"STRAIGHT\"\n"
+                        + "  \"pathType\": \"straight\"\n"
                         + "}";
 
         mvc.perform(
@@ -110,6 +111,36 @@ public class ActivityPathControllerTest {
 
         Path path = pathRepository.findByActivity_Id(activityId);
         Assert.assertEquals("-43.525650", path.getLocations().get(0).getLatitude().toString());
+        Assert.assertEquals(PathType.STRAIGHT, path.getType());
+    }
+
+    @Test
+    void editPathWithInvalidCoordinates() throws Exception {
+        String jsonString =
+                "{\n"
+                        + "  \"coordinates\": [ \n"
+                        + "     {\n"
+                        + "          \"latitude\": 200.525650,\n"
+                        + "          \"longitude\": 192.639847\n"
+                        + "     },\n"
+                        + "     {\n"
+                        + "          \"latitude\": -43.825650,\n"
+                        + "          \"longitude\": 172.839847\n"
+                        + "     }\n"
+                        + "  ],\n"
+                        + "  \"pathType\": \"straight\"\n"
+                        + "}";
+
+        mvc.perform(
+                MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}/path", id, activityId)
+                        .content(jsonString)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session))
+                .andExpect(status().isOk());
+
+        Path path = pathRepository.findByActivity_Id(activityId);
+        Assert.assertEquals("200.525650", path.getLocations().get(0).getLatitude().toString());
+        Assert.assertEquals(PathType.STRAIGHT, path.getType());
     }
 
 }

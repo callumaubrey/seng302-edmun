@@ -81,4 +81,8 @@ public class Location implements Serializable, Coordinates {
   public void setName(String name) {
     this.name = name;
   }
+
+  public void setPath(Path path) {
+    this.path = path;
+  }
 }
