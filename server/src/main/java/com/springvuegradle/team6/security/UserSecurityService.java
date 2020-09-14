@@ -70,7 +70,7 @@ public class UserSecurityService {
 
     boolean isAdminOrCreator = checkIsAdminOrCreator((Integer) id, requestId);
     if (!isAdminOrCreator) {
-      return new ResponseEntity<>("Only accessible by the owner or admin", HttpStatus.UNAUTHORIZED);
+      return new ResponseEntity<>("Only accessible by the owner or admin", HttpStatus.FORBIDDEN);
     }
 
     if (!repository.existsById(requestId)) {
