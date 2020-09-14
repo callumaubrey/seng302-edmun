@@ -74,7 +74,7 @@
                                           :icon="marker.icon"
                                           @click="markerSelected(marker)"
                                           draggable
-                                          @moveend="editMarker($event, marker)"
+                                          @dragend="editMarker($event, marker)"
                                 >
                                     <l-tooltip id="popUp"
                                                :options='{ interactive: true, offset: [2, -36], direction: "top"}'
@@ -358,20 +358,14 @@
                 }
             },
             editMarker(event, marker) {
-                console.log(marker.position)
-                // console.log(this.markers)
-                // const newCoords = event.target.getLatLng()
-                // const reversedList = this.markers.reverse()
-                // for (let i of reversedList) {
-                //     if (i.position == newCoords ) {
-                //         console.log(i)
-                //     }
-                // }
-                // console.log(this.markers.lastIndexOf(marker.position))
-                console.log(marker)
-                // console.log(event.target.getLatLng())
-                // console.log(event)
-                // this.$parent.getRoutePoints([])
+                const newCoords = Object.values(event.target.getLatLng())
+                let index
+                for (let i = this.markers.length - 1; i >= 0; i--) {
+                    if(this.markers[i].position == marker.position){
+                        index = i
+                    }
+                }
+                this.$parent.handleDragEvent(index, newCoords)
             },
             // getMarkers() {
             //     this.$nextTick(() => {

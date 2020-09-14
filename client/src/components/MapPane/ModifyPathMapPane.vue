@@ -53,6 +53,15 @@ export default {
       this.$refs.map.updateStartFinishMarkers()
     },
 
+    handleDragEvent(index, newCoords) {
+      this.$refs.map.markers[index].position = newCoords
+      if (this.autoRoute != "true") {
+        this.$refs.map.routePoints[index] = newCoords
+      } else {
+        this.getRoutePoints([])
+      }
+    },
+
     getRoutePoints(coordinates){
       const currObj = this
       let apiInput = this.$refs.map.getAllMarkersCoords()
