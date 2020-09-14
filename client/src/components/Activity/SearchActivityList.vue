@@ -2,6 +2,7 @@
   <div>
     <b-card v-for="activity in activity_data" :key="activity.id"
             @click="gotoActivity(activity.profile_id, activity.id)"
+            @mouseenter="$emit('activityHover', activity)"
             class="activity-card rounded mb-3">
       <b-card-body class="activity-card-body" >
         <b-row>
@@ -16,20 +17,24 @@
                     v-b-tooltip.hover title="Duration"></b-icon>
           </b-col>
           <!-- Title -->
-          <b-col class="title">{{activity.activityName}}</b-col>
+          <b-col class="title">
+            {{activity.activityName}}
 
-          <b-col>
-            <span v-if="!activity.continuous" class="date float-right">
+            <!-- No Location Icon -->
+            <span   v-if="activity.location == null"
+                    v-b-tooltip.hover title="No Location"
+                    class="fa-stack fa-2x" style="font-size: 0.9rem">
+              <i class="fas fa-map-marker-alt fa-stack-1x"></i>
+              <i class="fas fa-ban fa-stack-2x" style="color:Tomato"></i>
+            </span>
+          </b-col>
+
+          <b-col v-if="!activity.continuous">
+            <span  class="date float-right">
               {{getDurationTimeSummary(activity)}}
             </span>
           </b-col>
 
-          <b-col>
-            <!-- Location -->
-            <span v-if="activity.location" class="float-right text-secondary activity-location-text">
-                      {{activity.location.city}}, {{activity.location.state}}, {{activity.location.country}}
-                  </span>
-          </b-col>
           <b-col cols="0.2" class="activity-type-icon-collection float-right">
             <ActivityTypeIcon v-for="type in activity.activityTypes" :key="type"
                               :type_name="type" class="float-right"></ActivityTypeIcon>

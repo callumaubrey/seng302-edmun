@@ -206,7 +206,7 @@
 
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
-              <ActivityMetricsEditor ref="metric_editor"/>
+              <ActivityMetricsEditor ref="metric_editor" :profile-id="profileId" :activity-id="activityId"></ActivityMetricsEditor>
             </b-tab>
           </b-tabs>
 
