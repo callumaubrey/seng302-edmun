@@ -72,8 +72,8 @@
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
+                                          :draggable=marker.draggable
                                           @click="markerSelected(marker)"
-                                          draggable
                                           @dragend="editMarker($event, marker)"
                                 >
                                     <l-tooltip id="popUp"
@@ -232,7 +232,7 @@
              *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title) {
+            createMarker(id, iconColour, lat, lng, content, title, draggable) {
                 //Check inputs and set position and icon
                 let icon = null;
                 let coordinates = [lat, lng];
@@ -244,6 +244,12 @@
                 } else {
                     icon = this.blueMarker
                 }
+                if(content == null){
+                    content = ""
+                }
+                if (draggable == null){
+                  draggable = false
+                }
 
                 //Adds the marker to the markers list to be displayed
                 this.markers.push({
@@ -252,7 +258,8 @@
                     visible: true,
                     icon: icon,
                     content: content,
-                    title: title
+                    title: title,
+                    draggable: draggable
                 })
             },
 
@@ -369,7 +376,7 @@
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
-                if (this.routePoints == []) {
+                if (this.routePoints.length == 0) {
                     this.center = marker.position;
                     this.$emit('markerSelected', marker.content.id);
                 } else {

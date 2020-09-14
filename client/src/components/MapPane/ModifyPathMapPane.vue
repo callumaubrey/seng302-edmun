@@ -31,7 +31,7 @@ export default {
       } else {
         this.$refs.map.routePoints.push(coordinates)
       }
-      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng)
+      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng, "", "", true)
       this.$refs.map.updateStartFinishMarkers()
 
       if (this.$refs.map.routePoints.length == 0) {
@@ -43,6 +43,7 @@ export default {
     },
 
     clickOnMarker(marker) {
+      this.count += 1
       const latitude = marker[0]
       const longitude = marker[1]
       if (this.autoRoute == "true" && marker != null) {
@@ -86,7 +87,10 @@ export default {
         currObj.$refs.map.setRoutePoints(newRoutePoints)
       })
       .catch(function () {
-        if (currObj.$refs.map.savedMarkers != null) {
+        if (currObj.$refs.map.getAllMarkersCoords().length == 2){
+          currObj.resetMarkerAndPoint()
+        }
+        else if (currObj.$refs.map.savedMarkers != null) {
           currObj.$refs.map.revertMarkers()
         }
         else {
