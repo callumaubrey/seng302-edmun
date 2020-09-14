@@ -1,8 +1,12 @@
 <template>
   <div>
     <div>
-      <b-input v-model="locationText" @keyup.native="doAutocomplete(locationText)"
-               autocomplete="off" placeholder="Search address"/>
+      <b-form-input v-model="locationText" @keyup.native="doAutocomplete(locationText)"
+                    autocomplete="off" placeholder="Search address"
+                    :state="validLocation"/>
+      <b-form-invalid-feedback id="input-live-feedback">
+        The selected location is unknown
+      </b-form-invalid-feedback>
       <em v-if="loadingLocations"
           class="autocomplete-loading-icon text-primary fas fa-circle-notch fa-spin"/>
       <b-form-text>Click on the map or enter into input to set location</b-form-text>
@@ -33,6 +37,7 @@
         locations: [],
         selectedLocation: null,
         loadingLocations: false,
+        validLocation: null
       }
     },
     mounted() {
@@ -91,7 +96,7 @@
               properties.push(obj.state);
             }
             properties.push(obj.country);
-              displayName = properties.join(", ");
+            displayName = properties.join(", ");
         }
         return {
           "lng": geo[0],
@@ -123,7 +128,7 @@
           let locationData = axios.create({
             baseURL: "https://photon.komoot.de/api/?q=" + locationText + geo_priority_query
                 + "&limit=10",
-            timeout: 2000,
+            timeout: 5000,
             withCredentials: false,
           });
 
@@ -169,25 +174,39 @@
         this.$emit("emitLocation", value);
       },
 
-      setLocationTextByCoords: function (lat, lng) {
+      validateLocation: function() {
+        return this.validLocation == null;
+      },
+
+      setLocationTextByCoords: async function (lat, lng) {
         let coordsDataAPI = axios.create({
           baseURL: "https://photon.komoot.de/reverse?lon=" + lng + "&lat=" + lat + "&limit=1",
-          timeout: 2000,
+          timeout: 5000,
           withCredentials: false,
         });
 
         this.loadingLocations = true;
-        coordsDataAPI.get().then((res) => {
+        await coordsDataAPI.get().then((res) => {
           // If relevant feature is found
-          if (res.data.features.length > 0) {
-            let feature_data = this.parseOSMFeature(res.data.features[0]);
-            this.locationText = feature_data.display_name;
-            this.locations = [];
+          if (res.data.features) {
+            if (res.data.features.length > 0) {
+              let feature_data = this.parseOSMFeature(res.data.features[0]);
+              this.locationText = feature_data.display_name;
+              this.locations = [];
+              this.validLocation = null;
+            } else {
+              this.validLocation = false;
+              this.clearLocation();
+            }
           } else {
-            this.clearLocation();
+            this.$bvToast.toast('An error has occurred, please try again.', {
+              variant: "danger",
+              solid: true
+            })
           }
           this.loadingLocations = false;
         }).catch(() => {
+          this.validLocation = false;
           this.loadingLocations = false;
           this.clearLocation();
         })

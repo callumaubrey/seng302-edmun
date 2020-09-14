@@ -1,5 +1,4 @@
 <template>
-    <b-tab title="Activity Location">
         <b-row>
             <b-col>
                 <!-- Map Pane -->
@@ -26,7 +25,6 @@
                 </MapPane>
             </b-col>
         </b-row>
-    </b-tab>
 </template>
 
 <script>
@@ -46,6 +44,7 @@
                 priorityGeoLocation: null,
                 originalLat: null,
                 originalLong: null,
+                validLocation: null
             }
         },
 
@@ -88,16 +87,20 @@
              * When the map is clicked the event will change the v-model and move the activity pin on the map.
              * @param event click event with latitude and longitude
              */
-            mapClicked: function(event) {
+            mapClicked: async function(event) {
                 let lat = event.latlng.lat;
                 let lng = event.latlng.lng;
+                console.log(lat)
+                console.log(lng)
 
                 // Update set location on v-model
                 this.$emit('locationSelect', event.latlng);
                 this.updateMarker(lat, lng);
 
                 // Update Text in AutocompleteLocation component
-                this.$refs.location_input.setLocationTextByCoords(lat, lng);
+                await this.$refs.location_input.setLocationTextByCoords(lat, lng);
+                this.validLocation = this.$refs.location_input.validateLocation();
+                console.log(this.validLocation)
             },
 
             /**

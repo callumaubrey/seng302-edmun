@@ -21,7 +21,11 @@
           <b-tabs card>
 
             <!-- Activity Info Editing -->
-            <b-tab active title="Activity Info">
+            <b-tab active>
+              <template v-slot:title>
+                <b-icon v-if="formError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Info
+              </template>
               <b-container fluid>
 
                 <b-form @submit.stop.prevent="onSubmit" novalidate>
@@ -184,33 +188,46 @@
                       </b-form-group>
                     </b-col>
                   </b-row>
-                  <b-button id="saveButton" type="submit" variant="primary">Save changes</b-button>
-                  <b-form-valid-feedback :state='activityUpdateMessage !== ""' class="feedback">
-                    {{ activityUpdateMessage }}
-                  </b-form-valid-feedback>
-                  <b-form-invalid-feedback :state='activityErrorMessage === ""' class="feedback">
-                    {{ activityErrorMessage }}
-                  </b-form-invalid-feedback>
+
                 </b-form>
               </b-container>
             </b-tab>
 
-            <ActivityLocationTab ref="map"
-                                 :can-hide="false"
-                                 :user-lat="userLat"
-                                 :user-long="userLong"
-                                 @locationSelect="updateLocation"
-                                 :activity-lat="locationData.latitude"
-                                 :activity-long="locationData.longitude"
-            />
+            <b-tab>
+              <template v-slot:title>
+                <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Location
+              </template>
+              <ActivityLocationTab ref="map"
+                                   :can-hide="false"
+                                   :user-lat="userLat"
+                                   :user-long="userLong"
+                                   @locationSelect="updateLocation"
+                                   :activity-lat="locationData.latitude"
+                                   :activity-long="locationData.longitude"
+              />
+            </b-tab>
+
 
             <!-- Metrics Editor -->
-            <b-tab title="Activity Metrics">
+            <b-tab>
+              <template v-slot:title>
+                <b-icon v-if="metricError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                Activity Metrics
+              </template>
               <ActivityMetricsEditor ref="metric_editor" :profile-id="profileId" :activity-id="activityId"></ActivityMetricsEditor>
             </b-tab>
           </b-tabs>
 
+
         </b-card>
+        <br>
+        <b-row>
+          <b-col>
+            <b-button id="saveButton" type="submit" v-on:click="onSubmit" variant="primary">Save changes</b-button>
+          </b-col>
+        </b-row>
+
       </b-col>
     </b-row>
   </div>
@@ -227,6 +244,7 @@
     import api from '@/Api'
     import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
     import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+    import {store} from "../../store";
 
     export default {
       mixins: [validationMixin, locationMixin],
@@ -249,6 +267,9 @@
           activityErrorMessage: "",
           userLat: null,
           userLong: null,
+          formError: false,
+          metricError: false,
+          mapError: false,
           form: {
             name: null,
             description: null,
@@ -424,8 +445,32 @@
           if (this.loggedInIsAdmin) {
             userId = this.$route.params.id;
           }
-          if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1
-              || !this.$refs.metric_editor.validateMetricData()) {
+          if (this.$v.form.$anyError || this.form.selectedActivityTypes < 1) {
+            this.formError = true;
+          } else {
+            if (this.isContinuous === '0') {
+              this.formError = false;
+            }
+          }
+          if (this.isContinuous !== '0') {
+            this.$v.durationForm.$touch();
+            if (this.$v.durationForm.$anyError) {
+              this.formError = true;
+            } else {
+              this.formError = false;
+            }
+          }
+          if (!this.$refs.map.validLocation) {
+            this.mapError = true;
+          } else {
+            this.mapError = false;
+          }
+          if (!this.$refs.metric_editor.validateMetricData()) {
+            this.metricError = true;
+          } else {
+            this.metricError = false;
+          }
+          if (this.formError || this.mapError || this.metricError) {
             return;
           }
           let currentObj = this;
@@ -442,20 +487,20 @@
             api.updateActivity(userId, this.activityId, data)
             .then(function (response) {
               console.log(response);
-              currentObj.activityUpdateMessage = "Successfully updated activity: "
-                  + currentObj.form.name;
-              currentObj.activityErrorMessage = "";
+              store.newNotification('Activity updated successfully', 'success', 4)
+              currentObj.$router.push('/profiles/' + userId + '/activities/' + currentObj.activityId);
             })
             .catch(function (error) {
-              currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
-                  + ". Please try again";
-              currentObj.activityUpdateMessage = "";
+              console.log(error);
             });
 
           } else {
             this.$v.durationForm.$touch();
             if (this.$v.durationForm.$anyError) {
+              this.formError = true;
               return;
+            } else {
+              this.formError = false;
             }
             const isoDates = this.getISODates();
             data = {
@@ -472,14 +517,12 @@
             api.updateActivity(userId, this.activityId, data)
             .then(function (response) {
               console.log(response);
-              currentObj.activityUpdateMessage = "Successfully updated activity: "
-                  + currentObj.form.name;
-              currentObj.activityErrorMessage = "";
+              store.newNotification('Activity updated successfully', 'success', 4)
+              currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
             })
             .catch(function (error) {
-              currentObj.activityErrorMessage = "Failed to update activity: " + error.response.data
-                  + ". Please try again";
-              currentObj.activityUpdateMessage = ""
+              store.newNotification("Failed to update activity: " + error.response.data
+                  + ". Please try again", 'danger', 4)
             });
 
           }

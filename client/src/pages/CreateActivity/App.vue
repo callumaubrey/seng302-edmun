@@ -394,11 +394,11 @@ export default {
     deleteActivityType: function (activityType) {
       this.$delete(this.form.selectedActivityTypes,
           this.form.selectedActivityTypes.indexOf(activityType));
-      const selectedActivitysLength = this.form.selectedActivityTypes.length;
-      if (selectedActivitysLength == 0) {
+      const selectedActivityLength = this.form.selectedActivityTypes.length;
+      if (selectedActivityLength === 0) {
         this.$v.form.selectedActivityType.$model = null
       } else {
-        this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivitysLength
+        this.$v.form.selectedActivityType.$model = this.form.selectedActivityTypes[selectedActivityLength
         - 1]
       }
 
@@ -483,8 +483,6 @@ export default {
         .then(function (res) {
           const activityId = res.data;
           currentObj.activityErrorMessage = "";
-          currentObj.activityUpdateMessage = "'" + currentObj.form.name
-              + "' was successfully added to your activities";
           store.newNotification('Activity created successfully', 'success', 4)
           currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
         })
