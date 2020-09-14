@@ -3,15 +3,7 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
-import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.LocationRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
-import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityRequest;
 import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
 import com.springvuegradle.team6.requests.EditActivityRequest;
@@ -71,6 +63,7 @@ public class ActivityController {
   private final ActivityRepository activityRepository;
   private final ActivityRoleRepository activityRoleRepository;
   private final LocationRepository locationRepository;
+  private final PathRepository pathRepository;
   private final TagRepository tagRepository;
   private final SubscriptionHistoryRepository subscriptionHistoryRepository;
   private final ActivityHistoryRepository activityHistoryRepository;
@@ -82,7 +75,7 @@ public class ActivityController {
       ActivityRepository activityRepository,
       ActivityRoleRepository activityRoleRepository,
       LocationRepository locationRepository,
-      TagRepository tagRepository,
+      PathRepository pathRepository, TagRepository tagRepository,
       SubscriptionHistoryRepository subscriptionHistoryRepository,
       ActivityHistoryRepository activityHistoryRepository,
       ActivityQualificationMetricRepository activityQualificationMetricRepository,
@@ -91,6 +84,7 @@ public class ActivityController {
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
     this.locationRepository = locationRepository;
+    this.pathRepository = pathRepository;
     this.tagRepository = tagRepository;
     this.subscriptionHistoryRepository = subscriptionHistoryRepository;
     this.activityHistoryRepository = activityHistoryRepository;
@@ -1151,5 +1145,36 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Returns an activities path if it exists
+   * 401 UNAUTHORIZED: If session id is empty
+   * 404 NOT_FOUND:  If activity does not exist or path does not exist.
+   * @param profileId activity owners id
+   * @param activityId activity id
+   * @param session session data
+   * @return Activity path if exists otherwise 4xx error
+   */
+  @GetMapping("/profiles/{profileId}/activities/{activityId}/path")
+  public ResponseEntity getActivityPath(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      HttpSession session) {
+
+    // Check user is logged in
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+
+    // Check Activity exists
+    Optional<Path> optionalPath = Optional.ofNullable(pathRepository.findByActivity_Id(activityId));
+    if (optionalPath.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Path path = optionalPath.get();
+
+    return ResponseEntity.ok(path);
   }
 }

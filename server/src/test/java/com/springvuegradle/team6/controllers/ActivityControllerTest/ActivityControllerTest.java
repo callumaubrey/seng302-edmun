@@ -7,22 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityRole;
-import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.SubscribeMethod;
-import com.springvuegradle.team6.models.entities.SubscriptionHistory;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
-import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +51,10 @@ class ActivityControllerTest {
   @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   @Autowired private TagRepository tagRepository;
+
+  @Autowired private PathRepository pathRepository;
+
+  @Autowired private LocationRepository locationRepository;
 
   @Autowired private MockMvc mvc;
   @Autowired private ObjectMapper mapper;
@@ -2349,5 +2342,57 @@ class ActivityControllerTest {
 
     org.junit.jupiter.api.Assertions.assertTrue(
         activityRepository.findById(Integer.parseInt(activityId)).get().getMetrics().isEmpty());
+  }
+
+  @Test
+  void getActivityPathFromValidActivityReturnsStatusOK() throws Exception {
+    Location start = new Location(0,0);
+    Location end = new Location(45,45);
+    locationRepository.save(start);
+    locationRepository.save(end);
+    ArrayList<Location> pathLocations = new ArrayList<>();
+    pathLocations.add(start);
+    pathLocations.add(end);
+
+    Activity activity = new Activity();
+    activity.setProfile(profileRepository.findById(id));
+    activityRepository.save(activity);
+
+    Path path = new Path();
+    path.setType(PathType.STRAIGHT);
+    path.setLocations(pathLocations);
+    path.setActivity(activity);
+    pathRepository.save(path);
+
+
+
+    String response = mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    JSONObject responseJSON = new JSONObject(response);
+    JSONArray locationsJSON = (JSONArray)responseJSON.get("locations");
+    String    typeJSON = responseJSON.getString("type");
+
+    org.junit.jupiter.api.Assertions.assertEquals(2, locationsJSON.length());
+    org.junit.jupiter.api.Assertions.assertEquals("STRAIGHT", typeJSON);
+  }
+
+  @Test
+  void getNonExistentActivityPathFromValidActivityReturnsStatusNotFound() throws Exception {
+    Activity activity = new Activity();
+    activity.setProfile(profileRepository.findById(id));
+    activityRepository.save(activity);
+
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+            .session(session))
+        .andExpect(status().isNotFound());
+
+
   }
 }
