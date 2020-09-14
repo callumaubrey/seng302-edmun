@@ -41,6 +41,7 @@ export default {
       }
       currObj.count += 1
     },
+
     clickOnMarker(marker) {
       const latitude = marker[0]
       const longitude = marker[1]
@@ -56,10 +57,13 @@ export default {
     handleDragEvent(index, newCoords) {
       this.$refs.map.markers[index].position = newCoords
       if (this.autoRoute != "true") {
-        this.$refs.map.routePoints[index] = newCoords
+        this.$refs.map.editSingleRoutePoint(newCoords, index)
+        this.$refs.map.routePoints.push(newCoords)
+        this.$refs.map.routePoints.pop()
       } else {
         this.getRoutePoints([])
       }
+      this.$refs.map.updateStartFinishMarkers()
     },
 
     getRoutePoints(coordinates){

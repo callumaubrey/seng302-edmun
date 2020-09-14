@@ -240,8 +240,7 @@
                 }
                 if (iconColour === 3) {
                     icon = this.pathStartMarker
-                }
-                else {
+                } else {
                     icon = this.blueMarker
                 }
 
@@ -295,7 +294,15 @@
              *
              **/
             setRoutePoints(routePoints) {
-              this.routePoints = routePoints
+                this.routePoints = routePoints
+            },
+
+            /**
+             * Sets route points with given parameter
+             *
+             **/
+            editSingleRoutePoint(point, index) {
+                this.routePoints[index] = point
             },
             /**
              * Sets markers with given parameter
@@ -350,31 +357,30 @@
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
-                if(this.routePoints == []) {
+                if (this.routePoints == []) {
                     this.center = marker.position;
                     this.$emit('markerSelected', marker.content.id);
-                }else {
+                } else {
                     this.$parent.clickOnMarker(marker.position)
                 }
             },
+
+            /**
+             * Called when user drags a marker, gets the new coordinate location and the old previous
+             * location then updates the route and markers
+             **/
             editMarker(event, marker) {
                 const newCoords = Object.values(event.target.getLatLng())
                 let index
                 for (let i = this.markers.length - 1; i >= 0; i--) {
-                    if(this.markers[i].position == marker.position){
+                    if (this.markers[i].position == marker.position) {
                         index = i
                     }
                 }
                 this.$parent.handleDragEvent(index, newCoords)
             },
-            // getMarkers() {
-            //     this.$nextTick(() => {
-            //         this.markerObjects = this.$refs.markersRef.map(ref => ref.mapObject._latlng)
-            //         console.log(this.markerObjects)
-            //         // alert(this.markerObjects[0]._latlng.lat)
-            //     })
-            // },
         },
+
         /**
          * Refresh the map everytime the map is rendered by vue.
          */
