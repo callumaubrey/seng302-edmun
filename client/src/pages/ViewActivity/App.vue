@@ -374,7 +374,6 @@ const App = {
       let startDate = new Date(start.year + "-" + start.monthValue + '-'
           + start.dayOfMonth + ' ' + startTime).toString();
       if (startTime == null) {
-        console.log(start)
         startDate = new Date(start.year + "-" + start.monthValue + '-'
             + start.dayOfMonth + ' ' + '00:00').toString();
       }
