@@ -110,7 +110,7 @@ public class ActivityPathControllerTest {
                 .andExpect(status().isOk());
 
         Path path = pathRepository.findByActivity_Id(activityId);
-        Assert.assertEquals("-43.525650", path.getLocations().get(0).getLatitude().toString());
+        Assert.assertEquals(java.util.Optional.of(-43.525650).get(), path.getLocations().get(0).getLatitude());
         Assert.assertEquals(PathType.STRAIGHT, path.getType());
     }
 
