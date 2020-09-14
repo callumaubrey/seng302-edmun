@@ -31,7 +31,8 @@ export default {
       } else {
         this.$refs.map.routePoints.push(coordinates)
       }
-      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng, "", "", true)
+      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng,
+          "", "", true)
       this.$refs.map.updateStartFinishMarkers()
 
       if (this.$refs.map.routePoints.length == 0) {
@@ -104,6 +105,7 @@ export default {
       this.$refs.map.setRoutePoints([])
       this.canChangeSelection = true;
     },
+
     prevPoint() {
       if (this.$refs.map.markers.length > 1) {
         this.$refs.map.markers.pop();

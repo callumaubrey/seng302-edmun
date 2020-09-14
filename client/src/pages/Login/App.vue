@@ -52,7 +52,6 @@
         <b-container class="b-container">
             <b-link to="/register" id="signup-link">Sign up for Edmun</b-link>
         </b-container>
-        <modify-path-map-pane></modify-path-map-pane>
 
     </div>
 
@@ -62,11 +61,9 @@
 import NavBar from '@/components/NavBar.vue';
 import api from '@/Api';
 import {mutations} from "../../store";
-import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 
 export default {
   components: {
-      ModifyPathMapPane,
     NavBar
   },
   computed: {

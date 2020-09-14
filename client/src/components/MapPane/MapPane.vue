@@ -43,7 +43,7 @@
                                 <LControl v-if="pathOverlay" class="control-overlay">
                                     <b-col>
                                         <b-row>
-                                            <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Back</b-button>
+                                            <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Delete End Marker</b-button>
                                             <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset</b-button>
                                         </b-row>
                                         <b-row>
@@ -323,6 +323,7 @@
             editSingleRoutePoint(point, index) {
                 this.routePoints[index] = point
             },
+
             /**
              * Sets markers with given parameter
              *
@@ -330,6 +331,7 @@
             setMarkers(markers) {
                 this.markers = markers
             },
+
             /**
              * Removes a marker by id
              **/
@@ -349,6 +351,7 @@
                 }
                 return false
             },
+
             /**
              * Updates the map's viewing size when map container size changes. For instance
              * in a tab.
@@ -359,6 +362,7 @@
                     map.mapObject.invalidateSize();
                 }, 100);
             },
+
             /**
              * If no markers are available, the map centers on the currently logged in users geo location
              **/
@@ -372,6 +376,7 @@
                     _this.$emit('userLocationUpdate', _this.userGeoLocation);
                 });
             },
+
             /**
              * Focuses the map to the marker selected
              **/
