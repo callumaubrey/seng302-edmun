@@ -54,15 +54,15 @@ public class ActivityPathControllerTest {
   void setup() throws Exception {
     session = new MockHttpSession();
     String jsonString =
-        "{\r\n  \"lastname\": \"Pocket\"," +
-                "\r\n  \"firstname\": \"Poly\"," +
-                "\r\n  \"middlename\": \"Michelle\"," +
-                "\r\n  \"nickname\": \"Pino\"," +
-                "\r\n  \"primary_email\": \"poly@pocket.com\"," +
-                "\r\n  \"password\": \"Password1\"," +
-                "\r\n  \"bio\": \"Poly Pocket is so tiny.\"," +
-                "\r\n  \"date_of_birth\": \"2000-11-11\"," +
-                "\r\n  \"gender\": \"female\"\r\n}";
+        "{\r\n  \"lastname\": \"Pocket\","
+            + "\r\n  \"firstname\": \"Poly\","
+            + "\r\n  \"middlename\": \"Michelle\","
+            + "\r\n  \"nickname\": \"Pino\","
+            + "\r\n  \"primary_email\": \"poly@pocket.com\","
+            + "\r\n  \"password\": \"Password1\","
+            + "\r\n  \"bio\": \"Poly Pocket is so tiny.\","
+            + "\r\n  \"date_of_birth\": \"2000-11-11\","
+            + "\r\n  \"gender\": \"female\"\r\n}";
 
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
@@ -88,36 +88,37 @@ public class ActivityPathControllerTest {
     activityId = activity.getId();
   }
 
-    @Test
-    void createActivityPath() throws Exception {
-        String jsonString = "{\n" +
-                "    \"type\": \"" + PathType.STRAIGHT +"\",\n" +
-                "    \"locations\": [\n" +
-                "        {\n" +
-                "            \"latitude\": 10.5678,\n" +
-                "            \"longitude\": 10.5672\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"latitude\": 10.5670,\n" +
-                "            \"longitude\": 10.5670\n" +
-                "        }\n" +
-                "    ]\n" +
-                "\n" +
-                "}";
+  @Test
+  void createActivityPath() throws Exception {
+    String jsonString =
+        "{\n"
+            + "    \"type\": \""
+            + PathType.STRAIGHT
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
-        mvc.perform(
-                MockMvcRequestBuilders.post(
-                        "/profiles/{profileId}/activities/{activityId}/path",
-                        id,
-                        activityId)
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .session(session))
-                .andExpect(status().isCreated());
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
 
-        Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = pathRepository.findByActivity_Id(activityId);
 
-        Assert.assertEquals(PathType.STRAIGHT, path.getType());
-        Assert.assertEquals(2, path.getLocations().size());
-    }
+    Assert.assertEquals(PathType.STRAIGHT, path.getType());
+    Assert.assertEquals(2, path.getLocations().size());
+  }
 }

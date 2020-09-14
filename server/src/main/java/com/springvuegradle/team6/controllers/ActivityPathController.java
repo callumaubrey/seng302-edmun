@@ -100,9 +100,17 @@ public class ActivityPathController {
 
         List<Location> locations = new ArrayList<>();
 
+        List<Location> fakeLocations = new ArrayList<>();
+
+        fakeLocations.add(new Location());
+        fakeLocations.add(new Location());
+
+        Path path = new Path(activity, fakeLocations, request.type);
+
         try {
             for (LocationUpdateRequest locationUpdateRequest : request.locations) {
                 Location location = new Location(locationUpdateRequest.latitude, locationUpdateRequest.longitude);
+                location.setPath(path);
                 location = locationRepository.save(location);
                 locations.add(location);
             }
@@ -110,12 +118,10 @@ public class ActivityPathController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        Path path = new Path(activity, locations, request.type);
+        path.setLocations(locations);
 
         path = pathRepository.save(path);
 
-        Path path2 = pathRepository.findByActivity_Id(activityId);
-
-        return new ResponseEntity(path2.getLocations().size(), HttpStatus.CREATED);
+        return new ResponseEntity(path.getLocations().size(), HttpStatus.CREATED);
     }
 }
