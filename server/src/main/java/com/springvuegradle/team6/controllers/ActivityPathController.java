@@ -1,7 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Path;
 import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.repositories.*;
@@ -59,6 +58,14 @@ public class ActivityPathController {
         this.locationRepository = locationRepository;
     }
 
+    /**
+     * This endpoint edits the path. The old path is deleted along with the locations in it.
+     * @param profileId profileId of of owner of activity
+     * @param activityId id of the activity
+     * @param request edit path request including the coordinates and the path type.
+     * @param session the session of the user
+     * @return OK for a success and 4xx for an error
+     */
     @PutMapping("/profiles/{profileId}/activities/{activityId}/path")
     public ResponseEntity editPath(@PathVariable int profileId,
                          @PathVariable int activityId,
@@ -102,6 +109,13 @@ public class ActivityPathController {
         return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
     }
 
+    /** This helper method is used to check all coordinates and path type in the request are valid before entering the logic.
+     * to ensure no logic begins before checking validity.
+     *
+     * @param coordinates coordinates in the request
+     * @param type path type in the request
+     * @return true if valid, false otherwise
+     */
     public boolean validatePathRequest(List<PathCoordinateRequest> coordinates, String type) {
         boolean valid = true;
         for (PathCoordinateRequest coordinate : coordinates) {
