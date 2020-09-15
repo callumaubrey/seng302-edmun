@@ -7,6 +7,10 @@
         <h3>Forgot Password?</h3>
       </b-row>
 
+      <b-row v-if="emailSent" align-h="center" style="margin-top:20px;">
+        <b-alert variant="success" show dismissible>Please check your email and follow the instructions.</b-alert>
+      </b-row>
+
       <b-row align-h="center" style="margin-top:10px;">
         Enter your email address below and we'll send you a link so you can reset it.
       </b-row>
@@ -32,6 +36,7 @@
 <script>
 import NavBar from '@/components/NavBar';
 import {email,required} from 'vuelidate/lib/validators'
+import Api from '@/Api';
 
 export default {
   components: {
@@ -39,7 +44,8 @@ export default {
   },
   data() {
     return {
-      email: null
+      email: null,
+      emailSent: false
     }
   },
   validations: {
@@ -58,6 +64,16 @@ export default {
       if (this.$v.$anyError) {
         return;
       }
+
+      Api.sendForgotPasswordEmail(this.email)
+        .then(() => {
+          this.emailSent = true;
+          this.email = null;
+          this.$v.$reset();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   }
 }
