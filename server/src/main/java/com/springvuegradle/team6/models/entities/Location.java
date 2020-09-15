@@ -30,7 +30,7 @@ public class Location implements Serializable, Coordinates {
 
   @Id
   @GeneratedValue
-  private final long location_id = 0;
+  private int id;
 
   @Latitude
   private Double latitude = 0d;
@@ -77,7 +77,7 @@ public class Location implements Serializable, Coordinates {
     this.name = name;
   }
 
-  public void setPath(Path path) {
-    this.path = path;
+  public int getId() {
+    return id;
   }
 }

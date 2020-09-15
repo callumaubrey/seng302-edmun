@@ -1,6 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
+import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Path;
 import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.repositories.*;
@@ -87,14 +88,16 @@ public class ActivityPathController {
         }
 
         Path oldPath = pathRepository.findByActivity_Id(activityId);
+
+        Path newPath = request.generatePath(activity, locationRepository, pathRepository);
+        newPath = pathRepository.save(newPath);
+        activity.setPath(newPath);
+        activityRepository.save(activity);
+
         if (oldPath != null) {
             pathRepository.delete(oldPath);
         }
-        Path newPath = request.generatePath(activity, locationRepository, pathRepository);
-        newPath = pathRepository.save(newPath);
 
-        activity.setPath(newPath);
-        activityRepository.save(activity);
 
         return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
     }

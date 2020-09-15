@@ -25,20 +25,12 @@ public class EditPathRequest {
 
     public Path generatePath(Activity activity, LocationRepository locationRepository, PathRepository pathRepository) {
         ArrayList<Location> pathCoordinates = new ArrayList<>();
-        // This is here as the Path has a size minimum of 2, not sure about an alternative other than this
-        pathCoordinates.add(new Location());
-        pathCoordinates.add(new Location());
-        Path finalPath = new Path(activity, pathCoordinates, PathType.STRAIGHT);
-        finalPath = pathRepository.save(finalPath);
-        pathCoordinates = new ArrayList<>();
-
         for (int i = 0; i < coordinates.size(); i++) {
             Location pathPoint = new Location(coordinates.get(i).getLatitude(), coordinates.get(i).getLongitude());
-            pathPoint.setPath(finalPath);
             pathPoint = locationRepository.save(pathPoint);
             pathCoordinates.add(pathPoint);
         }
-        finalPath.setLocations(pathCoordinates);
+        Path finalPath = new Path(activity, pathCoordinates, PathType.STRAIGHT);
 
         if (pathType.equals("straight")) {
             finalPath.setType(PathType.STRAIGHT);
