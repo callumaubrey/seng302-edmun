@@ -39,11 +39,6 @@ public class Location implements Serializable, Coordinates {
 
   private String name;
 
-  @ManyToOne
-  @JoinColumn(name = "path_id")
-  @JsonIgnore
-  private Path path;
-
   public Location() {
   }
 
