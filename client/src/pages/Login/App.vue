@@ -4,7 +4,10 @@
             <NavBar></NavBar>
         </div>
         <div class="container">
-            <h1> Login </h1>
+            <b-row align-h="center">
+              <b-img :src="require('@/assets/goatNOLOGO.jpg')" height="150px"></b-img>
+            </b-row>
+            <h2 style="text-align:center;">Log in to Edmun</h2>
             <hr>
             <b-form @submit="onSubmit" novalidate class="needs-validation">
                 <b-form-group id="input-group-1" label="Email address" label-for="input-1">
@@ -46,11 +49,15 @@
                     <p id="user-error-feedback"></p>
 
                 </b-form-group>
-                <b-button type="submit" variant="primary">Submit</b-button>
+                <b-button type="submit" variant="primary" style="width:100%;">Submit</b-button>
             </b-form>
         </div>
         <b-container class="b-container">
+          <b-row align-h="center">
+            <b-link to="/forgot-password" id="forgot-password-link">Forgot password?</b-link>
+            <span class="dot"></span>
             <b-link to="/register" id="signup-link">Sign up for Edmun</b-link>
+          </b-row>
         </b-container>
 
     </div>
@@ -137,9 +144,8 @@ export default {
     }
 
     .container {
-        background-color: #f2f2f2;
+        width:600px;
         padding: 5px 40px 15px 20px;
-        border: 1px solid lightgrey;
         border-radius: 3px;
     }
 
@@ -151,6 +157,17 @@ export default {
     .b-container {
         background-color: white;
         border: 0 white;
+    }
+
+    .dot {
+      height: 5px;
+      width: 5px;
+      background-color: #000;
+      border-radius: 50%;
+      display: inline-block;
+      margin-top:10px;
+      margin-left:7px;
+      margin-right:7px;
     }
 
 </style>
