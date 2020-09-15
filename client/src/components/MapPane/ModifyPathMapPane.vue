@@ -16,7 +16,7 @@ export default {
   props: ['profileId', 'activityId', 'loggedInId'],
   data() {
     return {
-      autoRoute: "false",
+      autoRoute: false,
       canChangeSelection: true,
       count: 0
     }
@@ -26,7 +26,7 @@ export default {
       const currObj = this
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
-      if (this.autoRoute == "true" && marker) {
+      if (this.autoRoute && marker) {
         this.getRoutePoints(coordinates)
       } else {
         this.$refs.map.routePoints.push(coordinates)
@@ -44,20 +44,20 @@ export default {
     },
 
     clickOnMarker(marker) {
-      this.count += 1
       const latitude = marker[0]
       const longitude = marker[1]
-      if (this.autoRoute == "true" && marker != null) {
+      if (this.autoRoute && marker != null) {
         this.getRoutePoints(marker)
       } else {
         this.$refs.map.routePoints.push(marker)
       }
       this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
       this.$refs.map.updateStartFinishMarkers()
+      this.count += 1
     },
 
     handleDragEvent(index, newCoords) {
-      if (this.autoRoute != "true") {
+      if (!this.autoRoute) {
         this.$refs.map.editSingleRoutePoint(newCoords, index)
         this.$refs.map.routePoints.push(newCoords)
         this.$refs.map.routePoints.pop()
@@ -70,7 +70,6 @@ export default {
     getRoutePoints(coordinates){
       const currObj = this
       let apiInput = this.$refs.map.getAllMarkersCoords()
-      // console.log(apiInput)
       if (coordinates.length != 0){
         //For some reason api takes [lng,lat] points rather than [lat,lng] points, hence reverse()
         apiInput.push([coordinates[1], coordinates[0]])
@@ -110,7 +109,7 @@ export default {
       if (this.$refs.map.markers.length > 1) {
         this.$refs.map.markers.pop();
         this.$refs.map.routePoints.pop();
-        if(this.autoRoute == "true") {
+        if(this.autoRoute) {
           if (this.$refs.map.markers.length == 1) {
             this.$refs.map.setRoutePoints([])
           }else {

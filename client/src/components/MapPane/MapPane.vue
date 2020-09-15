@@ -57,8 +57,8 @@
                                         <b-row>
                                             <b-form-radio-group id="checkbox-group-2" v-model="$parent.autoRoute" name="flavour-2"
                                                                    v-if="$parent.canChangeSelection">
-                                                <b-form-radio value="false">Selection</b-form-radio>
-                                                <b-form-radio value="true">Auto route</b-form-radio>
+                                                <b-form-radio v-bind:value="false">Selection</b-form-radio>
+                                                <b-form-radio v-bind:value="true">Auto route</b-form-radio>
                                             </b-form-radio-group>
                                         </b-row>
                                     </b-col>
