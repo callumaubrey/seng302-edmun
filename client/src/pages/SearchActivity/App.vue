@@ -96,7 +96,7 @@
 
           <b-row style="margin-top:10px;margin-bottom:10px;">
             <b-col>
-              <b-form-select v-model="selectedSort" :options="sortOptions" @change="loadActivities()" style="width:200px;"></b-form-select>
+              Sort by: <b-form-select v-model="selectedSort" :options="sortOptions" @change="loadActivities()" style="width:200px;"></b-form-select>
             </b-col>
           </b-row>
 
@@ -211,7 +211,11 @@ export default {
       }
     },
     methods: {
-
+    /**
+     * Checks if is radius checkbox is checked and if it is (which seems to be when it is false)
+     * then the location options are added to the sort options dropdown
+     *
+     **/
     checkAndSetSortOptions(val) {
       if (val == false) {
         this.sortOptions = [
