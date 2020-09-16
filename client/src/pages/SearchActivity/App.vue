@@ -81,7 +81,7 @@
                   <b-card body-class="px-3 pt-2 pb-0">
                     <b-row class="pb-2">
                       <b-col>
-                        <b-checkbox v-model="search_data.location.enabled">
+                        <b-checkbox v-model="search_data.location.enabled" @change="checkAndSetSortOptions(search_data.location.enabled)">
                           Search Radius
                         </b-checkbox>
                       </b-col>
@@ -92,9 +92,13 @@
                 </b-col>
               </b-row>
             </b-collapse>
-
           </b-card>
-          <hr>
+
+          <b-row style="margin-top:10px;margin-bottom:10px;">
+            <b-col>
+              Sort by: <b-form-select v-model="selectedSort" :options="sortOptions" @change="loadActivities()" style="width:200px;"></b-form-select>
+            </b-col>
+          </b-row>
 
           <!-- Activity List -->
           <SearchActivityList v-bind:activity_data="activity_data"
@@ -196,11 +200,41 @@ export default {
           radius: 50
         }
       },
+      selectedSort: 'earliest_start_date',
+      sortOptions: [
+        {value: 'earliest_start_date', text:'Earliest Start Date'},
+        {value: 'latest_start_date', text:'Latest Start Date'},
+        {value: 'earliest_end_date', text:'Earliest End Date'},
+        {value: 'latest_end_date', text:'Latest End Date'}
+      ],
         activity_data: []
       }
     },
     methods: {
-
+    /**
+     * Checks if is radius checkbox is checked and if it is (which seems to be when it is false)
+     * then the location options are added to the sort options dropdown
+     *
+     **/
+    checkAndSetSortOptions(val) {
+      if (val == false) {
+        this.sortOptions = [
+          {value: 'closest_location', text:'Closest Location'},
+          {value: 'furthest_location', text:'Furthest Location'},
+          {value: 'earliest_start_date', text:'Earliest Start Date'},
+          {value: 'latest_start_date', text:'Latest Start Date'},
+          {value: 'earliest_end_date', text:'Earliest End Date'},
+          {value: 'latest_end_date', text:'Latest End Date'}
+        ];
+      } else {
+        this.sortOptions = [
+          {value: 'earliest_start_date', text:'Earliest Start Date'},
+          {value: 'latest_start_date', text:'Latest Start Date'},
+          {value: 'earliest_end_date', text:'Earliest End Date'},
+          {value: 'latest_end_date', text:'Latest End Date'}
+        ];
+      }
+    },
       /**
        * Gets current logged in user
        */
@@ -245,7 +279,8 @@ export default {
             row_limit,
             location_data.longitude,
             location_data.latitude,
-            location_data.radius).then((response) => {
+            location_data.radius,
+        this.selectedSort).then((response) => {
           this.activity_data = response.data.results;
           this.loadingData = false;
         }).catch((error) => {
