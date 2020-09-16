@@ -169,6 +169,7 @@
              */
             setOriginalActivityPin: function () {
                 if (this.activityLat == null && this.activityLong == null) {
+                    this.$refs.map.refreshMap();
                     return;
                 }
                 this.originalLat = this.activityLat;
