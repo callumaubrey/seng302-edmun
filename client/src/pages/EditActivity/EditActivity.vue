@@ -82,6 +82,7 @@
                     <b-col>
                       <b-form-group id="start-time-input-group" label="Start Time"
                                     label-for="start-time-input">
+                        <b-form-text>Default start time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('startTime')"
                             id="start-time-input"
@@ -93,6 +94,7 @@
                     <b-col>
                       <b-form-group id="end-time-input-group" label="End Time"
                                     label-for="end-time-input">
+                        <b-form-text>Default end time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('endTime')"
                             aria-describedby="end-time-feedback"
@@ -249,137 +251,135 @@
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import {store} from "../../store";
 
-  export default {
-    mixins: [validationMixin, locationMixin],
-    components: {
-      ActivityMetricsEditor,
-      SearchTag,
-      NavBar,
-      ForbiddenMessage,
-      ActivityLocationTab
-    },
-    data() {
-      return {
-        isLoggedIn: false,
-        userName: '',
-        isContinuous: '',
-        profileId: null,
-        activityId: null,
-        activityTypes: ["Hike", "Bike", "Run", "Walk", "Swim"],
-        activityUpdateMessage: "",
-        activityErrorMessage: "",
-        userLat: null,
-        userLong: null,
-        formError: false,
-        metricError: false,
-        mapError: false,
+    export default {
+      mixins: [validationMixin, locationMixin],
+      components: {
+        ActivityMetricsEditor,
+        SearchTag,
+        NavBar,
+        ForbiddenMessage,
+        ActivityLocationTab
+      },
+      data() {
+        return {
+          isLoggedIn: false,
+          userName: '',
+          isContinuous: '',
+          profileId: null,
+          activityId: null,
+          activityTypes: ["Hike", "Bike", "Run", "Walk", "Swim"],
+          activityUpdateMessage: "",
+          activityErrorMessage: "",
+          userLat: null,
+          userLong: null,
+          formError: false,
+          metricError: false,
+          mapError: false,
+          form: {
+            name: null,
+            description: null,
+            selectedActivityType: 0,
+            selectedActivityTypes: [],
+            date: null,
+          },
+          durationForm: {
+            startDate: null,
+            endDate: null,
+            startTime: null,
+            endTime: null
+          },
+          // previous start date
+          dbStartDate: null,
+          locationData: {
+                    latitude: null,
+                    longitude: null
+                  },
+          loggedInIsAdmin: false,
+          hashtag: {
+            options: [],
+            values: []
+          },
+          authorised: true
+        }
+      },
+      validations: {
         form: {
-          name: null,
-          description: null,
-          selectedActivityType: 0,
-          selectedActivityTypes: [],
-          date: null,
+          name: {
+            required
+          },
+          description: {},
+          selectedActivityType: {
+            required,
+            validateActivityType() {
+              return this.form.selectedActivityTypes.length >= 1;
+            }
+          },
+          date: {},
         },
         durationForm: {
-          startDate: null,
-          endDate: null,
-          startTime: null,
-          endTime: null
-        },
-        // previous start date
-        dbStartDate: null,
-        locationData: {
-          latitude: null,
-          longitude: null
-        },
-        loggedInIsAdmin: false,
-        hashtag: {
-          options: [],
-          values: []
-        },
-        authorised: true
-      }
-    },
-    validations: {
-      form: {
-        name: {
-          required
-        },
-        description: {},
-        selectedActivityType: {
-          required,
-          validateActivityType() {
-            return this.form.selectedActivityTypes.length >= 1;
-
-          }
-        },
-        date: {},
-      },
-      durationForm: {
-        startDate: {
-          required,
-          dateValidate(val) {
-            return val >= new Date().toISOString().split('T')[0];
-          }
-        },
-        endDate: {
-          required,
-          validateDate() {
-            let startDate = new Date(this.durationForm.startDate);
-            let endDate = new Date(this.durationForm.endDate);
-            return startDate <= endDate;
-
-          }
-        },
-        startTime: {},
-        endTime: {
-          timeValidate(val) {
-            let startTime = this.durationForm.startTime;
-            //let startDate = new Date(this.durationForm.startDate);
-            //let endDate = new Date(this.durationForm.endDate);
-            if (this.durationForm.startDate === this.durationForm.endDate) {
-              if (val && startTime) {
-                let splitStartTime = startTime.split(":");
-                let splitEndTime = val.split(":");
-                let startTimeObj = new Date();
-                startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
-                let endTimeObj = new Date();
-                endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
-                if (endTimeObj <= startTimeObj) {
-                  return false;
+          startDate: {
+            required,
+            dateValidate(val) {
+              return val >= new Date().toISOString().split('T')[0];
+            }
+          },
+          endDate: {
+            required,
+            validateDate() {
+              let startDate = new Date(this.durationForm.startDate);
+              let endDate = new Date(this.durationForm.endDate);
+              return startDate <= endDate;
+            }
+          },
+          startTime: {},
+          endTime: {
+            timeValidate(val) {
+              let startTime = this.durationForm.startTime;
+              //let startDate = new Date(this.durationForm.startDate);
+              //let endDate = new Date(this.durationForm.endDate);
+              if (this.durationForm.startDate == this.durationForm.endDate) {
+                if (val && startTime) {
+                  let splitStartTime = startTime.split(":");
+                  let splitEndTime = val.split(":");
+                  let startTimeObj = new Date();
+                  startTimeObj.setHours(splitStartTime[0], splitStartTime[1]);
+                  let endTimeObj = new Date();
+                  endTimeObj.setHours(splitEndTime[0], splitEndTime[1]);
+                  if (endTimeObj <= startTimeObj) {
+                    return false;
+                  }
                 }
               }
+              return true;
             }
-            return true;
           }
         }
-      }
-    },
-    methods: {
-      manageTags: function (value) {
-        this.hashtag.values = value;
-        this.hashtag.options = [];
       },
-      autocompleteInput: function (value) {
-        let pattern = /^#?[a-zA-Z0-9_]*$/;
-        if (!pattern.test(value)) {
+      methods: {
+        manageTags: function (value) {
+          this.hashtag.values = value;
           this.hashtag.options = [];
-          return;
-        }
-        if (value[0] === "#") {
-          value = value.substr(1);
-        }
-        if (value.length > 2) {
-          let vue = this;
-          api.getHashtagAutocomplete(value)
-              .then(function (response) {
-                let results = response.data.results;
-                for (let i = 0; i < results.length; i++) {
-                  results[i] = "#" + results[i];
-                }
-                vue.hashtag.options = results;
-              })
-              .catch(function () {
+        },
+        autocompleteInput: function (value) {
+          let pattern = /^#?[a-zA-Z0-9_]*$/;
+          if (!pattern.test(value)) {
+            this.hashtag.options = [];
+            return;
+          }
+          if (value[0] == "#") {
+            value = value.substr(1);
+          }
+          if (value.length > 2) {
+            let vue = this;
+            api.getHashtagAutocomplete(value)
+            .then(function (response) {
+              let results = response.data.results;
+              for (let i = 0; i < results.length; i++) {
+                results[i] = "#" + results[i];
+              }
+              vue.hashtag.options = results;
+            })
+            .catch(function () {
 
               });
         } else {
@@ -519,52 +519,31 @@
                     + ". Please try again", 'danger', 4)
               });
 
-        }
-      },
-      getISODates: function () {
-        let startDate = new Date(this.durationForm.startDate);
-        let endDate = new Date(this.durationForm.endDate);
+          }
+        },
+        getISODates: function () {
+          let startDateISO;
+          if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+              || this.durationForm.startTime === "") {
+            startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+          } else {
+            startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+                + ":00+1200";
+          }
 
-        // wind it back to previous date to align with local date time
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() - 1);
+          let endDateISO;
+          if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
+              || this.durationForm.endTime === "") {
+            endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
+          } else {
+            endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
+          }
 
-        if (this.durationForm.startTime !== "" && this.durationForm.startTime != null) {
-          startDate = new Date(
-              this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
-        }
-
-        if (this.durationForm.endTime !== "" && this.durationForm.startTime != null) {
-          endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
-        }
-
-        let startDateISO = startDate.toISOString().slice(0, -5);
-        let endDateISO = endDate.toISOString().slice(0, -5);
-
-        var currentTime = new Date();
-        const offset = (currentTime.getTimezoneOffset());
-
-        const currentTimezone = (offset / 60) * -1;
-        if (currentTimezone !== 0) {
-          startDateISO += currentTimezone > 0 ? '+' : '';
-          endDateISO += currentTimezone > 0 ? '+' : '';
-        }
-        startDateISO += currentTimezone.toString() + "00";
-        endDateISO += currentTimezone.toString() + "00";
-
-        if (this.durationForm.startTime === "" || this.durationForm.startTime == null) {
-          startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
-              startDateISO.length);
-        }
-        if (this.durationForm.endTime === "" || this.durationForm.endTime == null) {
-          endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
-              endDateISO.length);
-        }
-        return [startDateISO, endDateISO];
-      },
-      convertISOtoDateTime: function (ISODate) {
-        const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
-            + ISODate.dayOfMonth).toISOString().substring(0, 10);
+          return [startDateISO, endDateISO];
+        },
+        convertISOtoDateTime: function (ISODate) {
+          const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
+              + ISODate.dayOfMonth).toISOString().substring(0, 10);
 
         let hour = ISODate.hour;
         let minute = ISODate.minute;

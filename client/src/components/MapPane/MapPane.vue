@@ -44,16 +44,43 @@
                                                 && circle.center[0] != null
                                                 && circle.center[1] != null
                                                 && circle.radius != null"
+                                          :lat-lng="circle.center"
+                                          :radius="circle.radius"
+                                          :color="circle.color"
+                                />
+                                <LControl v-if="pathOverlay" class="control-overlay">
+                                    <b-col>
+                                        <b-row>
+                                            <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Delete End Marker</b-button>
+                                            <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset</b-button>
+                                        </b-row>
+                                        <b-row>
+                                            <b-form-radio-group id="checkbox-group-2" v-model="$parent.autoRoute" name="flavour-2"
+                                                                   v-if="$parent.canChangeSelection">
+                                                <b-form-radio v-bind:value="false">Selection</b-form-radio>
+                                                <b-form-radio v-bind:value="true">Auto route</b-form-radio>
+                                            </b-form-radio-group>
+                                        </b-row>
+                                    </b-col>
+                                </LControl>
+                                <l-circle v-if="displayCircle"
                                         :lat-lng="circle.center"
                                         :radius="circle.radius"
                                         :color="circle.color"
                                 />
+
+                                <!--Routing-->
+                                <l-polyline :lat-lngs="routePoints">
+                                </l-polyline>
+
                                 <l-marker v-for="marker in markers"
                                           :key="marker.id"
                                           :visible="marker.visible"
                                           :lat-lng="marker.position"
                                           :icon="marker.icon"
+                                          :draggable=marker.draggable
                                           @click="markerSelected(marker)"
+                                          @dragend="editMarker($event, marker)"
                                 >
                                     <l-tooltip id="popUp"
                                                v-if="marker.title != null"
@@ -64,6 +91,7 @@
                                                 {{marker.title}}
                                             </b>
                                             <hr style="margin: 0.25em">
+                                            <span>{{marker.content.activityTypes}} <br></span>
                                             <span>{{marker.content.startTime}}</span>
                                             <span class="text-center">
                                             <ActivityTypeIcon v-for="type in marker.content.activityTypes"
@@ -92,7 +120,7 @@
 
 <script>
     import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip, LCircle} from "vue2-leaflet";
+    import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
     import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
 
     export default {
@@ -103,7 +131,9 @@
             LTileLayer,
             LMarker,
             LTooltip,
-            LCircle
+            LCircle,
+            LPolyline,
+            LControl
         },
         props: {
             canHide: {
@@ -119,6 +149,10 @@
                 default: false
             },
             maximise: {
+                type: Boolean,
+                default: false
+            },
+            pathOverlay: {
                 type: Boolean,
                 default: false
             }
@@ -137,6 +171,21 @@
                 iconRetinaUrl: require('@/assets/red-marker-icon.png'),
                 iconAnchor: [10, 30],
             });
+            const pathMarker = L.icon({
+                iconUrl: require('@/assets/path-marker.png'),
+                iconRetinaUrl: require('@/assets/path-marker.png'),
+                iconAnchor: [8, 8],
+            });
+            const pathStartMarker = L.icon({
+                iconUrl: require('@/assets/path-start-marker.png'),
+                iconRetinaUrl: require('@/assets/path-start-marker.png'),
+                iconAnchor: [10, 30],
+            });
+            const pathEndMarker = L.icon({
+                iconUrl: require('@/assets/path-end-marker.png'),
+                iconRetinaUrl: require('@/assets/path-end-marker.png'),
+                iconAnchor: [10, 30],
+            });
             return {
                 showMap: true,
                 zoom: 13,
@@ -150,13 +199,19 @@
                 markers: [],
                 blueMarker: blueMarker,
                 redMarker: redMarker,
+                pathMarker: pathMarker,
+                pathStartMarker: pathStartMarker,
+                pathEndMarker: pathEndMarker,
 
                 userGeoLocation: null,
                 circle: {
                     center: [-43.530629, 172.625955],
                     radius: 4500,
                     color: '#3388ff',
-                }
+                },
+                routePoints: [],
+                markerObjects: {},
+                savedMarkers: null
             };
         },
         methods: {
@@ -185,7 +240,7 @@
             /**
              * Creates a marker on the map.
              * id: The way the marker is deleted
-             * iconColour: used as a key for what icon to display. red = 1, blue = other
+             * iconColour: used as a key for what icon to display. red = 1, pathMarker = 3, blue = other
              * lat: latitude of the marker
              * lng: longitude of the marker
              * content: content of the tooltip
@@ -193,14 +248,23 @@
              *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title) {
+            createMarker(id, iconColour, lat, lng, content, title, draggable) {
                 //Check inputs and set position and icon
                 let icon = null;
                 let coordinates = [lat, lng];
                 if (iconColour === 1) {
                     icon = this.redMarker
+                }
+                if (iconColour === 3) {
+                    icon = this.pathStartMarker
                 } else {
                     icon = this.blueMarker
+                }
+                if(content == null){
+                    content = ""
+                }
+                if (draggable == null){
+                  draggable = false
                 }
 
                 //Adds the marker to the markers list to be displayed
@@ -210,9 +274,79 @@
                     visible: true,
                     icon: icon,
                     content: content,
-                    title: title
+                    title: title,
+                    draggable: draggable
                 })
             },
+            /**
+             * Gets latest marker that the user has inputted
+             *
+             **/
+            getLatestMarker() {
+                return this.markers[this.markers.length - 1]
+            },
+
+            /**
+             * Gets latest marker that the user has inputted
+             *
+             **/
+            revertMarkers() {
+                const oldCoordinates = this.savedMarkers[0]
+                const index = this.savedMarkers[1]
+                this.markers[index].position = oldCoordinates
+                this.savedMarkers = null
+            },
+
+            /**
+             * Sets latest markers icon color to blue
+             *
+             **/
+            updateStartFinishMarkers() {
+                if (this.markers.length == 2) {
+                    this.markers[0].icon = this.pathStartMarker
+                    this.markers[1].icon = this.pathEndMarker
+                }
+                if (this.markers.length > 2) {
+                    this.markers[this.markers.length - 2].icon = this.blueMarker
+                    this.markers[this.markers.length - 1].icon = this.pathEndMarker
+                }
+            },
+
+            /**
+             * Returns all markers longitude and latitude in a list
+             *
+             **/
+            getAllMarkersCoords() {
+                let coords = []
+                for (let marker of this.markers) {
+                    coords.push([marker.position[1], marker.position[0]])
+                }
+                return coords
+            },
+            /**
+             * Sets route points with given parameter
+             *
+             **/
+            setRoutePoints(routePoints) {
+                this.routePoints = routePoints
+            },
+
+            /**
+             * Sets route points with given parameter
+             *
+             **/
+            editSingleRoutePoint(point, index) {
+                this.routePoints[index] = point
+            },
+
+            /**
+             * Sets markers with given parameter
+             *
+             **/
+            setMarkers(markers) {
+                this.markers = markers
+            },
+
             /**
              * Removes a marker by id
              **/
@@ -232,12 +366,14 @@
                 }
                 return false
             },
+
             /**
              * Clear all markers
              **/
             clearMarkers() {
                 this.markers = [];
             },
+
             /**
              * Updates the map's viewing size when map container size changes. For instance
              * in a tab.
@@ -248,6 +384,7 @@
                     map.mapObject.invalidateSize();
                 }, 100);
             },
+
             /**
              * If no markers are available, the map centers on the currently logged in users geo location
              **/
@@ -261,14 +398,37 @@
                     _this.$emit('userLocationUpdate', _this.userGeoLocation);
                 });
             },
+
             /**
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
-                this.center = marker.position;
-                this.$emit('markerSelected', marker.content.id);
-            }
+                if (this.routePoints.length == 0) {
+                    this.center = marker.position;
+                    this.$emit('markerSelected', marker.content.id);
+                } else {
+                    this.$parent.clickOnMarker(marker.position)
+                }
+            },
+
+            /**
+             * Called when user drags a marker, gets the new coordinate location and the old previous
+             * location then updates the route and markers
+             **/
+            editMarker(event, marker) {
+                const newCoords = Object.values(event.target.getLatLng())
+                let index
+                for (let i = this.markers.length - 1; i >= 0; i--) {
+                    if (this.markers[i].position == marker.position) {
+                        index = i
+                    }
+                }
+                this.savedMarkers = [this.markers[index].position, index]
+                this.markers[index].position = newCoords
+                this.$parent.handleDragEvent(index, newCoords)
+            },
         },
+
         /**
          * Refresh the map everytime the map is rendered by vue.
          */
@@ -299,6 +459,16 @@
         max-height: 8em;
         min-height: 8em;
         text-justify: distribute;
+    }
+
+    .control-overlay {
+        background: #fff;
+        padding: 0 0.5em;
+        border: 1px solid #aaa;
+        border-radius: 0.1em;
+        opacity: 80%;
+        padding: 0.5em;
+        margin: 0.5em;
     }
 
     .fill_space {

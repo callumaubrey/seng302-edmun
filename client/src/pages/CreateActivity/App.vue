@@ -74,6 +74,7 @@
                     <b-col>
                       <b-form-group id="start-time-input-group" label="Start Time"
                                     label-for="start-time-input">
+                        <b-form-text>Default start time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('startTime')"
                             aria-describedby="start-time-feedback"
@@ -89,6 +90,7 @@
                     <b-col>
                       <b-form-group id="end-time-input-group" label="End Time"
                                     label-for="end-time-input">
+                        <b-form-text>Default end time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('endTime')"
                             aria-describedby="end-time-feedback"
@@ -483,77 +485,58 @@
                     + ". Please try again", 'danger', 4)
               });
 
-        } else {
-          this.$v.durationForm.$touch();
-          if (this.$v.durationForm.$anyError) {
-            this.formError = true;
-            return;
-          } else {
-            this.formError = false;
-          }
-          const isoDates = this.getDates();
-          let data = {
-            activity_name: this.form.name,
-            description: this.form.description,
-            activity_type: this.form.selectedActivityTypes,
-            continuous: false,
-            start_time: isoDates[0],
-            visibility: this.selectedVisibility,
-            end_time: isoDates[1],
-            hashtags: this.hashtag.values,
-            metrics: this.$refs.metric_editor.getMetricData()
-          };
-          api.createActivity(userId, data)
-              .then(function (res) {
-                const activityId = res.data;
-                store.newNotification('Activity created successfully', 'success', 4)
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-              })
-              .catch(function (error) {
-                store.newNotification("Failed to update activity: " + error.response.data
+      } else {
+        this.$v.durationForm.$touch();
+             if (this.$v.durationForm.$anyError) {
+                   this.formError = true;
+                   return;
+                 } else {
+                   this.formError = false;
+                 }
+        const isoDates = this.getDates();
+        let data = {
+          activity_name: this.form.name,
+          description: this.form.description,
+          activity_type: this.form.selectedActivityTypes,
+          continuous: false,
+          start_time: isoDates[0],
+          visibility: this.selectedVisibility,
+          end_time: isoDates[1],
+          location: this.locationData,
+          hashtags: this.hashtag.values,
+          metrics: this.$refs.metric_editor.getMetricData()
+        };
+        api.createActivity(userId, data)
+        .then(function (res) {
+          const activityId = res.data;
+          store.newNotification('Activity created successfully', 'success', 4)
+          currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+        })
+        .catch(function (error) {
+          store.newNotification("Failed to update activity: " + error.response.data
                     + ". Please try again", 'danger', 4)
               });
-        }
-      },
+              + ". Please try again";
+        });
+      }
+    },
 
-      getDates: function () {
-        let startDate = new Date(this.durationForm.startDate);
-        let endDate = new Date(this.durationForm.endDate);
+    getDates: function () {
+      let startDateISO;
+      if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+          || this.durationForm.startTime === "") {
+        startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+      } else {
+        startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime + ":00+1200";
+      }
 
-        // wind it back to previous date to align with local date time
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() - 1);
-
-        if (this.durationForm.startTime !== "" && this.durationForm.startTime != null) {
-          startDate = new Date(
-              this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
-        }
-
-        if (this.durationForm.endTime !== "" && this.durationForm.startTime != null) {
-          endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
-        }
-        let startDateISO = startDate.toISOString().slice(0, -5);
-        let endDateISO = endDate.toISOString().slice(0, -5);
-
-        var currentTime = new Date();
-        const offset = (currentTime.getTimezoneOffset());
-
-        const currentTimezone = (offset / 60) * -1;
-        if (currentTimezone !== 0) {
-          startDateISO += currentTimezone > 0 ? '+' : '';
-          endDateISO += currentTimezone > 0 ? '+' : '';
-        }
-        startDateISO += currentTimezone.toString() + "00";
-        endDateISO += currentTimezone.toString() + "00";
-
-        if (this.durationForm.startTime === "" || this.durationForm.startTime == null) {
-          startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
-              startDateISO.length);
-        }
-        if (this.durationForm.endTime === "" || this.durationForm.endTime == null) {
-          endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
-              endDateISO.length);
-        }
+      let endDateISO;
+      if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
+          || this.durationForm.endTime === "") {
+        endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
+      } else {
+        endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
+      }
 
         return [startDateISO, endDateISO];
 
