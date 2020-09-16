@@ -180,7 +180,7 @@ public class Activity implements Serializable {
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", orphanRemoval = true)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @IndexedEmbedded
   @FieldBridge(impl = BuiltinIterableBridge.class)

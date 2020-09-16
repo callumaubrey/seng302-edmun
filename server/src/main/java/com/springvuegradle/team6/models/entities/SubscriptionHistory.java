@@ -1,5 +1,8 @@
 package com.springvuegradle.team6.models.entities;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -43,13 +46,15 @@ public class SubscriptionHistory {
   @Id @GeneratedValue private Integer id;
 
   /** Link to the profile this sub is associated with */
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "profile_id", nullable = false)
   private Profile profile;
 
   /** Link to the activity this sub is associated with */
   @ManyToOne
-  @JoinColumn(name = "activity_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(name = "activity_id")
   private Activity activity;
 
   /** The time this instance of sub history was created */
