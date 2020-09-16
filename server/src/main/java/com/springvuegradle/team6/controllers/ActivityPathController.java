@@ -115,7 +115,7 @@ public class ActivityPathController {
                 locations.add(location);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid location data", HttpStatus.BAD_REQUEST);
         }
 
         path.setLocations(locations);
