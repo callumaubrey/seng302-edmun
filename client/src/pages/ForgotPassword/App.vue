@@ -65,7 +65,11 @@ export default {
         return;
       }
 
-      Api.sendForgotPasswordEmail(this.email)
+      let data = {
+        email: this.email
+      };
+
+      Api.sendForgotPasswordEmail(data)
         .then(() => {
           this.emailSent = true;
           this.email = null;
