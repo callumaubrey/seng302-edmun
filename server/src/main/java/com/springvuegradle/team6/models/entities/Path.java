@@ -20,7 +20,7 @@ public class Path implements Serializable {
    * Each path consists of at least two coordinates: the start and end coordinates. Start coordinate
    * has the smallest location id in the list and vice versa.
    */
-  @OneToMany(mappedBy = "path", fetch = FetchType.EAGER)
+  @OneToMany
   @Size(min = 2)
   @NotNull
   private List<Location> locations;
@@ -72,13 +72,5 @@ public class Path implements Serializable {
 
   public void setType(PathType type) {
     this.type = type;
-  }
-
-  @Override
-  public String toString() {
-    String toString = "";
-    toString += "Type: " + this.type + "\n";
-    toString += "Locations: " + this.locations;
-    return toString;
   }
 }

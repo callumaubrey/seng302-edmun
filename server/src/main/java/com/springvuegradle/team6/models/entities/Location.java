@@ -34,11 +34,6 @@ public class Location implements Serializable, Coordinates {
 
   private String name;
 
-  @ManyToOne(cascade = {CascadeType.ALL})
-  @JoinColumn(name = "path_id")
-  @JsonIgnore
-  private Path path;
-
   public Location() {
   }
 
@@ -75,9 +70,5 @@ public class Location implements Serializable, Coordinates {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public void setPath(Path path) {
-    this.path = path;
   }
 }

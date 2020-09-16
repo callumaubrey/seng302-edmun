@@ -8,11 +8,11 @@
                 <b-row class="mb-4">
                     <b-col cols="9">
                         <b-input v-model="metric.title" placeholder="Name" class="activity-metric-name" :id="`metric-title-${index}`"
-                                 :state="metric.title.length > 0"></b-input>
+                                 :state="metric.title.length > 0" :disabled="!metric.editable"></b-input>
                     </b-col>
 
                     <b-col cols="3" class="text-right">
-                        <i :id="`metric-remove-button-${index}`" @click="removeMetricForm(index)" class="fas fa-times-circle text-danger activity-metric-close-button"></i>
+                        <i :id="`metric-remove-button-${index}`" @click="removeMetricForm(index, metric)" v-if="metric.editable" class="fas fa-times-circle text-danger activity-metric-close-button"></i>
                     </b-col>
                 </b-row>
 
@@ -20,13 +20,13 @@
                     <b-col cols="6">
                         <label>Type</label>
                         <b-select v-model="metric.unit" :options="type_options" :id="`metric-unit-select-${index}`"
-                                  :state="metric.unit.length > 0">
+                                  :state="metric.unit.length > 0" :disabled="!metric.editable && metric.id">
                         </b-select>
                     </b-col>
                     <b-col cols="6">
                         <label>Rank By:</label>
                         <b-select v-model="metric.rank_asc" :id="`metric-rank-by-select-${index}`"
-                                  :state="metric.rank_asc !== null">
+                                  :state="metric.rank_asc !== null" :disabled="!metric.editable">
                             <b-select-option :value="true">Most</b-select-option>
                             <b-select-option :value="false">Least</b-select-option>
                         </b-select>
@@ -36,7 +36,7 @@
 
                 <!-- Description -->
                 <b-textarea v-model="metric.description" :id="`metric-description-${index}`"
-                            placeholder="Description" :state="true">
+                            placeholder="Description" :state="true" :disabled="!metric.editable">
 
                 </b-textarea>
             </b-card>
@@ -56,16 +56,19 @@
 </template>
 
 <script>
+  import Api from "@/Api";
     export default {
         name: "ActivityMetricsEditor",
-
+        props: {
+          profileId: Number,
+          activityId: Number
+        },
         data: () => {
             return {
                 metric_data: [],
                 type_options: ['TimeStartFinish', 'TimeDuration', 'Count', 'Distance']
             }
         },
-
         methods: {
             isMetricFormEmpty(metric) {
                 return metric.title.length === 0 &&
@@ -76,6 +79,8 @@
 
             createEmptyMetricForm() {
                 return  {
+                    id: null,
+                    editable: true,
                     title: '',
                     unit: '',
                     rank_asc: null,
@@ -83,8 +88,17 @@
                 }
             },
 
-            removeMetricForm(index) {
+            removeMetricForm(index, metric) {
                 this.metric_data.splice(index, 1);
+                if (metric.id) {
+                  Api.deleteMetric(this.profileId, this.activityId, metric.id)
+                    .then(() => {
+                      console.log("Deleted metric");
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    })
+                }
             },
 
             addNewMetricForm() {

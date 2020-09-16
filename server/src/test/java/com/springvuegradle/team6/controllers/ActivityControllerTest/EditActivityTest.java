@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;
 import com.springvuegradle.team6.models.entities.ActivityQualificationMetric;
+import com.springvuegradle.team6.models.entities.ActivityResultCount;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
@@ -19,6 +20,7 @@ import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
 import com.springvuegradle.team6.models.repositories.ActivityQualificationMetricRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
+import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
@@ -65,6 +67,8 @@ class EditActivityTest {
   @Autowired private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private ActivityQualificationMetricRepository activityQualificationMetricRepository;
+
+  @Autowired private ActivityResultRepository activityResultRepository;
 
   @Autowired private LocationRepository locationRepository;
 
@@ -1192,6 +1196,421 @@ class EditActivityTest {
     org.junit.jupiter.api.Assertions.assertEquals(Unit.Count, metricAfter.getUnit());
     Assertions.assertNull(metricAfter.getTitle());
     Assertions.assertNull(metricAfter.getDescription());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void editExistingActivityMetricThatAlreadyHasAResultReturnBadRequest()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setTitle("Hercules");
+    metric.setDescription("Herculees");
+    metric.setRankByAsc(true);
+    activityQualificationMetricRepository.save(metric);
+
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    ActivityResultCount activityResult = new ActivityResultCount(metric, profileRepository.findById(id), 22);
+    activityResultRepository.save(activityResult);
+    metric.setEditable(false);
+    activityQualificationMetricRepository.save(metric);
+    activityRepository.save(activity);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Count\", \"title\": \"This has been edited\", \"description\": \"Herculees\", \"rank_asc\": \"true\", \"id\" : " + metric.getId() + "}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void editExistingActivityMetricThatAlreadyHasNoResults()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setTitle("Hercules");
+    metric.setDescription("Herculees");
+    metric.setRankByAsc(true);
+    activityQualificationMetricRepository.save(metric);
+
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Count\", \"title\": \"This has been edited\", \"description\": \"Herculees\", \"rank_asc\": \"true\", \"id\" : " + metric.getId() + "}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void editActivityMetricsIsOk() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("OriginalTitle");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"id\": \"" + metric.getId() + "\", \"unit\": \"Count\", \"title\": \"NewTitle\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals("NewTitle", newMetric.getTitle());
+  }
+
+  @Test
+  void editActivityMetricsWithInvalidId() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    int randomId = 23454;
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"id\": \"" + randomId + "\", \"unit\": \"Count\", \"title\": \"NewTitle\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isBadRequest())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  @Test
+  void editActivityMetricsInvalidUnit() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("OriginalTitle");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"id\": \"" + metric.getId() + "\", \"unit\": \"InvalidUnit\", \"title\": \"NewTitle\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+  @Test
+  void editActivityMetricsAllFields() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("OriginalTitle");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setRankByAsc(true);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"DifferentTitle\", \"description\": \"Herculees\", \"rank_asc\": \"false\", \"id\" : " + metric.getId() + "}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals("DifferentTitle", newMetric.getTitle());
+    Assert.assertEquals("Herculees", newMetric.getDescription());
+    Assert.assertEquals(false, newMetric.getRankByAsc());
+    Assert.assertEquals(Unit.Distance, newMetric.getUnit());
+  }
+
+  @Test
+  void editThreeActivityMetricsAllFields() throws Exception {
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Public);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("OriginalTitle");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setRankByAsc(true);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    ActivityQualificationMetric metric2 = new ActivityQualificationMetric();
+    metric2.setTitle("OriginalTitle2");
+    metric2.setActivity(activity);
+    metric2.setUnit(Unit.Count);
+    metric2.setRankByAsc(true);
+    metric2 = activityQualificationMetricRepository.save(metric2);
+
+    String jsonString2 =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Distance\", \"title\": \"DifferentTitle\", \"description\": \"Herculees\", \"rank_asc\": \"false\", \"id\" : " + metric.getId() + "},\n"
+            + "    {\"unit\": \"TimeDuration\", \"title\": \"secondMetricTitle\", \"description\": \"Ralph\", \"rank_asc\": \"true\", \"id\" : " + metric2.getId() + "},\n"
+            + "    {\"unit\": \"Count\", \"title\": \"BrandNewMetric\", \"description\": \"Ralph\", \"rank_asc\": \"true\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put("/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString2)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    ActivityQualificationMetric newMetric = activityQualificationMetricRepository.findById(metric.getId()).get();
+    Assert.assertEquals("DifferentTitle", newMetric.getTitle());
+    Assert.assertEquals("Herculees", newMetric.getDescription());
+    Assert.assertEquals(false, newMetric.getRankByAsc());
+    Assert.assertEquals(Unit.Distance, newMetric.getUnit());
+
+    ActivityQualificationMetric newMetric2 = activityQualificationMetricRepository.findById(metric2.getId()).get();
+    Assert.assertEquals("secondMetricTitle", newMetric2.getTitle());
+    Assert.assertEquals("Ralph", newMetric2.getDescription());
+    Assert.assertEquals(true, newMetric2.getRankByAsc());
+    Assert.assertEquals(Unit.TimeDuration, newMetric2.getUnit());
+
+    List<ActivityQualificationMetric> newMetrics = activityQualificationMetricRepository.findByActivity_Id(activityId);
+    for (ActivityQualificationMetric metricObject : newMetrics) {
+      if (metricObject.getId() != metric2.getId() && metricObject.getId() != metric.getId()) {
+        Assert.assertEquals("BrandNewMetric", metricObject.getTitle());
+        Assert.assertEquals("Ralph", metricObject.getDescription());
+        Assert.assertEquals(true, metricObject.getRankByAsc());
+        Assert.assertEquals(Unit.Count, metricObject.getUnit());
+      }
+    }
+  }
+
+  @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
+  @Test
+  void addANewMetric()
+      throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Count);
+    metric.setTitle("Hercules");
+    metric.setDescription("Herculees");
+    metric.setRankByAsc(true);
+    activityQualificationMetricRepository.save(metric);
+
+    List<ActivityQualificationMetric> metrics = new ArrayList<>();
+    metrics.add(metric);
+    activity.setMetrics(metrics);
+
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast track\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true,\n"
+            + "  \"start_time\": \"2000-04-28T15:50:41+1300\",\n"
+            + "  \"end_time\": \"2030-08-28T15:50:41+1300\",\n"
+            + "  \"metrics\": [\n"
+            + "    {\"unit\": \"Count\", \"title\": \"This has been editeddfsff\", \"description\": \"Herculees\", \"rank_asc\": \"true\"}\n"
+            + "  ]\n"
+            + "}\n";
+
+    mvc.perform(
+        MockMvcRequestBuilders.put(
+            "/profiles/{profileId}/activities/{activityId}", id, activityId)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
   }
 
   @Transactional // ensures all method calls in this test case EAGERLY loads object, a way to fix
