@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-public class AdminEditPasswordRequest {
+public class ChangePasswordWithoutOldPasswordRequest {
 
     /**
      * New user password, matched against pattern and cannot be null

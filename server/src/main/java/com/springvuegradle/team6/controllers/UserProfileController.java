@@ -1,25 +1,26 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.PasswordToken;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.models.repositories.PasswordTokenRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.CreateProfileRequest;
 import com.springvuegradle.team6.requests.EditEmailsRequest;
 import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
+import com.springvuegradle.team6.requests.ChangePasswordWithoutOldPasswordRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -64,6 +65,7 @@ public class UserProfileController {
   private final EmailRepository emailRepository;
   private final LocationRepository locationRepository;
   private final LocationService locationService;
+  private final PasswordTokenRepository passwordTokenRepository;
 
   UserProfileController(
       ProfileRepository rep,
@@ -71,13 +73,15 @@ public class UserProfileController {
       EmailRepository emailRepository,
       RoleRepository roleRep,
       LocationRepository locationRepository,
-      LocationService locationService) {
+      LocationService locationService,
+      PasswordTokenRepository passwordTokenRepository) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
     this.emailRepository = emailRepository;
     this.locationRepository = locationRepository;
     this.locationService = locationService;
+    this.passwordTokenRepository = passwordTokenRepository;
   }
 
   /**
@@ -440,5 +444,33 @@ public class UserProfileController {
     } else {
       return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
     }
+  }
+
+  /**
+   * PUT request for user to change their password without knowing their old password.
+   *
+   * @param token of String type that was sent to the user's email
+   * @param request request containing new and repeat password
+   * @return Response Entity of 200 status code if user is found and passwords matched, otherwise
+   *     return 404 if user not found or 400 if passwords mismatched
+   */
+  @RequestMapping(value = "/forgotpassword/{token}", method = RequestMethod.PUT)
+  public ResponseEntity editPasswordWithoutOldPassword(
+      @PathVariable String token,
+      @Valid @RequestBody ChangePasswordWithoutOldPasswordRequest request) {
+
+    // Check if user and token exists
+    if (passwordTokenRepository.findByToken(token) == null) {
+      return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
+    }
+    Profile profile = passwordTokenRepository.findByToken(token).getProfile();
+
+    // Check if passwords are matched
+    if (!request.newPassword.equals(request.repeatPassword)) {
+      return new ResponseEntity<>("Passwords dont match", HttpStatus.BAD_REQUEST);
+    }
+    profile.setPassword(request.newPassword);
+    repository.save(profile);
+    return ResponseEntity.ok("Password Edited Successfully");
   }
 }
