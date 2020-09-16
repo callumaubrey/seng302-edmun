@@ -46,7 +46,7 @@ public class SubscriptionHistory {
   @Id @GeneratedValue private Integer id;
 
   /** Link to the profile this sub is associated with */
-  @ManyToOne(cascade = CascadeType.REMOVE)
+  @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "profile_id", nullable = false)
   private Profile profile;

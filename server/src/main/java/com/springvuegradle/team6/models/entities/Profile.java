@@ -77,11 +77,11 @@ public class Profile {
 
   private Integer fitness;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REMOVE)
   @JsonIgnore
   private Location privateLocation;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REMOVE)
   @JsonIgnore
   private Location publicLocation;
 
