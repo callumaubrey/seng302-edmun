@@ -210,6 +210,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             .getSearchFactory()
             .buildQueryBuilder()
             .forEntity(Activity.class)
+            .overridesForField( "activity_name", "activityQueryAnalyzer" )
             .get();
 
     org.apache.lucene.search.Query finalQuery = null;

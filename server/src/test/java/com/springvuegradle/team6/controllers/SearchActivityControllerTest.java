@@ -298,6 +298,45 @@ public class SearchActivityControllerTest {
   }
 
   @Test
+  void getActivitiesByOneLetterReturnThreeActivities() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=r").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+  }
+
+  @Test
+  void getActivitiesByTwoLettersReturnOneActivity() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=ru").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(1, arr.length());
+  }
+
+  @Test
+  void getActivitiesByTwoLettersReturnTwoActivity() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities?name=Ha").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(2, arr.length());
+  }
+
+  @Test
   void getActivitiesByPartialNameReturnTwoActivities() throws Exception {
     String response =
         mvc.perform(MockMvcRequestBuilders.get("/activities?name=Hagley").session(session))

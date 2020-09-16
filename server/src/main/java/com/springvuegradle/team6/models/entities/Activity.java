@@ -56,6 +56,12 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
                 @Parameter(name = "maxGramSize", value = "30")
             })
     })
+@AnalyzerDef(
+    name = "activityQueryAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+        @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+    })
 public class Activity implements Serializable {
 
   // Constants
