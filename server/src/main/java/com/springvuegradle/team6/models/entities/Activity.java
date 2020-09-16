@@ -52,7 +52,7 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
         @TokenFilterDef(
             factory = EdgeNGramFilterFactory.class,
             params = {
-                @Parameter(name = "minGramSize", value = "3"),
+                @Parameter(name = "minGramSize", value = "1"),
                 @Parameter(name = "maxGramSize", value = "30")
             })
     })
