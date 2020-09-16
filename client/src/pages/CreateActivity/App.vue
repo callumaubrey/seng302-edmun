@@ -485,62 +485,61 @@
                     + ". Please try again", 'danger', 4)
               });
 
-      } else {
-        this.$v.durationForm.$touch();
-             if (this.$v.durationForm.$anyError) {
-                   this.formError = true;
-                   return;
-                 } else {
-                   this.formError = false;
-                 }
-        const isoDates = this.getDates();
-        let data = {
-          activity_name: this.form.name,
-          description: this.form.description,
-          activity_type: this.form.selectedActivityTypes,
-          continuous: false,
-          start_time: isoDates[0],
-          visibility: this.selectedVisibility,
-          end_time: isoDates[1],
-          location: this.locationData,
-          hashtags: this.hashtag.values,
-          metrics: this.$refs.metric_editor.getMetricData()
-        };
-        api.createActivity(userId, data)
-        .then(function (res) {
-          const activityId = res.data;
-          store.newNotification('Activity created successfully', 'success', 4)
-          currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-        })
-        .catch(function (error) {
-          store.newNotification("Failed to update activity: " + error.response.data
+        } else {
+          this.$v.durationForm.$touch();
+          if (this.$v.durationForm.$anyError) {
+            this.formError = true;
+            return;
+          } else {
+            this.formError = false;
+          }
+          const isoDates = this.getDates();
+          let data = {
+            activity_name: this.form.name,
+            description: this.form.description,
+            activity_type: this.form.selectedActivityTypes,
+            continuous: false,
+            start_time: isoDates[0],
+            visibility: this.selectedVisibility,
+            end_time: isoDates[1],
+            location: this.locationData,
+            hashtags: this.hashtag.values,
+            metrics: this.$refs.metric_editor.getMetricData()
+          };
+          api.createActivity(userId, data)
+              .then(function (res) {
+                const activityId = res.data;
+                store.newNotification('Activity created successfully', 'success', 4)
+                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+              })
+              .catch(function (error) {
+                store.newNotification("Failed to update activity: " + error.response.data
                     + ". Please try again", 'danger', 4)
               });
-              + ". Please try again";
-        });
-      }
-    },
+        }
+      },
+      getDates: function () {
+        let startDateISO;
+        if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+            || this.durationForm.startTime === "") {
+          startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+        } else {
+          startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+              + ":00+1200";
+        }
 
-    getDates: function () {
-      let startDateISO;
-      if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
-          || this.durationForm.startTime === "") {
-        startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
-      } else {
-        startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime + ":00+1200";
-      }
-
-      let endDateISO;
-      if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
-          || this.durationForm.endTime === "") {
-        endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
-      } else {
-        endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
-      }
+        let endDateISO;
+        if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
+            || this.durationForm.endTime === "") {
+          endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
+        } else {
+          endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
+        }
 
         return [startDateISO, endDateISO];
 
-      },
+      }
+      ,
       getUserId: async function () {
         let currentObj = this;
         api.getProfileId()
@@ -549,7 +548,8 @@
             })
             .catch(function () {
             });
-      },
+      }
+      ,
       getUserName: function () {
         let currentObj = this;
         api.getFirstName()
@@ -558,7 +558,8 @@
             })
             .catch(function () {
             });
-      },
+      }
+      ,
       /**
        * Gets the users location details, if any, for the map tab marker
        * @returns {Promise<void>}
@@ -571,7 +572,8 @@
               currentObj.userLong = response.data.longitude;
             }).catch(function () {
             });
-      },
+      }
+      ,
       /**
        * sets the location data for the activity from the coords emitted
        * @param coords emitted from map component
@@ -581,11 +583,13 @@
           latitude: coords.lat,
           longitude: coords.lng
         };
-      },
+      }
+      ,
       goToActivities() {
         const profileId = this.$route.params.id;
         this.$router.push('/profiles/' + profileId + '/activities');
-      },
+      }
+      ,
       checkAuthorized: async function () {
         let currentObj = this;
         this.loggedInIsAdmin = AdminMixin.methods.checkUserIsAdmin();
@@ -599,12 +603,14 @@
             })
             .catch(function () {
             });
-      },
+      }
+      ,
       onChildClick: function (val) {
         this.selectedVisibility = val
       }
 
-    },
+    }
+    ,
     mounted: async function () {
       await this.checkAuthorized();
       this.getActivities();
