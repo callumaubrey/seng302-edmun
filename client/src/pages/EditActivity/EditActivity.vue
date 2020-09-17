@@ -206,6 +206,10 @@
                                  :activity-long="locationData.longitude"
             />
 
+            <b-tab title="Activity Path">
+              <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+            </b-tab>
+
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
               <ActivityMetricsEditor ref="metric_editor" :profile-id="profileId" :activity-id="activityId"></ActivityMetricsEditor>
@@ -229,10 +233,12 @@ import AdminMixin from "../../mixins/AdminMixin";
 import api from '@/Api'
 import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
 import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 
 export default {
   mixins: [validationMixin, locationMixin],
   components: {
+    ModifyPathMapPane,
     ActivityMetricsEditor,
     SearchTag,
     NavBar,
@@ -485,6 +491,13 @@ export default {
             });
 
           }
+
+          // Update path
+          this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId).catch((err) => {
+            console.error(err);
+            this.activityErrorMessage = "Failed to update path";
+            currentObj.activityUpdateMessage = "";
+          });
         },
         getISODates: function () {
           let startDateISO;
@@ -577,6 +590,10 @@ export default {
         },
         onChildClick: function (val) {
           this.selectedVisibility = val
+        },
+
+        loadActivityPath: function() {
+          this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
         }
       },
       mounted: async function () {
@@ -585,7 +602,8 @@ export default {
         this.getActivity();
         await this.getUserId();
         await this.getUserLocation();
-      }
+        this.loadActivityPath();
+      },
     }
 </script>
 
