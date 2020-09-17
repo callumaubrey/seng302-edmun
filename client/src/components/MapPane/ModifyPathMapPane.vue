@@ -1,6 +1,6 @@
 <template>
   <div>
-    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
+    <map-pane :path-info="true" :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
   </div>
 </template>
 
@@ -11,7 +11,7 @@ import axios from 'axios'
 export default {
   name: "RecordActivityResultModal",
   components: {
-    MapPane
+    MapPane,
   },
   props: ['profileId', 'activityId', 'loggedInId'],
   data() {
