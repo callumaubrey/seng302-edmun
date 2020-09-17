@@ -1,12 +1,10 @@
 package com.springvuegradle.team6.models.entities;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -24,13 +22,11 @@ public class Path implements Serializable {
    * Each path consists of at least two coordinates: the start and end coordinates. Start coordinate
    * has the smallest location id in the list and vice versa.
    */
-  @OneToMany
+  @OneToMany(cascade = CascadeType.REMOVE)
   @Size(min = 2)
   @NotNull
   private List<Location> locations;
-  @OneToOne
-  @NotNull
-  private Activity activity;
+
   @NotNull
   private PathType type;
 
@@ -40,26 +36,16 @@ public class Path implements Serializable {
   /**
    * Constructor for entity Path class
    *
-   * @param activity  activity that is associated with path
    * @param locations location coordinates to trace the path
    * @param type      path type
    */
-  public Path(Activity activity, List<Location> locations, PathType type) {
-    setActivity(activity);
+  public Path(List<Location> locations, PathType type) {
     setLocations(locations);
     setType(type);
   }
 
   public int getId() {
     return id;
-  }
-
-  public Activity getActivity() {
-    return activity;
-  }
-
-  public void setActivity(Activity activity) {
-    this.activity = activity;
   }
 
   public List<Location> getLocations() {

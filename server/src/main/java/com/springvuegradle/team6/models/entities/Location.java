@@ -14,6 +14,7 @@ import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
 import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.spatial.Coordinates;
+import org.hibernate.validator.constraints.Range;
 
 /**
  * Location is a base class for defining a location in the world. It has three members: locationID:
@@ -30,11 +31,15 @@ public class Location implements Serializable, Coordinates {
 
   @Id
   @GeneratedValue
-  private final long location_id = 0;
+  private int id;
 
   @Latitude
+  @Range(min=-90, max=90)
   private Double latitude = 0d;
+
+
   @Longitude
+  @Range(min=-180, max=180)
   private Double longitude = 0d;
 
   private String name;
@@ -75,5 +80,9 @@ public class Location implements Serializable, Coordinates {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public int getId() {
+    return id;
   }
 }

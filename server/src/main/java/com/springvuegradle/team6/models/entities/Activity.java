@@ -8,19 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
@@ -199,6 +187,10 @@ public class Activity implements Serializable {
   @OneToMany(mappedBy = "activity")
   private List<ActivityQualificationMetric> activityQualificationMetrics;
 
+  @OneToOne
+  @JoinColumn(name = "path_id")
+  private Path path;
+
   public String getActivityName() {
     return activityName;
   }
@@ -353,4 +345,8 @@ public class Activity implements Serializable {
   public void setCreationDate(LocalDateTime creationDate) {
     this.creationDate = creationDate;
   }
+
+  public Path getPath() { return path; }
+
+  public void setPath(Path path) { this.path = path; }
 }
