@@ -220,6 +220,11 @@
                                  :user-long="userLong"
                                  @locationSelect="updateLocation"
             ></ActivityLocationTab>
+
+            <b-tab title="Activity Path">
+              <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+            </b-tab>
+
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
               <ActivityMetricsEditor ref="metric_editor"></ActivityMetricsEditor>
@@ -244,10 +249,12 @@ import api from '@/Api'
 import {store} from "../../store";
 import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
 import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 
 export default {
   mixins: [validationMixin, locationMixin],
   components: {
+    ModifyPathMapPane,
     ActivityMetricsEditor,
     NavBar,
     SearchTag,
@@ -451,6 +458,7 @@ export default {
         api.createActivity(userId, data)
         .then(function (res) {
           const activityId = res.data;
+          currentObj.submitPath(activityId);
           currentObj.activityErrorMessage = "";
           currentObj.activityUpdateMessage = "'" + currentObj.form.name
               + "' was successfully added to your activities";
@@ -485,6 +493,7 @@ export default {
         api.createActivity(userId, data)
         .then(function (res) {
           const activityId = res.data;
+          currentObj.submitPath(activityId);
           currentObj.activityErrorMessage = "";
           currentObj.activityUpdateMessage = "'" + currentObj.form.name
               + "' was successfully added to your activities";
@@ -497,6 +506,13 @@ export default {
               + ". Please try again";
         });
       }
+    },
+
+    submitPath: function(activityId) {
+      // Update path
+      this.$refs.path_editor.updatePathInActivity(this.profileId, activityId).catch((err) => {
+        console.error(err);
+      });
     },
 
     getDates: function () {
@@ -578,9 +594,10 @@ export default {
       .catch(function () {
       });
     },
+
     onChildClick: function (val) {
       this.selectedVisibility = val
-    }
+    },
 
   },
   mounted: async function () {
