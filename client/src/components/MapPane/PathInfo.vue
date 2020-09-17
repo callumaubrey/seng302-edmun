@@ -32,11 +32,13 @@
         name: "PathInfo",
         components: {
         },
+        /** The points of the path of which information are displayed for*/
         props: {
             points: Array,
         },
         data() {
             return {
+                //The selected path point being displayed
                 selectedPath: {
                     name: '',
                     lat: '',
@@ -46,7 +48,13 @@
             }
         },
         methods: {
+            /**
+             * Changes the selected point in the pathInfo list
+             * This is used for displaying the location, name and point number
+             * @param point
+             */
             pointSelected(point){
+                //TODO: Set a point number instead of the ID, Set the Name of the point
                 this.selectedPath.name = ''
                 this.selectedPath.lat = point.position[0]
                 this.selectedPath.lng = point.position[1]
