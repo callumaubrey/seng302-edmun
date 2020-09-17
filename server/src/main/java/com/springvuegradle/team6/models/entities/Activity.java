@@ -181,6 +181,10 @@ public class Activity implements Serializable {
   @OneToMany(mappedBy = "activity")
   private List<ActivityQualificationMetric> activityQualificationMetrics;
 
+  @OneToOne
+  @JoinColumn(name = "path_id")
+  private Path path;
+
   public String getActivityName() {
     return activityName;
   }
@@ -335,4 +339,8 @@ public class Activity implements Serializable {
   public void setCreationDate(LocalDateTime creationDate) {
     this.creationDate = creationDate;
   }
+
+  public Path getPath() { return path; }
+
+  public void setPath(Path path) { this.path = path; }
 }
