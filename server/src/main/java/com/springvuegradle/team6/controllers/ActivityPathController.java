@@ -75,7 +75,7 @@ public class ActivityPathController {
             return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
         }
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-        if (!optionalActivity.isPresent()) {
+        if (optionalActivity.isEmpty()) {
             return new ResponseEntity<>(
                     "Activity doesnt exist",
                     HttpStatus.BAD_REQUEST);
@@ -87,9 +87,9 @@ public class ActivityPathController {
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
         }
-        Path oldPath = pathRepository.findByActivity_Id(activityId);
+        Path oldPath = activity.getPath();
 
-        Path newPath = request.generatePath(activity,locationRepository);
+        Path newPath = request.generatePath(locationRepository);
         newPath = pathRepository.save(newPath);
         activity.setPath(newPath);
         activityRepository.save(activity);
@@ -122,8 +122,15 @@ public class ActivityPathController {
             return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
         }
 
+        // Check if activity exists
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if (optionalActivity.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Activity activity = optionalActivity.get();
+
         // Check Path exists
-        Optional<Path> optionalPath = Optional.ofNullable(pathRepository.findByActivity_Id(activityId));
+        Optional<Path> optionalPath = Optional.ofNullable(activity.getPath());
         if (optionalPath.isEmpty()) {
             return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
         }

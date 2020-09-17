@@ -120,7 +120,8 @@ public class ActivityPathControllerTest {
                         .session(session))
                 .andExpect(status().isOk());
 
-        Path path = pathRepository.findByActivity_Id(activityId);
+
+        Path path = activityRepository.findById(activityId).get().getPath();
         Location location1 = locationRepository.findByLatitudeAndLongitude(-43.525650, 172.639847).get();
         Location location2 = locationRepository.findByLatitudeAndLongitude(-43.825650, 172.839847).get();
 
@@ -140,7 +141,7 @@ public class ActivityPathControllerTest {
         List<Location> oldLocations = new ArrayList<Location>();
         oldLocations.add(location1);
         oldLocations.add(location2);
-        Path oldPath = new Path(activity, oldLocations, PathType.STRAIGHT);
+        Path oldPath = new Path(oldLocations, PathType.STRAIGHT);
         oldPath = pathRepository.save(oldPath);
         activity.setPath(oldPath);
         activity = activityRepository.save(activity);
@@ -167,7 +168,7 @@ public class ActivityPathControllerTest {
                         .session(session))
                 .andExpect(status().isOk());
 
-        Path path = pathRepository.findByActivity_Id(activityId);
+        Path path = activityRepository.findById(activityId).get().getPath();
         Assert.assertTrue(locationRepository.findByLatitudeAndLongitude(-43.525650, 172.639847).isPresent());
         Assert.assertFalse(locationRepository.findByLatitudeAndLongitude(-20.5, 20.5).isPresent());
     }
@@ -275,15 +276,15 @@ public class ActivityPathControllerTest {
         pathLocations.add(start);
         pathLocations.add(end);
 
-        Activity activity = new Activity();
-        activity.setProfile(profileRepository.findById(id));
-        activityRepository.save(activity);
-
         Path path = new Path();
         path.setType(PathType.STRAIGHT);
         path.setLocations(pathLocations);
-        path.setActivity(activity);
         pathRepository.save(path);
+
+        Activity activity = new Activity();
+        activity.setPath(path);
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
 
 
 

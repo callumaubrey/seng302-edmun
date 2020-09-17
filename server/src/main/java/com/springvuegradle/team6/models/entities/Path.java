@@ -27,9 +27,6 @@ public class Path implements Serializable {
   @NotNull
   private List<Location> locations;
 
-  @OneToOne
-  @NotNull
-  private Activity activity;
   @NotNull
   private PathType type;
 
@@ -39,26 +36,16 @@ public class Path implements Serializable {
   /**
    * Constructor for entity Path class
    *
-   * @param activity  activity that is associated with path
    * @param locations location coordinates to trace the path
    * @param type      path type
    */
-  public Path(Activity activity, List<Location> locations, PathType type) {
-    setActivity(activity);
+  public Path(List<Location> locations, PathType type) {
     setLocations(locations);
     setType(type);
   }
 
   public int getId() {
     return id;
-  }
-
-  public Activity getActivity() {
-    return activity;
-  }
-
-  public void setActivity(Activity activity) {
-    this.activity = activity;
   }
 
   public List<Location> getLocations() {

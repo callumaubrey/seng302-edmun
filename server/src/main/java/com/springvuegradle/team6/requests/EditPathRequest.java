@@ -24,13 +24,13 @@ public class EditPathRequest {
     @JsonProperty("pathType")
     private PathType pathType;
 
-    public Path generatePath(Activity activity, LocationRepository locationRepository) {
+    public Path generatePath(LocationRepository locationRepository) {
         ArrayList<Location> pathCoordinates = new ArrayList<>();
         for (Location location : coordinates) {
             location = locationRepository.save(location);
             pathCoordinates.add(location);
         }
-        return new Path(activity, pathCoordinates, pathType);
+        return new Path(pathCoordinates, pathType);
     }
 
     public List<Location> getCoordinates() { return coordinates; }
