@@ -18,11 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import javax.validation.constraints.AssertTrue;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -42,6 +38,8 @@ public class ActivityPathControllerTest {
   @Autowired private LocationRepository locationRepository;
 
   @Autowired private PathRepository pathRepository;
+
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private MockMvc mvc;
 
@@ -133,30 +131,30 @@ public class ActivityPathControllerTest {
   @Test
   void createActivityPathWithMinLocationsAndTypeDefinedAndExpectIsCreated() throws Exception {
     String jsonString =
-            "{\n"
-                    + "    \"type\": \""
-                    + PathType.DEFINED
-                    + "\",\n"
-                    + "    \"locations\": [\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5678,\n"
-                    + "            \"longitude\": 10.5672\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5670,\n"
-                    + "            \"longitude\": 10.5670\n"
-                    + "        }\n"
-                    + "    ]\n"
-                    + "\n"
-                    + "}";
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
 
     Path path = pathRepository.findByActivity_Id(activityId);
 
@@ -172,38 +170,38 @@ public class ActivityPathControllerTest {
   @Test
   void createActivityPathWithMoreLocationsAndTypeDefinedAndExpectIsCreated() throws Exception {
     String jsonString =
-            "{\n"
-                    + "    \"type\": \""
-                    + PathType.DEFINED
-                    + "\",\n"
-                    + "    \"locations\": [\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5678,\n"
-                    + "            \"longitude\": 10.5672\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5670,\n"
-                    + "            \"longitude\": 10.5670\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.6078,\n"
-                    + "            \"longitude\": 10.1256\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.4789,\n"
-                    + "            \"longitude\": 10.9875\n"
-                    + "        }\n"
-                    + "    ]\n"
-                    + "\n"
-                    + "}";
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.6078,\n"
+            + "            \"longitude\": 10.1256\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.4789,\n"
+            + "            \"longitude\": 10.9875\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
 
     Path path = pathRepository.findByActivity_Id(activityId);
 
@@ -223,117 +221,190 @@ public class ActivityPathControllerTest {
   @Test
   void createActivityPathNotLoggedInAndExpect4xx() throws Exception {
     mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+        .andExpect(status().isOk())
+        .andDo(print());
 
     String jsonString =
-            "{\n"
-                    + "    \"type\": \""
-                    + PathType.DEFINED
-                    + "\",\n"
-                    + "    \"locations\": [\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5678,\n"
-                    + "            \"longitude\": 10.5672\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5670,\n"
-                    + "            \"longitude\": 10.5670\n"
-                    + "        }\n"
-                    + "    ]\n"
-                    + "\n"
-                    + "}";
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isUnauthorized());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
   void createActivityPathLoggedInAsUnauthorisedUserAndExpect4xx() throws Exception {
     mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
-            .andExpect(status().isOk())
-            .andDo(print());
+        .andExpect(status().isOk())
+        .andDo(print());
 
     String jsonString =
-            "{\r\n  \"lastname\": \"Dover\","
-                    + "\r\n  \"firstname\": \"Ben\","
-                    + "\r\n  \"nickname\": \"Oops\","
-                    + "\r\n  \"primary_email\": \"bendover69@inbox.com\","
-                    + "\r\n  \"password\": \"Password1\","
-                    + "\r\n  \"bio\": \"Poly Pocket is so tiny.\","
-                    + "\r\n  \"date_of_birth\": \"2000-11-11\","
-                    + "\r\n  \"gender\": \"male\"\r\n}";
+        "{\r\n  \"lastname\": \"Dover\","
+            + "\r\n  \"firstname\": \"Ben\","
+            + "\r\n  \"nickname\": \"Oops\","
+            + "\r\n  \"primary_email\": \"bendover69@inbox.com\","
+            + "\r\n  \"password\": \"Password1\","
+            + "\r\n  \"bio\": \"Poly Pocket is so tiny.\","
+            + "\r\n  \"date_of_birth\": \"2000-11-11\","
+            + "\r\n  \"gender\": \"male\"\r\n}";
 
     mvc.perform(
             MockMvcRequestBuilders.post("/profiles")
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated())
-            .andDo(print());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated())
+        .andDo(print());
 
     jsonString =
-            "{\n"
-                    + "    \"type\": \""
-                    + PathType.DEFINED
-                    + "\",\n"
-                    + "    \"locations\": [\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5678,\n"
-                    + "            \"longitude\": 10.5672\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5670,\n"
-                    + "            \"longitude\": 10.5670\n"
-                    + "        }\n"
-                    + "    ]\n"
-                    + "\n"
-                    + "}";
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isUnauthorized());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
   @WithMockUser(
-          username = "admin",
-          roles = {"USER", "ADMIN"})
+      username = "admin",
+      roles = {"USER", "ADMIN"})
   void createActivityPathAsAdminAndExpectIsCreated() throws Exception {
     String jsonString =
-            "{\n"
-                    + "    \"type\": \""
-                    + PathType.DEFINED
-                    + "\",\n"
-                    + "    \"locations\": [\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5678,\n"
-                    + "            \"longitude\": 10.5672\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"latitude\": 10.5670,\n"
-                    + "            \"longitude\": 10.5670\n"
-                    + "        }\n"
-                    + "    ]\n"
-                    + "\n"
-                    + "}";
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
 
     mvc.perform(
             MockMvcRequestBuilders.post(
                     "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(session))
-            .andExpect(status().isCreated());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
+
+    Path path = pathRepository.findByActivity_Id(activityId);
+
+    Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
+    Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
+
+    Assert.assertTrue(location1.isPresent());
+    Assert.assertTrue(location2.isPresent());
+
+    Assert.assertEquals(PathType.DEFINED, path.getType());
+  }
+
+  @Test
+  void createActivityPathAsOrganiserAndExpectIsCreated() throws Exception {
+    String jsonString =
+        "{\r\n  \"lastname\": \"Dover\","
+            + "\r\n  \"firstname\": \"Ben\","
+            + "\r\n  \"nickname\": \"Oops\","
+            + "\r\n  \"primary_email\": \"bendover69@inbox.com\","
+            + "\r\n  \"password\": \"Password1\","
+            + "\r\n  \"bio\": \"Poly Pocket is so tiny.\","
+            + "\r\n  \"date_of_birth\": \"2000-11-11\","
+            + "\r\n  \"gender\": \"male\"\r\n}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.post("/profiles")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated())
+        .andDo(print());
+
+    String body =
+        mvc.perform(get("/profiles/id").session(session))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    id = Integer.parseInt(body);
+    Profile profile = profileRepository.findById(id);
+
+    Activity activity = activityRepository.findById(activityId).get();
+
+    ActivityRole role = new ActivityRole();
+    role.setActivityRoleType(ActivityRoleType.Organiser);
+    role.setProfile(profile);
+    role.setActivity(activity);
+    activityRoleRepository.save(role);
+
+    jsonString =
+        "{\n"
+            + "    \"type\": \""
+            + PathType.DEFINED
+            + "\",\n"
+            + "    \"locations\": [\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5678,\n"
+            + "            \"longitude\": 10.5672\n"
+            + "        },\n"
+            + "        {\n"
+            + "            \"latitude\": 10.5670,\n"
+            + "            \"longitude\": 10.5670\n"
+            + "        }\n"
+            + "    ]\n"
+            + "\n"
+            + "}";
+
+    mvc.perform(
+            MockMvcRequestBuilders.post(
+                    "/profiles/{profileId}/activities/{activityId}/path", id, activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+        .andExpect(status().isCreated());
 
     Path path = pathRepository.findByActivity_Id(activityId);
 
