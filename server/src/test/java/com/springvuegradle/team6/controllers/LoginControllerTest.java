@@ -232,9 +232,7 @@ public class LoginControllerTest {
     adminProfile.setPassword("AdminPassword123");
     adminProfile.setGender("male");
     List<Role> roles = new ArrayList<>();
-    Role role = new Role("ROLE_ADMIN");
-    roleRepository.save(role);
-    roles.add(role);
+    roles.add(roleRepository.findByName("ROLE_ADMIN"));
     adminProfile.setRoles(roles);
     profileRepository.save(adminProfile);
 
@@ -286,9 +284,7 @@ public class LoginControllerTest {
     userAdminProfile.setPassword("AdminPassword123");
     userAdminProfile.setGender("male");
     List<Role> roles = new ArrayList<>();
-    Role role = new Role("ROLE_USER_ADMIN");
-    roleRepository.save(role);
-    roles.add(role);
+    roles.add(roleRepository.findByName("ROLE_USER_ADMIN"));
     userAdminProfile.setRoles(roles);
     profileRepository.save(userAdminProfile);
 
