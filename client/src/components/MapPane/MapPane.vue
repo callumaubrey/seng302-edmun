@@ -92,7 +92,6 @@
                                                 {{marker.title}}
                                             </b>
                                             <hr style="margin: 0.25em">
-                                            <span>{{marker.content.activityTypes}} <br></span>
                                             <span>{{marker.content.startTime}}</span>
                                             <span class="text-center">
                                             <ActivityTypeIcon v-for="type in marker.content.activityTypes"
@@ -279,6 +278,8 @@
                     title: title,
                     draggable: draggable
                 })
+
+                console.log(this.markers);
             },
             /**
              * Gets latest marker that the user has inputted

@@ -420,7 +420,7 @@ const App = {
       // checking if activity has a location to put on the map
       if (this.location !== null) {
         let content = {
-          activityTypes: this.activity.activityTypes,
+          activityTypes: this.activity.activityTypes.split(', '),
           startTime: this.activity.startTime
         };
 
