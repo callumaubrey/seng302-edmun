@@ -53,6 +53,14 @@ public class ActivityPathController {
         this.activityRoleRepository = activityRoleRepository;
     }
 
+    /**
+     * Creates a path for the given activity using the given path type and locations
+     * @param profileId the profile id of the activity owner
+     * @param activityId the id of the activity receiving the  path
+     * @param request request body consisting of activity path type and a list of locations
+     * @param session the current session
+     * @return http response
+     */
     @PostMapping("/profiles/{profileId}/activities/{activityId}/path")
     public ResponseEntity<String> createActivityPath(
             @PathVariable Integer profileId,
