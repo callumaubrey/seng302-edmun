@@ -3,9 +3,6 @@ package com.springvuegradle.team6.models.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
@@ -77,6 +74,9 @@ public class Profile {
 
   private Integer fitness;
 
+  @Column(name = "is_locked")
+  private boolean isLocked;
+  
   @ManyToOne(cascade = CascadeType.REMOVE)
   @JsonIgnore
   private Location privateLocation;
@@ -84,6 +84,8 @@ public class Profile {
   @ManyToOne(cascade = CascadeType.REMOVE)
   @JsonIgnore
   private Location publicLocation;
+
+  @ManyToOne @JsonIgnore private Location publicLocation;
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
@@ -110,7 +112,12 @@ public class Profile {
   @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
   private List<Activity> activities;
 
-  public Profile() {}
+  /**
+   * Constructor for profile object. Attribute isLocked is defaulted to false when object is created
+   */
+  public Profile() {
+    this.isLocked = false;
+  }
 
   /** Maps users to the activities they have subscribed to/followed */
   @ManyToMany(fetch = FetchType.LAZY)
@@ -273,6 +280,10 @@ public class Profile {
     this.roles = roles;
   }
 
+  public void setLockStatus(boolean status) {
+    this.isLocked = status;
+  }
+
   public void addRole(Role newRole) throws DuplicateRoleException {
     for (Role role : roles) {
       if (role.getRoleName().equals(newRole.getRoleName())) {
@@ -416,11 +427,10 @@ public class Profile {
     emails.removeIf(email -> !email.isPrimary());
   }
 
-
   /**
-   * Generates profile map of json values set for private viewing or public viewing.
-   * This method is not a perfect solution however other solutions would require
-   * wide architectural changes
+   * Generates profile map of json values set for private viewing or public viewing. This method is
+   * not a perfect solution however other solutions would require wide architectural changes
+   *
    * @param viewPrivate add private members to json
    * @return profile json map
    */
@@ -429,7 +439,7 @@ public class Profile {
     ObjectMapper mapper = new ObjectMapper();
     Map<String, Object> profileJson = mapper.convertValue(this, Map.class);
 
-    if(viewPrivate) {
+    if (viewPrivate) {
       profileJson.put("location", mapper.convertValue(privateLocation, Map.class));
     } else {
       profileJson.put("location", mapper.convertValue(publicLocation, Map.class));
