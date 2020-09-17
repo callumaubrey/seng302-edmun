@@ -52,7 +52,8 @@
 
       /**
        * Extracts useful display information from an OSM feature
-       * @param feature
+       * @param feature an OSM feature object
+       * @return an object with longitude, latitude, the location name and the osm id
        */
       parseOSMFeature: function (feature) {
         let obj = feature.properties;
@@ -105,7 +106,6 @@
           "osm_id": obj.osm_id
         };
       },
-
       doAutocomplete: async function (locationText) {
         clearTimeout(this.timeout);
 
@@ -177,7 +177,14 @@
       validateLocation: function() {
         return this.validLocation == null;
       },
-
+            /**
+             * Uses the photon api to search for the name of the location based on the selected longitude
+             * and latitude.
+             * If a name for the location is found, it will set the input field with the name of the
+             * location which is parsed from the data returned from the photon api.
+             * @param lat the longitude value of the location
+             * @param lng the latitude value of the location
+             */
       setLocationTextByCoords: async function (lat, lng) {
         let coordsDataAPI = axios.create({
           baseURL: "https://photon.komoot.de/reverse?lon=" + lng + "&lat=" + lat + "&limit=1",

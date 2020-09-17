@@ -519,17 +519,17 @@
                     + ". Please try again", 'danger', 4)
               });
 
-        }
-      },
-      getISODates: function () {
-        let startDateISO;
-        if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
-            || this.durationForm.startTime === "") {
-          startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
-        } else {
-          startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
-              + ":00+1200";
-        }
+          }
+        },
+        getISODates: function () {
+          let startDateISO;
+          if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+              || this.durationForm.startTime === "") {
+            startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+          } else {
+            startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+                + ":00+1200";
+          }
 
         let endDateISO;
         if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
@@ -539,11 +539,11 @@
           endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
         }
 
-        return [startDateISO, endDateISO];
-      },
-      convertISOtoDateTime: function (ISODate) {
-        const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
-            + ISODate.dayOfMonth).toISOString().substring(0, 10);
+          return [startDateISO, endDateISO];
+        },
+        convertISOtoDateTime: function (ISODate) {
+          const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
+              + ISODate.dayOfMonth).toISOString().substring(0, 10);
 
         let hour = ISODate.hour;
         let minute = ISODate.minute;

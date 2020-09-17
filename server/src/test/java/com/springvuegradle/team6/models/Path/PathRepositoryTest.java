@@ -49,11 +49,6 @@ class PathRepositoryTest {
     profile.setGender("male");
     profile = profileRepository.save(profile);
 
-    Activity activity = new Activity();
-    activity.setProfile(profile);
-    activity.setActivityName("Run at Hagley Park");
-    activity.setContinuous(true);
-    activity = activityRepository.save(activity);
 
     Location location1 = new Location(12.34, 56.78);
     Location location2 = new Location(3.45, 6.78);
@@ -63,10 +58,17 @@ class PathRepositoryTest {
     locations.add(location1);
     locations.add(location2);
 
-    Path path = new Path(activity, locations, PathType.STRAIGHT);
-    pathRepository.save(path);
+    Path path = new Path(locations, PathType.STRAIGHT);
+    path = pathRepository.save(path);
 
-    Path pathReturned = pathRepository.findByActivity_Id(activity.getId());
+    Activity activity = new Activity();
+    activity.setProfile(profile);
+    activity.setActivityName("Run at Hagley Park");
+    activity.setContinuous(true);
+    activity.setPath(path);
+    activity = activityRepository.save(activity);
+
+    Path pathReturned = activityRepository.findById(activity.getId()).get().getPath();
     org.junit.jupiter.api.Assertions.assertNotNull(pathReturned);
     org.junit.jupiter.api.Assertions.assertEquals(2, path.getLocations().size());
     org.junit.jupiter.api.Assertions.assertEquals(PathType.STRAIGHT, path.getType());
@@ -93,7 +95,7 @@ class PathRepositoryTest {
     activity.setContinuous(true);
     activity = activityRepository.save(activity);
 
-    Path pathReturned = pathRepository.findByActivity_Id(activity.getId());
+    Path pathReturned = activityRepository.findById(activity.getId()).get().getPath();
     org.junit.jupiter.api.Assertions.assertNull(pathReturned);
   }
 }

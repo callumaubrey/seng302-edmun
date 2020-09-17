@@ -24,7 +24,9 @@ truncate table `activity_role`;
 truncate table `activity_tags`;
 truncate table `email`;
 truncate table `location`;
+truncate table `login_attempt`
 truncate table `named_location`;
+truncate table `password_token`;
 truncate table `profile`;
 truncate table `profile_activity_types`;
 truncate table `profile_emails`;
