@@ -32,7 +32,7 @@ public class MailController {
 
     @GetMapping("/forgotpassword")
     ResponseEntity<String> sendForgotPasswordEmail(){
-        emailService.sendSimpleMessage("martylopez0599@gmail.com", "YEET", "it works");
+        emailService.sendPasswordTokenEmail("martylopez0599@gmail.com", "Reset Password for Edmun", "ABCDEFGH", "Martin");
         return ResponseEntity.ok("worked");
     }
 
