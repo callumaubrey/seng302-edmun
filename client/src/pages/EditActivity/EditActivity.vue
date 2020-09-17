@@ -5,236 +5,243 @@
       <ForbiddenMessage/>
     </div>
 
-    <b-row class="mb-4" v-else>
-      <b-col cols="8" offset="2">
-        <!-- Title -->
-        <b-row align-h="between">
-          <b-col>
-            <b-button @click="goToActivity()" style="float: right;">View activity
-            </b-button>
-            <h3>Edit Your Activity: {{ form.name }}</h3>
-            <hr>
-          </b-col>
-        </b-row>
+    <b-container fluid>
+      <b-row align-v="start" align-h="center">
+        <b-col cols="8" align-self="center">
+          <!-- Title -->
+          <b-row align-h="between">
+            <b-col>
+              <b-button @click="goToActivity()" style="float: right;">View activity
+              </b-button>
+              <h3>Edit Your Activity: {{ form.name }}</h3>
+              <hr>
+            </b-col>
+          </b-row>
 
-        <b-card no-body>
-          <b-tabs card>
+          <b-card no-body>
+            <b-tabs card>
 
-            <!-- Activity Info Editing -->
-            <b-tab active>
-              <template v-slot:title>
-                <b-icon v-if="formError" icon="exclamation-circle-fill" variant="danger"></b-icon>
-                Activity Info
-              </template>
-              <b-container fluid>
+              <!-- Activity Info Editing -->
+              <b-tab active>
+                <template v-slot:title>
+                  <b-icon v-if="formError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                  Activity Info
+                </template>
+                <b-container fluid>
 
-                <b-form @submit.stop.prevent="onSubmit" novalidate>
-                  <b-row>
-                    <b-col>
-                      <b-form-group>
-                        <b-form-radio-group id="duration-type-group" v-model="isContinuous">
-                          <b-form-radio name="duration-type" value='0'>Continuous</b-form-radio>
-                          <b-form-radio name="duration-type" value='1'>Duration</b-form-radio>
-                        </b-form-radio-group>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
+                  <b-form @submit.stop.prevent="onSubmit" novalidate>
+                    <b-row>
+                      <b-col>
+                        <b-form-group>
+                          <b-form-radio-group id="duration-type-group" v-model="isContinuous">
+                            <b-form-radio name="duration-type" value='0'>Continuous</b-form-radio>
+                            <b-form-radio name="duration-type" value='1'>Duration</b-form-radio>
+                          </b-form-radio-group>
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
 
-                  <b-row v-if="isContinuous === '1'">
-                    <b-col>
-                      <b-form-group id="start-date-input-group" label="Start Date"
-                                    label-for="start-date-input">
-                        <b-form-input
-                            :state="validateDurationState('startDate')"
-                            aria-describedby="start-date-feedback"
-                            id="start-date-input"
-                            max="9999-12-31"
-                            type="date"
-                            v-model="$v.durationForm.startDate.$model"
-                        />
-                        <b-form-invalid-feedback id="start-date-feedback">This is a required field.
-                          Start date
-                          must be earlier than end date, and must not be earlier than old start date
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                    </b-col>
-                    <b-col>
-                      <b-form-group id="end-date-input-group" label="End Date"
-                                    label-for="end-date-input">
-                        <b-form-input
-                            :state="validateDurationState('endDate')"
-                            aria-describedby="end-date-feedback"
-                            id="end-date-input"
-                            max="9999-12-31"
-                            type="date"
-                            v-model="$v.durationForm.endDate.$model"
-                        />
-                        <b-form-invalid-feedback id="end-date-feedback">This is a required field.
-                          Start date
-                          must be earlier than end date
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
+                    <b-row v-if="isContinuous === '1'">
+                      <b-col>
+                        <b-form-group id="start-date-input-group" label="Start Date"
+                                      label-for="start-date-input">
+                          <b-form-input
+                              :state="validateDurationState('startDate')"
+                              aria-describedby="start-date-feedback"
+                              id="start-date-input"
+                              max="9999-12-31"
+                              type="date"
+                              v-model="$v.durationForm.startDate.$model"
+                          />
+                          <b-form-invalid-feedback id="start-date-feedback">This is a required
+                            field.
+                            Start date
+                            must be earlier than end date, and must not be earlier than old start
+                            date
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                      </b-col>
+                      <b-col>
+                        <b-form-group id="end-date-input-group" label="End Date"
+                                      label-for="end-date-input">
+                          <b-form-input
+                              :state="validateDurationState('endDate')"
+                              aria-describedby="end-date-feedback"
+                              id="end-date-input"
+                              max="9999-12-31"
+                              type="date"
+                              v-model="$v.durationForm.endDate.$model"
+                          />
+                          <b-form-invalid-feedback id="end-date-feedback">This is a required field.
+                            Start date
+                            must be earlier than end date
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
 
-                  <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;"
-                         v-if="isContinuous === '1'">
-                    <b-col>
-                      <b-form-group id="start-time-input-group" label="Start Time"
-                                    label-for="start-time-input">
-                        <b-form-text>Default start time is 12:00 am</b-form-text>
-                        <b-form-input
-                            :state="validateDurationState('startTime')"
-                            id="start-time-input"
-                            type="time"
-                            v-model="$v.durationForm.startTime.$model"
-                        />
-                      </b-form-group>
-                    </b-col>
-                    <b-col>
-                      <b-form-group id="end-time-input-group" label="End Time"
-                                    label-for="end-time-input">
-                        <b-form-text>Default end time is 12:00 am</b-form-text>
-                        <b-form-input
-                            :state="validateDurationState('endTime')"
-                            aria-describedby="end-time-feedback"
-                            id="end-time-input"
-                            type="time"
-                            v-model="$v.durationForm.endTime.$model"
-                        />
-                        <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or
-                          the same as start time.
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
+                    <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;"
+                           v-if="isContinuous === '1'">
+                      <b-col>
+                        <b-form-group id="start-time-input-group" label="Start Time"
+                                      label-for="start-time-input">
+                          <b-form-text>Default start time is 12:00 am</b-form-text>
+                          <b-form-input
+                              :state="validateDurationState('startTime')"
+                              id="start-time-input"
+                              type="time"
+                              v-model="$v.durationForm.startTime.$model"
+                          />
+                        </b-form-group>
+                      </b-col>
+                      <b-col>
+                        <b-form-group id="end-time-input-group" label="End Time"
+                                      label-for="end-time-input">
+                          <b-form-text>Default end time is 12:00 am</b-form-text>
+                          <b-form-input
+                              :state="validateDurationState('endTime')"
+                              aria-describedby="end-time-feedback"
+                              id="end-time-input"
+                              type="time"
+                              v-model="$v.durationForm.endTime.$model"
+                          />
+                          <b-form-invalid-feedback id="end-time-feedback">End time cannot be before
+                            or
+                            the same as start time.
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
 
-                  <b-row>
-                    <b-col>
+                    <b-row>
+                      <b-col>
                             <span v-if="this.form.selectedActivityTypes.length > 0">
                                 Activity Types:
                                 <b-form-text>Click on the activity type to remove</b-form-text>
                             </span>
-                      <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
-                        <b-list-group-item :key="activityType"
-                                           class="clickable"
-                                           v-for="activityType in this.form.selectedActivityTypes"
-                                           v-on:click="deleteActivityType(activityType)">
-                          {{ activityType }}
-                        </b-list-group-item>
-                      </b-list-group>
-                      <b-form-group id="activity-type-group" label="Add Activity Type"
-                                    label-for="activity-type">
-                        <b-form-select
-                            :options="activityTypes"
-                            :state="validateState('selectedActivityType')"
-                            aria-describedby="activity-type-feedback"
-                            id="activity-type"
-                            name="activity-type"
-                            v-model="$v.form.selectedActivityType.$model"
-                            v-on:change="addActivityType()"
+                        <b-list-group horizontal="md" v-if="this.form.selectedActivityTypes">
+                          <b-list-group-item :key="activityType"
+                                             class="clickable"
+                                             v-for="activityType in this.form.selectedActivityTypes"
+                                             v-on:click="deleteActivityType(activityType)">
+                            {{ activityType }}
+                          </b-list-group-item>
+                        </b-list-group>
+                        <b-form-group id="activity-type-group" label="Add Activity Type"
+                                      label-for="activity-type">
+                          <b-form-select
+                              :options="activityTypes"
+                              :state="validateState('selectedActivityType')"
+                              aria-describedby="activity-type-feedback"
+                              id="activity-type"
+                              name="activity-type"
+                              v-model="$v.form.selectedActivityType.$model"
+                              v-on:change="addActivityType()"
+                          />
+                          <b-form-invalid-feedback id="activity-type-feedback">Please select an
+                            activity type.
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                        <hr>
+                      </b-col>
+                    </b-row>
+
+                    <b-row>
+                      <b-col>
+                        <SearchTag :max-entries="30" :title-label="'Hashtags'"
+                                   :options="hashtag.options"
+                                   :values="hashtag.values"
+                                   :help-text="'Max 30 hashtags'"
+                                   :input-character-limit="140"
+                                   v-on:emitInput="autocompleteInput"
+                                   v-on:emitTags="manageTags"
                         />
-                        <b-form-invalid-feedback id="activity-type-feedback">Please select an
-                          activity type.
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                      <hr>
-                    </b-col>
-                  </b-row>
+                      </b-col>
+                    </b-row>
+                    <hr>
 
-                  <b-row>
-                    <b-col>
-                      <SearchTag :max-entries="30" :title-label="'Hashtags'"
-                                 :options="hashtag.options"
-                                 :values="hashtag.values"
-                                 :help-text="'Max 30 hashtags'"
-                                 :input-character-limit="140"
-                                 v-on:emitInput="autocompleteInput"
-                                 v-on:emitTags="manageTags"
-                      />
-                    </b-col>
-                  </b-row>
-                  <hr>
+                    <b-row>
+                      <b-col>
+                        <b-form-group id="name-input-group" label="Name" label-for="name-input">
+                          <b-form-input
+                              :state="validateState('name')"
+                              aria-describedby="name-feedback"
+                              id="name-input"
+                              maxlength=128
+                              name="name-input"
+                              v-model="$v.form.name.$model"
+                          />
+                          <b-form-invalid-feedback id="name-feedback">This is a required field.
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
 
-                  <b-row>
-                    <b-col>
-                      <b-form-group id="name-input-group" label="Name" label-for="name-input">
-                        <b-form-input
-                            :state="validateState('name')"
-                            aria-describedby="name-feedback"
-                            id="name-input"
-                            maxlength=128
-                            name="name-input"
-                            v-model="$v.form.name.$model"
-                        />
-                        <b-form-invalid-feedback id="name-feedback">This is a required field.
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
+                    <b-row>
+                      <b-col>
+                        <b-form-group id="description-input-group" label="Description"
+                                      label-for="description-input">
+                          <b-form-textarea
+                              :state="validateState('description')"
+                              id="description-input"
+                              maxlength=2048
+                              name="description-input"
+                              placeholder="How did it go?"
+                              v-model="$v.form.description.$model"
+                          />
+                          <b-form-invalid-feedback id="name-feedback">This is a required field.
+                          </b-form-invalid-feedback>
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
 
-                  <b-row>
-                    <b-col>
-                      <b-form-group id="description-input-group" label="Description"
-                                    label-for="description-input">
-                        <b-form-textarea
-                            :state="validateState('description')"
-                            id="description-input"
-                            maxlength=2048
-                            name="description-input"
-                            placeholder="How did it go?"
-                            v-model="$v.form.description.$model"
-                        />
-                        <b-form-invalid-feedback id="name-feedback">This is a required field.
-                        </b-form-invalid-feedback>
-                      </b-form-group>
-                    </b-col>
-                  </b-row>
+                  </b-form>
+                </b-container>
+              </b-tab>
 
-                </b-form>
-              </b-container>
-            </b-tab>
-
-            <b-tab>
-              <template v-slot:title>
-                <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
-                Activity Location
-              </template>
-              <ActivityLocationTab ref="map"
-                                   :can-hide="false"
-                                   :user-lat="userLat"
-                                   :user-long="userLong"
-                                   @locationSelect="updateLocation"
-                                   :activity-lat="locationData.latitude"
-                                   :activity-long="locationData.longitude"
-              />
-            </b-tab>
+              <b-tab>
+                <template v-slot:title>
+                  <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
+                  Activity Location
+                </template>
+                <ActivityLocationTab ref="map"
+                                     :can-hide="false"
+                                     :user-lat="userLat"
+                                     :user-long="userLong"
+                                     @locationSelect="updateLocation"
+                                     :activity-lat="locationData.latitude"
+                                     :activity-long="locationData.longitude"
+                />
+              </b-tab>
 
 
-            <!-- Metrics Editor -->
-            <b-tab>
-              <template v-slot:title>
-                <b-icon v-if="metricError" icon="exclamation-circle-fill" variant="danger"></b-icon>
-                Activity Metrics
-              </template>
-              <ActivityMetricsEditor ref="metric_editor" :profile-id="profileId"
-                                     :activity-id="activityId"></ActivityMetricsEditor>
-            </b-tab>
-          </b-tabs>
+              <!-- Metrics Editor -->
+              <b-tab>
+                <template v-slot:title>
+                  <b-icon v-if="metricError" icon="exclamation-circle-fill"
+                          variant="danger"></b-icon>
+                  Activity Metrics
+                </template>
+                <ActivityMetricsEditor ref="metric_editor" :profile-id="profileId"
+                                       :activity-id="activityId"></ActivityMetricsEditor>
+              </b-tab>
+            </b-tabs>
 
 
-        </b-card>
-        <br>
-        <b-row>
-          <b-col>
-            <b-button id="saveButton" type="submit" v-on:click="onSubmit" variant="primary">Save
-              changes
-            </b-button>
-          </b-col>
-        </b-row>
+          </b-card>
+          <br>
+          <b-row>
+            <b-col>
 
-      </b-col>
-    </b-row>
+              <b-button id="saveButton" type="submit" v-on:click="onSubmit" variant="primary">Save
+                changes
+              </b-button>
+            </b-col>
+          </b-row>
+
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -463,9 +470,15 @@
         this.mapError = !this.$refs.map.validLocation;
         this.metricError = !this.$refs.metric_editor.validateMetricData();
         if (this.formError || this.mapError || this.metricError) {
+          this.$bvToast.toast('There are errors in the form, please check all tabs', {
+            toaster: "b-toaster-bottom-center",
+            variant: "danger",
+            solid: true
+          })
           return;
         }
         let currentObj = this;
+        console.log(this.locationData);
         let data = {
           activity_name: this.form.name,
           description: this.form.description,
@@ -483,9 +496,12 @@
                 currentObj.$router.push(
                     '/profiles/' + userId + '/activities/' + currentObj.activityId);
               })
-              .catch(function (error) {
-                store.newNotification("Failed to update activity: " + error.response.data
-                    + ". Please try again", 'danger', 4)
+              .catch(function () {
+                currentObj.$bvToast.toast('Failed to update activity, server error', {
+                  toaster: "b-toaster-bottom-center",
+                  variant: "danger",
+                  solid: true
+                })
               });
 
         } else {
@@ -514,22 +530,25 @@
                 store.newNotification('Activity updated successfully', 'success', 4)
                 currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
               })
-              .catch(function (error) {
-                store.newNotification("Failed to update activity: " + error.response.data
-                    + ". Please try again", 'danger', 4)
+              .catch(function () {
+                currentObj.$bvToast.toast('Failed to update activity, server error', {
+                  toaster: "b-toaster-bottom-center",
+                  variant: "danger",
+                  solid: true
+                })
               });
 
-          }
-        },
-        getISODates: function () {
-          let startDateISO;
-          if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
-              || this.durationForm.startTime === "") {
-            startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
-          } else {
-            startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
-                + ":00+1200";
-          }
+        }
+      },
+      getISODates: function () {
+        let startDateISO;
+        if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+            || this.durationForm.startTime === "") {
+          startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+        } else {
+          startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+              + ":00+1200";
+        }
 
         let endDateISO;
         if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
@@ -539,11 +558,11 @@
           endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
         }
 
-          return [startDateISO, endDateISO];
-        },
-        convertISOtoDateTime: function (ISODate) {
-          const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
-              + ISODate.dayOfMonth).toISOString().substring(0, 10);
+        return [startDateISO, endDateISO];
+      },
+      convertISOtoDateTime: function (ISODate) {
+        const date = new Date(ISODate.year + "-" + ISODate.monthValue + '-'
+            + ISODate.dayOfMonth).toISOString().substring(0, 10);
 
         let hour = ISODate.hour;
         let minute = ISODate.minute;

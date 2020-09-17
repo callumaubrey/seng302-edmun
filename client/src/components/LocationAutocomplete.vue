@@ -5,7 +5,7 @@
                     autocomplete="off" placeholder="Search address"
                     :state="validLocation"/>
       <b-form-invalid-feedback id="input-live-feedback">
-        The selected location is unknown
+        {{invalidLocationErrorMessage}}
       </b-form-invalid-feedback>
       <em v-if="loadingLocations"
           class="autocomplete-loading-icon text-primary fas fa-circle-notch fa-spin"/>
@@ -37,7 +37,8 @@
         locations: [],
         selectedLocation: null,
         loadingLocations: false,
-        validLocation: null
+        validLocation: null,
+        invalidLocationErrorMessage: "The selected location is unknown"
       }
     },
     mounted() {
@@ -140,6 +141,7 @@
           for (let i = 0; i < data.data.features.length; i++) {
             let feature_data = _this.parseOSMFeature(data.data.features[i]);
             if (feature_data.display_name) {
+              this.validLocation = true;
               fixedData['data'].push(feature_data)
             }
           }
@@ -174,17 +176,17 @@
         this.$emit("emitLocation", value);
       },
 
-      validateLocation: function() {
+      validateLocation: function () {
         return this.validLocation == null;
       },
-            /**
-             * Uses the photon api to search for the name of the location based on the selected longitude
-             * and latitude.
-             * If a name for the location is found, it will set the input field with the name of the
-             * location which is parsed from the data returned from the photon api.
-             * @param lat the longitude value of the location
-             * @param lng the latitude value of the location
-             */
+      /**
+       * Uses the photon api to search for the name of the location based on the selected longitude
+       * and latitude.
+       * If a name for the location is found, it will set the input field with the name of the
+       * location which is parsed from the data returned from the photon api.
+       * @param lat the longitude value of the location
+       * @param lng the latitude value of the location
+       */
       setLocationTextByCoords: async function (lat, lng) {
         let coordsDataAPI = axios.create({
           baseURL: "https://photon.komoot.de/reverse?lon=" + lng + "&lat=" + lat + "&limit=1",
@@ -200,8 +202,10 @@
               let feature_data = this.parseOSMFeature(res.data.features[0]);
               this.locationText = feature_data.display_name;
               this.locations = [];
+              this.invalidLocationErrorMessage = "The selected location is unknown"
               this.validLocation = null;
             } else {
+              this.invalidLocationErrorMessage = "The selected location is unknown"
               this.validLocation = false;
               this.clearLocation();
             }
@@ -213,6 +217,7 @@
           }
           this.loadingLocations = false;
         }).catch(() => {
+          this.invalidLocationErrorMessage = "The selected location is unknown"
           this.validLocation = false;
           this.loadingLocations = false;
           this.clearLocation();
