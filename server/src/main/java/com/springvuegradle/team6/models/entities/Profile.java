@@ -339,6 +339,10 @@ public class Profile {
     this.privateLocation = privateLocation;
   }
 
+  public boolean isLocked() {
+    return isLocked;
+  }
+
   /**
    * This is used by the searching profile by full name functionality
    *
