@@ -51,17 +51,8 @@ public class UserSecurityService {
   }
 
   public static boolean checkIsAdminOrCreatorOrOrganiser(Integer sessionId, Integer creatorId, Integer activityId, ActivityRoleRepository roleRepository) {
-    if (!(sessionId.toString().equals(creatorId.toString()))) {
-      Collection<SimpleGrantedAuthority> userRoles =
-              (Collection<SimpleGrantedAuthority>)
-                      SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-      boolean isAdmin =
-              userRoles.stream()
-                      .anyMatch(
-                              simpleGrantedAuthority ->
-                                      (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
-                                              || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
-      if (!isAdmin) {
+     boolean isAdminOrCreator = checkIsAdminOrCreator(sessionId, creatorId);
+      if (!isAdminOrCreator) {
         ActivityRole role = roleRepository.findByProfile_IdAndActivity_Id(sessionId, activityId);
         if (role != null) {
           boolean organiser = role.getActivityRoleType() == ActivityRoleType.Organiser;
@@ -69,8 +60,7 @@ public class UserSecurityService {
         }
         return false;
       }
-    }
-    return true;
+      return true;
   }
 
   /**

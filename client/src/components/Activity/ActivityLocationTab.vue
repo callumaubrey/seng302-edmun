@@ -155,13 +155,17 @@
              * Sets the users location pin on the map if they have one using data from parent
              */
             setUsersLocationPin: function () {
-                if (this.userLat == null && this.userLong == null) {
-                    return;
+                if (this.userLat != null && this.userLong != null) {
+                    this.$refs.map.createMarker(2, 1, this.userLat, this.userLong);
                 }
-                this.$refs.map.createMarker(2, 1, this.userLat, this.userLong);
                 // Centers map on user if activity has no current location
-                if (this.activityLat !== null && this.activityLong !== null) {
-                    this.$refs.map.setMapCenter(this.userLat, this.userLong);
+                if (this.activityLat == null || this.activityLong == null) {
+                    if (this.userLat != null && this.userLong != null) {
+                        this.$refs.map.setMapCenter(this.userLat, this.userLong);
+                    } else {
+                        this.$refs.map.setMapCenter(-43.53000, 172.62028);
+                    }
+
                 }
             },
             /**

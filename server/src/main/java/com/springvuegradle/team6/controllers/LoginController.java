@@ -2,11 +2,15 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
+import com.springvuegradle.team6.models.entities.LoginAttempt;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Role;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.LoginAttemptRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.LoginRequest;
+import java.time.LocalDateTime;
+import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +44,7 @@ import java.util.Optional;
 public class LoginController {
   private ProfileRepository profileRepository;
   private EmailRepository emailRepository;
+  private LoginAttemptRepository loginAttemptRepository;
 
   /**
    * Constructor for class gets the database repo
@@ -47,22 +52,30 @@ public class LoginController {
    * @param profileRepository
    * @param emailRepository
    */
-  public LoginController(ProfileRepository profileRepository, EmailRepository emailRepository) {
+  public LoginController(
+      ProfileRepository profileRepository,
+      EmailRepository emailRepository,
+      LoginAttemptRepository loginAttemptRepository) {
     this.profileRepository = profileRepository;
     this.emailRepository = emailRepository;
+    this.loginAttemptRepository = loginAttemptRepository;
   }
 
   /**
    * Logs user into a session Takes JSON post data, checks the data and logs user into specific
-   * account if it exists
+   * account if it exists.
+   * After three failed attempts within 10 minutes, the account is considered locked.
+   * The global admin never gets locked no matter the number of attempts.
+   * Emails that don't exist do not get locked.
    *
    * @param loginDetail the request entity
    * @return ResponseEntity which can be success(2xx) or error(4xx)
    */
   @PostMapping("/login")
-  public ResponseEntity<String> login(@RequestBody LoginRequest loginDetail, HttpSession session) {
+  public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginDetail, HttpSession session) {
     try {
-      Optional<Email> email = emailRepository.findByAddress(loginDetail.getEmail());
+      String emailStr = loginDetail.getEmail();
+      Optional<Email> email = emailRepository.findByAddress(emailStr);
       if (!(email.isPresent())) {
         return new ResponseEntity(
             "No associated user with email and password", HttpStatus.UNAUTHORIZED);
@@ -70,12 +83,25 @@ public class LoginController {
       Profile user = profileRepository.findByEmailsContains(email.get());
       session.removeAttribute("id");
       if (user != null) {
+        if (user.isLocked()) {
+          return new ResponseEntity("This account is locked", HttpStatus.UNAUTHORIZED);
+        }
+
+        boolean isGlobalAdmin = false;
+        session.setAttribute("id", user.getId());
+        for (Role role : user.getRoles()) {
+          if (role.getRoleName().equals("ROLE_ADMIN")) {
+            isGlobalAdmin = true;
+          }
+        }
+
         if (user.comparePassword(loginDetail.getPassword())) {
           boolean isAdmin = false;
           session.setAttribute("id", user.getId());
           List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList();
           for (Role role : user.getRoles()) {
-            if (role.getRoleName().equals("ROLE_ADMIN")) {
+            if (role.getRoleName().equals("ROLE_ADMIN")
+                || role.getRoleName().equals("ROLE_USER_ADMIN")) {
               isAdmin = true;
             }
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getRoleName());
@@ -91,10 +117,25 @@ public class LoginController {
           ObjectMapper mapper = new ObjectMapper();
           String postJson = mapper.writeValueAsString(user.getId());
           return ResponseEntity.ok(postJson);
-        }
+        } else if (isGlobalAdmin) {
+          return new ResponseEntity(
+              "No associated user with email and password", HttpStatus.UNAUTHORIZED);
 
-        return new ResponseEntity(
-            "No associated user with email and password", HttpStatus.UNAUTHORIZED);
+        } else {
+          LoginAttempt loginAttempt = new LoginAttempt(user);
+          loginAttemptRepository.save(loginAttempt);
+          LocalDateTime time = LocalDateTime.now().minusMinutes(10);
+          List<LoginAttempt> attempts =
+              loginAttemptRepository.findByProfileIdGreaterThanTime(user.getId(), time);
+          if (attempts.size() > 3) {
+            user.setLockStatus(true);
+            profileRepository.save(user);
+            return new ResponseEntity("This account is locked", HttpStatus.UNAUTHORIZED);
+          } else {
+            return new ResponseEntity(
+                "No associated user with email and password", HttpStatus.UNAUTHORIZED);
+          }
+        }
       }
       return new ResponseEntity(
           "No associated user with email and password", HttpStatus.UNAUTHORIZED);

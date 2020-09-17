@@ -1,8 +1,8 @@
 <template>
   <div id="app" v-if="isLoggedIn">
-    <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
+    <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"/>
     <div v-if="!authorised">
-      <ForbiddenMessage></ForbiddenMessage>
+      <ForbiddenMessage/>
     </div>
 
     <b-row class="mb-4" v-else>
@@ -36,7 +36,7 @@
                     </b-col>
                   </b-row>
 
-                  <b-row v-if="isContinuous == '1'">
+                  <b-row v-if="isContinuous === '1'">
                     <b-col>
                       <b-form-group id="start-date-input-group" label="Start Date"
                                     label-for="start-date-input">
@@ -47,7 +47,7 @@
                             max="9999-12-31"
                             type="date"
                             v-model="$v.durationForm.startDate.$model"
-                        ></b-form-input>
+                        />
                         <b-form-invalid-feedback id="start-date-feedback">This is a required field.
                           Start date
                           must be earlier than end date, and must not be earlier than old start date
@@ -64,7 +64,7 @@
                             max="9999-12-31"
                             type="date"
                             v-model="$v.durationForm.endDate.$model"
-                        ></b-form-input>
+                        />
                         <b-form-invalid-feedback id="end-date-feedback">This is a required field.
                           Start date
                           must be earlier than end date
@@ -74,28 +74,30 @@
                   </b-row>
 
                   <b-row style="margin-bottom:10px;border-bottom:1px solid #ececec;"
-                         v-if="isContinuous == '1'">
+                         v-if="isContinuous === '1'">
                     <b-col>
                       <b-form-group id="start-time-input-group" label="Start Time"
                                     label-for="start-time-input">
+                        <b-form-text>Default start time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('startTime')"
                             id="start-time-input"
                             type="time"
                             v-model="$v.durationForm.startTime.$model"
-                        ></b-form-input>
+                        />
                       </b-form-group>
                     </b-col>
                     <b-col>
                       <b-form-group id="end-time-input-group" label="End Time"
                                     label-for="end-time-input">
+                        <b-form-text>Default end time is 12:00 am</b-form-text>
                         <b-form-input
                             :state="validateDurationState('endTime')"
                             aria-describedby="end-time-feedback"
                             id="end-time-input"
                             type="time"
                             v-model="$v.durationForm.endTime.$model"
-                        ></b-form-input>
+                        />
                         <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or
                           the same as start time.
                         </b-form-invalid-feedback>
@@ -127,7 +129,7 @@
                             name="activity-type"
                             v-model="$v.form.selectedActivityType.$model"
                             v-on:change="addActivityType()"
-                        ></b-form-select>
+                        />
                         <b-form-invalid-feedback id="activity-type-feedback">Please select an
                           activity type.
                         </b-form-invalid-feedback>
@@ -138,13 +140,14 @@
 
                 <b-row>
                     <b-col>
-                        <SearchTag :max-entries="30" :title-label="'Hashtags'" :options="hashtag.options"
-                                   :values="hashtag.values"
-                                   :help-text="'Max 30 hashtags'"
-                                   :input-character-limit="140"
-                                   v-on:emitInput="autocompleteInput"
-                                   v-on:emitTags="manageTags"
-                                   ></SearchTag>
+                      <SearchTag :max-entries="30" :title-label="'Hashtags'"
+                                 :options="hashtag.options"
+                                 :values="hashtag.values"
+                                 :help-text="'Max 30 hashtags'"
+                                 :input-character-limit="140"
+                                 v-on:emitInput="autocompleteInput"
+                                 v-on:emitTags="manageTags"
+                      />
                     </b-col>
                 </b-row>
                 <hr>
@@ -159,7 +162,7 @@
                             maxlength=128
                             name="name-input"
                             v-model="$v.form.name.$model"
-                        ></b-form-input>
+                        />
                         <b-form-invalid-feedback id="name-feedback">This is a required field.
                         </b-form-invalid-feedback>
                       </b-form-group>
@@ -177,7 +180,7 @@
                             name="description-input"
                             placeholder="How did it go?"
                             v-model="$v.form.description.$model"
-                        ></b-form-textarea>
+                        />
                         <b-form-invalid-feedback id="name-feedback">This is a required field.
                         </b-form-invalid-feedback>
                       </b-form-group>
@@ -187,7 +190,7 @@
                   <b-form-valid-feedback :state='activityUpdateMessage != ""' class="feedback">
                     {{ activityUpdateMessage }}
                   </b-form-valid-feedback>
-                  <b-form-invalid-feedback :state='activityErrorMessage == ""' class="feedback">
+                  <b-form-invalid-feedback :state='activityErrorMessage === ""' class="feedback">
                     {{ activityErrorMessage }}
                   </b-form-invalid-feedback>
                 </b-form>
@@ -201,7 +204,7 @@
                                  @locationSelect="updateLocation"
                                  :activity-lat="locationData.latitude"
                                  :activity-long="locationData.longitude"
-            ></ActivityLocationTab>
+            />
 
             <!-- Metrics Editor -->
             <b-tab title="Activity Metrics">
@@ -216,28 +219,28 @@
 </template>
 
 <script>
-    import NavBar from "@/components/NavBar.vue";
-    import SearchTag from "../../components/SearchTag";
-    import ForbiddenMessage from "../../components/ForbiddenMessage";
-    import {validationMixin} from "vuelidate";
-    import {required} from 'vuelidate/lib/validators';
-    import locationMixin from "../../mixins/locationMixin";
-    import AdminMixin from "../../mixins/AdminMixin";
-    import api from '@/Api'
-    import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-    import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import NavBar from "@/components/NavBar.vue";
+import SearchTag from "../../components/SearchTag";
+import ForbiddenMessage from "../../components/ForbiddenMessage";
+import {validationMixin} from "vuelidate";
+import {required} from 'vuelidate/lib/validators';
+import locationMixin from "../../mixins/locationMixin";
+import AdminMixin from "../../mixins/AdminMixin";
+import api from '@/Api'
+import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 
-    export default {
-      mixins: [validationMixin, locationMixin],
-      components: {
-        ActivityMetricsEditor,
-        SearchTag,
-        NavBar,
-        ForbiddenMessage,
-        ActivityLocationTab
-      },
-      data() {
-        return {
+export default {
+  mixins: [validationMixin, locationMixin],
+  components: {
+    ActivityMetricsEditor,
+    SearchTag,
+    NavBar,
+    ForbiddenMessage,
+    ActivityLocationTab
+  },
+  data() {
+    return {
           isLoggedIn: false,
           userName: '',
           isContinuous: '',
@@ -263,7 +266,10 @@
           },
           // previous start date
           dbStartDate: null,
-          locationData: null,
+          locationData: {
+            latitude: null,
+            longitude: null
+          },
           loggedInIsAdmin: false,
           hashtag: {
             options: [],
@@ -281,10 +287,8 @@
           selectedActivityType: {
             required,
             validateActivityType() {
-              if (this.form.selectedActivityTypes.length < 1) {
-                return false
-              }
-              return true
+              return this.form.selectedActivityTypes.length >= 1;
+
             }
           },
           date: {},
@@ -301,10 +305,8 @@
             validateDate() {
               let startDate = new Date(this.durationForm.startDate);
               let endDate = new Date(this.durationForm.endDate);
-              if (startDate > endDate) {
-                return false;
-              }
-              return true;
+              return startDate <= endDate;
+
             }
           },
           startTime: {},
@@ -313,7 +315,7 @@
               let startTime = this.durationForm.startTime;
               //let startDate = new Date(this.durationForm.startDate);
               //let endDate = new Date(this.durationForm.endDate);
-              if (this.durationForm.startDate == this.durationForm.endDate) {
+              if (this.durationForm.startDate === this.durationForm.endDate) {
                 if (val && startTime) {
                   let splitStartTime = startTime.split(":");
                   let splitEndTime = val.split(":");
@@ -342,7 +344,7 @@
             this.hashtag.options = [];
             return;
           }
-          if (value[0] == "#") {
+          if (value[0] === "#") {
             value = value.substr(1);
           }
           if (value.length > 2) {
@@ -369,7 +371,7 @@
             currentObj.form.name = response.data.activityName;
             currentObj.form.description = response.data.description;
             currentObj.form.selectedActivityTypes = response.data.activityTypes;
-            if (response.data.continuous == false) {
+            if (response.data.continuous === false) {
               currentObj.isContinuous = '1';
               [currentObj.durationForm.startDate,
                 currentObj.durationForm.startTime] = currentObj.convertISOtoDateTime(
@@ -381,9 +383,11 @@
             } else {
               currentObj.isContinuous = '0';
             }
-            currentObj.locationData = response.data.location;
+            if (response.data.location) {
+              currentObj.locationData = response.data.location;
+            }
             if (response.data.tags.length > 0) {
-              for (var i = 0; i < response.data.tags.length; i++) {
+              for (let i = 0; i < response.data.tags.length; i++) {
                 currentObj.hashtag.values.push("#" + response.data.tags[i].name);
               }
             }
@@ -404,7 +408,7 @@
           return $dirty ? !$error : null;
         },
         addActivityType() {
-          if (this.form.selectedActivityType == 0) {
+          if (this.form.selectedActivityType === 0) {
             return;
           }
           if (!this.form.selectedActivityTypes.includes(this.form.selectedActivityType)) {
@@ -435,8 +439,8 @@
             location: this.locationData,
             hashtags: this.hashtag.values,
             metrics: this.$refs.metric_editor.getMetricData()
-          }
-          if (this.isContinuous == '0') {
+          };
+          if (this.isContinuous === '0') {
             api.updateActivity(userId, this.activityId, data)
             .then(function (response) {
               console.log(response);
@@ -456,7 +460,7 @@
               return;
             }
             const isoDates = this.getISODates();
-            let data = {
+            data = {
               activity_name: this.form.name,
               description: this.form.description,
               activity_type: this.form.selectedActivityTypes,
@@ -483,45 +487,23 @@
           }
         },
         getISODates: function () {
-          console.log(this.durationForm.startDate)
-          let startDate = new Date(this.durationForm.startDate);
-          let endDate = new Date(this.durationForm.endDate);
-
-          // wind it back to previous date to align with local date time
-          startDate.setDate(startDate.getDate() - 1);
-          endDate.setDate(endDate.getDate() - 1);
-
-          if (this.durationForm.startTime != "" && this.durationForm.startTime != null) {
-            startDate = new Date(
-                this.durationForm.startDate + " " + this.durationForm.startTime + " UTC");
+          let startDateISO;
+          if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
+              || this.durationForm.startTime === "") {
+            startDateISO = this.durationForm.startDate + "T" + "00:00" + ":00+1200"
+          } else {
+            startDateISO = this.durationForm.startDate + "T" + this.durationForm.startTime
+                + ":00+1200";
           }
 
-          if (this.durationForm.endTime != "" && this.durationForm.startTime != null) {
-            endDate = new Date(this.durationForm.endDate + " " + this.durationForm.endTime + " UTC");
+          let endDateISO;
+          if (this.durationForm.endTime === "00:00" || this.durationForm.endTime == null
+              || this.durationForm.endTime === "") {
+            endDateISO = this.durationForm.endDate + "T" + "00:00" + ":00+1200"
+          } else {
+            endDateISO = this.durationForm.endDate + "T" + this.durationForm.endTime + ":00+1200";
           }
 
-          let startDateISO = startDate.toISOString().slice(0, -5);
-          let endDateISO = endDate.toISOString().slice(0, -5);
-
-          var currentTime = new Date();
-          const offset = (currentTime.getTimezoneOffset());
-
-          const currentTimezone = (offset / 60) * -1;
-          if (currentTimezone !== 0) {
-            startDateISO += currentTimezone > 0 ? '+' : '';
-            endDateISO += currentTimezone > 0 ? '+' : '';
-          }
-          startDateISO += currentTimezone.toString() + "00";
-          endDateISO += currentTimezone.toString() + "00";
-
-          if (this.durationForm.startTime == "" || this.durationForm.startTime == null) {
-            startDateISO = startDateISO.substring(0, 11) + "24" + startDateISO.substring(13,
-                startDateISO.length);
-          }
-          if (this.durationForm.endTime == "" || this.durationForm.endTime == null) {
-            endDateISO = endDateISO.substring(0, 11) + "24" + endDateISO.substring(13,
-                endDateISO.length);
-          }
           return [startDateISO, endDateISO];
         },
         convertISOtoDateTime: function (ISODate) {
@@ -610,24 +592,6 @@
 <style scoped>
     [v-cloak] {
       display: none;
-    }
-
-    .container {
-      background-color: #f2f2f2;
-      padding: 20px 20px 20px 20px;
-      border: 1px solid lightgrey;
-      border-radius: 3px;
-    }
-
-    .invisible-btn {
-      background-color: Transparent;
-      background-repeat: no-repeat;
-      border: none;
-      cursor: pointer;
-      overflow: hidden;
-      outline: none;
-      color: blue;
-      font-size: 14px;
     }
 
     .feedback {
