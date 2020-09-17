@@ -100,23 +100,17 @@ public class ActivityPathController {
 
         List<Location> locations = new ArrayList<>();
 
-        List<Location> fakeLocations = new ArrayList<>();
-
-        fakeLocations.add(new Location());
-        fakeLocations.add(new Location());
-
-        Path path = new Path(activity, fakeLocations, request.type);
-
         try {
             for (LocationUpdateRequest locationUpdateRequest : request.locations) {
                 Location location = new Location(locationUpdateRequest.latitude, locationUpdateRequest.longitude);
-                location.setPath(path);
                 location = locationRepository.save(location);
                 locations.add(location);
             }
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid location data", HttpStatus.BAD_REQUEST);
         }
+
+        Path path = new Path(activity, locations, request.type);
 
         path.setLocations(locations);
 
