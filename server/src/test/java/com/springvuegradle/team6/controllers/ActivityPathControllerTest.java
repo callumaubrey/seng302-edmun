@@ -108,7 +108,7 @@ public class ActivityPathControllerTest {
                         + "          \"longitude\": 172.839847\n"
                         + "     }\n"
                         + "  ],\n"
-                        + "  \"pathType\": \"straight\"\n"
+                        + "  \"pathType\": \"STRAIGHT\"\n"
                         + "}";
 
         mvc.perform(
@@ -155,7 +155,7 @@ public class ActivityPathControllerTest {
                         + "          \"longitude\": 172.839847\n"
                         + "     }\n"
                         + "  ],\n"
-                        + "  \"pathType\": \"straight\"\n"
+                        + "  \"pathType\": \"STRAIGHT\"\n"
                         + "}";
 
         mvc.perform(
@@ -252,7 +252,7 @@ public class ActivityPathControllerTest {
                         + "          \"longitude\": 172.839847\n"
                         + "     }\n"
                         + "  ],\n"
-                        + "  \"pathType\": \"straight\"\n"
+                        + "  \"pathType\": \"STRAIGHT\"\n"
                         + "}";
 
         mvc.perform(

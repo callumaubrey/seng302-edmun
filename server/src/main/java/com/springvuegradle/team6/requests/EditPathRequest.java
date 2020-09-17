@@ -18,29 +18,22 @@ public class EditPathRequest {
     @Size(min = 2)
     @NotNull
     @JsonProperty("coordinates")
-    private List<PathCoordinateRequest> coordinates;
+    private List<Location> coordinates;
 
+    @NotNull
     @JsonProperty("pathType")
-    private String pathType;
+    private PathType pathType;
 
-    public Path generatePath(Activity activity, LocationRepository locationRepository, PathRepository pathRepository) {
+    public Path generatePath(Activity activity, LocationRepository locationRepository) {
         ArrayList<Location> pathCoordinates = new ArrayList<>();
-        for (int i = 0; i < coordinates.size(); i++) {
-            Location pathPoint = new Location(coordinates.get(i).getLatitude(), coordinates.get(i).getLongitude());
-            pathPoint = locationRepository.save(pathPoint);
-            pathCoordinates.add(pathPoint);
+        for (Location location : coordinates) {
+            location = locationRepository.save(location);
+            pathCoordinates.add(location);
         }
-        Path finalPath = new Path(activity, pathCoordinates, PathType.STRAIGHT);
-
-        if (pathType.equals("straight")) {
-            finalPath.setType(PathType.STRAIGHT);
-        } else {
-            finalPath.setType(PathType.DEFINED);
-        }
-        return finalPath;
+        return new Path(activity, pathCoordinates, pathType);
     }
 
-    public List<PathCoordinateRequest> getCoordinates() { return coordinates; }
+    public List<Location> getCoordinates() { return coordinates; }
 
-    public String getPathType() { return pathType; }
+    public PathType getPathType() { return pathType; }
 }

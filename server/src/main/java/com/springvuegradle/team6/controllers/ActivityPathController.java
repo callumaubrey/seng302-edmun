@@ -2,19 +2,14 @@ package com.springvuegradle.team6.controllers;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Path;
-import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.repositories.*;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
 import com.springvuegradle.team6.requests.EditPathRequest;
-import com.springvuegradle.team6.requests.PathCoordinateRequest;
-import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -88,15 +83,9 @@ public class ActivityPathController {
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
         }
-        if (!validatePathRequest(request.getCoordinates(), request.getPathType())) {
-            return new ResponseEntity<>(
-                    "Coordinates are not valid",
-                    HttpStatus.BAD_REQUEST);
-        }
-
         Path oldPath = pathRepository.findByActivity_Id(activityId);
 
-        Path newPath = request.generatePath(activity, locationRepository, pathRepository);
+        Path newPath = request.generatePath(activity,locationRepository);
         newPath = pathRepository.save(newPath);
         activity.setPath(newPath);
         activityRepository.save(activity);
@@ -105,34 +94,6 @@ public class ActivityPathController {
             pathRepository.delete(oldPath);
         }
 
-
         return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
-    }
-
-    /** This helper method is used to check all coordinates and path type in the request are valid before entering the logic.
-     * to ensure no logic begins before checking validity.
-     *
-     * @param coordinates coordinates in the request
-     * @param type path type in the request
-     * @return true if valid, false otherwise
-     */
-    public boolean validatePathRequest(List<PathCoordinateRequest> coordinates, String type) {
-        boolean valid = true;
-        for (PathCoordinateRequest coordinate : coordinates) {
-            if (coordinate.getLatitude() < -90 || coordinate.getLatitude() > 90) {
-                valid = false;
-                break;
-            }
-            if (coordinate.getLongitude() < -180 || coordinate.getLongitude() > 180) {
-                valid = false;
-                break;
-            }
-        }
-        if (!type.equals("straight")) {
-            if (!type.equals("defined")) {
-                valid = false;
-            }
-        }
-        return valid;
     }
 }
