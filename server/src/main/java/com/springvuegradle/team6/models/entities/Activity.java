@@ -36,19 +36,19 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
     name = "activityAnalyzer",
     tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
     filters = {
-        @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-        @TokenFilterDef(
-            factory = EdgeNGramFilterFactory.class,
-            params = {
-                @Parameter(name = "minGramSize", value = "1"),
-                @Parameter(name = "maxGramSize", value = "30")
-            })
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(
+          factory = EdgeNGramFilterFactory.class,
+          params = {
+            @Parameter(name = "minGramSize", value = "1"),
+            @Parameter(name = "maxGramSize", value = "30")
+          })
     })
 @AnalyzerDef(
     name = "activityQueryAnalyzer",
     tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
     filters = {
-        @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
     })
 public class Activity implements Serializable {
 
@@ -57,9 +57,7 @@ public class Activity implements Serializable {
   public static final int DESCRIPTION_MAX_LENGTH = 2048;
   private static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
-  /**
-   * This constructor is used for testing purposes only
-   */
+  /** This constructor is used for testing purposes only */
   public Activity() {
     Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
@@ -164,7 +162,9 @@ public class Activity implements Serializable {
   @ManyToOne
   private Location location;
 
-  @Column(columnDefinition = "datetime default NOW()")
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
+  @Column(columnDefinition = "datetime default CURRENT_TIMESTAMP()")
   private LocalDateTime creationDate;
 
   /** Map activity id to user id to create profile_subscriptions table in database */
@@ -346,7 +346,11 @@ public class Activity implements Serializable {
     this.creationDate = creationDate;
   }
 
-  public Path getPath() { return path; }
+  public Path getPath() {
+    return path;
+  }
 
-  public void setPath(Path path) { this.path = path; }
+  public void setPath(Path path) {
+    this.path = path;
+  }
 }

@@ -1276,4 +1276,21 @@ public class SearchActivityControllerTest {
     Assertions.assertEquals(
         "Cannot sort by location when no original location is provided", mvcResponse);
   }
+
+  @Test
+  void getActivityNoParametersReturnInCreationDateOrderReturnStatusOk() throws Exception {
+    String response =
+        mvc.perform(MockMvcRequestBuilders.get("/activities").session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    JSONArray arr = obj.getJSONArray("results");
+    org.junit.jupiter.api.Assertions.assertEquals(5, arr.length());
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "Restricted activity", arr.getJSONObject(0).getString("activityName"));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "Kaikoura Coast Track race", arr.getJSONObject(arr.length() - 1).getString("activityName"));
+  }
 }

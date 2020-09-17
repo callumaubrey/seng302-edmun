@@ -71,7 +71,8 @@ public class SearchActivityController {
 
   /**
    * This endpoint is used for searching for an activity. Anyone that is logged in can use this
-   * endpoint.
+   * endpoint. If no request parameters are provided, then it will return all activities by most
+   * recently created.
    *
    * <p>API example:
    * /activities?name=biking&hashtags=biking_is_cool%20hotday&hashtags-method=or&types=bike%20run&types-method=and&time=duration&start-date=20200812&end-date=20201029&limit=10&offset=0&lon=10.0234&lat=52.23423&radius=10&sort=closest_location
@@ -294,7 +295,8 @@ public class SearchActivityController {
 
   /**
    * This endpoint is used for finding how many activities will return from the specified
-   * parameters. Anyone that is logged in can use this endpoint.
+   * parameters. Anyone that is logged in can use this endpoint. If no request parameters are
+   * provided, it will return the number of activities in the database.
    *
    * <p>API example:
    * /activities/count?name=biking&hashtags=biking_is_cool%20hotday&hashtags-method=or&types=bike%20run&types-method=and&time=duration&start-date=20200812&end-date=20201029&lon=10.0234&lat=52.23423&radius=10sort=closest_location

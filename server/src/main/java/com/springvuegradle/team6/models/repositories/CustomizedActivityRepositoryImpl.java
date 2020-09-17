@@ -20,8 +20,9 @@ import org.hibernate.search.spatial.DistanceSortField;
 
 /**
  * Implements CustomizedActivityRepository
+ *
  * @see com.springvuegradle.team6.models.repositories.CustomizedActivityRepository
- **/
+ */
 public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepository {
   @PersistenceContext private EntityManager em;
   private static final String CONTINUOUS = "continuous";
@@ -89,11 +90,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             radius,
             sortActivity);
 
-    List<Activity> result = new ArrayList<>();
-    if (jpaQuery != null) {
-      result = jpaQuery.getResultList();
-    }
-    return result;
+    return (List<Activity>) jpaQuery.getResultList();
   }
 
   /**
@@ -151,11 +148,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             radius,
             sortActivity);
 
-    int count = 0;
-    if (jpaQuery != null) {
-      count = jpaQuery.getResultSize();
-    }
-    return count;
+    return jpaQuery.getResultSize();
   }
 
   /**
@@ -210,7 +203,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             .getSearchFactory()
             .buildQueryBuilder()
             .forEntity(Activity.class)
-            .overridesForField( "activity_name", "activityQueryAnalyzer" )
+            .overridesForField("activity_name", "activityQueryAnalyzer")
             .get();
 
     org.apache.lucene.search.Query finalQuery = null;
@@ -250,14 +243,6 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       }
     }
 
-    if (finalQuery != null) {
-      BooleanJunction<?> visibilityQuery = addVisibilityQuery(queryBuilder, profileId, isAdmin);
-      if (visibilityQuery != null) {
-        finalQuery =
-            queryBuilder.bool().must(finalQuery).must(visibilityQuery.createQuery()).createQuery();
-      }
-    }
-
     if (longitude != null && latitude != null && radius != null) {
       BooleanJunction<?> locationQuery =
           addLocationQuery(queryBuilder, longitude, latitude, radius);
@@ -269,24 +254,33 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       }
     }
 
-    if (finalQuery != null) {
-      org.apache.lucene.search.Sort sort = sortingMethod(sortActivity, latitude, longitude);
-
-      org.hibernate.search.jpa.FullTextQuery jpaQuery =
-          fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
-
-      jpaQuery.setSort(sort);
-
-      if (limit != -1) {
-        jpaQuery.setMaxResults(limit);
-      }
-      if (offset != -1) {
-        jpaQuery.setFirstResult(offset);
-      }
-
-      return jpaQuery;
+    // If all search parameters are null
+    if (finalQuery == null) {
+      finalQuery = queryBuilder.all().createQuery();
     }
-    return null;
+
+    // Ensure that only activities that user are allowed to see are returned
+    BooleanJunction<?> visibilityQuery = addVisibilityQuery(queryBuilder, profileId, isAdmin);
+    if (visibilityQuery != null) {
+      finalQuery =
+          queryBuilder.bool().must(finalQuery).must(visibilityQuery.createQuery()).createQuery();
+    }
+
+    org.apache.lucene.search.Sort sort = sortingMethod(sortActivity, latitude, longitude);
+
+    org.hibernate.search.jpa.FullTextQuery jpaQuery =
+        fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
+
+    jpaQuery.setSort(sort);
+
+    if (limit != -1) {
+      jpaQuery.setMaxResults(limit);
+    }
+    if (offset != -1) {
+      jpaQuery.setFirstResult(offset);
+    }
+
+    return jpaQuery;
   }
 
   /**
@@ -404,14 +398,21 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
           queryBuilder
               .keyword()
               .onField("visibility")
+              .boostedTo(0)
               .matching(VisibilityType.Public)
               .createQuery();
       Query ownActivityQuery =
-          queryBuilder.keyword().onField("profile").matching(profileId.toString()).createQuery();
+          queryBuilder
+              .keyword()
+              .onField("profile")
+              .boostedTo(0)
+              .matching(profileId.toString())
+              .createQuery();
       Query hasAccessToActivityQuery =
           queryBuilder
               .keyword()
               .onField("activityRole.profile")
+              .boostedTo(0)
               .matching(profileId.toString())
               .createQuery();
       booleanJunction.should(hasAccessToActivityQuery);
@@ -458,57 +459,66 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
   private org.apache.lucene.search.Sort sortingMethod(
       SortActivity sortActivity, Double latitude, Double longitude) {
     org.apache.lucene.search.Sort sort;
+    SortField sortFieldId = new SortField("id", SortField.Type.STRING, true);
+    SortField sortFieldCreationDate = new SortField("creationDate", SortField.Type.STRING, true);
+
     if (sortActivity != null) {
       switch (sortActivity) {
         case EARLIEST_START_DATE:
           sort =
               new Sort(
                   new SortField(START_TIME, SortField.Type.STRING),
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldCreationDate,
+                  sortFieldId);
           break;
         case LATEST_START_DATE:
           sort =
               new Sort(
                   new SortField(START_TIME, SortField.Type.STRING, true),
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldCreationDate,
+                  sortFieldId);
           break;
         case EARLIEST_END_DATE:
           sort =
               new Sort(
                   new SortField(END_TIME, SortField.Type.STRING),
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldCreationDate,
+                  sortFieldId);
           break;
         case LATEST_END_DATE:
           sort =
               new Sort(
                   new SortField(END_TIME, SortField.Type.STRING, true),
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldCreationDate,
+                  sortFieldId);
           break;
         case CLOSEST_LOCATION:
           sort =
               new Sort(
                   new DistanceSortField(latitude, longitude, LOCATION),
                   SortField.FIELD_SCORE,
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldId);
           break;
         case FURTHEST_LOCATION:
           sort =
               new Sort(
                   new DistanceSortField(latitude, longitude, LOCATION, true),
                   SortField.FIELD_SCORE,
-                  new SortField("id", SortField.Type.STRING, true));
+                  sortFieldCreationDate,
+                  sortFieldId);
           break;
         default:
-          sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+          sort = new Sort(SortField.FIELD_SCORE, sortFieldCreationDate, sortFieldId);
       }
     } else if (longitude != null && latitude != null) {
       sort =
           new Sort(
               new DistanceSortField(latitude, longitude, LOCATION),
               SortField.FIELD_SCORE,
-              new SortField("id", SortField.Type.STRING, true));
+              sortFieldCreationDate,
+              sortFieldId);
     } else {
-      sort = new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
+      sort = new Sort(SortField.FIELD_SCORE, sortFieldCreationDate, sortFieldId);
     }
     return sort;
   }
