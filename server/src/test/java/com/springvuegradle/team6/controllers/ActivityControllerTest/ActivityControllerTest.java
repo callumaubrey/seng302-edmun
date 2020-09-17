@@ -7,22 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.controllers.TestDataGenerator;
-import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.ActivityRole;
-import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.SubscribeMethod;
-import com.springvuegradle.team6.models.entities.SubscriptionHistory;
-import com.springvuegradle.team6.models.entities.Tag;
-import com.springvuegradle.team6.models.entities.VisibilityType;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
-import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
-import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.models.entities.*;
+import com.springvuegradle.team6.models.repositories.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +51,10 @@ class ActivityControllerTest {
   @Autowired private SubscriptionHistoryRepository subscriptionHistoryRepository;
 
   @Autowired private TagRepository tagRepository;
+
+  @Autowired private PathRepository pathRepository;
+
+  @Autowired private LocationRepository locationRepository;
 
   @Autowired private MockMvc mvc;
   @Autowired private ObjectMapper mapper;

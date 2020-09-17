@@ -9,6 +9,8 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.PathRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,7 +120,8 @@ public class ActivityPathControllerTest {
                         .session(session))
                 .andExpect(status().isOk());
 
-        Path path = pathRepository.findByActivity_Id(activityId);
+
+        Path path = activityRepository.findById(activityId).get().getPath();
         Location location1 = locationRepository.findByLatitudeAndLongitude(-43.525650, 172.639847).get();
         Location location2 = locationRepository.findByLatitudeAndLongitude(-43.825650, 172.839847).get();
 
@@ -138,7 +141,7 @@ public class ActivityPathControllerTest {
         List<Location> oldLocations = new ArrayList<Location>();
         oldLocations.add(location1);
         oldLocations.add(location2);
-        Path oldPath = new Path(activity, oldLocations, PathType.STRAIGHT);
+        Path oldPath = new Path(oldLocations, PathType.STRAIGHT);
         oldPath = pathRepository.save(oldPath);
         activity.setPath(oldPath);
         activity = activityRepository.save(activity);
@@ -165,7 +168,7 @@ public class ActivityPathControllerTest {
                         .session(session))
                 .andExpect(status().isOk());
 
-        Path path = pathRepository.findByActivity_Id(activityId);
+        Path path = activityRepository.findById(activityId).get().getPath();
         Assert.assertTrue(locationRepository.findByLatitudeAndLongitude(-43.525650, 172.639847).isPresent());
         Assert.assertFalse(locationRepository.findByLatitudeAndLongitude(-20.5, 20.5).isPresent());
     }
@@ -261,6 +264,58 @@ public class ActivityPathControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getActivityPathFromValidActivityReturnsStatusOK() throws Exception {
+        Location start = new Location(0,0);
+        Location end = new Location(45,45);
+        locationRepository.save(start);
+        locationRepository.save(end);
+        ArrayList<Location> pathLocations = new ArrayList<>();
+        pathLocations.add(start);
+        pathLocations.add(end);
+
+        Path path = new Path();
+        path.setType(PathType.STRAIGHT);
+        path.setLocations(pathLocations);
+        pathRepository.save(path);
+
+        Activity activity = new Activity();
+        activity.setPath(path);
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+
+
+        String response = mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        JSONObject responseJSON = new JSONObject(response);
+        JSONArray locationsJSON = (JSONArray)responseJSON.get("locations");
+        String    typeJSON = responseJSON.getString("type");
+
+        org.junit.jupiter.api.Assertions.assertEquals(2, locationsJSON.length());
+        org.junit.jupiter.api.Assertions.assertEquals("STRAIGHT", typeJSON);
+    }
+
+    @Test
+    void getNonExistentActivityPathFromValidActivityReturnsStatusNotFound() throws Exception {
+        Activity activity = new Activity();
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isNotFound());
+
+
     }
 
 }
