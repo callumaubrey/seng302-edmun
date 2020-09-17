@@ -140,7 +140,7 @@
                 <b-card style="margin: 1em">
                   <b-row align-h="center">
                     <b-col>
-                      <MapPane ref="mapPane" v-if="this.location"></MapPane>
+                      <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
                       <b-card-body v-else>No Location</b-card-body>
                     </b-col>
                   </b-row>
@@ -419,9 +419,17 @@ const App = {
       }
       // checking if activity has a location to put on the map
       if (this.location !== null) {
+        let content = {
+          activityTypes: this.activity.activityTypes,
+          startTime: this.activity.startTime
+        };
 
-        map.createMarker(2, 2, this.location.latitude, this.location.longitude,this.activity, this.activityName);
+        map.createMarker(2, 2, this.location.latitude, this.location.longitude, content, this.activityName);
         map.setMapCenter(this.location.latitude, this.location.longitude);
+      }
+
+      if(this.activity.path !== null) {
+        map.setPath(this.activity.path, false);
       }
     }
 
