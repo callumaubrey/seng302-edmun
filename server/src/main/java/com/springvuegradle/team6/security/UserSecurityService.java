@@ -2,6 +2,7 @@ package com.springvuegradle.team6.security;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
@@ -45,6 +46,28 @@ public class UserSecurityService {
                       (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
                           || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
       return isAdmin;
+    }
+    return true;
+  }
+
+  public static boolean checkIsAdminOrCreatorOrOrganiser(Integer sessionId, Integer creatorId, Integer activityId, ActivityRoleRepository roleRepository) {
+    if (!(sessionId.toString().equals(creatorId.toString()))) {
+      Collection<SimpleGrantedAuthority> userRoles =
+              (Collection<SimpleGrantedAuthority>)
+                      SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+      boolean isAdmin =
+              userRoles.stream()
+                      .anyMatch(
+                              simpleGrantedAuthority ->
+                                      (simpleGrantedAuthority.getAuthority().equals("ROLE_ADMIN")
+                                              || simpleGrantedAuthority.getAuthority().equals("ROLE_USER_ADMIN")));
+      if (!isAdmin) {
+        ActivityRole role = roleRepository.findByProfile_IdAndActivity_Id(sessionId, activityId);
+        if (role != null) {
+          boolean organiser = role.getActivityRoleType() == ActivityRoleType.Organiser;
+            return organiser;
+        }
+      }
     }
     return true;
   }

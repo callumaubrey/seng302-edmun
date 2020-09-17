@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.Path;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.EditPathRequest;
+import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,17 +41,20 @@ public class ActivityPathController {
     private final ActivityRepository activityRepository;
     private final PathRepository pathRepository;
     private final LocationRepository locationRepository;
+    private final ActivityRoleRepository roleRepository;
 
 
     ActivityPathController(
             ProfileRepository profileRepository,
             ActivityRepository activityRepository,
             PathRepository pathRepository,
-            LocationRepository locationRepository) {
+            LocationRepository locationRepository,
+            ActivityRoleRepository roleRepository) {
         this.profileRepository = profileRepository;
         this.activityRepository = activityRepository;
         this.pathRepository = pathRepository;
         this.locationRepository = locationRepository;
+        this.roleRepository = roleRepository;
     }
 
     /**
@@ -78,7 +82,7 @@ public class ActivityPathController {
         }
         Activity activity = optionalActivity.get();
 
-        if (!activity.getProfile().getId().equals((Integer) id)) {
+        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, roleRepository)) {
             return new ResponseEntity<>(
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
