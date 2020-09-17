@@ -67,6 +67,7 @@ public class UserSecurityService {
           boolean organiser = role.getActivityRoleType() == ActivityRoleType.Organiser;
             return organiser;
         }
+        return false;
       }
     }
     return true;
