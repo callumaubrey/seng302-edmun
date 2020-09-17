@@ -248,7 +248,7 @@
              *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title, draggable) {
+            createMarker(id, iconColour, lat, lng, content, title, draggable, distanceToNext) {
                 //Check inputs and set position and icon
                 let icon = null;
                 let coordinates = [lat, lng];
@@ -266,6 +266,9 @@
                 if (draggable == null){
                   draggable = false
                 }
+                if (distanceToNext == null) {
+                    distanceToNext = 0
+                }
 
                 //Adds the marker to the markers list to be displayed
                 this.markers.push({
@@ -275,7 +278,8 @@
                     icon: icon,
                     content: content,
                     title: title,
-                    draggable: draggable
+                    draggable: draggable,
+                    distanceToNext: distanceToNext
                 })
             },
             /**
@@ -284,6 +288,13 @@
              **/
             getLatestMarker() {
                 return this.markers[this.markers.length - 1]
+            },
+            /**
+             * Gets latest marker that the user has inputted
+             *
+             **/
+            setDistanceOfLatestMarker(distanceToNext) {
+                this.markers[this.markers.length - 1].distanceToNext = distanceToNext
             },
 
             /**
@@ -302,6 +313,7 @@
              *
              **/
             updateStartFinishMarkers() {
+                this.setDistanceOfLatestMarker(0)
                 if (this.markers.length == 2) {
                     this.markers[0].icon = this.pathStartMarker
                     this.markers[1].icon = this.pathEndMarker
@@ -345,6 +357,14 @@
              **/
             setMarkers(markers) {
                 this.markers = markers
+            },
+
+            /**
+             * Sets markers with given parameter
+             *
+             **/
+            updateMarkersPosition(coordinates, index) {
+                this.markers[index].position = coordinates
             },
 
             /**
@@ -427,7 +447,16 @@
                 this.markers[index].position = newCoords
                 this.$parent.handleDragEvent(index, newCoords)
             },
-        },
+
+            updateDistancesBetweenPoints() {
+                for (let i = 0; i < this.markers.length - 1; i++) {
+                    const latlng = L.latLng(this.markers[i].position)
+                    const distanceToNext = latlng.distanceTo(L.latLng(this.markers[i + 1].position))
+                    this.markers[i].distanceToNext = distanceToNext / 1000
+                }
+                }
+
+            },
 
         /**
          * Refresh the map everytime the map is rendered by vue.
