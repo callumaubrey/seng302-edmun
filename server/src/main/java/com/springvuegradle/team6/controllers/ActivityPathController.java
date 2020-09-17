@@ -100,4 +100,35 @@ public class ActivityPathController {
 
         return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
     }
+
+    /**
+     * Returns an activities path if it exists
+     * 401 UNAUTHORIZED: If session id is empty
+     * 404 NOT_FOUND:  If activity does not exist or path does not exist.
+     * @param profileId activity owners id
+     * @param activityId activity id
+     * @param session session data
+     * @return Activity path if exists otherwise 4xx error
+     */
+    @GetMapping("/profiles/{profileId}/activities/{activityId}/path")
+    public ResponseEntity getActivityPath(
+        @PathVariable int profileId,
+        @PathVariable int activityId,
+        HttpSession session) {
+
+        // Check user is logged in
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check Path exists
+        Optional<Path> optionalPath = Optional.ofNullable(pathRepository.findByActivity_Id(activityId));
+        if (optionalPath.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Path path = optionalPath.get();
+
+        return ResponseEntity.ok(path);
+    }
 }

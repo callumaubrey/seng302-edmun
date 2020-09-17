@@ -9,6 +9,8 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.PathRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -261,6 +263,58 @@ public class ActivityPathControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getActivityPathFromValidActivityReturnsStatusOK() throws Exception {
+        Location start = new Location(0,0);
+        Location end = new Location(45,45);
+        locationRepository.save(start);
+        locationRepository.save(end);
+        ArrayList<Location> pathLocations = new ArrayList<>();
+        pathLocations.add(start);
+        pathLocations.add(end);
+
+        Activity activity = new Activity();
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+        Path path = new Path();
+        path.setType(PathType.STRAIGHT);
+        path.setLocations(pathLocations);
+        path.setActivity(activity);
+        pathRepository.save(path);
+
+
+
+        String response = mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        JSONObject responseJSON = new JSONObject(response);
+        JSONArray locationsJSON = (JSONArray)responseJSON.get("locations");
+        String    typeJSON = responseJSON.getString("type");
+
+        org.junit.jupiter.api.Assertions.assertEquals(2, locationsJSON.length());
+        org.junit.jupiter.api.Assertions.assertEquals("STRAIGHT", typeJSON);
+    }
+
+    @Test
+    void getNonExistentActivityPathFromValidActivityReturnsStatusNotFound() throws Exception {
+        Activity activity = new Activity();
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isNotFound());
+
+
     }
 
 }
