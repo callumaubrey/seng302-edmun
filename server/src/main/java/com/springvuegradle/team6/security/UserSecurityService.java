@@ -2,6 +2,7 @@ package com.springvuegradle.team6.security;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityRole;
+import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
@@ -47,6 +48,19 @@ public class UserSecurityService {
       return isAdmin;
     }
     return true;
+  }
+
+  public static boolean checkIsAdminOrCreatorOrOrganiser(Integer sessionId, Integer creatorId, Integer activityId, ActivityRoleRepository roleRepository) {
+     boolean isAdminOrCreator = checkIsAdminOrCreator(sessionId, creatorId);
+      if (!isAdminOrCreator) {
+        ActivityRole role = roleRepository.findByProfile_IdAndActivity_Id(sessionId, activityId);
+        if (role != null) {
+          boolean organiser = role.getActivityRoleType() == ActivityRoleType.Organiser;
+            return organiser;
+        }
+        return false;
+      }
+      return true;
   }
 
   /**
