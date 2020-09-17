@@ -9,7 +9,7 @@ import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.requests.AddRoleRequest;
-import com.springvuegradle.team6.requests.AdminEditPasswordRequest;
+import com.springvuegradle.team6.requests.ChangePasswordWithoutOldPasswordRequest;
 import com.springvuegradle.team6.requests.DeleteProfileRequest;
 import com.springvuegradle.team6.requests.DeleteRoleRequest;
 import com.springvuegradle.team6.requests.*;
@@ -148,7 +148,7 @@ public class AdminController {
    */
   @PutMapping("/profiles/{profileId}/password")
   public ResponseEntity<String> adminEditPassword(
-      @PathVariable Integer profileId, @Valid @RequestBody AdminEditPasswordRequest request) {
+      @PathVariable Integer profileId, @Valid @RequestBody ChangePasswordWithoutOldPasswordRequest request) {
 
     if (profileRepository.findById(profileId).isPresent()) {
       Profile profile = profileRepository.findById(profileId).get();
