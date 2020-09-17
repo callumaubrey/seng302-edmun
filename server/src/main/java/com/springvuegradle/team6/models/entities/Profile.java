@@ -85,8 +85,6 @@ public class Profile {
   @JsonIgnore
   private Location publicLocation;
 
-  @ManyToOne @JsonIgnore private Location publicLocation;
-
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
   @ElementCollection(targetClass = ActivityType.class)
