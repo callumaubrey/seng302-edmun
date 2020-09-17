@@ -25,13 +25,6 @@ import java.util.Properties;
 @SpringBootApplication
 public class Application {
 
-	@Autowired
-	ConfigProperties configProp;
-
-	private String edmunEmail = configProp.getConfigValue("spring.mail.username");
-
-	private String edmunPassword = configProp.getConfigValue("spring.mail.password");
-
 	public static void main(String[] args) {
 		System.setProperty("spring.profiles.default", "production");
 		SpringApplication.run(Application.class, args);
@@ -53,12 +46,10 @@ public class Application {
 	}
 
 	@Bean
-	public JavaMailSender getJavaMailSender() {
+	public JavaMailSenderImpl getJavaMailSender() {
 		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 		mailSender.setHost("smtp.gmail.com");
 		mailSender.setPort(587);
-		mailSender.setUsername(edmunEmail);
-		mailSender.setPassword(edmunPassword);
 
 		Properties props = mailSender.getJavaMailProperties();
 		props.put("mail.transport.protocol", "smtp");
