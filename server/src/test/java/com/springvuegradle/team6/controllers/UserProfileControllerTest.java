@@ -3,9 +3,11 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.PasswordToken;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.models.repositories.PasswordTokenRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.*;
 
@@ -28,6 +30,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,6 +53,9 @@ class UserProfileControllerTest {
 
   @Autowired
   private GoogleAPIServiceMocking googleAPIService;
+
+  @Autowired
+  private PasswordTokenRepository passwordTokenRepository;
 
   private CreateProfileRequest getDummyProfile() {
     CreateProfileRequest validRequest = new CreateProfileRequest();
@@ -995,5 +1001,59 @@ class UserProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     String address =((JSONObject)obj.get("location")).get("name").toString();
     org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
+  }
+
+  @Test
+  void testResetPasswordCheckTokenSaved() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe1@gmail.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+  }
+
+  @Test
+  void testResetPasswordEmailDoesNotExist() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe@gmail.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
   }
 }
