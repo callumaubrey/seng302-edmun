@@ -5,6 +5,7 @@ import com.springvuegradle.team6.models.entities.LoginAttempt;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.LoginAttemptRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +70,37 @@ public class LoginAttemptRepositoryTest {
     profile.setLockStatus(true);
     isLocked = loginAttemptRepository.isProfileLocked(profile.getId());
     org.junit.jupiter.api.Assertions.assertTrue(isLocked);
+  }
+
+  @Test
+  void findByProfileIdGreaterThanTimeReturnsLoginAttempts() {
+    Profile profile = createDummyProfile();
+    LocalDateTime time = LocalDateTime.now();
+    LoginAttempt loginAttempt1 = new LoginAttempt(profile);
+    LoginAttempt loginAttempt2 = new LoginAttempt(profile);
+    LoginAttempt loginAttempt3 = new LoginAttempt(profile);
+    loginAttemptRepository.save(loginAttempt1);
+    loginAttemptRepository.save(loginAttempt2);
+    loginAttemptRepository.save(loginAttempt3);
+
+    List<LoginAttempt> attemptList = loginAttemptRepository.findByProfileIdGreaterThanTime(profile.getId(), time);
+    org.junit.jupiter.api.Assertions.assertEquals(3, attemptList.size());
+  }
+
+
+  @Test
+  void findByProfileIdGreaterThanTimeReturnsNoLoginAttempts() {
+    Profile profile = createDummyProfile();
+    LoginAttempt loginAttempt1 = new LoginAttempt(profile);
+    LoginAttempt loginAttempt2 = new LoginAttempt(profile);
+    LoginAttempt loginAttempt3 = new LoginAttempt(profile);
+    loginAttemptRepository.save(loginAttempt1);
+    loginAttemptRepository.save(loginAttempt2);
+    loginAttemptRepository.save(loginAttempt3);
+    LocalDateTime time = LocalDateTime.now();
+
+    List<LoginAttempt> attemptList = loginAttemptRepository.findByProfileIdGreaterThanTime(profile.getId(), time);
+    org.junit.jupiter.api.Assertions.assertEquals(0, attemptList.size());
   }
 
 

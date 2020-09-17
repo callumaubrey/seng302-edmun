@@ -43,6 +43,14 @@ public class LoginAttempt {
     this.timestamp = LocalDateTime.now();
   }
 
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public void setTimestamp(LocalDateTime timestamp) {
+    this.timestamp = timestamp;
+  }
+
   // ----------- GETTERS -------------------------------------
   public Profile getProfile() {
     return this.profile;
@@ -50,5 +58,9 @@ public class LoginAttempt {
 
   public LocalDateTime getTimestamp() {
     return this.timestamp;
+  }
+
+  public Integer getId() {
+    return id;
   }
 }
