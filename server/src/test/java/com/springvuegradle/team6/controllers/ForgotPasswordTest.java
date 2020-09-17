@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.springvuegradle.team6.models.entities.PasswordToken;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.PasswordTokenRepository;
@@ -14,14 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -29,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com",
     "ADMIN_PASSWORD=test"})
-public class ForgotPasswordTest {
+class ForgotPasswordTest {
+
   @Autowired
   private ProfileRepository profileRepository;
 
@@ -121,6 +120,62 @@ public class ForgotPasswordTest {
 
     BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     boolean passwordMatch = passwordEncoder.matches("mynewpwdA1", profile.getPassword());
+    org.junit.jupiter.api.Assertions.assertFalse(passwordMatch);
+  }
+
+  @Test
+  void changePasswordAndPasswordInvalidReturnStatusBadRequest() throws Exception {
+    Profile profile = profileRepository.findById(id);
+    PasswordToken token = new PasswordToken(profile);
+    passwordTokenRepository.save(token);
+    profileRepository.save(profile);
+
+    String url = "/profiles/forgotpassword/" + token.getToken();
+
+    String jsonString =
+        "{\n"
+            + "  \"new_password\": \"mynewpwd\",\n"
+            + "  \"repeat_password\": \"mynewpwd\"\n"
+            + "}";
+
+    mvc.perform(MockMvcRequestBuilders
+        .put(url)
+        .content(jsonString)
+        .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(status().isBadRequest());
+
+    profile = profileRepository.findById(id);
+
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    boolean passwordMatch = passwordEncoder.matches("mynewpwd", profile.getPassword());
+    org.junit.jupiter.api.Assertions.assertFalse(passwordMatch);
+  }
+
+  @Test
+  void changePasswordAndPasswordTooShortReturnStatusBadRequest() throws Exception {
+    Profile profile = profileRepository.findById(id);
+    PasswordToken token = new PasswordToken(profile);
+    passwordTokenRepository.save(token);
+    profileRepository.save(profile);
+
+    String url = "/profiles/forgotpassword/" + token.getToken();
+
+    String jsonString =
+        "{\n"
+            + "  \"new_password\": \"mA1\",\n"
+            + "  \"repeat_password\": \"mA1\"\n"
+            + "}";
+
+    mvc.perform(MockMvcRequestBuilders
+        .put(url)
+        .content(jsonString)
+        .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(status().isBadRequest());
+
+    profile = profileRepository.findById(id);
+
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    boolean passwordMatch = passwordEncoder.matches("mA1", profile.getPassword());
     org.junit.jupiter.api.Assertions.assertFalse(passwordMatch);
   }
 
