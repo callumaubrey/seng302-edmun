@@ -55,10 +55,10 @@
              */
             pointSelected(point){
                 //TODO: Set a point number instead of the ID, Set the Name of the point
-                this.selectedPath.name = ''
-                this.selectedPath.lat = point.position[0]
-                this.selectedPath.lng = point.position[1]
-                this.selectedPath.number = point.id + 1
+                this.selectedPath.name = '';
+                this.selectedPath.lat = point.position[0];
+                this.selectedPath.lng = point.position[1];
+                this.selectedPath.number = point.id + 1;
             }
         }
         }

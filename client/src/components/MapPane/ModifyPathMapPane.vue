@@ -11,7 +11,7 @@ import axios from 'axios'
 export default {
   name: "RecordActivityResultModal",
   components: {
-    MapPane,
+    MapPane
   },
   props: ['profileId', 'activityId', 'loggedInId'],
   data() {
