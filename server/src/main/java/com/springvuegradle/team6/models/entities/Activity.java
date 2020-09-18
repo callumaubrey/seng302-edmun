@@ -13,6 +13,9 @@ import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -114,6 +117,7 @@ public class Activity implements Serializable {
   private Integer id;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "author_id", nullable = false)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @FieldBridge(impl = IntegerBridge.class)
@@ -155,7 +159,7 @@ public class Activity implements Serializable {
   @Spatial
   @IndexedEmbedded(depth = 1)
   @SortableField
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REMOVE)
   private Location location;
 
   @Column(columnDefinition = "datetime default NOW()")
@@ -168,7 +172,7 @@ public class Activity implements Serializable {
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @IndexedEmbedded
   @FieldBridge(impl = BuiltinIterableBridge.class)
@@ -178,7 +182,7 @@ public class Activity implements Serializable {
   @Field(analyze = Analyze.YES, store = Store.NO, name = "visibility")
   private VisibilityType visibilityType;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   private List<ActivityQualificationMetric> activityQualificationMetrics;
 
   @OneToOne
