@@ -3,9 +3,11 @@ package com.springvuegradle.team6.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.PasswordToken;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.models.repositories.PasswordTokenRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.requests.*;
 
@@ -15,6 +17,7 @@ import java.util.Set;
 import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,6 +31,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,7 +40,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {
+    "ADMIN_EMAIL=test@test.com",
+    "ADMIN_PASSWORD=test",
+    "spring.mail.host=smtp.gmail.com",
+    "spring.mail.port=587",
+    "spring.mail.username=edmungoat2020",
+    "spring.mail.password=EdmunGoat2020",
+    "spring.mail.properties.mail.smtp.starttls.enable=true",
+    "spring.mail.properties.mail.smtp.starttls.required=true",
+    "spring.mail.properties.mail.smtp.auth=true",
+    "spring.mail.properties.mail.smtp.connectiontimeout=5000",
+    "spring.mail.properties.mail.smtp.timeout=5000",
+    "spring.mail.properties.mail.smtp.writetimeout=5000"
+})
 class UserProfileControllerTest {
   @Autowired private MockMvc mvc;
 
@@ -50,6 +67,9 @@ class UserProfileControllerTest {
 
   @Autowired
   private GoogleAPIServiceMocking googleAPIService;
+
+  @Autowired
+  private PasswordTokenRepository passwordTokenRepository;
 
   private CreateProfileRequest getDummyProfile() {
     CreateProfileRequest validRequest = new CreateProfileRequest();
@@ -995,5 +1015,76 @@ class UserProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     String address =((JSONObject)obj.get("location")).get("name").toString();
     org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
+  }
+
+  @Test
+  void testResetPasswordCheckTokenSaved() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@email.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe1@email.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNotNull(token);
+  }
+
+  @Test
+  void testResetPasswordEmailDoesNotExist() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@email.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe@email.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNull(token);
+  }
+
+  @Test
+  void testResetPasswordAdminDoesNotGetEmail() throws Exception {
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"test@test.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
   }
 }
