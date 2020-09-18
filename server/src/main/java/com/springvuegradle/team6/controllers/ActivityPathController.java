@@ -4,6 +4,7 @@ import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityPathRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
+import com.springvuegradle.team6.requests.EditPathRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,11 @@ public class ActivityPathController {
     private final PathRepository pathRepository;
     private final ActivityRoleRepository activityRoleRepository;
 
-    public ActivityPathController(ProfileRepository profileRepository, ActivityRepository activityRepository, LocationRepository locationRepository, PathRepository pathRepository, ActivityRoleRepository activityRoleRepository) {
+    public ActivityPathController(ProfileRepository profileRepository,
+                                  ActivityRepository activityRepository,
+                                  LocationRepository locationRepository,
+                                  PathRepository pathRepository,
+                                  ActivityRoleRepository activityRoleRepository) {
         this.profileRepository = profileRepository;
         this.activityRepository = activityRepository;
         this.locationRepository = locationRepository;
@@ -125,5 +130,87 @@ public class ActivityPathController {
         path = pathRepository.save(path);
 
         return new ResponseEntity(path.getLocations().size(), HttpStatus.CREATED);
+    }
+
+    /**
+     * This endpoint edits the path. The old path is deleted along with the locations in it.
+     * @param profileId profileId of of owner of activity
+     * @param activityId id of the activity
+     * @param request edit path request including the coordinates and the path type.
+     * @param session the session of the user
+     * @return OK for a success and 4xx for an error
+     */
+    @PutMapping("/profiles/{profileId}/activities/{activityId}/path")
+    public ResponseEntity editPath(@PathVariable int profileId,
+                                   @PathVariable int activityId,
+                                   @RequestBody @Valid EditPathRequest request,
+                                   HttpSession session) {
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if (optionalActivity.isEmpty()) {
+            return new ResponseEntity<>(
+                    "Activity doesnt exist",
+                    HttpStatus.BAD_REQUEST);
+        }
+        Activity activity = optionalActivity.get();
+
+        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, roleRepository)) {
+            return new ResponseEntity<>(
+                    "You are not authorized to edit the path of this activity",
+                    HttpStatus.UNAUTHORIZED);
+        }
+        Path oldPath = activity.getPath();
+
+        Path newPath = request.generatePath(locationRepository);
+        newPath = pathRepository.save(newPath);
+        activity.setPath(newPath);
+        activityRepository.save(activity);
+
+        if (oldPath != null) {
+            pathRepository.delete(oldPath);
+        }
+
+        return new ResponseEntity<>("Path updated for activity " + activityId, HttpStatus.OK);
+    }
+
+    /**
+     * Returns an activities path if it exists
+     * 401 UNAUTHORIZED: If session id is empty
+     * 404 NOT_FOUND:  If activity does not exist or path does not exist.
+     * @param profileId activity owners id
+     * @param activityId activity id
+     * @param session session data
+     * @return Activity path if exists otherwise 4xx error
+     */
+    @GetMapping("/profiles/{profileId}/activities/{activityId}/path")
+    public ResponseEntity getActivityPath(
+            @PathVariable int profileId,
+            @PathVariable int activityId,
+            HttpSession session) {
+
+        // Check user is logged in
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check if activity exists
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if (optionalActivity.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Activity activity = optionalActivity.get();
+
+        // Check Path exists
+        Optional<Path> optionalPath = Optional.ofNullable(activity.getPath());
+        if (optionalPath.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Path path = optionalPath.get();
+
+        return ResponseEntity.ok(path);
     }
 }
