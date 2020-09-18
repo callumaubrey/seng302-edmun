@@ -17,6 +17,7 @@ import java.util.Set;
 import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -1029,6 +1030,7 @@ class UserProfileControllerTest {
         .andExpect(status().isOk());
 
     PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNotNull(token);
   }
 
   @Test
@@ -1056,4 +1058,6 @@ class UserProfileControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is4xxClientError());
   }
+
+
 }
