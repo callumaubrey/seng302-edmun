@@ -91,13 +91,15 @@
                                             <b>
                                                 {{marker.title}}
                                             </b>
-                                            <hr style="margin: 0.25em">
-                                            <span>{{marker.content.startTime}}</span>
-                                            <span class="text-center">
-                                            <ActivityTypeIcon v-for="type in marker.content.activityTypes"
-                                                              style="font-size: 1.5em"
-                                                              :key="type"
-                                                              :type_name="type"></ActivityTypeIcon>
+                                            <span v-if="marker.content">
+                                                <hr style="margin: 0.25em">
+                                                <span>{{marker.content.startTime}}</span>
+                                                <span class="text-center">
+                                                    <ActivityTypeIcon v-for="type in marker.content.activityTypes"
+                                                                  style="font-size: 1.5em"
+                                                                  :key="type"
+                                                                  :type_name="type"></ActivityTypeIcon>
+                                                </span>
                                             </span>
                                         </b-container>
                                     </l-tooltip>
@@ -345,7 +347,7 @@
             /**
              * Sets Route points using path
              **/
-            setPath(path, show_keypoints=false) {
+            setPath(path, show_keypoints=false, only_start_finish=false) {
                 if(path === null) {
                     this.routePoints = [];
                     return;
@@ -360,8 +362,15 @@
                         let colour_id = 2;
                         if (i === 0) colour_id = 3;
 
-                        this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
-                            "", null, true);
+                        // Title
+                        let title = null;
+                        if (i === 0) title="Start";
+                        if (i === path.locations.length -1) title="Finish";
+
+                        if(!only_start_finish || (only_start_finish && (i===0 || i===path.locations.length - 1))) {
+                            this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
+                                "", title, false);
+                        }
                     }
                     this.getLatestMarker().icon = this.pathEndMarker;
                 }

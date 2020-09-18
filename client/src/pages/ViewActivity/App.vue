@@ -429,7 +429,7 @@ const App = {
       }
 
       if(this.activity.path !== null) {
-        map.setPath(this.activity.path, false);
+        map.setPath(this.activity.path, true, true);
       }
     }
 
