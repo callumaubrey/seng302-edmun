@@ -12,6 +12,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 /**
  * ActivityResult superclass which records the ActivityQualificationMetrics and Profile associated.
@@ -28,10 +30,12 @@ public class ActivityResult {
   @Id @GeneratedValue private Integer id;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "metric_id", nullable = false)
   private ActivityQualificationMetric metricId;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "user_id", nullable = false)
   private Profile userId;
 

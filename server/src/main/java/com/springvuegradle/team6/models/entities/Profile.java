@@ -76,10 +76,14 @@ public class Profile {
 
   @Column(name = "is_locked")
   private boolean isLocked;
+  
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @JsonIgnore
+  private Location privateLocation;
 
-  @ManyToOne @JsonIgnore private Location privateLocation;
-
-  @ManyToOne @JsonIgnore private Location publicLocation;
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @JsonIgnore
+  private Location publicLocation;
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
