@@ -223,5 +223,5 @@ export default {
             "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
 
     sendForgotPasswordEmail: (data) => instance.post(
-        "/resetpassword", {data})
+        "/profiles/resetpassword", data)
 }

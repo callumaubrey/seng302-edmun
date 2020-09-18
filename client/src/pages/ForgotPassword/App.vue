@@ -11,6 +11,10 @@
         <b-alert variant="success" show dismissible>Please check your email and follow the instructions.</b-alert>
       </b-row>
 
+      <b-row v-if="showErrorMessage" align-h="center" style="margin-top:20px;">
+        <b-alert variant="danger" show dismissible>Failed to send email.</b-alert>
+      </b-row>
+
       <b-row align-h="center" style="margin-top:10px;">
         Enter your email address below and we'll send you a link so you can reset it.
       </b-row>
@@ -45,7 +49,8 @@ export default {
   data() {
     return {
       email: null,
-      emailSent: false
+      emailSent: false,
+      showErrorMessage: false
     }
   },
   validations: {
@@ -76,6 +81,7 @@ export default {
           this.$v.$reset();
         })
         .catch((err) => {
+          this.showErrorMessage = true;
           console.log(err);
         });
     }
