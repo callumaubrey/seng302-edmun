@@ -129,7 +129,11 @@ public class ActivityPathController {
 
         path = pathRepository.save(path);
 
-        return new ResponseEntity(path.getLocations().size(), HttpStatus.CREATED);
+        activity.setPath(path);
+
+        activity = activityRepository.save(activity);
+
+        return new ResponseEntity(path.getId(), HttpStatus.CREATED);
     }
 
     /**
