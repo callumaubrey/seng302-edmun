@@ -117,7 +117,7 @@ public class ActivityPathControllerTest {
                 .session(session))
         .andExpect(status().isCreated());
 
-    Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = activityRepository.findById(activityId).get().getPath();
 
     Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
     Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
@@ -156,7 +156,7 @@ public class ActivityPathControllerTest {
                 .session(session))
         .andExpect(status().isCreated());
 
-    Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = activityRepository.findById(activityId).get().getPath();
 
     Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
     Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
@@ -203,7 +203,7 @@ public class ActivityPathControllerTest {
                 .session(session))
         .andExpect(status().isCreated());
 
-    Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = activityRepository.findById(activityId).get().getPath();
 
     Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
     Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
@@ -333,7 +333,7 @@ public class ActivityPathControllerTest {
                 .session(session))
         .andExpect(status().isCreated());
 
-    Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = activityRepository.findById(activityId).get().getPath();
 
     Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
     Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
@@ -406,7 +406,7 @@ public class ActivityPathControllerTest {
                 .session(session))
         .andExpect(status().isCreated());
 
-    Path path = pathRepository.findByActivity_Id(activityId);
+    Path path = activityRepository.findById(activityId).get().getPath();
 
     Optional<Location> location1 = locationRepository.findByLatitudeAndLongitude(10.5678, 10.5672);
     Optional<Location> location2 = locationRepository.findByLatitudeAndLongitude(10.5670, 10.5670);
