@@ -334,6 +334,9 @@ export default {
         if(activity.location != null) {
           this.$refs.map.setMapCenter(activity.location.latitude, activity.location.longitude);
         }
+        if(activity.path != null) {
+          this.$refs.map.$refs.map.setPath(activity.path, false, false);
+        }
       },
 
 

@@ -284,6 +284,7 @@ public class SearchActivityController {
               activity.getStartTime(),
               activity.getEndTime(),
               location,
+              activity.getPath(),
               activity.getVisibilityType());
       results.add(result);
     }
