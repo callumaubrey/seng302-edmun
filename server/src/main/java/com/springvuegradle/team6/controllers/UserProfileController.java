@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -64,6 +65,9 @@ public class UserProfileController {
 
   @Autowired
   public EmailService emailService;
+
+  @Value("#{environment.ADMIN_EMAIL}")
+  private String adminEmail;
 
   private final ProfileRepository repository;
   private final CountryRepository countryRepository;
@@ -490,6 +494,9 @@ public class UserProfileController {
   @PostMapping("/resetpassword")
   public ResponseEntity resetPassword(
       @Valid @RequestBody ResetPasswordRequest request) {
+    if (request.getEmail().toLowerCase().equals(this.adminEmail.toLowerCase())) {
+      return new ResponseEntity("Admin account cannot request password reset", HttpStatus.BAD_REQUEST);
+    }
 
     Profile profile = repository.findByEmails_address(request.getEmail());
     if (profile == null) {

@@ -1070,5 +1070,21 @@ class UserProfileControllerTest {
             .content(resetPasswordJson)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is4xxClientError());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNull(token);
+  }
+
+  @Test
+  void testResetPasswordAdminDoesNotGetEmail() throws Exception {
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"test@test.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
   }
 }
