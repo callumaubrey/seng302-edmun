@@ -298,7 +298,16 @@
             },
 
             /**
-             * Gets latest marker that the user has inputted
+             * Sets the distance of a marker using an index to the list of markers
+             * distanceToNext: Distance to the next point
+             * index: index of the object in the markers list
+             *
+             **/
+            setDistanceOfMarker(distanceToNext, index) {
+                this.markers[index].distanceToNext = distanceToNext
+            },
+            /**
+             * Reverts the edited change back to its original position
              *
              **/
             revertMarkers() {
@@ -309,7 +318,8 @@
             },
 
             /**
-             * Sets latest markers icon color to blue
+             * Updates the start and finish markers to have the correct icons
+             * Makes sure the distance to next marker of the end marker is 0
              *
              **/
             updateStartFinishMarkers() {
@@ -344,7 +354,7 @@
             },
 
             /**
-             * Sets route points with given parameter
+             * Edits a route point given an index to route points
              *
              **/
             editSingleRoutePoint(point, index) {
@@ -360,11 +370,16 @@
             },
 
             /**
-             * Sets markers with given parameter
+             * Updates a markers position given an index to the markers list
+             * coordinates: the updated coordinates
+             * index: index of marker to be updated in markers list
              *
              **/
             updateMarkersPosition(coordinates, index) {
                 this.markers[index].position = coordinates
+                for (let i of this.markers){
+                    console.log(i.distanceToNext)
+                }
             },
 
             /**
@@ -427,7 +442,7 @@
                     this.center = marker.position;
                     this.$emit('markerSelected', marker.content.id);
                 } else {
-                    this.$parent.clickOnMarker(marker.position)
+                    this.$parent.clickOnMarker(marker)
                 }
             },
 
@@ -447,14 +462,28 @@
                 this.markers[index].position = newCoords
                 this.$parent.handleDragEvent(index, newCoords)
             },
+            /**
+             * Updates the distances between all points
+             **/
+            checkMarkerIsLatest(marker) {
+                for (let i = 0; i < this.markers.length; i++) {
+                    if (this.markers[i].id == marker.id && i != this.markers.length -1) {
+                        return false
+                    }
+                }
+                return true
+            },
 
+            /**
+             * Updates the distances between all points
+             **/
             updateDistancesBetweenPoints() {
                 for (let i = 0; i < this.markers.length - 1; i++) {
                     const latlng = L.latLng(this.markers[i].position)
                     const distanceToNext = latlng.distanceTo(L.latLng(this.markers[i + 1].position))
                     this.markers[i].distanceToNext = distanceToNext / 1000
                 }
-                }
+            }
 
             },
 
