@@ -7,6 +7,7 @@
 <script>
 import MapPane from "./MapPane";
 import axios from 'axios'
+import L from "leaflet";
 
 export default {
   name: "RecordActivityResultModal",
@@ -26,13 +27,20 @@ export default {
       const currObj = this
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
+      let distanceToNext = 0;
       if (this.autoRoute && marker) {
         this.getRoutePoints(coordinates)
+
       } else {
         this.$refs.map.routePoints.push(coordinates)
+        if (marker) {
+          let previousLatLng = L.latLng(marker.position)
+          distanceToNext = previousLatLng.distanceTo(L.latLng(event.latlng.lat, event.latlng.lng)) / 1000
+          this.$refs.map.setDistanceOfLatestMarker(distanceToNext)
+        }
       }
       this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng,
-          "", null, true)
+          "", null, true, 0)
       this.$refs.map.updateStartFinishMarkers()
 
       if (this.$refs.map.routePoints.length == 0) {
@@ -44,14 +52,21 @@ export default {
     },
 
     clickOnMarker(marker) {
-      const latitude = marker[0]
-      const longitude = marker[1]
-      if (this.autoRoute && marker != null) {
-        this.getRoutePoints(marker)
+      if (this.$refs.map.checkMarkerIsLatest(marker)) {
+        return
+      }
+      const markerPosition = marker.position
+      const latitude = markerPosition[0]
+      const longitude = markerPosition[1]
+      if (this.autoRoute && markerPosition != null) {
+        this.getRoutePoints(markerPosition)
       } else {
-        this.$refs.map.routePoints.push(marker)
+        this.$refs.map.routePoints.push(markerPosition)
       }
       this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
+      if(!this.autoRoute){
+        this.$refs.map.updateDistancesBetweenPoints()
+      }
       this.$refs.map.updateStartFinishMarkers()
       this.count += 1
     },
@@ -59,8 +74,11 @@ export default {
     handleDragEvent(index, newCoords) {
       if (!this.autoRoute) {
         this.$refs.map.editSingleRoutePoint(newCoords, index)
+        this.$refs.map.updateMarkersPosition(newCoords, index)
         this.$refs.map.routePoints.push(newCoords)
         this.$refs.map.routePoints.pop()
+        this.$refs.map.updateDistancesBetweenPoints()
+
       } else {
         this.getRoutePoints([])
       }
@@ -85,13 +103,18 @@ export default {
           newRoutePoints.push([iii[1], iii[0]])
         }
         currObj.$refs.map.setRoutePoints(newRoutePoints)
+
+        let segments = res.data.features[0].properties.segments
+        for (let i = 0; i < segments.length; i++) {
+          currObj.$refs.map.setDistanceOfMarker(segments[i].distance / 1000, i)
+        }
       })
       .catch(function () {
-        if (currObj.$refs.map.getAllMarkersCoords().length == 2){
-          currObj.resetMarkerAndPoint()
-        }
-        else if (currObj.$refs.map.savedMarkers != null) {
+        if (currObj.$refs.map.savedMarkers != null) {
           currObj.$refs.map.revertMarkers()
+        }
+        else if (currObj.$refs.map.getAllMarkersCoords().length == 2){
+          currObj.resetMarkerAndPoint()
         }
         else {
           currObj.$refs.map.markers.pop();
@@ -118,7 +141,7 @@ export default {
         }
         this.$refs.map.updateStartFinishMarkers()
       }
-    }
+    },
   },
 }
 </script>
