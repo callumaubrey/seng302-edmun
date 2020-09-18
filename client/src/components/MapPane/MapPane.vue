@@ -290,7 +290,7 @@
                 return this.markers[this.markers.length - 1]
             },
             /**
-             * Gets latest marker that the user has inputted
+             * Sets the distance of the latest marker that the user has inputted
              *
              **/
             setDistanceOfLatestMarker(distanceToNext) {
