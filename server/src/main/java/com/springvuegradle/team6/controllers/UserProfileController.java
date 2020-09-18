@@ -17,7 +17,9 @@ import com.springvuegradle.team6.requests.EditPasswordRequest;
 import com.springvuegradle.team6.requests.EditProfileRequest;
 import com.springvuegradle.team6.requests.ChangePasswordWithoutOldPasswordRequest;
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
+import com.springvuegradle.team6.requests.ResetPasswordRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.EmailService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,8 @@ import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -58,6 +62,12 @@ import org.springframework.web.bind.annotation.RestController;
     })
 @RequestMapping("/profiles")
 public class UserProfileController {
+
+  @Autowired
+  public EmailService emailService;
+
+  @Value("#{environment.ADMIN_EMAIL}")
+  private String adminEmail;
 
   private final ProfileRepository repository;
   private final CountryRepository countryRepository;
@@ -472,5 +482,36 @@ public class UserProfileController {
     profile.setPassword(request.newPassword);
     repository.save(profile);
     return ResponseEntity.ok("Password Edited Successfully");
+  }
+
+  /**
+   * POST request for when a user wants to reset their password
+   * Takes users email in the request and checks if exists then runs email service
+   *
+   * @param request request containing the users email
+   * @return ResponseEntity 200 or 4xx
+   */
+  @PostMapping("/resetpassword")
+  public ResponseEntity resetPassword(
+      @Valid @RequestBody ResetPasswordRequest request) {
+    if (request.getEmail().toLowerCase().equals(this.adminEmail.toLowerCase())) {
+      return new ResponseEntity("Admin account cannot request password reset", HttpStatus.BAD_REQUEST);
+    }
+
+    Profile profile = repository.findByEmails_address(request.getEmail());
+    if (profile == null) {
+      return new ResponseEntity("Email is not associated to an account", HttpStatus.BAD_REQUEST);
+    }
+
+    PasswordToken token = new PasswordToken(profile);
+    passwordTokenRepository.save(token);
+
+    boolean sent = emailService.sendPasswordTokenEmail(
+        request.getEmail(), "Reset Password", token.getToken(), profile.getFirstname());
+    if (!sent) {
+      return new ResponseEntity("Failed to send email", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return new ResponseEntity("Password reset link sent", HttpStatus.OK);
   }
 }
