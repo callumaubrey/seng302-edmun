@@ -19,6 +19,7 @@ import com.springvuegradle.team6.requests.ChangePasswordWithoutOldPasswordReques
 import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.requests.ResetPasswordRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.EmailService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -59,6 +61,9 @@ import org.springframework.web.bind.annotation.RestController;
     })
 @RequestMapping("/profiles")
 public class UserProfileController {
+
+  @Autowired
+  public EmailService emailService;
 
   private final ProfileRepository repository;
   private final CountryRepository countryRepository;
@@ -493,6 +498,12 @@ public class UserProfileController {
 
     PasswordToken token = new PasswordToken(profile);
     passwordTokenRepository.save(token);
+
+    boolean sent = emailService.sendPasswordTokenEmail(
+        request.getEmail(), "Reset Password", token.getToken(), profile.getFirstname());
+    if (!sent) {
+      return new ResponseEntity("Failed to send email", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     return new ResponseEntity("Password reset link sent", HttpStatus.OK);
   }
