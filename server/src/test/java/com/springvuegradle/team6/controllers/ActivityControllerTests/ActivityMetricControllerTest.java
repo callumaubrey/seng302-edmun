@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers.ActivityControllerTest;
+package com.springvuegradle.team6.controllers.ActivityControllerTests;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -16,7 +16,6 @@ import com.springvuegradle.team6.models.entities.ActivityResultDuration;
 import com.springvuegradle.team6.models.entities.ActivityResultStartFinish;
 import com.springvuegradle.team6.models.entities.ActivityRole;
 import com.springvuegradle.team6.models.entities.ActivityRoleType;
-import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Unit;
@@ -33,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
