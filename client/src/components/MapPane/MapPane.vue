@@ -463,15 +463,13 @@
                 this.$parent.handleDragEvent(index, newCoords)
             },
             /**
-             * Updates the distances between all points
+             * Check if the marker given is the latest marker that has been added
              **/
             checkMarkerIsLatest(marker) {
-                for (let i = 0; i < this.markers.length; i++) {
-                    if (this.markers[i].id == marker.id && i != this.markers.length -1) {
-                        return false
-                    }
+                if (this.markers[this.markers.length - 1].id == marker.id){
+                    return true
                 }
-                return true
+                return false
             },
 
             /**
