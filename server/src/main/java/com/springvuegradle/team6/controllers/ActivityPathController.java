@@ -123,7 +123,7 @@ public class ActivityPathController {
             return new ResponseEntity<>("Invalid location data", HttpStatus.BAD_REQUEST);
         }
 
-        Path path = new Path(activity, locations, request.type);
+        Path path = new Path(locations, request.type);
 
         path.setLocations(locations);
 
@@ -157,7 +157,7 @@ public class ActivityPathController {
         }
         Activity activity = optionalActivity.get();
 
-        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, roleRepository)) {
+        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, activityRoleRepository)) {
             return new ResponseEntity<>(
                     "You are not authorized to edit the path of this activity",
                     HttpStatus.UNAUTHORIZED);
