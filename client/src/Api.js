@@ -220,5 +220,8 @@ export default {
         "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate"),
 
     deleteMetric: (profileId, activityId, metricId) => instance.delete(
-            "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId)
+            "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
+
+    resetPassword: (token, data) => instance.put(
+        "/profiles/forgotpassword/" + token, data)
 }
