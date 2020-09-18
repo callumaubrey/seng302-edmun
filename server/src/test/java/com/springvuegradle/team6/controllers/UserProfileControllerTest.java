@@ -40,7 +40,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {
+    "ADMIN_EMAIL=test@test.com",
+    "ADMIN_PASSWORD=test",
+    "spring.mail.host=smtp.gmail.com",
+    "spring.mail.port=587",
+    "spring.mail.username=edmungoat2020",
+    "spring.mail.password=EdmunGoat2020",
+    "spring.mail.properties.mail.smtp.starttls.enable=true",
+    "spring.mail.properties.mail.smtp.starttls.required=true",
+    "spring.mail.properties.mail.smtp.auth=true",
+    "spring.mail.properties.mail.smtp.connectiontimeout=5000",
+    "spring.mail.properties.mail.smtp.timeout=5000",
+    "spring.mail.properties.mail.smtp.writetimeout=5000"
+})
 class UserProfileControllerTest {
   @Autowired private MockMvc mvc;
 
@@ -1007,7 +1020,7 @@ class UserProfileControllerTest {
   @Test
   void testResetPasswordCheckTokenSaved() throws Exception {
     Set<Email> emails = new HashSet<>();
-    Email email = new Email("johnydoe1@gmail.com");
+    Email email = new Email("johnydoe1@email.com");
     email.setPrimary(true);
     emails.add(email);
     Profile profile = new Profile();
@@ -1020,7 +1033,7 @@ class UserProfileControllerTest {
     profile = profileRepository.save(profile);
 
     String resetPasswordJson = "{\n"
-        + "  \"email\": \"johnydoe1@gmail.com\"\n"
+        + "  \"email\": \"johnydoe1@email.com\"\n"
         + "}";
 
     mvc.perform(
@@ -1036,7 +1049,7 @@ class UserProfileControllerTest {
   @Test
   void testResetPasswordEmailDoesNotExist() throws Exception {
     Set<Email> emails = new HashSet<>();
-    Email email = new Email("johnydoe1@gmail.com");
+    Email email = new Email("johnydoe1@email.com");
     email.setPrimary(true);
     emails.add(email);
     Profile profile = new Profile();
@@ -1049,7 +1062,7 @@ class UserProfileControllerTest {
     profile = profileRepository.save(profile);
 
     String resetPasswordJson = "{\n"
-        + "  \"email\": \"johnydoe@gmail.com\"\n"
+        + "  \"email\": \"johnydoe@email.com\"\n"
         + "}";
 
     mvc.perform(
@@ -1058,6 +1071,4 @@ class UserProfileControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is4xxClientError());
   }
-
-
 }
