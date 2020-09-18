@@ -1,13 +1,8 @@
 package com.springvuegradle.team6.models.entities;
 
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+
 import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Latitude;

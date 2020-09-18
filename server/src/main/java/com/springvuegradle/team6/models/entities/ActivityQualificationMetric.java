@@ -1,12 +1,15 @@
 package com.springvuegradle.team6.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 public class ActivityQualificationMetric {
@@ -33,6 +36,7 @@ public class ActivityQualificationMetric {
    * The activity this instance is associated with
    */
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
 
