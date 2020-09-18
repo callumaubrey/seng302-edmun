@@ -1,8 +1,12 @@
 <template>
   <div>
     <div>
-      <b-input v-model="locationText" @keyup.native="doAutocomplete(locationText)"
-               autocomplete="off" placeholder="Search address"/>
+      <b-form-input v-model="locationText" @keyup.native="doAutocomplete(locationText)"
+                    autocomplete="off" placeholder="Search address"
+                    :state="validLocation"/>
+      <b-form-invalid-feedback id="input-live-feedback">
+        {{invalidLocationErrorMessage}}
+      </b-form-invalid-feedback>
       <em v-if="loadingLocations"
           class="autocomplete-loading-icon text-primary fas fa-circle-notch fa-spin"/>
       <b-form-text>Click on the map or enter into input to set location</b-form-text>
@@ -33,6 +37,8 @@
         locations: [],
         selectedLocation: null,
         loadingLocations: false,
+        validLocation: null,
+        invalidLocationErrorMessage: "The selected location is unknown"
       }
     },
     mounted() {
@@ -123,7 +129,7 @@
           let locationData = axios.create({
             baseURL: "https://photon.komoot.de/api/?q=" + locationText + geo_priority_query
                 + "&limit=10",
-            timeout: 2000,
+            timeout: 5000,
             withCredentials: false,
           });
 
@@ -135,6 +141,7 @@
           for (let i = 0; i < data.data.features.length; i++) {
             let feature_data = _this.parseOSMFeature(data.data.features[i]);
             if (feature_data.display_name) {
+              this.validLocation = true;
               fixedData['data'].push(feature_data)
             }
           }
@@ -168,6 +175,10 @@
       emitLocationToParent: function (value) {
         this.$emit("emitLocation", value);
       },
+
+      validateLocation: function () {
+        return this.validLocation == null;
+      },
       /**
        * Uses the photon api to search for the name of the location based on the selected longitude
        * and latitude.
@@ -176,25 +187,38 @@
        * @param lat the longitude value of the location
        * @param lng the latitude value of the location
        */
-      setLocationTextByCoords: function (lat, lng) {
+      setLocationTextByCoords: async function (lat, lng) {
         let coordsDataAPI = axios.create({
           baseURL: "https://photon.komoot.de/reverse?lon=" + lng + "&lat=" + lat + "&limit=1",
-          timeout: 2000,
+          timeout: 5000,
           withCredentials: false,
         });
 
         this.loadingLocations = true;
-        coordsDataAPI.get().then((res) => {
+        await coordsDataAPI.get().then((res) => {
           // If relevant feature is found
-          if (res.data.features.length > 0) {
-            let feature_data = this.parseOSMFeature(res.data.features[0]);
-            this.locationText = feature_data.display_name;
-            this.locations = [];
+          if (res.data.features) {
+            if (res.data.features.length > 0) {
+              let feature_data = this.parseOSMFeature(res.data.features[0]);
+              this.locationText = feature_data.display_name;
+              this.locations = [];
+              this.invalidLocationErrorMessage = "The selected location is unknown"
+              this.validLocation = null;
+            } else {
+              this.invalidLocationErrorMessage = "The selected location is unknown"
+              this.validLocation = false;
+              this.clearLocation();
+            }
           } else {
-            this.clearLocation();
+            this.$bvToast.toast('An error has occurred, please try again.', {
+              variant: "danger",
+              solid: true
+            })
           }
           this.loadingLocations = false;
         }).catch(() => {
+          this.invalidLocationErrorMessage = "The selected location is unknown"
+          this.validLocation = false;
           this.loadingLocations = false;
           this.clearLocation();
         })
