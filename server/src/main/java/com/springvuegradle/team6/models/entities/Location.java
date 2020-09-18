@@ -1,19 +1,15 @@
 package com.springvuegradle.team6.models.entities;
 
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+
 import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
 import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.spatial.Coordinates;
+import org.hibernate.validator.constraints.Range;
 
 /**
  * Location is a base class for defining a location in the world. It has three members: locationID:
@@ -30,19 +26,18 @@ public class Location implements Serializable, Coordinates {
 
   @Id
   @GeneratedValue
-  private final long location_id = 0;
+  private int id;
 
   @Latitude
+  @Range(min=-90, max=90)
   private Double latitude = 0d;
+
+
   @Longitude
+  @Range(min=-180, max=180)
   private Double longitude = 0d;
 
   private String name;
-
-  @ManyToOne
-  @JoinColumn(name = "path_id")
-  @JsonIgnore
-  private Path path;
 
   public Location() {
   }
@@ -80,5 +75,9 @@ public class Location implements Serializable, Coordinates {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public int getId() {
+    return id;
   }
 }

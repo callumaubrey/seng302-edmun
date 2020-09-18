@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.models.entities;
 
 import javax.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -15,10 +17,12 @@ public class ActivityRole {
   @Id @GeneratedValue private int id;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "activity_id", nullable = false)
   private Activity activity;
 
   @OneToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @FieldBridge(impl = IntegerBridge.class)
   private Profile profile;

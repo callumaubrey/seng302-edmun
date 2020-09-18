@@ -8,23 +8,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -48,13 +39,19 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
     name = "activityAnalyzer",
     tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
     filters = {
-        @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-        @TokenFilterDef(
-            factory = EdgeNGramFilterFactory.class,
-            params = {
-                @Parameter(name = "minGramSize", value = "3"),
-                @Parameter(name = "maxGramSize", value = "30")
-            })
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+      @TokenFilterDef(
+          factory = EdgeNGramFilterFactory.class,
+          params = {
+            @Parameter(name = "minGramSize", value = "1"),
+            @Parameter(name = "maxGramSize", value = "30")
+          })
+    })
+@AnalyzerDef(
+    name = "activityQueryAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
     })
 public class Activity implements Serializable {
 
@@ -63,9 +60,7 @@ public class Activity implements Serializable {
   public static final int DESCRIPTION_MAX_LENGTH = 2048;
   private static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
-  /**
-   * This constructor is used for testing purposes only
-   */
+  /** This constructor is used for testing purposes only */
   public Activity() {
     Set<ActivityType> myEmptySet = Collections.emptySet();
     this.profile = null;
@@ -126,6 +121,7 @@ public class Activity implements Serializable {
   private Integer id;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "author_id", nullable = false)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @FieldBridge(impl = IntegerBridge.class)
@@ -167,10 +163,12 @@ public class Activity implements Serializable {
   @Spatial
   @IndexedEmbedded(depth = 1)
   @SortableField
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REMOVE)
   private Location location;
 
-  @Column(columnDefinition = "datetime default NOW()")
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
+  @Column(columnDefinition = "datetime default CURRENT_TIMESTAMP()")
   private LocalDateTime creationDate;
 
   /** Map activity id to user id to create profile_subscriptions table in database */
@@ -180,7 +178,7 @@ public class Activity implements Serializable {
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @IndexedEmbedded
   @FieldBridge(impl = BuiltinIterableBridge.class)
@@ -190,8 +188,12 @@ public class Activity implements Serializable {
   @Field(analyze = Analyze.YES, store = Store.NO, name = "visibility")
   private VisibilityType visibilityType;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   private List<ActivityQualificationMetric> activityQualificationMetrics;
+
+  @OneToOne
+  @JoinColumn(name = "path_id")
+  private Path path;
 
   public String getActivityName() {
     return activityName;
@@ -346,5 +348,13 @@ public class Activity implements Serializable {
 
   public void setCreationDate(LocalDateTime creationDate) {
     this.creationDate = creationDate;
+  }
+
+  public Path getPath() {
+    return path;
+  }
+
+  public void setPath(Path path) {
+    this.path = path;
   }
 }

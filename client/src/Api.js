@@ -128,11 +128,12 @@ export default {
                             pagination_limit=10,
                             longitude = null,
                             latitude = null,
-                            radius = null) =>
+                            radius = null,
+                            sort = null) =>
         {return activitySearchAPI.searchActivities(instance,
         search_query, types, types_method_and, hashtags, hashtags_method_and,
         activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit,
-        longitude, latitude, radius)},
+        longitude, latitude, radius, sort)},
 
     getActivityCountBySearch: (search_query=undefined,
                                types = [],

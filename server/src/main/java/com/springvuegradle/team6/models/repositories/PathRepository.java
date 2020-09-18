@@ -7,5 +7,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource
 public interface PathRepository extends JpaRepository<Path, Integer> {
 
-  Path findByActivity_Id(int id);
+  Path findById(int id);
 }
