@@ -256,7 +256,7 @@
              *
              * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
              **/
-            createMarker(id, iconColour, lat, lng, content, title, draggable, distanceToNext) {
+            createMarker(id, iconColour, lat, lng, content, title, draggable) {
                 //Check inputs and set position and icon
                 let icon = null;
                 let coordinates = [lat, lng];
@@ -274,9 +274,6 @@
                 if (draggable == null){
                   draggable = false
                 }
-                if (distanceToNext == null) {
-                    distanceToNext = 0
-                }
 
                 //Adds the marker to the markers list to be displayed
                 this.markers.push({
@@ -286,8 +283,7 @@
                     icon: icon,
                     content: content,
                     title: title,
-                    draggable: draggable,
-                    distanceToNext: distanceToNext
+                    draggable: draggable
                 })
             },
             /**
@@ -297,25 +293,9 @@
             getLatestMarker() {
                 return this.markers[this.markers.length - 1]
             },
-            /**
-             * Sets the distance of the latest marker that the user has inputted
-             *
-             **/
-            setDistanceOfLatestMarker(distanceToNext) {
-                this.markers[this.markers.length - 1].distanceToNext = distanceToNext
-            },
 
             /**
-             * Sets the distance of a marker using an index to the list of markers
-             * distanceToNext: Distance to the next point
-             * index: index of the object in the markers list
-             *
-             **/
-            setDistanceOfMarker(distanceToNext, index) {
-                this.markers[index].distanceToNext = distanceToNext
-            },
-            /**
-             * Reverts the edited change back to its original position
+             * Gets latest marker that the user has inputted
              *
              **/
             revertMarkers() {
@@ -326,12 +306,10 @@
             },
 
             /**
-             * Updates the start and finish markers to have the correct icons
-             * Makes sure the distance to next marker of the end marker is 0
+             * Sets latest markers icon color to blue
              *
              **/
             updateStartFinishMarkers() {
-                this.setDistanceOfLatestMarker(0)
                 if (this.markers.length == 2) {
                     this.markers[0].icon = this.pathStartMarker
                     this.markers[1].icon = this.pathEndMarker
@@ -362,7 +340,7 @@
             },
 
             /**
-             * Edits a route point given an index to route points
+             * Sets route points with given parameter
              *
              **/
             editSingleRoutePoint(point, index) {
@@ -375,19 +353,6 @@
              **/
             setMarkers(markers) {
                 this.markers = markers
-            },
-
-            /**
-             * Updates a markers position given an index to the markers list
-             * coordinates: the updated coordinates
-             * index: index of marker to be updated in markers list
-             *
-             **/
-            updateMarkersPosition(coordinates, index) {
-                this.markers[index].position = coordinates
-                for (let i of this.markers){
-                    console.log(i.distanceToNext)
-                }
             },
 
             /**
@@ -450,7 +415,7 @@
                     this.center = marker.position;
                     this.$emit('markerSelected', marker.content.id);
                 } else {
-                    this.$parent.clickOnMarker(marker)
+                    this.$parent.clickOnMarker(marker.position)
                 }
             },
 
@@ -470,28 +435,7 @@
                 this.markers[index].position = newCoords
                 this.$parent.handleDragEvent(index, newCoords)
             },
-            /**
-             * Check if the marker given is the latest marker that has been added
-             **/
-            checkMarkerIsLatest(marker) {
-                if (this.markers[this.markers.length - 1].id == marker.id){
-                    return true
-                }
-                return false
-            },
-
-            /**
-             * Updates the distances between all points
-             **/
-            updateDistancesBetweenPoints() {
-                for (let i = 0; i < this.markers.length - 1; i++) {
-                    const latlng = L.latLng(this.markers[i].position)
-                    const distanceToNext = latlng.distanceTo(L.latLng(this.markers[i + 1].position))
-                    this.markers[i].distanceToNext = distanceToNext / 1000
-                }
-            }
-
-            },
+        },
 
         /**
          * Refresh the map everytime the map is rendered by vue.
