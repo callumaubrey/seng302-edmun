@@ -16,21 +16,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
- * Testing service that generates mocked responses for the GoogleAPIService.
- * This allows tests to set what the google api should return.
+ * Testing service that generates mocked responses for the GoogleAPIService. This allows tests to
+ * set what the google api should return.
  */
 @Profile("test")
 @Service
 public class GoogleAPIServiceMocking {
 
-  @Autowired
-  private GoogleAPIService service;
+  @Autowired private GoogleAPIService service;
 
   /**
    * Add autowired mocked google api service
+   *
    * @param service Mocked Google api service
    */
   public GoogleAPIServiceMocking(GoogleAPIService service) {
@@ -39,6 +40,7 @@ public class GoogleAPIServiceMocking {
 
   /**
    * Loads resource file data into memory as a string
+   *
    * @param filename resource filename in src
    * @return file data as string
    * @throws IOException if file does not exist
@@ -52,32 +54,56 @@ public class GoogleAPIServiceMocking {
 
   /**
    * Sets api mocking to return data contained in resource json file.
-   * @param testJsonFilename json file stored in src/resources
-   *                         For example if you had a file "src/resources/controllers/test.json"
-   *                         then testJsonFilename='controllers/test.json'
+   *
+   * @param testJsonFilename json file stored in src/resources For example if you had a file
+   *     "src/resources/controllers/test.json" then testJsonFilename='controllers/test.json'
    * @throws IOException if resource file does not exist
    */
   public void mockReverseGeocode(String testJsonFilename) throws IOException {
     String expectedJson = getResourceAsString(testJsonFilename);
-    Mockito.when(service.template.getForEntity(
-        eq(GoogleAPIService.URL_REVERSE_GEOCODE), eq(String.class),
-        anyDouble(), anyDouble(), eq(null)))
+    Mockito.when(
+            service.template.getForEntity(
+                eq(GoogleAPIService.URL_REVERSE_GEOCODE),
+                eq(String.class),
+                anyDouble(),
+                anyDouble(),
+                eq(null)))
+        .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
+  }
+
+  /**
+   * Sets api mocking to return data contained in resource json file
+   *
+   * @param testJsonFilename json file stored in src/resources * For example if you had a file
+   *     "src/resources/controllers/test.json" * then testJsonFilename='controllers/test.json'
+   * @throws IOException if resource file does not exist
+   */
+  public void mockAutoCompleteLocationName(String testJsonFilename) throws IOException {
+    String expectedJson = getResourceAsString(testJsonFilename);
+    Mockito.when(
+            service.template.getForEntity(
+                eq(GoogleAPIService.URL_PLACE_AUTOCOMPLETE), eq(String.class),
+                anyString(), eq(null)))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
   /**
    * Sets api mocking to return data contained in resource json file.
-   * @param testJsonFilename json file stored in src/resources
-   *                         For example if you had a file "src/resources/controllers/test.json"
-   *                         then testJsonFilename='controllers/test.json'
+   *
+   * @param testJsonFilename json file stored in src/resources For example if you had a file
+   *     "src/resources/controllers/test.json" then testJsonFilename='controllers/test.json'
    * @param status Status to return from api
    * @throws IOException if resource file does not exist
    */
   public void mockReverseGeocode(String testJsonFilename, HttpStatus status) throws IOException {
     String expectedJson = getResourceAsString(testJsonFilename);
-    Mockito.when(service.template.getForEntity(
-        eq(GoogleAPIService.URL_REVERSE_GEOCODE), eq(String.class),
-        anyDouble(), anyDouble(), eq(null)))
+    Mockito.when(
+            service.template.getForEntity(
+                eq(GoogleAPIService.URL_REVERSE_GEOCODE),
+                eq(String.class),
+                anyDouble(),
+                anyDouble(),
+                eq(null)))
         .thenReturn(new ResponseEntity<>(expectedJson, status));
   }
 }
