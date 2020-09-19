@@ -498,9 +498,14 @@
           api.createActivity(userId, data)
               .then(function (res) {
                 const activityId = res.data;
-                currentObj.submitPath(activityId);
-                store.newNotification('Activity created successfully', 'success', 4);
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                currentObj.submitPath(activityId).then(() => {
+                  store.newNotification('Activity created successfully', 'success', 4)
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to create activity, server error', {
@@ -534,9 +539,14 @@
           api.createActivity(userId, data)
               .then(function (res) {
                 const activityId = res.data;
-                currentObj.submitPath(activityId);
-                store.newNotification('Activity created successfully', 'success', 4)
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                currentObj.submitPath(activityId).then(() => {
+                  store.newNotification('Activity created successfully', 'success', 4)
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to create activity, server error', {
@@ -550,9 +560,7 @@
 
       submitPath: function(activityId) {
         // Update path
-        this.$refs.path_editor.updatePathInActivity(this.profileId, activityId).catch((err) => {
-          console.error(err);
-        });
+        return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
       },
 
       getDates: function () {

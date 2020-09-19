@@ -498,11 +498,15 @@ import {store} from "../../store";
         };
         if (this.isContinuous === '0') {
           api.updateActivity(userId, this.activityId, data)
-              .then(function (response) {
-                console.log(response);
-                store.newNotification('Activity updated successfully', 'success', 4)
-                currentObj.$router.push(
-                    '/profiles/' + userId + '/activities/' + currentObj.activityId);
+              .then(() => {
+                currentObj.updatePath().then(()=> {
+                  store.newNotification('Activity updated successfully', 'success', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -533,10 +537,15 @@ import {store} from "../../store";
             metrics: this.$refs.metric_editor.getMetricData()
           };
           api.updateActivity(userId, this.activityId, data)
-              .then(function (response) {
-                console.log(response);
-                store.newNotification('Activity updated successfully', 'success', 4)
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+              .then(() => {
+                currentObj.updatePath().then(()=> {
+                  store.newNotification('Activity updated successfully', 'success', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -545,18 +554,13 @@ import {store} from "../../store";
                   solid: true
                 })
               });
-
-          // Update path
-          this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId).catch((err) => {
-            console.error(err);
-            currentObj.$bvToast.toast('Failed to update path, server error', {
-              toaster: "b-toaster-bottom-center",
-              variant: "danger",
-              solid: true
-            })
-          });
         }
       },
+
+      updatePath: function() {
+        return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
+      },
+
       getISODates: function () {
         let startDateISO;
         if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
