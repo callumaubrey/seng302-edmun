@@ -7,27 +7,20 @@
         <h3>Reset Password</h3>
       </b-row>
 
-      <b-row v-if="showErrorMessage" align-h="center" style="margin-top:20px;">
-        <b-alert variant="danger" show dismissible>Invalid token.</b-alert>
-      </b-row>
-
-
-      <b-row align-h="center">
-        <b-col>In order to protect your account, make sure your password:</b-col>
+      <b-row align-h="center" style="margin-top:10px;">
+        In order to protect your account, make sure your password:
       </b-row>
       <b-row align-h="center">
-        <b-col>
           <ul>
             <li>Is longer than 7 characters</li>
             <li>Has at least 1 digit</li>
             <li>Has at least 1 lowercase</li>
             <li>Has at least 1 uppercase</li>
           </ul>
-        </b-col>
       </b-row>
 
       <b-form @submit.stop.prevent="onSubmit">
-        <b-row align-h="center" style="margin-top:20px;">
+        <b-row align-h="center" style="margin-top:10px;">
           <b-input
               type="password"
               :state="validateState('newPassword')"
@@ -60,6 +53,7 @@ import Api from "@/Api";
 import NavBar from "@/components/NavBar";
 import {helpers, required, sameAs} from "vuelidate/lib/validators";
 const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+import {store} from "../../store";
 
 export default {
   components: {
@@ -68,8 +62,7 @@ export default {
   data() {
     return {
       newPassword: null,
-      repeatedPassword: null,
-      showErrorMessage: false
+      repeatedPassword: null
     }
   },
   validations: {
@@ -101,11 +94,11 @@ export default {
 
       Api.resetPassword(token, data)
         .then(() => {
-          alert('Success');
+          store.newNotification('Password reset successfully', 'success', 4);
+          this.$router.push('/login');
         })
-        .catch((err) => {
-          this.showErrorMessage = true;
-          console.log(err);
+        .catch(() => {
+          store.newNotification('Invalid Token', 'danger', 4);
         });
     }
   }
