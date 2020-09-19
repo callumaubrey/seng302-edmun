@@ -166,6 +166,10 @@
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
             <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
+          <b-tab title="Activity Route">
+            <modify-path-map-pane :pathOverlay="false" style="padding-bottom: 5em"></modify-path-map-pane>
+
+          </b-tab>
         </b-tabs>
       </div>
     </div>
@@ -184,10 +188,15 @@ import api from '@/Api'
 import AdminMixin from "../../mixins/AdminMixin";
 import ActivityResults from "../../components/ActivityResults";
 import MapPane from "../../components/MapPane/MapPane";
+import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+import PathInfo from "../../components/MapPane/PathInfo";
 
 const App = {
   name: "App",
   components: {
+    PathInfo,
+    ModifyLocationMapPane,
     MapPane,
     ActivityResults,
     NavBar,
@@ -196,7 +205,8 @@ const App = {
     FollowerSummary,
     ShareActivity,
     ForbiddenMessage,
-    RecordActivityResultModal
+    RecordActivityResultModal,
+    ModifyPathMapPane
   },
   data: function () {
     return {

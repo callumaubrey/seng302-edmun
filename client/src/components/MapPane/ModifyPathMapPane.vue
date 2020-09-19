@@ -1,16 +1,25 @@
 <template>
   <div>
-    <map-pane :path-info="true" :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
+    <b-row>
+      <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
+        <PathInfo ref="pathInfo" :points="toPass"></PathInfo>
+      </b-col>
+      <b-col style="padding: 0em">
+        <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
+      </b-col>
+    </b-row>
   </div>
 </template>
 
 <script>
 import MapPane from "./MapPane";
 import axios from 'axios'
+import PathInfo from "./PathInfo";
 
 export default {
   name: "RecordActivityResultModal",
   components: {
+    PathInfo,
     MapPane
   },
   props: ['profileId', 'activityId', 'loggedInId'],
@@ -18,7 +27,8 @@ export default {
     return {
       autoRoute: false,
       canChangeSelection: true,
-      count: 0
+      count: 0,
+      toPass: []
     }
   },
   methods: {
@@ -100,7 +110,7 @@ export default {
       })
     },
     resetMarkerAndPoint() {
-      this.$refs.map.setMarkers([])
+      this.$refs.map.markers = []
       this.$refs.map.setRoutePoints([])
       this.canChangeSelection = true;
     },
@@ -120,5 +130,16 @@ export default {
       }
     }
   },
+  mounted() {
+    console.log(this.$refs.map.markers)
+    this.$refs.pathInfo.data = this.$refs.map.markers
+    if(this.$refs.map.markers == null) {
+      this.toPass = []
+    } else {
+      this.toPass = this.$refs.map.markers
+    }
+
+    // console.log(this.$refs.map.markers)
+  }
 }
 </script>
