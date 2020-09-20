@@ -108,7 +108,7 @@ public class LocationController {
           HttpStatus.BAD_REQUEST);
     }
 
-    List results = new ArrayList();
+    List results = new ArrayList<>();
     if (longitude != null && latitude != null) {
       String locationName =
           locationService.getLocationAddressFromLatLng(latitude, longitude, false);
@@ -133,5 +133,31 @@ public class LocationController {
     return new ResponseEntity<>(
         "Either latitude or longitude is specified or name to search for is specified",
         HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * This endpoint gets the location coordinates by place id.
+   *
+   * @param placeId unique place id from Google Maps API
+   * @param session HttpSession
+   * @return ResponseEntity OK if successful, or BAD_REQUEST if place id is not provided or no
+   *     location for this place id.
+   */
+  @GetMapping("/geocode")
+  public ResponseEntity<?> getCoordinatesByPlaceId(
+      @RequestParam(name = "id", required = false) String placeId, HttpSession session) {
+    Object id = session.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+    }
+    if (placeId == null) {
+      return new ResponseEntity<>("Place id must be provided", HttpStatus.BAD_REQUEST);
+    }
+
+    JSONObject coordinates = locationService.getLocationCoordinatesFromPlaceId(placeId);
+    if (coordinates == null) {
+      return new ResponseEntity<>("No location for this place id", HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>(coordinates, HttpStatus.OK);
   }
 }

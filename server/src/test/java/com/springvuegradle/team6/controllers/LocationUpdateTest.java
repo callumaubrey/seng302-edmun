@@ -1,7 +1,6 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
