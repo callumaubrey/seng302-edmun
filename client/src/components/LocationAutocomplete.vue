@@ -129,9 +129,9 @@
       /**
        * Set location text in input field based on unique place id by calling Google API from backend
        **/
-      setSelectedLocation: function (location) {
+      setSelectedLocation: async function (location) {
         this.locationText = location.name
-        api.getGeocodePlaceId(location.place_id).then((response) => {
+        await api.getGeocodePlaceId(location.place_id).then((response) => {
           this.selectedLocation = response.data
         }).catch(() => {
           this.$bvToast.toast('An error has occurred, please try again.', {

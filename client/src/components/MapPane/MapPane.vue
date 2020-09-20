@@ -77,36 +77,37 @@
                           :color="circle.color"
                 />
 
-                                <!--Routing-->
-                                <l-polyline :weights="10"
-                                            :lat-lngs="routePoints">
-                                </l-polyline>
+                <!--Routing-->
+                <l-polyline :weights="10"
+                            :lat-lngs="routePoints">
+                </l-polyline>
 
-                                <l-marker v-for="marker in markers"
-                                          :key="marker.id"
-                                          :visible="marker.visible"
-                                          :lat-lng="marker.position"
-                                          :icon="marker.icon"
-                                          :draggable=marker.draggable
-                                          @click="markerSelected(marker)"
-                                          @dragend="editMarker($event, marker)"
-                                >
-                                    <l-tooltip id="popUp"
-                                               v-if="marker.title != null"
-                                               :options='{ interactive: true, offset: [2, -36], direction: "top"}'
-                                    >
-                                        <b-container style="max-height: 6.5em; overflow: hidden">
-                                            <b>
-                                                {{marker.title}}
-                                            </b>
-                                            <span v-if="marker.content">
+                <l-marker v-for="marker in markers"
+                          :key="marker.id"
+                          :visible="marker.visible"
+                          :lat-lng="marker.position"
+                          :icon="marker.icon"
+                          :draggable=marker.draggable
+                          @click="markerSelected(marker)"
+                          @dragend="editMarker($event, marker)"
+                >
+                  <l-tooltip id="popUp"
+                             v-if="marker.title != null"
+                             :options='{ interactive: true, offset: [2, -36], direction: "top"}'
+                  >
+                    <b-container style="max-height: 6.5em; overflow: hidden">
+                      <b>
+                        {{marker.title}}
+                      </b>
+                      <span v-if="marker.content">
                                                 <hr style="margin: 0.25em">
                                                 <span>{{marker.content.startTime}}</span>
                                                 <span class="text-center">
-                                                    <ActivityTypeIcon v-for="type in marker.content.activityTypes"
-                                                                  style="font-size: 1.5em"
-                                                                  :key="type"
-                                                                  :type_name="type"></ActivityTypeIcon>
+                                                    <ActivityTypeIcon
+                                                        v-for="type in marker.content.activityTypes"
+                                                        style="font-size: 1.5em"
+                                                        :key="type"
+                                                        :type_name="type"></ActivityTypeIcon>
                                                 </span>
                                             </span>
                     </b-container>
@@ -129,11 +130,11 @@
 </template>
 
 <script>
-    import L from "leaflet";
-    import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
-    import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
-    import axios from "axios";
-    import PathInfo from "./PathInfo";
+  import L from "leaflet";
+  import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
+  import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
+  import axios from "axios";
+  import PathInfo from "./PathInfo";
 
   export default {
     name: "MapPane",
@@ -221,69 +222,69 @@
         pathStartMarker: pathStartMarker,
         pathEndMarker: pathEndMarker,
 
-                userGeoLocation: null,
-                circle: {
-                    center: [-43.530629, 172.625955],
-                    radius: 4500,
-                    color: '#3388ff',
-                },
-                routePoints: [],
-                markerObjects: {},
-                savedMarkers: null
-            };
+        userGeoLocation: null,
+        circle: {
+          center: [-43.530629, 172.625955],
+          radius: 4500,
+          color: '#3388ff',
         },
-        methods: {
-            /**
-             * Updates the zoom of the map
-             **/
-            zoomUpdate(zoom) {
-                this.zoom = zoom
-            },
-            updateCircle(lat, lng, radius) {
-                this.circle.center = [lat, lng];
-                this.circle.radius = radius;
-            },
-            /**
-             * Updates the center of the map
-             **/
-            centerUpdate(center) {
-                this.center = center
-            },
-            /**
-             * Updates the center of the map using lat and lng
-             **/
-            setMapCenter(lat, lng) {
-                this.centerUpdate(L.latLng(lat, lng));
-            },
-            /**
-             * Creates a marker on the map.
-             * id: The way the marker is deleted
-             * iconColour: used as a key for what icon to display. red = 1, pathMarker = 3, blue = other
-             * lat: latitude of the marker
-             * lng: longitude of the marker
-             * content: content of the tooltip
-             * title: title of the tooltip
-             *
-             * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
-             **/
-            createMarker(id, iconColour, lat, lng, content, title, draggable) {
-                //Check inputs and set position and icon
-                let icon = null;
-                let coordinates = [lat, lng];
-                if (iconColour === 1) {
-                    icon = this.redMarker;
-                }
-                if (iconColour === 3) {
-                    icon = this.pathStartMarker
-                } else {
-                    icon = this.blueMarker
-                }
-                if(content == null){
-                    content = ""
-                }
-                if (draggable == null){
-                  draggable = false
-                }
+        routePoints: [],
+        markerObjects: {},
+        savedMarkers: null
+      };
+    },
+    methods: {
+      /**
+       * Updates the zoom of the map
+       **/
+      zoomUpdate(zoom) {
+        this.zoom = zoom
+      },
+      updateCircle(lat, lng, radius) {
+        this.circle.center = [lat, lng];
+        this.circle.radius = radius;
+      },
+      /**
+       * Updates the center of the map
+       **/
+      centerUpdate(center) {
+        this.center = center
+      },
+      /**
+       * Updates the center of the map using lat and lng
+       **/
+      setMapCenter(lat, lng) {
+        this.centerUpdate(L.latLng(lat, lng));
+      },
+      /**
+       * Creates a marker on the map.
+       * id: The way the marker is deleted
+       * iconColour: used as a key for what icon to display. red = 1, pathMarker = 3, blue = other
+       * lat: latitude of the marker
+       * lng: longitude of the marker
+       * content: content of the tooltip
+       * title: title of the tooltip
+       *
+       * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
+       **/
+      createMarker(id, iconColour, lat, lng, content, title, draggable) {
+        //Check inputs and set position and icon
+        let icon = null;
+        let coordinates = [lat, lng];
+        if (iconColour === 1) {
+          icon = this.redMarker;
+        }
+        if (iconColour === 3) {
+          icon = this.pathStartMarker
+        } else {
+          icon = this.blueMarker
+        }
+        if (content == null) {
+          content = ""
+        }
+        if (draggable == null) {
+          draggable = false
+        }
 
         //Adds the marker to the markers list to be displayed
         this.markers.push({
@@ -357,75 +358,82 @@
         this.routePoints[index] = point
       },
 
-            /**
-             * Sets Route points using path
-             **/
-            setPath(path, show_keypoints=false, only_start_finish=false) {
-                if(path === null) {
-                    this.routePoints = [];
-                    return;
+      /**
+       * Sets Route points using path
+       **/
+      setPath(path, show_keypoints = false, only_start_finish = false) {
+        if (path === null) {
+          this.routePoints = [];
+          return;
+        }
+
+        // Set markers
+        if (show_keypoints) {
+          for (let i = 0; i < path.locations.length; i++) {
+            let keypoint = path.locations[i];
+
+            // Set Colour
+            let colour_id = 2;
+            if (i === 0) {
+              colour_id = 3;
+            }
+
+            // Title
+            let title = null;
+            if (i === 0) {
+              title = "Start";
+            }
+            if (i === path.locations.length - 1) {
+              title = "Finish";
+            }
+
+            if (!only_start_finish || (only_start_finish && (i === 0 || i === path.locations.length
+                - 1))) {
+              this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
+                  "", title, false);
+            }
+          }
+          this.getLatestMarker().icon = this.pathEndMarker;
+        }
+
+        if (path.type === "STRAIGHT") {
+          // Create api route path from path locations
+          this.routePoints = [];
+          for (const keypoint of path.locations) {
+            this.routePoints.push([keypoint.latitude, keypoint.longitude]);
+          }
+        } else if (path.type === "DEFINED") {
+          // Create api keypoints from path locations
+          let keypoints = [];
+          for (const keypoint of path.locations) {
+            keypoints.push([keypoint.longitude, keypoint.latitude]);
+          }
+
+          // Get direction route using keypoints
+          axios.post("https://api.openrouteservice.org/v2/directions/foot-hiking/geojson",
+              {
+                coordinates: keypoints,
+              },
+              {headers: {Authorization: "5b3ce3597851110001cf6248183abbef295f42049b13e7a011f98247"}})
+              .then((res) => {
+                // Load route points from api data
+                this.routePoints = [];
+                for (let location of res.data.features[0].geometry.coordinates) {
+                  this.routePoints.push([location[1], location[0]])
                 }
+              }).catch((err) => {
+            console.error(err);
+          });
+        }
+      },
 
-                // Set markers
-                if(show_keypoints) {
-                    for (let i = 0; i < path.locations.length; i++) {
-                        let keypoint = path.locations[i];
-
-                        // Set Colour
-                        let colour_id = 2;
-                        if (i === 0) colour_id = 3;
-
-                        // Title
-                        let title = null;
-                        if (i === 0) title="Start";
-                        if (i === path.locations.length -1) title="Finish";
-
-                        if(!only_start_finish || (only_start_finish && (i===0 || i===path.locations.length - 1))) {
-                            this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
-                                "", title, false);
-                        }
-                    }
-                    this.getLatestMarker().icon = this.pathEndMarker;
-                }
-
-                if (path.type === "STRAIGHT") {
-                    // Create api route path from path locations
-                    this.routePoints = [];
-                    for(const keypoint of path.locations) {
-                        this.routePoints.push([keypoint.latitude, keypoint.longitude]);
-                    }
-                } else if(path.type === "DEFINED") {
-                    // Create api keypoints from path locations
-                    let keypoints = [];
-                    for(const keypoint of path.locations) {
-                        keypoints.push([keypoint.longitude, keypoint.latitude]);
-                    }
-
-                    // Get direction route using keypoints
-                    axios.post("https://api.openrouteservice.org/v2/directions/foot-hiking/geojson",
-                        {
-                            coordinates: keypoints,
-                        },
-                        {headers: {Authorization: "5b3ce3597851110001cf6248183abbef295f42049b13e7a011f98247"}})
-                    .then((res) => {
-                        // Load route points from api data
-                        this.routePoints = [];
-                        for (let location of res.data.features[0].geometry.coordinates) {
-                            this.routePoints.push([location[1], location[0]])
-                        }
-                    }).catch((err) => {
-                        console.error(err);
-                    });
-                }
-            },
-
-            /**
-             * Sets markers with given parameter
-             *
-             **/
-            setMarkers(markers) {
-                this.markers = markers
-            },
+      /**
+       * Sets markers with given parameter
+       *
+       **/
+      setMarkers(markers) {
+        this.markers = markers
+      },
 
       /**
        * Removes a marker by id
