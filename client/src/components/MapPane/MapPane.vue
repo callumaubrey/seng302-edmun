@@ -48,8 +48,8 @@
                                           :radius="circle.radius"
                                           :color="circle.color"
                                 />
-                                <LControl class="control-overlay">
-                                    <b-col v-if="pathOverlay">
+                                <LControl class="control-overlay" v-if="pathOverlay">
+                                    <b-col>
                                         <b-row>
                                             <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Delete End Marker</b-button>
                                             <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset</b-button>
@@ -62,7 +62,6 @@
                                             </b-form-radio-group>
                                         </b-row>
                                     </b-col>
-                                    <PathInfo v-if="pathInfo" :points="markers"></PathInfo>
                                 </LControl>
                                 <l-circle v-if="displayCircle"
                                         :lat-lng="circle.center"
@@ -126,12 +125,10 @@
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
     import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
     import axios from "axios";
-    import PathInfo from "./PathInfo";
 
     export default {
         name: "MapPane",
         components: {
-            PathInfo,
             ActivityTypeIcon,
             LMap,
             LTileLayer,
@@ -145,10 +142,6 @@
             canHide: {
                 type: Boolean,
                 default: true
-            },
-            pathInfo: {
-                type: Boolean,
-                default: false
             },
             title: {
                 type: String,
@@ -476,9 +469,9 @@
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
+                this.$emit('markerSelected', marker.id);
                 if (this.routePoints.length == 0) {
                     this.center = marker.position;
-                    this.$emit('markerSelected', marker.content.id);
                 } else {
                     this.$parent.clickOnMarker(marker.position)
                 }

@@ -166,6 +166,9 @@
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
             <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
+          <b-tab title="Route">
+            <PathInfoMapView :path="activity.path"></PathInfoMapView>
+          </b-tab>
         </b-tabs>
       </div>
     </div>
@@ -184,10 +187,17 @@ import api from '@/Api'
 import AdminMixin from "../../mixins/AdminMixin";
 import ActivityResults from "../../components/ActivityResults";
 import MapPane from "../../components/MapPane/MapPane";
+import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+import PathInfo from "../../components/MapPane/PathInfo";
+import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
 
 const App = {
   name: "App",
   components: {
+    PathInfoMapView,
+    PathInfo,
+    ModifyLocationMapPane,
     MapPane,
     ActivityResults,
     NavBar,
@@ -196,7 +206,8 @@ const App = {
     FollowerSummary,
     ShareActivity,
     ForbiddenMessage,
-    RecordActivityResultModal
+    RecordActivityResultModal,
+    ModifyPathMapPane
   },
   data: function () {
     return {
@@ -224,7 +235,8 @@ const App = {
       isAuthorized: true,
       metrics: [],
       followSummaryKey: 0,
-      shareActivityKey: 0
+      shareActivityKey: 0,
+      pathKeypointSelected: null
     }
   },
   mounted() {
