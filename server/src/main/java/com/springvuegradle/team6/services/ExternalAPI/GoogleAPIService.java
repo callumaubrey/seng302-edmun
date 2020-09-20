@@ -31,6 +31,7 @@ public class GoogleAPIService {
       "https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={key}";
   protected static final String URL_PLACE_AUTOCOMPLETE =
       "https://maps.googleapis.com/maps/api/place/autocomplete/json?input={input}&key={key}";
+  protected static final String URL_GEOCODE_PLACE_ID = "https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&key={key}";
 
   @Autowired private RestTemplateBuilder builder;
   protected RestTemplate template;
@@ -76,6 +77,46 @@ public class GoogleAPIService {
     } catch (ParseException e) {
       Logger.getLogger("ExternalAPI")
           .log(Level.SEVERE, "Could not parse Google place autocomplete API json");
+      Logger.getLogger("ExternalAPI").log(Level.SEVERE, response.getBody());
+      throw new HttpServerErrorException(HttpStatus.EXPECTATION_FAILED);
+    }
+
+    // Check status code
+    if (responseJson.getAsString("status").equals("REQUEST_DENIED")) {
+      Logger.getLogger("ExternalAPI")
+          .log(Level.SEVERE, "GOOGLE API KEY set incorrectly. Requests Failed");
+      throw new HttpServerErrorException(HttpStatus.UNAUTHORIZED);
+    }
+
+    return responseJson;
+  }
+
+  /**
+   * Call geocode place id Google API for retrieving location coordinates
+   *
+   * @param placeId unique place id of location
+   * @return JSONObject of data received from the api
+   */
+  public JSONObject geocodePlaceId(String placeId) {
+    // Call API
+    ResponseEntity<String> response =
+        template.getForEntity(URL_GEOCODE_PLACE_ID, String.class, placeId, API_KEY);
+
+    // Check response
+    if (response.getStatusCode() != HttpStatus.OK) {
+      Logger.getLogger("ExternalAPI").log(Level.SEVERE, "Google geocode place id API error");
+      Logger.getLogger("ExternalAPI").log(Level.SEVERE, response.getBody());
+      throw new HttpServerErrorException(response.getStatusCode());
+    }
+
+    // Parse JSON
+    JSONObject responseJson;
+    try {
+      responseJson =
+          (JSONObject) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(response.getBody());
+    } catch (ParseException e) {
+      Logger.getLogger("ExternalAPI")
+          .log(Level.SEVERE, "Could not parse Google geocode place id API json");
       Logger.getLogger("ExternalAPI").log(Level.SEVERE, response.getBody());
       throw new HttpServerErrorException(HttpStatus.EXPECTATION_FAILED);
     }

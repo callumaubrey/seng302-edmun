@@ -59,7 +59,6 @@ public class LocationService {
    */
   public List<JSONObject> getLocationAddressListFromName(String name) {
     JSONObject locationJSON = apiService.autocompleteLocationName(name);
-    System.out.println(locationJSON);
     JSONArray locationArray = (JSONArray) locationJSON.get("predictions");
 
     ArrayList<JSONObject> results = new ArrayList<>();
@@ -71,8 +70,23 @@ public class LocationService {
       result.put("place_id", locationPlaceId);
       results.add(result);
     }
-    System.out.println(results);
     return results;
+  }
+
+  /**
+   * Parse the Google geocode place id API response to only return coordinates
+   *
+   * @param placeId unique place id from Google API
+   * @return coordinates as JSONObject
+   */
+  public JSONObject getLocationCoordinatesFromPlaceId(String placeId) {
+    JSONObject locationJSON = apiService.geocodePlaceId(placeId);
+    if (locationJSON.getAsString("status").equals("INVALID_REQUEST")) {
+      return null;
+    }
+    return (JSONObject)
+        ((JSONObject) ((JSONObject) locationJSON.get("result")).get("geometry"))
+            .get("location");
   }
 
   /**

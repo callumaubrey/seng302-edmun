@@ -222,6 +222,12 @@
                                      @locationSelect="updateLocation"
                 ></ActivityLocationTab>
               </b-tab>
+
+              <!-- Path Editor -->
+              <b-tab title="Activity Path">
+                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+              </b-tab>
+
               <!-- Metrics Editor -->
               <b-tab title="Activity Metrics">
                 <template v-slot:title>
@@ -264,10 +270,12 @@
   import {store} from "../../store";
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+  import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
+      ModifyPathMapPane,
       ActivityMetricsEditor,
       NavBar,
       SearchTag,
@@ -490,8 +498,14 @@
           api.createActivity(userId, data)
               .then(function (res) {
                 const activityId = res.data;
-                store.newNotification('Activity created successfully', 'success', 4);
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                currentObj.submitPath(activityId).then(() => {
+                  store.newNotification('Activity created successfully', 'success', 4)
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to create activity, server error', {
@@ -525,8 +539,14 @@
           api.createActivity(userId, data)
               .then(function (res) {
                 const activityId = res.data;
-                store.newNotification('Activity created successfully', 'success', 4)
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                currentObj.submitPath(activityId).then(() => {
+                  store.newNotification('Activity created successfully', 'success', 4)
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to create activity, server error', {
@@ -537,6 +557,12 @@
               });
         }
       },
+
+      submitPath: function(activityId) {
+        // Update path
+        return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
+      },
+
       getDates: function () {
         let startDateISO;
         if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null

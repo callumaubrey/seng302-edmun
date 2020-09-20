@@ -215,6 +215,11 @@
               </b-tab>
 
 
+              <!-- Activity Path Editor -->
+              <b-tab title="Activity Path">
+                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+              </b-tab>
+
               <!-- Metrics Editor -->
               <b-tab>
                 <template v-slot:title>
@@ -246,21 +251,24 @@
 </template>
 
 <script>
-  import NavBar from "@/components/NavBar.vue";
-  import SearchTag from "../../components/SearchTag";
-  import ForbiddenMessage from "../../components/ForbiddenMessage";
-  import {validationMixin} from "vuelidate";
-  import {required} from 'vuelidate/lib/validators';
-  import locationMixin from "../../mixins/locationMixin";
-  import AdminMixin from "../../mixins/AdminMixin";
-  import api from '@/Api'
-  import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-  import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-  import {store} from "../../store";
+import NavBar from "@/components/NavBar.vue";
+import SearchTag from "../../components/SearchTag";
+import ForbiddenMessage from "../../components/ForbiddenMessage";
+import {validationMixin} from "vuelidate";
+import {required} from 'vuelidate/lib/validators';
+import locationMixin from "../../mixins/locationMixin";
+import AdminMixin from "../../mixins/AdminMixin";
+import api from '@/Api'
+import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+import {store} from "../../store";
+
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
+      ModifyPathMapPane,
       ActivityMetricsEditor,
       SearchTag,
       NavBar,
@@ -490,11 +498,15 @@
         };
         if (this.isContinuous === '0') {
           api.updateActivity(userId, this.activityId, data)
-              .then(function (response) {
-                console.log(response);
-                store.newNotification('Activity updated successfully', 'success', 4)
-                currentObj.$router.push(
-                    '/profiles/' + userId + '/activities/' + currentObj.activityId);
+              .then(() => {
+                currentObj.updatePath().then(()=> {
+                  store.newNotification('Activity updated successfully', 'success', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -525,10 +537,15 @@
             metrics: this.$refs.metric_editor.getMetricData()
           };
           api.updateActivity(userId, this.activityId, data)
-              .then(function (response) {
-                console.log(response);
-                store.newNotification('Activity updated successfully', 'success', 4)
-                currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+              .then(() => {
+                currentObj.updatePath().then(()=> {
+                  store.newNotification('Activity updated successfully', 'success', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                }).catch((err) => {
+                  console.error(err);
+                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
+                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                });
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -537,9 +554,13 @@
                   solid: true
                 })
               });
-
         }
       },
+
+      updatePath: function() {
+        return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
+      },
+
       getISODates: function () {
         let startDateISO;
         if (this.durationForm.startTime === "00:00" || this.durationForm.startTime == null
@@ -631,6 +652,10 @@
       },
       onChildClick: function (val) {
         this.selectedVisibility = val
+      },
+
+      loadActivityPath: function() {
+        this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
       }
     },
     mounted: async function () {
@@ -639,6 +664,7 @@
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
+      this.loadActivityPath();
     }
   }
 </script>
