@@ -235,7 +235,10 @@
                             keypoint_index++;
                             if(keypoint_index===this.path.locations.length) step.end_goal=true;
                         }
-                        step.distance = Math.round(step.distance / 50) * 50;
+
+                        // Round distance to nearest 50 if greater than 50
+                        if(step.distance > 50) step.distance = Math.round(step.distance / 50) * 50;
+
                         this.directionSteps.push(step);
                     }
                 }
