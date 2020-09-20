@@ -44,7 +44,7 @@
             </b-tab>
 
             <!-- Directions -->
-            <b-tab class="p-0 overflow-auto" style="max-height: 565px"
+            <b-tab class="p-0 overflow-auto" style="max-height: 565px" id="pathInfoDirectionTab"
                    :disabled="path.type==='STRAIGHT'" >
                 <!-- Icon -->
                 <template v-slot:title>
@@ -53,39 +53,37 @@
 
 
                 <b-list-group  v-for="step in directionSteps" :key="step.index">
-                    <b-list-group-item>
-                        <b-row>
+                    <b-list-group-item :id="isStepTypeGoal(step) ? `PathInfoStepDistanceKeypoint_${step.keypoint_index}` : undefined"
+                                       :class="{'selected_keypoint': selectedKeypoint === step.keypoint_index,
+                                                'clickable': isStepTypeGoal(step)}"
+                                       @click="selectKeypoint(step.keypoint_index)">
+                        <b-row align-v="center">
                             <!-- Marker Icon -->
                             <b-col style="flex: 0 0 35px; font-size: 0.75em" class="p-0">
-                                <span class="fa-stack fa-2x">
-                                  <i class="fas fa-square fa-stack-2x" style="color:#2af582"></i>
+                                <span v-if="step.end_goal" class="fa-stack fa-2x">
+                                  <i class="fas fa-circle fa-stack-2x" style="color:Tomato"></i>
+                                  <i class="fas fa-flag-checkered fa-stack-1x fa-inverse"></i>
+                                </span>
+                                <span v-else-if="isStepTypeGoal(step)" class="fa-stack fa-2x">
+                                  <i class="fas fa-circle fa-stack-2x" style="color:#1295ff"></i>
+                                  <i class="fas fa-map-marker-alt fa-stack-1x fa-inverse"></i>
+                                </span>
+                                <span v-else class="fa-stack fa-2x">
+                                  <i class="fas fa-square fa-stack-2x" style="color:#ab6eff"></i>
                                   <i :class="getDirectionStepIconClasses(step)"></i>
                                 </span>
                             </b-col>
 
                             <!-- Marker Info -->
                             <b-col>
-                                {{step.distance}}
-                                {{step.instruction}}
+                                <span v-if="!isStepTypeGoal(step)">{{step.distance}} m<br></span>
+                                <span class="text-secondary">{{step.instruction}}</span>
                             </b-col>
                         </b-row>
                     </b-list-group-item>
                 </b-list-group>
             </b-tab>
         </b-tabs>
-<!--
-        <b-list-group style="overflow: auto; max-height: 20em; max-width: 30em; margin: 0.5em" v-if="!directions">
-            <b-list-group-item style="cursor: pointer" v-for="point in points" :key="point.id" @click="pointSelected(point)">
-                <b>{{point.id + 1}}:</b>    {{point.name}}
-            </b-list-group-item>
-        </b-list-group>
-
-        <b-list-group style="overflow: auto; max-height: 20em; max-width: 30em; margin: 0.5em" v-else>
-            <b-list-group-item style="cursor: pointer" v-for="point in points" :key="point.id" @click="pointSelected(point)">
-&lt;!&ndash;                <b>{{point.id + 1}}:</b>    &ndash;&gt;
-                Test Location
-            </b-list-group-item>
-        </b-list-group>-->
     </div>
 </template>
 
@@ -106,7 +104,7 @@
         'fa-sync-alt', // Exit roundabout
         'fa-undo', // U-turn
         'fa-flag-checkered', // Goal
-        'external-link-square-alt', // Depart
+        'fa-long-arrow-alt-up', // Depart
         'fa-long-arrow-alt-left', // Keep left
         'fa-long-arrow-alt-right', // Kepp right
 
@@ -193,7 +191,9 @@
              * @param index keypoint index
              */
             selectKeypoint(index) {
-                this.$emit('selected', index);
+                if(index !== undefined) {
+                    this.$emit('selected', index);
+                }
             },
 
 
@@ -217,14 +217,26 @@
                 this.directionSegments = res.data.features[0].properties.segments;
             },
 
+            isStepTypeGoal(step) {
+                return parseInt(step.type)===10;
+            },
+
             generateDirectionInfo() {
                 let i = 0;
+                let keypoint_index = 1;
                 this.directionSteps = [];
                 for(const segment of this.directionSegments) {
                     for(let step of segment.steps) {
                         step.index = i;
-                        this.directionSteps.push(step);
                         i++;
+                        step.end_goal=false;
+                        if(this.isStepTypeGoal(step)) {
+                            step.keypoint_index = keypoint_index;
+                            keypoint_index++;
+                            if(keypoint_index===this.path.locations.length) step.end_goal=true;
+                        }
+                        step.distance = Math.round(step.distance / 50) * 50;
+                        this.directionSteps.push(step);
                     }
                 }
             },
@@ -245,13 +257,27 @@
             this.generateDirectionInfo();
         },
         watch: {
-            path: function() {
+            path: async function() {
+                await this.getDirectionInfo();
                 this.generateKeypointInfoFromPath();
+                this.generateDirectionInfo();
             },
             selectedKeypoint: function () {
-                let tab = document.getElementById("pathInfoMarkerTab");
-                let offset = 74 * this.selectedKeypoint;
-                tab.scrollTo({top:offset, behavior:'smooth'});
+                // Set offset for keypoint info
+                let key_offset = 74 * this.selectedKeypoint;
+
+
+                // Set offset for direction info
+                let dir_offset = 0;
+                if(this.selectedKeypoint!==0) {
+                    let keypoint_element = document.getElementById(`PathInfoStepDistanceKeypoint_${this.selectedKeypoint}`);
+                    dir_offset = keypoint_element.offsetTop - 74;
+                }
+
+                let key_tab = document.getElementById("pathInfoMarkerTab");
+                let dir_tab = document.getElementById("pathInfoDirectionTab");
+                key_tab.scrollTo({top:key_offset, behavior:'smooth'});
+                dir_tab.scrollTo({top:dir_offset, behavior:'smooth'});
             }
         }
     }
@@ -263,5 +289,8 @@
     }
     .selected_keypoint {
         background-color: #cff0ff;
+    }
+    .clickable {
+        cursor: pointer;
     }
 </style>
