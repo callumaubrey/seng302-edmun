@@ -166,18 +166,8 @@
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
             <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
-          <b-tab title="Activity Route">
-<!--            <modify-path-map-pane :pathOverlay="false" style="padding-bottom: 5em"></modify-path-map-pane>-->
-            <b-row>
-              <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
-                <PathInfo ref="pathInfo" :points="toPass"></PathInfo>
-              </b-col>
-              <b-col style="padding: 0em">
-                <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
-              </b-col>
-            </b-row>
-
-
+          <b-tab title="Route">
+            <PathInfoMapView :path="activity.path"></PathInfoMapView>
           </b-tab>
         </b-tabs>
       </div>
@@ -200,10 +190,12 @@ import MapPane from "../../components/MapPane/MapPane";
 import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
 import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 import PathInfo from "../../components/MapPane/PathInfo";
+import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
 
 const App = {
   name: "App",
   components: {
+    PathInfoMapView,
     PathInfo,
     ModifyLocationMapPane,
     MapPane,
@@ -243,7 +235,8 @@ const App = {
       isAuthorized: true,
       metrics: [],
       followSummaryKey: 0,
-      shareActivityKey: 0
+      shareActivityKey: 0,
+      pathKeypointSelected: null
     }
   },
   mounted() {

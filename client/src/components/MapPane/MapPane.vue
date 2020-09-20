@@ -469,9 +469,9 @@
              * Focuses the map to the marker selected
              **/
             markerSelected(marker) {
+                this.$emit('markerSelected', marker.id);
                 if (this.routePoints.length == 0) {
                     this.center = marker.position;
-                    this.$emit('markerSelected', marker.content.id);
                 } else {
                     this.$parent.clickOnMarker(marker.position)
                 }
