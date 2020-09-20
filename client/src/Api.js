@@ -108,6 +108,8 @@ export default {
 
     getActivityTypes: () => instance.get('/profiles/activity-types'),
 
+    getActivityPath: (profileId, activityId) => instance.get(`profiles/${profileId}/activities/${activityId}/path`),
+
     getUserActivityResults: (userId, activityId, metricId) => instance.get(
         '/activities/' + activityId + '/result/' +  metricId + '/' + userId),
 
@@ -172,6 +174,9 @@ export default {
 
     updateActivity: (profileId, activityId, data) => instance.put(
         '/profiles/' + profileId + '/activities/' + activityId, data),
+
+    updateActivityPath: (profileId, activityId, data) => instance.put(
+        `profiles/${profileId}/activities/${activityId}/path`, data),
 
     updateAdminRights: (profileId, data) => instance.put(
         '/admin/profiles/' + profileId + '/role', data),

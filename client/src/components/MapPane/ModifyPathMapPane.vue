@@ -15,14 +15,16 @@
 import MapPane from "./MapPane";
 import axios from 'axios'
 import PathInfo from "./PathInfo";
+import api from '@/Api'
 
 export default {
-  name: "RecordActivityResultModal",
+  name: "ModifyPathMapPane",
+
   components: {
     PathInfo,
     MapPane
   },
-  props: ['profileId', 'activityId', 'loggedInId'],
+
   data() {
     return {
       autoRoute: false,
@@ -31,6 +33,7 @@ export default {
       toPass: []
     }
   },
+
   methods: {
     mapClicked(event) {
       const currObj = this
@@ -77,14 +80,14 @@ export default {
       this.$refs.map.updateStartFinishMarkers()
     },
 
-    getRoutePoints(coordinates){
+    getRoutePoints(coordinates) {
       const currObj = this
       let apiInput = this.$refs.map.getAllMarkersCoords()
       if (coordinates.length != 0){
         //For some reason api takes [lng,lat] points rather than [lat,lng] points, hence reverse()
         apiInput.push([coordinates[1], coordinates[0]])
       }
-      axios.post("https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+      axios.post("https://api.openrouteservice.org/v2/directions/foot-hiking/geojson",
           {
             coordinates: apiInput,
           },
@@ -128,6 +131,56 @@ export default {
         }
         this.$refs.map.updateStartFinishMarkers()
       }
+    },
+
+    /**
+     * Load activity path into editor
+     * @param profileId
+     * @param activityId
+     */
+    getPathFromActivity(profileId, activityId) {
+      api.getActivityPath(profileId, activityId).then((res) => {
+        this.autoRoute = res.data.type === "DEFINED";
+        this.canChangeSelection = false;
+
+        this.$refs.map.setPath(res.data, true);
+      }).catch((err) => {
+        console.error(err);
+      });
+    },
+
+    /**
+     * Generates a path object using editor data
+     **/
+    getPathObject() {
+      if(this.$refs.map.routePoints.length === 0) {
+        return null;
+      }
+
+      let pathObj = {
+        pathType: this.autoRoute ? "DEFINED" : "STRAIGHT",
+        coordinates: []
+      };
+
+      // Format locations
+      for(const keypoint of this.$refs.map.markers) {
+        pathObj.coordinates.push({
+          latitude: keypoint.position[0],
+          longitude: keypoint.position[1]
+        });
+      }
+
+      return pathObj;
+    },
+
+    /**
+     * upload activity path in editor
+     * @param profileId
+     * @param activityId
+     */
+    updatePathInActivity(profileId, activityId) {
+      let pathObj = this.getPathObject();
+      return api.updateActivityPath(profileId, activityId, pathObj);
     }
   },
   mounted() {

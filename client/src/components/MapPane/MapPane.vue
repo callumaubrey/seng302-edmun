@@ -70,7 +70,8 @@
                                 />
 
                                 <!--Routing-->
-                                <l-polyline :lat-lngs="routePoints">
+                                <l-polyline :weights="10"
+                                            :lat-lngs="routePoints">
                                 </l-polyline>
 
                                 <l-marker v-for="marker in markers"
@@ -90,14 +91,15 @@
                                             <b>
                                                 {{marker.title}}
                                             </b>
-                                            <hr style="margin: 0.25em">
-                                            <span>{{marker.content.activityTypes}} <br></span>
-                                            <span>{{marker.content.startTime}}</span>
-                                            <span class="text-center">
-                                            <ActivityTypeIcon v-for="type in marker.content.activityTypes"
-                                                              style="font-size: 1.5em"
-                                                              :key="type"
-                                                              :type_name="type"></ActivityTypeIcon>
+                                            <span v-if="marker.content">
+                                                <hr style="margin: 0.25em">
+                                                <span>{{marker.content.startTime}}</span>
+                                                <span class="text-center">
+                                                    <ActivityTypeIcon v-for="type in marker.content.activityTypes"
+                                                                  style="font-size: 1.5em"
+                                                                  :key="type"
+                                                                  :type_name="type"></ActivityTypeIcon>
+                                                </span>
                                             </span>
                                         </b-container>
                                     </l-tooltip>
@@ -122,6 +124,7 @@
     import L from "leaflet";
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
     import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
+    import axios from "axios";
 
     export default {
         name: "MapPane",
@@ -254,7 +257,7 @@
                 let icon = null;
                 let coordinates = [lat, lng];
                 if (iconColour === 1) {
-                    icon = this.redMarker
+                    icon = this.redMarker;
                 }
                 if (iconColour === 3) {
                     icon = this.pathStartMarker
@@ -338,6 +341,68 @@
              **/
             editSingleRoutePoint(point, index) {
                 this.routePoints[index] = point
+            },
+
+            /**
+             * Sets Route points using path
+             **/
+            setPath(path, show_keypoints=false, only_start_finish=false) {
+                if(path === null) {
+                    this.routePoints = [];
+                    return;
+                }
+
+                // Set markers
+                if(show_keypoints) {
+                    for (let i = 0; i < path.locations.length; i++) {
+                        let keypoint = path.locations[i];
+
+                        // Set Colour
+                        let colour_id = 2;
+                        if (i === 0) colour_id = 3;
+
+                        // Title
+                        let title = null;
+                        if (i === 0) title="Start";
+                        if (i === path.locations.length -1) title="Finish";
+
+                        if(!only_start_finish || (only_start_finish && (i===0 || i===path.locations.length - 1))) {
+                            this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
+                                "", title, false);
+                        }
+                    }
+                    this.getLatestMarker().icon = this.pathEndMarker;
+                }
+
+                if (path.type === "STRAIGHT") {
+                    // Create api route path from path locations
+                    this.routePoints = [];
+                    for(const keypoint of path.locations) {
+                        this.routePoints.push([keypoint.latitude, keypoint.longitude]);
+                    }
+                } else if(path.type === "DEFINED") {
+                    // Create api keypoints from path locations
+                    let keypoints = [];
+                    for(const keypoint of path.locations) {
+                        keypoints.push([keypoint.longitude, keypoint.latitude]);
+                    }
+
+                    // Get direction route using keypoints
+                    axios.post("https://api.openrouteservice.org/v2/directions/foot-hiking/geojson",
+                        {
+                            coordinates: keypoints,
+                        },
+                        {headers: {Authorization: "5b3ce3597851110001cf6248183abbef295f42049b13e7a011f98247"}})
+                    .then((res) => {
+                        // Load route points from api data
+                        this.routePoints = [];
+                        for (let location of res.data.features[0].geometry.coordinates) {
+                            this.routePoints.push([location[1], location[0]])
+                        }
+                    }).catch((err) => {
+                        console.error(err);
+                    });
+                }
             },
 
             /**
