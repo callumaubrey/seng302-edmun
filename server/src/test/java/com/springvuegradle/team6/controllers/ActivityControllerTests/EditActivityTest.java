@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers.ActivityControllerTest;
+package com.springvuegradle.team6.controllers.ActivityControllerTests;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;

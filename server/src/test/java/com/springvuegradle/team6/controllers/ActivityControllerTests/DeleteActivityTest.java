@@ -1,4 +1,4 @@
-package com.springvuegradle.team6.controllers.ActivityControllerTest;
+package com.springvuegradle.team6.controllers.ActivityControllerTests;
 
 import com.springvuegradle.team6.models.entities.Activity;
 import com.springvuegradle.team6.models.entities.ActivityHistory;

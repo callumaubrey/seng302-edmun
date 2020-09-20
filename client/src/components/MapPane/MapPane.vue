@@ -48,8 +48,8 @@
                                           :radius="circle.radius"
                                           :color="circle.color"
                                 />
-                                <LControl v-if="pathOverlay" class="control-overlay">
-                                    <b-col>
+                                <LControl class="control-overlay">
+                                    <b-col v-if="pathOverlay">
                                         <b-row>
                                             <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Delete End Marker</b-button>
                                             <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset</b-button>
@@ -62,6 +62,7 @@
                                             </b-form-radio-group>
                                         </b-row>
                                     </b-col>
+                                    <PathInfo v-if="pathInfo" :points="markers"></PathInfo>
                                 </LControl>
                                 <l-circle v-if="displayCircle"
                                         :lat-lng="circle.center"
@@ -125,10 +126,12 @@
     import {LMap, LTileLayer, LMarker, LTooltip, LCircle, LPolyline, LControl} from "vue2-leaflet";
     import ActivityTypeIcon from "../Activity/ActivityType/ActivityTypeIcon";
     import axios from "axios";
+    import PathInfo from "./PathInfo";
 
     export default {
         name: "MapPane",
         components: {
+            PathInfo,
             ActivityTypeIcon,
             LMap,
             LTileLayer,
@@ -142,6 +145,10 @@
             canHide: {
                 type: Boolean,
                 default: true
+            },
+            pathInfo: {
+                type: Boolean,
+                default: false
             },
             title: {
                 type: String,
@@ -197,7 +204,8 @@
                 attribution:
                     '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 mapOptions: {
-                    zoomSnap: 0.5
+                    zoomSnap: 0.5,
+                    scrollWheelZoom: true
                 },
                 markers: [],
                 blueMarker: blueMarker,
@@ -280,8 +288,6 @@
                     title: title,
                     draggable: draggable
                 })
-
-                console.log(this.markers);
             },
             /**
              * Gets latest marker that the user has inputted

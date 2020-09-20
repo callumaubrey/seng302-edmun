@@ -1,0 +1,222 @@
+{
+  "predictions": [
+    {
+      "reference": "ChIJAe3FY0gvMm0RRZl5hIbvAAU",
+      "types": [
+        "locality",
+        "political",
+        "geocode"
+      ],
+      "matched_substrings": [
+        {
+          "offset": 0,
+          "length": 12
+        }
+      ],
+      "terms": [
+        {
+          "offset": 0,
+          "value": "Christchurch"
+        },
+        {
+          "offset": 14,
+          "value": "New Zealand"
+        }
+      ],
+      "structured_formatting": {
+        "main_text_matched_substrings": [
+          {
+            "offset": 0,
+            "length": 12
+          }
+        ],
+        "secondary_text": "New Zealand",
+        "main_text": "Christchurch"
+      },
+      "description": "Christchurch, New Zealand",
+      "place_id": "ChIJAe3FY0gvMm0RRZl5hIbvAAU"
+    },
+    {
+      "reference": "ChIJQXcTolKYc0gR2armR4-BN3U",
+      "types": [
+        "locality",
+        "political",
+        "geocode"
+      ],
+      "matched_substrings": [
+        {
+          "offset": 0,
+          "length": 12
+        }
+      ],
+      "terms": [
+        {
+          "offset": 0,
+          "value": "Christchurch"
+        },
+        {
+          "offset": 14,
+          "value": "UK"
+        }
+      ],
+      "structured_formatting": {
+        "main_text_matched_substrings": [
+          {
+            "offset": 0,
+            "length": 12
+          }
+        ],
+        "secondary_text": "UK",
+        "main_text": "Christchurch"
+      },
+      "description": "Christchurch, UK",
+      "place_id": "ChIJQXcTolKYc0gR2armR4-BN3U"
+    },
+    {
+      "reference": "ChIJ9f_SHUCKMW0RGEt5dZwtTYQ",
+      "types": [
+        "hospital",
+        "health",
+        "point_of_interest",
+        "establishment"
+      ],
+      "matched_substrings": [
+        {
+          "offset": 0,
+          "length": 12
+        }
+      ],
+      "terms": [
+        {
+          "offset": 0,
+          "value": "Christchurch Hospital"
+        },
+        {
+          "offset": 22,
+          "value": "Riccarton Avenue"
+        },
+        {
+          "offset": 40,
+          "value": "Christchurch Central"
+        },
+        {
+          "offset": 62,
+          "value": "Christchurch"
+        },
+        {
+          "offset": 76,
+          "value": "New Zealand"
+        }
+      ],
+      "structured_formatting": {
+        "main_text_matched_substrings": [
+          {
+            "offset": 0,
+            "length": 12
+          }
+        ],
+        "secondary_text": "Riccarton Avenue, Christchurch Central, Christchurch, New Zealand",
+        "main_text": "Christchurch Hospital"
+      },
+      "description": "Christchurch Hospital Riccarton Avenue, Christchurch Central, Christchurch, New Zealand",
+      "place_id": "ChIJ9f_SHUCKMW0RGEt5dZwtTYQ"
+    },
+    {
+      "reference": "ChIJo5Nfg5b0MW0RgLFZZYfvAA8",
+      "types": [
+        "airport",
+        "point_of_interest",
+        "establishment"
+      ],
+      "matched_substrings": [
+        {
+          "offset": 0,
+          "length": 12
+        }
+      ],
+      "terms": [
+        {
+          "offset": 0,
+          "value": "Christchurch International Airport (CHC)"
+        },
+        {
+          "offset": 41,
+          "value": "Durey Road"
+        },
+        {
+          "offset": 53,
+          "value": "Harewood"
+        },
+        {
+          "offset": 63,
+          "value": "Christchurch"
+        },
+        {
+          "offset": 77,
+          "value": "New Zealand"
+        }
+      ],
+      "structured_formatting": {
+        "main_text_matched_substrings": [
+          {
+            "offset": 0,
+            "length": 12
+          }
+        ],
+        "secondary_text": "Durey Road, Harewood, Christchurch, New Zealand",
+        "main_text": "Christchurch International Airport (CHC)"
+      },
+      "description": "Christchurch International Airport (CHC) Durey Road, Harewood, Christchurch, New Zealand",
+      "place_id": "ChIJo5Nfg5b0MW0RgLFZZYfvAA8"
+    },
+    {
+      "reference": "ChIJd7nEfxWcc0gRnpkbgc9T7TU",
+      "types": [
+        "spa",
+        "lodging",
+        "bar",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "matched_substrings": [
+        {
+          "offset": 0,
+          "length": 12
+        }
+      ],
+      "terms": [
+        {
+          "offset": 0,
+          "value": "Christchurch Harbour Hotel & Spa"
+        },
+        {
+          "offset": 34,
+          "value": "Mudeford"
+        },
+        {
+          "offset": 44,
+          "value": "Christchurch"
+        },
+        {
+          "offset": 58,
+          "value": "UK"
+        }
+      ],
+      "structured_formatting": {
+        "main_text_matched_substrings": [
+          {
+            "offset": 0,
+            "length": 12
+          }
+        ],
+        "secondary_text": "Mudeford, Christchurch, UK",
+        "main_text": "Christchurch Harbour Hotel & Spa"
+      },
+      "description": "Christchurch Harbour Hotel & Spa, Mudeford, Christchurch, UK",
+      "place_id": "ChIJd7nEfxWcc0gRnpkbgc9T7TU"
+    }
+  ],
+  "status": "OK"
+}
