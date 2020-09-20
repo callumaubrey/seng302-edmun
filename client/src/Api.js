@@ -178,6 +178,7 @@ export default {
     updateActivityPath: (profileId, activityId, data) => instance.put(
         `profiles/${profileId}/activities/${activityId}/path`, data),
 
+
     updateAdminRights: (profileId, data) => instance.put(
         '/admin/profiles/' + profileId + '/role', data),
 
@@ -225,5 +226,8 @@ export default {
         "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate"),
 
     deleteMetric: (profileId, activityId, metricId) => instance.delete(
-            "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId)
+            "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
+
+    deleteActivityPath: (profileId, activityId) => instance.delete(
+        `profiles/${profileId}/activities/${activityId}/path`),
 }

@@ -217,4 +217,58 @@ public class ActivityPathController {
 
         return ResponseEntity.ok(path);
     }
+
+    /**
+     * Deletes path from an activity. Method is Idempotent.
+     * NOT_FOUND: Activity does not exist
+     * UNAUTHORIZED: not logged in as creator or admin
+     * ACCEPTED: Path does not exist
+     * OK: On Success
+     * @param profileId activity profile id
+     * @param activityId activity id
+     * @param session session state
+     * @return HTTP Response
+     */
+    @DeleteMapping("/profiles/{profileId}/activities/{activityId}/path")
+    public ResponseEntity removeActivityPath(
+        @PathVariable int profileId,
+        @PathVariable int activityId,
+        HttpSession session) {
+
+        // Check user is logged in
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check if activity exists
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if (optionalActivity.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Activity activity = optionalActivity.get();
+
+        // Check authorisation
+        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, activityRoleRepository)) {
+            return new ResponseEntity<>(
+                "You are not authorized to edit the path of this activity",
+                HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check Path exists
+        Optional<Path> optionalPath = Optional.ofNullable(activity.getPath());
+        if (optionalPath.isEmpty()) {
+            return new ResponseEntity<>("Path does not exist", HttpStatus.ACCEPTED);
+        }
+
+        // Remove path from activity
+        activity.setPath(null);
+        activityRepository.save(activity);
+
+        // Remove path
+        Path path = optionalPath.get();
+        pathRepository.delete(path);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

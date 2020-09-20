@@ -175,7 +175,7 @@ export default {
         return api.updateActivityPath(profileId, activityId, pathObj);
       }
 
-      return Promise.resolve();
+      return api.deleteActivityPath(profileId, activityId);
     }
   },
 }
