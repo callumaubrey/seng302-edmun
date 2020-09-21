@@ -87,6 +87,9 @@
                     });
 
             },
+           /**
+            * Gets the number of activities a user follows
+            */
             getNumberOfActivitiesFollowed: function () {
               api.getNumberOfActivitiesFollowed(this.userId)
                 .then((res) => {
