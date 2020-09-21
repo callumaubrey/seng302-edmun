@@ -155,7 +155,7 @@
             <b-row align-h="center">
               <b-col cols="9">
                 <b-card style="margin: 1em" title="Participants:">
-                  <FollowerUserList :activity-id="parseInt($route.params.activityId)"
+                  <FollowerUserList ref="followUserList" :activity-id="parseInt($route.params.activityId)"
                                     :logged-in-id="loggedInId"
                                     :activity-creator-id="activityOwner.id"></FollowerUserList>
                 </b-card>
@@ -414,6 +414,7 @@
         this.visibility = value;
         this.shareActivityKey += 1;
         this.followSummaryKey += 1;
+        this.$refs.followUserList.getMembers();
       },
       async setUpMap() {
         let userLocation = await api.getLocation(this.profileId);
@@ -434,6 +435,7 @@
               this.activityName);
           map.setMapCenter(this.location.latitude, this.location.longitude);
         }
+      this.$refs.followUserList.getMembers();
 
         if (this.activity.path !== null) {
           map.setPath(this.activity.path, true, true);
