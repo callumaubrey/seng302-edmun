@@ -261,9 +261,15 @@
         },
         watch: {
             path: async function() {
-                await this.getDirectionInfo();
-                this.generateKeypointInfoFromPath();
-                this.generateDirectionInfo();
+                if (this.path.id != null) {
+                    if (this.path.type != "STRAIGHT") {
+                        await this.getDirectionInfo();
+                    }
+                    this.generateKeypointInfoFromPath();
+                    this.generateDirectionInfo();
+                }else {
+                    this.keypointInfo = []
+                }
             },
             selectedKeypoint: function () {
                 // Set offset for keypoint info

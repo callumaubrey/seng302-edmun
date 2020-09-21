@@ -20,14 +20,12 @@ export default {
     return {
       autoRoute: false,
       canChangeSelection: true,
-      count: 0,
       toPass: []
     }
   },
 
   methods: {
     mapClicked(event) {
-      const currObj = this
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
       if (this.autoRoute && marker) {
@@ -35,7 +33,8 @@ export default {
       } else {
         this.$refs.map.routePoints.push(coordinates)
       }
-      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng,
+      let id = this.$refs.map.markers.length
+      this.$refs.map.createMarker(id, 3, event.latlng.lat, event.latlng.lng,
           "", null, true)
       this.$refs.map.updateStartFinishMarkers()
 
@@ -44,7 +43,6 @@ export default {
       } else {
         this.canChangeSelection = false
       }
-      currObj.count += 1
       this.$emit('pathEdited')
     },
 
@@ -59,6 +57,7 @@ export default {
       this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
       this.$refs.map.updateStartFinishMarkers()
       this.count += 1
+      this.$emit('pathEdited')
     },
 
     handleDragEvent(index, newCoords) {
@@ -70,6 +69,7 @@ export default {
         this.getRoutePoints([])
       }
       this.$refs.map.updateStartFinishMarkers()
+      this.$emit('pathEdited')
     },
 
     getRoutePoints(coordinates) {
@@ -108,6 +108,7 @@ export default {
       this.$refs.map.markers = []
       this.$refs.map.setRoutePoints([])
       this.canChangeSelection = true;
+      this.$emit('pathEdited')
     },
 
     prevPoint() {
@@ -123,6 +124,7 @@ export default {
         }
         this.$refs.map.updateStartFinishMarkers()
       }
+      this.$emit('pathEdited')
     },
 
     /**
@@ -161,12 +163,29 @@ export default {
           longitude: keypoint.position[1]
         });
       }
-
       return pathObj;
     },
 
-    getMapPanePathObject() {
-      // this.$refs.map.
+    getUpdatedPathObject() {
+      if(this.$refs.map.routePoints.length === 0) {
+        return {}
+      }
+
+      let pathObj = {
+        id: 0,
+        locations: [],
+        type: this.autoRoute ? "DEFINED" : "STRAIGHT"
+      };
+
+      // Format locations
+      for(const keypoint of this.$refs.map.markers) {
+        pathObj.locations.push({
+          latitude: keypoint.position[0],
+          longitude: keypoint.position[1]
+        });
+        pathObj.id = keypoint.id
+      }
+      return pathObj;
     },
 
     /**
@@ -180,7 +199,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.$refs.map.markers)
     // this.$refs.pathInfo.data = this.$refs.map.markers
     if(this.$refs.map.markers == null) {
       this.toPass = []
