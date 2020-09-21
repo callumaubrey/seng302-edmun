@@ -11,7 +11,7 @@
                         <p style="padding-bottom:0;margin-bottom: 0;font-size:18px">{{ fullName }}</p>
                     </b-row>
                     <b-row align-h="center">
-                        <p style="font-size:14px">Following: {{ followingCount }}</p>
+                        <p style="font-size:14px">Activities followed: {{ followingCount }}</p>
                     </b-row>
                 </b-col>
                 <b-col cols="9">
@@ -87,6 +87,15 @@
                     });
 
             },
+            getNumberOfActivitiesFollowed: function () {
+              api.getNumberOfActivitiesFollowed(this.userId)
+                .then((res) => {
+                  this.followingCount = res.data;
+                })
+              .catch((err) => {
+                console.log(err);
+              })
+            },
             goToActivity: async function (activityId) {
                 await this.getActivityOwner(activityId);
                 this.$router.push('/profiles/' + this.creatorId + '/activities/' + activityId);
@@ -130,6 +139,7 @@
             this.scroll();
             await this.getUser();
             await this.getHomeFeed();
+            this.getNumberOfActivitiesFollowed();
         }
     }
 </script>
