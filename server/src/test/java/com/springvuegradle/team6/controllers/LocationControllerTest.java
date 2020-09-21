@@ -5,18 +5,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.repositories.ActivityHistoryRepository;
-import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.SubscriptionHistoryRepository;
-import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIService;
 import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,4 +245,54 @@ public class LocationControllerTest {
     JSONArray arr = obj.getJSONArray("results");
     org.junit.jupiter.api.Assertions.assertEquals(5, arr.length());
   }
+
+  @Test
+  void getCoordinatesByValidPlaceIdReturnOk() throws Exception {
+    googleAPIService.mockGeocodePlaceId("controllers/geocodePlaceID_OK.json");
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/location/geocode?id=" + "ChIJAe3FY0gvMm0RRZl5hIbvAAU")
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JSONObject obj = new JSONObject(response);
+    org.junit.jupiter.api.Assertions.assertNotNull(obj.get("lat"));
+    org.junit.jupiter.api.Assertions.assertNotNull(obj.get("lng"));
+  }
+
+  @Test
+  void getCoordinatesByInvalidPlaceIdReturnBadRequest() throws Exception {
+    googleAPIService.mockGeocodePlaceId("controllers/geocodePlaceID_InvalidRequest.json");
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/location/geocode?id=" + "sadoihahdo2132545")
+                .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertEquals("No location for this place id", response);
+
+  }
+
+  @Test
+  void getCoordinatesWithNoPlaceIdReturnBadRequest() throws Exception {
+    String response =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/location/geocode")
+                .session(session))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    org.junit.jupiter.api.Assertions.assertEquals("Place id must be provided", response);
+  }
+
+
 }
+

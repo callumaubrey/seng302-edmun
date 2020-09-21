@@ -2,6 +2,7 @@ package com.springvuegradle.team6.services.ExternalAPI;
 
 import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIService;
+import java.util.Objects;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,8 +49,7 @@ public class GoogleAPIServiceMocking {
    */
   private String getResourceAsString(String filename) throws IOException {
     ClassLoader classLoader = this.getClass().getClassLoader();
-    File file = new File(classLoader.getResource(filename).getFile());
-
+    File file = new File(Objects.requireNonNull(classLoader.getResource(filename)).getFile());
     return Files.readString(file.toPath());
   }
 
@@ -67,7 +68,7 @@ public class GoogleAPIServiceMocking {
                 eq(String.class),
                 anyDouble(),
                 anyDouble(),
-                eq(null)))
+                any()))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
@@ -83,7 +84,23 @@ public class GoogleAPIServiceMocking {
     Mockito.when(
             service.template.getForEntity(
                 eq(GoogleAPIService.URL_PLACE_AUTOCOMPLETE), eq(String.class),
-                anyString(), eq(null)))
+                anyString(), any()))
+        .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
+  }
+
+  /**
+   * Sets api mocking to return data contained in Google geocode place id API resource json file
+   *
+   * @param testJsonFilename json file stored in src/resources * For example if you had a file
+   *     "src/resources/controllers/test.json" * then testJsonFilename='controllers/test.json'
+   * @throws IOException if resource file does not exist
+   */
+  public void mockGeocodePlaceId(String testJsonFilename) throws IOException {
+    String expectedJson = getResourceAsString(testJsonFilename);
+    Mockito.when(
+            service.template.getForEntity(
+                eq(GoogleAPIService.URL_GEOCODE_PLACE_ID), eq(String.class),
+                anyString(), any()))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
@@ -103,7 +120,7 @@ public class GoogleAPIServiceMocking {
                 eq(String.class),
                 anyDouble(),
                 anyDouble(),
-                eq(null)))
+                any()))
         .thenReturn(new ResponseEntity<>(expectedJson, status));
   }
 }

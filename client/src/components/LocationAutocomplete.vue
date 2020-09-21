@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <b-form-input v-model="locationText" @keyup.native="doAutocomplete(locationText)"
+      <b-form-input v-model="locationText" v-on:keyup="doAutocomplete(locationText)"
                     autocomplete="off" placeholder="Search address"
                     :state="validLocation"/>
       <b-form-invalid-feedback id="input-live-feedback">
@@ -11,15 +11,15 @@
           class="autocomplete-loading-icon text-primary fas fa-circle-notch fa-spin"/>
       <b-form-text>Click on the map or enter into input to set location</b-form-text>
     </div>
-    <div v-for="i in locations" :key="i.osm_id">
-      <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.display_name
+    <div v-for="i in locations" :key="i.place_id">
+      <b-input v-on:click="setSelectedLocation(i)" type="button" :value=i.name
                style="cursor: pointer"/>
     </div>
   </div>
 </template>
 
 <script>
-  import axios from "axios";
+  import api from '@/Api'
 
   const LocationAutocomplete = {
     name: "LocationAutocomplete",
@@ -38,7 +38,7 @@
         selectedLocation: null,
         loadingLocations: false,
         validLocation: null,
-        invalidLocationErrorMessage: "The selected location is unknown"
+        invalidLocationErrorMessage: "The selected location is unknown",
       }
     },
     mounted() {
@@ -108,68 +108,39 @@
         };
       },
       doAutocomplete: async function (locationText) {
-        clearTimeout(this.timeout);
-
-        if (locationText === '') {
-          this.locations = [];
-          return;
+        if (this.timer) {
+          clearTimeout(this.timer);
+          this.timer = null;
         }
+        this.timer = setTimeout(() => {
+          api.getLocationAutocompleteByName(locationText).then(
+              (response) => {
+                this.locations = response.data.results
+              }
+          ).catch(() => {
+            this.$bvToast.toast('An error has occurred, please try again.', {
+              variant: "danger",
+              solid: true
+            })
+          })
+        }, 200)
 
-        let _this = this;
-        this.timeout = setTimeout(async function () {
-
-          _this.locations = [];
-
-          let geo_priority_query = "";
-          if (_this.priorityGeoLocation !== null) {
-            geo_priority_query += "&lat=" + _this.priorityGeoLocation.lat;
-            geo_priority_query += "&lon=" + _this.priorityGeoLocation.lng;
-          }
-
-          let locationData = axios.create({
-            baseURL: "https://photon.komoot.de/api/?q=" + locationText + geo_priority_query
-                + "&limit=10",
-            timeout: 5000,
-            withCredentials: false,
-          });
-
-          _this.loadingLocations = true;
-          let data = await (locationData.get());
-          _this.loadingLocations = false;
-
-          let fixedData = JSON.parse('{"data":[]}');
-          for (let i = 0; i < data.data.features.length; i++) {
-            let feature_data = _this.parseOSMFeature(data.data.features[i]);
-            if (feature_data.display_name) {
-              this.validLocation = true;
-              fixedData['data'].push(feature_data)
-            }
-          }
-
-          if (fixedData.data.length > 0) {
-            _this.locations = fixedData.data;
-          }
-        }, 1000);
       },
-      setSelectedLocation: function (location) {
-        this.locationText = location.display_name;
-        let data = {
-          osm_id: null,
-          lat: null,
-          lng: null
-        };
-        if (location.osm_id) {
-          data.osm_id = location.osm_id;
-        }
-        if (location.lat) {
-          data.lat = location.lat;
-        }
-        if (location.lng) {
-          data.lng = location.lng;
-        }
-        this.selectedLocation = data;
-        this.locations = [];
-        this.emitLocationToParent(data);
+      /**
+       * Set location text in input field based on unique place id by calling Google API from backend
+       **/
+      setSelectedLocation: async function (location) {
+        this.locationText = location.name
+        await api.getGeocodePlaceId(location.place_id).then((response) => {
+          this.selectedLocation = response.data
+        }).catch(() => {
+          this.$bvToast.toast('An error has occurred, please try again.', {
+            variant: "danger",
+            solid: true
+          })
+        })
+        this.locations = []
+        this.emitLocationToParent(this.selectedLocation);
       },
 
       emitLocationToParent: function (value) {
@@ -180,7 +151,7 @@
         return this.validLocation == null;
       },
       /**
-       * Uses the photon api to search for the name of the location based on the selected longitude
+       * Uses the Google api from backend to search for the name of the location based on the selected longitude
        * and latitude.
        * If a name for the location is found, it will set the input field with the name of the
        * location which is parsed from the data returned from the photon api.
@@ -188,40 +159,25 @@
        * @param lng the latitude value of the location
        */
       setLocationTextByCoords: async function (lat, lng) {
-        let coordsDataAPI = axios.create({
-          baseURL: "https://photon.komoot.de/reverse?lon=" + lng + "&lat=" + lat + "&limit=1",
-          timeout: 5000,
-          withCredentials: false,
-        });
+        await api.getLocationAutocompleteByLatLon(lat, lng).then((response) => {
+          this.locationText = response.data.results[0];
+          this.locations = [];
+          this.validLocation = null;
+        }).catch((err) => {
+              console.log(err.response.status)
+              if (err.response.status === 400) {
+                this.invalidLocationErrorMessage = "The selected location is unknown"
+                this.validLocation = false;
+                this.clearLocation();
+              } else {
+                this.$bvToast.toast('An error has occurred, please try again.', {
+                  variant: "danger",
+                  solid: true
+                })
+              }
 
-        this.loadingLocations = true;
-        await coordsDataAPI.get().then((res) => {
-          // If relevant feature is found
-          if (res.data.features) {
-            if (res.data.features.length > 0) {
-              let feature_data = this.parseOSMFeature(res.data.features[0]);
-              this.locationText = feature_data.display_name;
-              this.locations = [];
-              this.invalidLocationErrorMessage = "The selected location is unknown"
-              this.validLocation = null;
-            } else {
-              this.invalidLocationErrorMessage = "The selected location is unknown"
-              this.validLocation = false;
-              this.clearLocation();
             }
-          } else {
-            this.$bvToast.toast('An error has occurred, please try again.', {
-              variant: "danger",
-              solid: true
-            })
-          }
-          this.loadingLocations = false;
-        }).catch(() => {
-          this.invalidLocationErrorMessage = "The selected location is unknown"
-          this.validLocation = false;
-          this.loadingLocations = false;
-          this.clearLocation();
-        })
+        )
       },
 
       clearLocation: function () {

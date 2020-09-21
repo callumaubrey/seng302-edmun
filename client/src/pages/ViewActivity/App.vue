@@ -140,6 +140,9 @@
                 <b-card style="margin: 1em">
                   <b-row align-h="center">
                     <b-col>
+                      <h4 v-if="location && location.name">
+                        {{location.name}}
+                      </h4>
                       <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
                       <b-card-body v-else>No Location</b-card-body>
                     </b-col>
@@ -152,7 +155,7 @@
             <b-row align-h="center">
               <b-col cols="9">
                 <b-card style="margin: 1em" title="Participants:">
-                  <FollowerUserList :activity-id="parseInt($route.params.activityId)"
+                  <FollowerUserList ref="followUserList" :activity-id="parseInt($route.params.activityId)"
                                     :logged-in-id="loggedInId"
                                     :activity-creator-id="activityOwner.id"></FollowerUserList>
                 </b-card>
@@ -164,7 +167,8 @@
                                        :logged-in-id="loggedInId"
                                        :profile-id="profileId"
                                        style="padding-bottom: 10px"></RecordActivityResultModal>
-            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
+            <ActivityResults :profile-id="profileId"
+                             :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
           <b-tab title="Route">
             <PathInfoMapView :path="activity.path"></PathInfoMapView>
@@ -176,302 +180,300 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
-import FollowUnfollow from "@/components/FollowUnfollow.vue";
-import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
-import FollowerUserList from "../../components/Activity/FollowerUserList";
-import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
-import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
-import RecordActivityResultModal from "@/components/Activity/RecordActivityResultModal";
-import api from '@/Api'
-import AdminMixin from "../../mixins/AdminMixin";
-import ActivityResults from "../../components/ActivityResults";
-import MapPane from "../../components/MapPane/MapPane";
-import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
-import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
-import PathInfo from "../../components/MapPane/PathInfo";
-import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
+  import NavBar from "@/components/NavBar.vue";
+  import FollowUnfollow from "@/components/FollowUnfollow.vue";
+  import FollowerSummary from "../../components/Activity/FollowerSummary.vue";
+  import FollowerUserList from "../../components/Activity/FollowerUserList";
+  import ShareActivity from "@/components/SharingActivity/ShareActivity.vue";
+  import ForbiddenMessage from "@/components/ForbiddenMessage.vue";
+  import RecordActivityResultModal from "@/components/Activity/RecordActivityResultModal";
+  import api from '@/Api'
+  import AdminMixin from "../../mixins/AdminMixin";
+  import ActivityResults from "../../components/ActivityResults";
+  import MapPane from "../../components/MapPane/MapPane";
+  import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
 
-const App = {
-  name: "App",
-  components: {
-    PathInfoMapView,
-    PathInfo,
-    ModifyLocationMapPane,
-    MapPane,
-    ActivityResults,
-    NavBar,
-    FollowUnfollow,
-    FollowerUserList,
-    FollowerSummary,
-    ShareActivity,
-    ForbiddenMessage,
-    RecordActivityResultModal,
-    ModifyPathMapPane
-  },
-  data: function () {
-    return {
-      activity: null,
-      userData: "",
-      isLoggedIn: false,
-      userName: "",
-      loggedInId: null,
-      profileId: null, 
-      activityName: "",
-      description: "",
-      activityTypes: [],
-      continuous: false,
-      startTime: "",
-      endTime: "",
-      location: null,
-      hashtags: [],
-      activityOwner: null,
-      locationString: "",
-      locationDataLoading: true,
-      archived: false,
-      notFound: false,
-      visibility: null,
-      loggedInIsAdmin: false,
-      isAuthorized: true,
-      metrics: [],
-      followSummaryKey: 0,
-      shareActivityKey: 0,
-      pathKeypointSelected: null
-    }
-  },
-  mounted() {
-    this.getUserName();
-    this.getActivityData();
-    this.getLoggedInId();
-    this.setProfileId();
-    this.checkIsAdmin();
-  },
-  methods: {
-    getUserName: function () {
-      let vueObj = this;
+  const App = {
+    name: "App",
+    components: {
+      MapPane,
+      ActivityResults,
+      NavBar,
+      FollowUnfollow,
+      FollowerUserList,
+      FollowerSummary,
+      ShareActivity,
+      ForbiddenMessage,
+      RecordActivityResultModal,
+      PathInfoMapView
+    },
+    data: function () {
+      return {
+        activity: null,
+        userData: "",
+        isLoggedIn: false,
+        userName: "",
+        loggedInId: null,
+        profileId: null,
+        activityName: "",
+        description: "",
+        activityTypes: [],
+        continuous: false,
+        startTime: "",
+        endTime: "",
+        location: null,
+        hashtags: [],
+        activityOwner: null,
+        locationString: "",
+        locationDataLoading: true,
+        archived: false,
+        notFound: false,
+        visibility: null,
+        loggedInIsAdmin: false,
+        isAuthorized: true,
+        metrics: [],
+        followSummaryKey: 0,
+        shareActivityKey: 0
+      }
+    },
+    mounted() {
+      this.getUserName();
+      this.getActivityData();
+      this.getLoggedInId();
+      this.setProfileId();
+      this.checkIsAdmin();
+    },
+    methods: {
+      getUserName: function () {
+        let vueObj = this;
 
-      api.getFirstName()
-      .then((res) => {
-        vueObj.userName = res.data;
-      })
-      .catch(() => {
-        vueObj.isLoggedIn = false;
-        vueObj.$router.push('/login');
-      });
-    },
-    getLoggedInId: function () {
-      let vueObj = this;
+        api.getFirstName()
+            .then((res) => {
+              vueObj.userName = res.data;
+            })
+            .catch(() => {
+              vueObj.isLoggedIn = false;
+              vueObj.$router.push('/login');
+            });
+      },
+      getLoggedInId: function () {
+        let vueObj = this;
 
-      api.getProfileId()
-      .then((res) => {
-        vueObj.loggedInId = res.data;
-        vueObj.isLoggedIn = true;
-      }).catch(() => {
-        vueObj.isLoggedIn = false;
-        vueObj.$router.push('/login');
-      })
-    },
-    setProfileId: function () {
-      let vueObj = this;
-      vueObj.profileId = this.$route.params.id;
-    },
-    deleteActivity() {
-      // double check for if user clicks button when hidden.
-      if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
-        if (!confirm("Are you sure you want to delete this activity?")) {
-          return;
+        api.getProfileId()
+            .then((res) => {
+              vueObj.loggedInId = res.data;
+              vueObj.isLoggedIn = true;
+            }).catch(() => {
+          vueObj.isLoggedIn = false;
+          vueObj.$router.push('/login');
+        })
+      },
+      setProfileId: function () {
+        let vueObj = this;
+        vueObj.profileId = this.$route.params.id;
+      },
+      deleteActivity() {
+        // double check for if user clicks button when hidden.
+        if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
+          if (!confirm("Are you sure you want to delete this activity?")) {
+            return;
+          }
+
+          let profileId = this.$route.params.id;
+          let activityId = this.$route.params.activityId;
+          api.deleteActivity(profileId, activityId)
+              .then(() => {
+                this.$router.push("/profiles/" + profileId + "/activities/");
+              })
+              .catch(err => alert(err));
         }
-
+      },
+      editActivity() {
         let profileId = this.$route.params.id;
         let activityId = this.$route.params.activityId;
-        api.deleteActivity(profileId, activityId)
-        .then(() => {
-          this.$router.push("/profiles/" + profileId + "/activities/");
-        })
-        .catch(err => alert(err));
-      }
-    },
-    editActivity() {
-      let profileId = this.$route.params.id;
-      let activityId = this.$route.params.activityId;
 
-      if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
-        this.$router.push(
-            "/profiles/" + profileId + "/activities/" + activityId + "/edit"
-        );
-      }
-    },
-    getActivityData() {
-      let vueObj = this;
-      let activityId = this.$route.params.activityId;
+        if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
+          this.$router.push(
+              "/profiles/" + profileId + "/activities/" + activityId + "/edit"
+          );
+        }
+      },
+      getActivityData() {
+        let vueObj = this;
+        let activityId = this.$route.params.activityId;
 
-      api.getActivity(activityId)
-      .then((res) => {
-        if (res.data == "Activity is archived") {
-          this.archived = true;
-        } else {
-          vueObj.activity = res.data;
-          vueObj.activityOwner = res.data.profile;
-          vueObj.activityName = res.data.activityName;
-          vueObj.description = res.data.description;
-          vueObj.activityTypes = res.data.activityTypes;
-          vueObj.continuous = res.data.continuous;
-          vueObj.startTime = res.data.startTime;
-          vueObj.endTime = res.data.endTime;
-          vueObj.location = res.data.location;
-          vueObj.visibility = res.data.visibilityType;
-          if (res.data.visibilityType == null) {
-            vueObj.visibility = "Public"
+        api.getActivity(activityId)
+            .then((res) => {
+              if (res.data == "Activity is archived") {
+                this.archived = true;
+              } else {
+                vueObj.activity = res.data;
+                vueObj.activityOwner = res.data.profile;
+                vueObj.activityName = res.data.activityName;
+                vueObj.description = res.data.description;
+                vueObj.activityTypes = res.data.activityTypes;
+                vueObj.continuous = res.data.continuous;
+                vueObj.startTime = res.data.startTime;
+                vueObj.endTime = res.data.endTime;
+                vueObj.location = res.data.location;
+                vueObj.visibility = res.data.visibilityType;
+                if (res.data.visibilityType == null) {
+                  vueObj.visibility = "Public"
+                }
+                if (res.data.tags.length > 0) {
+                  for (var i = 0; i < res.data.tags.length; i++) {
+                    vueObj.hashtags.push("#" + res.data.tags[i].name);
+                  }
+                }
+                if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
+                  vueObj.$router.push('/profiles/' + this.profileId);
+                }
+                vueObj.hashtags.sort();
+                if (!vueObj.continuous) {
+                  this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
+                }
+                this.getActivityTypeDisplay(vueObj);
+                this.getMetrics(res.data.profile.id);
+                if (vueObj.location) {
+                  this.locationString = vueObj.location.name
+                  this.$nextTick(function () {
+                    this.setUpMap();
+                  });
+                }
+              }
+              vueObj.locationDataLoading = false;
+            }).catch((err) => {
+          console.log(err)
+          if (err.response && err.response.status == 404) {
+            this.notFound = true;
+          } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
+            this.isAuthorized = false;
+          } else {
+            let profileId = this.$route.params.id;
+            vueObj.$router.push("/profiles/" + profileId);
           }
-          if (res.data.tags.length > 0) {
-            for (var i = 0; i < res.data.tags.length; i++) {
-              vueObj.hashtags.push("#" + res.data.tags[i].name);
-            }
-          }
-          if (vueObj.activityOwner.id != this.profileId && vueObj.visibility == 'Private') {
-            vueObj.$router.push('/profiles/' + this.profileId);
-          }
-          vueObj.hashtags.sort();
-          if (!vueObj.continuous) {
-            this.getCorrectDateFormat(vueObj.startTime, vueObj.endTime, vueObj);
-          }
-          this.getActivityTypeDisplay(vueObj);
-          this.getMetrics(res.data.profile.id);
-          if (vueObj.location) {
-            this.$nextTick(function () {
-              this.setUpMap();
+        });
+      },
+      getMetrics(ownerId) {
+        let activityId = this.$route.params.activityId;
+        api.getActivityMetrics(ownerId, activityId)
+            .then((res) => {
+              this.metrics = res.data;
+            })
+            .catch((err) => {
+              console.log(err);
             });
+      },
+      checkIsAdmin: async function () {
+        this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
+      },
+      getCorrectTimeFormat(dateObject) {
+        let hour = dateObject.hour;
+        let minute = dateObject.minute;
+        if (dateObject.hour.toString().length === 1) {
+          hour = '0' + dateObject.hour;
+        }
+        if (dateObject.minute.toString().length === 1) {
+          minute = '0' + dateObject.minute;
+        }
+        let time = hour + ':' + minute;
+        return time;
+      },
+      getCorrectDateFormat: function (start, end, currentObj) {
+        let startTime = this.getCorrectTimeFormat(start)
+        let startDate = new Date(start.year + "-" + start.monthValue + '-'
+            + start.dayOfMonth + ' ' + startTime).toString();
+        if (startTime == null) {
+          startDate = new Date(start.year + "-" + start.monthValue + '-'
+              + start.dayOfMonth + ' ' + '00:00').toString();
+        }
+        currentObj.startTime = startDate;
+        currentObj.activity.startTime = startDate;
+
+        let endTime = this.getCorrectTimeFormat(end)
+        let endDate = new Date(end.year + "-" + end.monthValue + '-'
+            + end.dayOfMonth + ' ' + this.getCorrectTimeFormat(end)).toString();
+        if (endTime == null) {
+          endDate = new Date(end.year + "-" + end.monthValue + '-'
+              + end.dayOfMonth + ' ' + '00:00').toString();
+        }
+        currentObj.endTime = endDate;
+      },
+      getActivityTypeDisplay: function (currentObj) {
+        let result = "";
+        for (let i = 0; i < currentObj.activityTypes.length; i++) {
+          result += currentObj.activityTypes[i];
+          if (i + 1 < currentObj.activityTypes.length) {
+            result += ", ";
           }
         }
-        vueObj.locationDataLoading = false;
-      }).catch((err) => {
-        console.log(err)
-        if (err.response && err.response.status == 404) {
-          this.notFound = true;
-        } else if (err.response && (err.response.status == 401 || err.response.status == 403)) {
-          this.isAuthorized = false;
-        } else {
-          let profileId = this.$route.params.id;
-          vueObj.$router.push("/profiles/" + profileId);
+        currentObj.activityTypes = result;
+        currentObj.activity.activityTypes = result;
+      },
+      clickHashtag(hashtag) {
+        hashtag = hashtag.substring(1);
+        let queryString = "?hashtags=%23" + hashtag + "&hashtags-method=AND&offset=1&limit=10"
+        this.$router.push("/activities/search" + queryString);
+      },
+      forceRerender(value) {
+        this.visibility = value;
+        this.shareActivityKey += 1;
+        this.followSummaryKey += 1;
+        this.$refs.followUserList.getMembers();
+      },
+      async setUpMap() {
+        let userLocation = await api.getLocation(this.profileId);
+        let map = this.$refs.mapPane;
+        // checking if user has a location to put on the map
+        if (userLocation.data !== null) {
+          map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude,
+              this.profileId, this.activityOwner.firstname);
         }
-      });
-    },
-    getMetrics(ownerId) {
-      let activityId = this.$route.params.activityId;
-      api.getActivityMetrics(ownerId, activityId)
-      .then((res) => {
-        this.metrics = res.data;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    },
-    checkIsAdmin: async function () {
-      this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
-    },
-    getCorrectTimeFormat(dateObject) {
-      let hour = dateObject.hour;
-      let minute = dateObject.minute;
-      if (dateObject.hour.toString().length === 1) {
-        hour = '0' + dateObject.hour;
-      }
-      if (dateObject.minute.toString().length === 1) {
-        minute = '0' + dateObject.minute;
-      }
-      let time = hour  + ':' + minute;
-      return time;
-    },
-    getCorrectDateFormat: function (start, end, currentObj) {
-      let startTime = this.getCorrectTimeFormat(start)
-      let startDate = new Date(start.year + "-" + start.monthValue + '-'
-          + start.dayOfMonth + ' ' + startTime).toString();
-      if (startTime == null) {
-        startDate = new Date(start.year + "-" + start.monthValue + '-'
-            + start.dayOfMonth + ' ' + '00:00').toString();
-      }
-      currentObj.startTime = startDate;
-      currentObj.activity.startTime = startDate;
+        // checking if activity has a location to put on the map
+        if (this.location !== null) {
+          let content = {
+            activityTypes: this.activity.activityTypes.split(', '),
+            startTime: this.activity.startTime
+          };
 
-      let endTime = this.getCorrectTimeFormat(end)
-      let endDate = new Date(end.year + "-" + end.monthValue + '-'
-          + end.dayOfMonth + ' ' + this.getCorrectTimeFormat(end) ).toString();
-      if (endTime == null) {
-        endDate = new Date(end.year + "-" + end.monthValue + '-'
-            + end.dayOfMonth + ' ' + '00:00').toString();
-      }
-      currentObj.endTime = endDate;
-    },
-    getActivityTypeDisplay: function (currentObj) {
-      let result = "";
-      for (let i = 0; i < currentObj.activityTypes.length; i++) {
-        result += currentObj.activityTypes[i];
-        if (i + 1 < currentObj.activityTypes.length) {
-          result += ", ";
+          map.createMarker(2, 2, this.location.latitude, this.location.longitude, content,
+              this.activityName);
+          map.setMapCenter(this.location.latitude, this.location.longitude);
+        }
+      this.$refs.followUserList.getMembers();
+
+        if (this.activity.path !== null) {
+          map.setPath(this.activity.path, true, true);
         }
       }
-      currentObj.activityTypes = result;
-      currentObj.activity.activityTypes = result;
-    },
-    clickHashtag(hashtag) {
-      hashtag = hashtag.substring(1);
-      let queryString = "?hashtags=%23" + hashtag + "&hashtags-method=AND&offset=1&limit=10"
-      this.$router.push("/activities/search" + queryString);
-    },
-    forceRerender(value) {
-      this.visibility = value;
-      this.shareActivityKey += 1;
-      this.followSummaryKey += 1;
-    },
-    async setUpMap() {
-      let userLocation = await api.getLocation(this.profileId);
-      let map = this.$refs.mapPane;
-      // checking if user has a location to put on the map
-      if (userLocation.data !== null) {
-        map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude, this.profileId, this.activityOwner.firstname);
-      }
-      // checking if activity has a location to put on the map
-      if (this.location !== null) {
-        let content = {
-          activityTypes: this.activity.activityTypes.split(', '),
-          startTime: this.activity.startTime
-        };
 
-        map.createMarker(2, 2, this.location.latitude, this.location.longitude, content, this.activityName);
-        map.setMapCenter(this.location.latitude, this.location.longitude);
-      }
-
-      if(this.activity.path !== null) {
-        map.setPath(this.activity.path, true, true);
-      }
     }
-
-  }
-};
-export default App;
+  };
+  export default App;
 </script>
 
 <style>
-.horizontal-scroll {
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  overflow: auto;
-  margin-left: 15px;
-  margin-right: 15px;
-}
+  .horizontal-scroll {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: auto;
+    margin-left: 15px;
+    margin-right: 15px;
+  }
 
-.metric-card {
-  width: 250px;
-  margin-right: 10px;
-}
+  .metric-card {
+    width: 250px;
+    margin-right: 10px;
+  }
 
-.metric-card .card-body {
-  white-space: pre-line;
-  padding: 10px;
-}
+  .metric-card .card-body {
+    white-space: pre-line;
+    padding: 10px;
+  }
 
-.metric-card .card-title {
-  font-size: 18px;
-  margin-left: 7px;
-}
+  .metric-card .card-title {
+    font-size: 18px;
+    margin-left: 7px;
+  }
 </style>
 
