@@ -27,6 +27,12 @@ public interface SubscriptionHistoryRepository extends JpaRepository<Subscriptio
           nativeQuery = true)
   List<SubscriptionHistory> findActive(int activityId, int profileId);
 
+  @Query(
+      value =
+          "SELECT COUNT(s.id) from subscription_history s LEFT JOIN activity a ON s.activity_id = a.id WHERE " +
+              "a.archived = 0 AND s.profile_id = :profileId AND s.end_date_time IS NULL",
+      nativeQuery = true)
+  Long findUsersActiveFollowings(int profileId);
 
   @Modifying
   @Transactional
