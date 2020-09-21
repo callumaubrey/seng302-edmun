@@ -75,7 +75,7 @@ public class LoginAttemptRepositoryTest {
   @Test
   void findByProfileIdGreaterThanTimeReturnsLoginAttempts() {
     Profile profile = createDummyProfile();
-    LocalDateTime time = LocalDateTime.now();
+    LocalDateTime time = LocalDateTime.now().minusMinutes(5);
     LoginAttempt loginAttempt1 = new LoginAttempt(profile);
     LoginAttempt loginAttempt2 = new LoginAttempt(profile);
     LoginAttempt loginAttempt3 = new LoginAttempt(profile);
@@ -97,7 +97,7 @@ public class LoginAttemptRepositoryTest {
     loginAttemptRepository.save(loginAttempt1);
     loginAttemptRepository.save(loginAttempt2);
     loginAttemptRepository.save(loginAttempt3);
-    LocalDateTime time = LocalDateTime.now();
+    LocalDateTime time = LocalDateTime.now().plusMinutes(5);
 
     List<LoginAttempt> attemptList = loginAttemptRepository.findByProfileIdGreaterThanTime(profile.getId(), time);
     org.junit.jupiter.api.Assertions.assertEquals(0, attemptList.size());
