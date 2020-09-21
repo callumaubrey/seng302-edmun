@@ -1,27 +1,18 @@
 <template>
   <div>
-    <b-row>
-      <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
-        <PathInfo ref="pathInfo" :points="toPass"></PathInfo>
-      </b-col>
-      <b-col style="padding: 0em">
-        <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
-      </b-col>
-    </b-row>
+    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
   </div>
 </template>
 
 <script>
 import MapPane from "./MapPane";
 import axios from 'axios'
-import PathInfo from "./PathInfo";
 import api from '@/Api'
 
 export default {
   name: "ModifyPathMapPane",
 
   components: {
-    PathInfo,
     MapPane
   },
 
@@ -54,6 +45,7 @@ export default {
         this.canChangeSelection = false
       }
       currObj.count += 1
+      this.$emit('pathEdited')
     },
 
     clickOnMarker(marker) {
@@ -173,6 +165,10 @@ export default {
       return pathObj;
     },
 
+    getMapPanePathObject() {
+      // this.$refs.map.
+    },
+
     /**
      * upload activity path in editor
      * @param profileId
@@ -185,7 +181,7 @@ export default {
   },
   mounted() {
     console.log(this.$refs.map.markers)
-    this.$refs.pathInfo.data = this.$refs.map.markers
+    // this.$refs.pathInfo.data = this.$refs.map.markers
     if(this.$refs.map.markers == null) {
       this.toPass = []
     } else {

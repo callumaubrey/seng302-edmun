@@ -217,7 +217,7 @@
 
               <!-- Activity Path Editor -->
               <b-tab title="Activity Path">
-                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" :activityId = "activityId" :path = "path"></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -261,14 +261,14 @@ import AdminMixin from "../../mixins/AdminMixin";
 import api from '@/Api'
 import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
 import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 import {store} from "../../store";
+import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
 
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
-      ModifyPathMapPane,
+      PathInfoMapCreateEdit,
       ActivityMetricsEditor,
       SearchTag,
       NavBar,
@@ -314,7 +314,8 @@ import {store} from "../../store";
           options: [],
           values: []
         },
-        authorised: true
+        authorised: true,
+        path: {}
       }
     },
     validations: {
@@ -408,6 +409,8 @@ import {store} from "../../store";
               currentObj.form.name = response.data.activityName;
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
+              currentObj.path = response.data.path
+              currentObj.$refs.pathInfoCreateEdit.setPath(response.data.path)
               if (response.data.continuous === false) {
                 currentObj.isContinuous = '1';
                 [currentObj.durationForm.startDate,
@@ -557,9 +560,9 @@ import {store} from "../../store";
         }
       },
 
-      updatePath: function() {
-        return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
-      },
+      // updatePath: function() {
+      //   return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
+      // },
 
       getISODates: function () {
         let startDateISO;
@@ -654,9 +657,9 @@ import {store} from "../../store";
         this.selectedVisibility = val
       },
 
-      loadActivityPath: function() {
-        this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
-      }
+      // loadActivityPath: function() {
+      //   this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
+      // }
     },
     mounted: async function () {
       this.activityId = this.$route.params.activityId;
@@ -664,7 +667,7 @@ import {store} from "../../store";
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
-      this.loadActivityPath();
+      // this.loadActivityPath();
     }
   }
 </script>
