@@ -50,8 +50,6 @@ public class GoogleAPIServiceMocking {
   private String getResourceAsString(String filename) throws IOException {
     ClassLoader classLoader = this.getClass().getClassLoader();
     File file = new File(Objects.requireNonNull(classLoader.getResource(filename)).getFile());
-    String absolutePath = file.getAbsolutePath();
-    System.out.println(absolutePath);
     return Files.readString(file.toPath());
   }
 
