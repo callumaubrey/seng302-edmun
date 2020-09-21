@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Length;
 
@@ -52,6 +53,12 @@ public class CreateActivityRequest {
 
   @JsonProperty("metrics")
   public List<@Valid ActivityQualificationMetric> metrics;
+
+  @JsonProperty("photo_filename")
+  @Pattern(
+      regexp = "([^\\s]+(\\.(?i)(jpg|jpeg|png|gif))$)",
+      message = "Those image formats are not supported")
+  public String photoFileName;
 
   public LocationUpdateRequest getLocation() {
     return location;

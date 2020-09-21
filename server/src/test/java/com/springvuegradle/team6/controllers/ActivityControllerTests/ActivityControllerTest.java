@@ -727,6 +727,132 @@ class ActivityControllerTest {
   }
 
   @Test
+  void createActivityWithValidPhotoFileNameIsJpgReturnsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T24:00:00+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T24:00:00+1300\"\n,"
+            + "  \"photo_filename\": \"myimage.jpg\"\n"
+            + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isCreated());
+
+    List<Activity> activities = activityRepository.findAll();
+    Activity activity = activities.get(0);
+    Assert.assertEquals("myimage.jpg", activity.getFileName());
+  }
+
+  @Test
+  void createActivityWithValidPhotoFileNameIsJpegReturnsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T24:00:00+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T24:00:00+1300\"\n,"
+            + "  \"photo_filename\": \"myimage.jpeg\"\n"
+            + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isCreated());
+
+    List<Activity> activities = activityRepository.findAll();
+    Activity activity = activities.get(0);
+    Assert.assertEquals("myimage.jpeg", activity.getFileName());
+  }
+
+  @Test
+  void createActivityWithValidPhotoFileNameIsPngReturnsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T24:00:00+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T24:00:00+1300\"\n,"
+            + "  \"photo_filename\": \"myimage.png\"\n"
+            + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isCreated());
+
+    List<Activity> activities = activityRepository.findAll();
+    Activity activity = activities.get(0);
+    Assert.assertEquals("myimage.png", activity.getFileName());
+  }
+
+  @Test
+  void createActivityWithValidPhotoFileNameIsGifReturnsOk() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T24:00:00+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T24:00:00+1300\"\n,"
+            + "  \"photo_filename\": \"myimage.gif\"\n"
+            + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isCreated());
+
+    List<Activity> activities = activityRepository.findAll();
+    Activity activity = activities.get(0);
+    Assert.assertEquals("myimage.gif", activity.getFileName());
+  }
+
+  @Test
+  void createActivityWithInvalidPhotoFileNameReturns4xx() throws Exception {
+    String jsonString =
+        "{\n"
+            + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
+            + "  \"description\": \"A big and nice race on a lovely peninsula\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Walk\"\n"
+            + "  ],\n"
+            + "  \"continuous\": false,\n"
+            + "  \"start_time\": \"2030-04-28T24:00:00+1300\", \n"
+            + "  \"end_time\": \"2030-08-28T24:00:00+1300\"\n,"
+            + "  \"photo_filename\": \"myimage.java\"\n"
+            + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/{profileId}/activities", id)
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
   void getActivityCreatorReturnStatusOk() throws Exception {
     Profile profile1 = profileRepository.findById(id);
     Activity testActivity1 = new Activity();
