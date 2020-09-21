@@ -170,8 +170,8 @@
             <ActivityResults :profile-id="profileId"
                              :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
-          <b-tab title="Route">
-            <PathInfoMapView :path="activity.path"></PathInfoMapView>
+          <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
+            <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
           </b-tab>
         </b-tabs>
       </div>

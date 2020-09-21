@@ -184,15 +184,12 @@ export default {
     }
   },
   mounted() {
-    console.log(this.$refs.map.markers)
     this.$refs.pathInfo.data = this.$refs.map.markers
     if(this.$refs.map.markers == null) {
       this.toPass = []
     } else {
       this.toPass = this.$refs.map.markers
     }
-
-    // console.log(this.$refs.map.markers)
   }
 }
 </script>
