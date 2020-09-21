@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -69,7 +70,7 @@ public class GoogleAPIServiceMocking {
                 eq(String.class),
                 anyDouble(),
                 anyDouble(),
-                eq(null)))
+                any()))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
@@ -85,7 +86,7 @@ public class GoogleAPIServiceMocking {
     Mockito.when(
             service.template.getForEntity(
                 eq(GoogleAPIService.URL_PLACE_AUTOCOMPLETE), eq(String.class),
-                anyString(), eq(null)))
+                anyString(), any()))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
@@ -101,7 +102,7 @@ public class GoogleAPIServiceMocking {
     Mockito.when(
             service.template.getForEntity(
                 eq(GoogleAPIService.URL_GEOCODE_PLACE_ID), eq(String.class),
-                anyString(), eq(null)))
+                anyString(), any()))
         .thenReturn(new ResponseEntity<>(expectedJson, HttpStatus.OK));
   }
 
@@ -121,7 +122,7 @@ public class GoogleAPIServiceMocking {
                 eq(String.class),
                 anyDouble(),
                 anyDouble(),
-                eq(null)))
+                any()))
         .thenReturn(new ResponseEntity<>(expectedJson, status));
   }
 }
