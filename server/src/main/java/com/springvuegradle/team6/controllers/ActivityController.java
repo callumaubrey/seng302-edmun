@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
-import com.springvuegradle.team6.requests.CreateActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
-import com.springvuegradle.team6.requests.EditActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.requests.objects.EmailRolePair;
 import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.LocationService;
+
+import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -1158,5 +1156,26 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  public ResponseEntity editActivityImage(
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestBody @Valid EditActivityImageRequest request,
+          HttpSession sesion) {
+    Object id = sesion.getId();
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
+      return new ResponseEntity("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+    // need to delete old photo if there is one.
+    // parse bytes from json and save in a folder in resources.
+
+    return new ResponseEntity<>("Allgood",HttpStatus.ACCEPTED);
   }
 }
