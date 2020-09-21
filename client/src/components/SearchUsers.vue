@@ -112,21 +112,13 @@
 
         <b-row>
             <b-col>
-                <b-table
-                        class="cursor-pointer"
-                        hover
-                        :fields="fields"
-                        :items="data"
-                        :busy="tableIsLoading"
-                        @row-clicked="itemRowClicked"
-                >
-                    <template v-slot:table-busy>
-                        <div class="text-center text-primary my-2">
-                            <b-spinner class="align-middle"></b-spinner>
-                            <strong> Loading...</strong>
-                        </div>
-                    </template>
-                </b-table>
+              <SearchProfileList :profile_data="data"></SearchProfileList>
+              <template v-slot:table-busy>
+                <div class="text-center text-primary my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong> Loading...</strong>
+                </div>
+              </template>
             </b-col>
         </b-row>
         <b-row v-if="this.data != null">
@@ -146,42 +138,43 @@
 </template>
 
 <script>
-    import api from '@/Api'
+import api from '@/Api'
+import SearchProfileList from "@/components/SearchProfileList";
 
-    export default {
-        name: 'Search',
-
-        data() {
-            return {
-                searchQuery: '',
-                searchBy: 'fullName',
-                fields: [
-                    {key: 'lastname', sortable: true},
-                    {key: 'firstname', sortable: true},
-                    {key: 'middlename', sortable: true},
-                    {key: 'nickname', sortable: true},
-                    {key: 'primary_email', sortable: true},
-                    {key: 'activity_types', sortable: false},
-                ],
-                currentPage: 1,
-                count: 1,
-                limit: 10,
-                data: null,
-                routeQuery: {},
-                offset: null,
-                activityTypesForm: {
-                    options: [],
-                    search: "",
-                    selectedOptions: [],
-                    method: "AND"
-                },
-                tableIsLoading: false,
-            }
-        },
-        computed: {
-            criteria() {
-                // Compute the search criteria
-                return this.activityTypesForm.search.trim().toLowerCase()
+export default {
+  name: 'Search',
+  components: {SearchProfileList},
+  data() {
+    return {
+      searchQuery: '',
+      searchBy: 'fullName',
+      fields: [
+        {key: 'lastname', sortable: true},
+        {key: 'firstname', sortable: true},
+        {key: 'middlename', sortable: true},
+        {key: 'nickname', sortable: true},
+        {key: 'primary_email', sortable: true},
+        {key: 'activity_types', sortable: false},
+      ],
+      currentPage: 1,
+      count: 1,
+      limit: 10,
+      data: null,
+      routeQuery: {},
+      offset: null,
+      activityTypesForm: {
+        options: [],
+        search: "",
+        selectedOptions: [],
+        method: "AND"
+      },
+      tableIsLoading: false,
+    }
+  },
+  computed: {
+    criteria() {
+      // Compute the search criteria
+      return this.activityTypesForm.search.trim().toLowerCase()
             },
             availableOptions() {
                 const criteria = this.criteria;
