@@ -721,6 +721,10 @@ public class FollowController {
     }
 
     Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("No such profile", HttpStatus.BAD_REQUEST);
+    }
+
     if (profile.getId() != Integer.parseInt(id.toString())) {
       return new ResponseEntity("You can only view your activities followed", HttpStatus.BAD_REQUEST);
     }
