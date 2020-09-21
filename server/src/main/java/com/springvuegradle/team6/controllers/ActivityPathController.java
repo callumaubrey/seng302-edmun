@@ -211,7 +211,7 @@ public class ActivityPathController {
         // Check Path exists
         Optional<Path> optionalPath = Optional.ofNullable(activity.getPath());
         if (optionalPath.isEmpty()) {
-            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Path does not exist", HttpStatus.NOT_FOUND);
         }
         Path path = optionalPath.get();
 

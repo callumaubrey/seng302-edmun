@@ -19,6 +19,7 @@ public class SearchActivityResponse {
           LocalDateTime startTime,
           LocalDateTime endTime,
           Location location,
+          Path path,
           VisibilityType visibilityType) {
     this.activityName = activityName;
     this.activityId = activityId;
@@ -30,6 +31,7 @@ public class SearchActivityResponse {
     this.startTime = startTime;
     this.endTime = endTime;
     this.location = location;
+    this.path = path;
     this.visibilityType = visibilityType;
   }
 
@@ -62,6 +64,9 @@ public class SearchActivityResponse {
 
   @JsonProperty("location")
   public Location location;
+
+  @JsonProperty("path")
+  public Path path;
 
   @JsonProperty("visibilityType")
   public VisibilityType visibilityType;

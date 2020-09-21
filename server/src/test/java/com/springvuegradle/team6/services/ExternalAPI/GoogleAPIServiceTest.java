@@ -3,23 +3,15 @@ package com.springvuegradle.team6.services.ExternalAPI;
 import com.springvuegradle.team6.models.entities.Location;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -39,7 +31,7 @@ class GoogleAPIServiceTest {
   @Test
   void testReverseGeocodeReturnsOK() throws Exception {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocode_OK.json",
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocode_OK.json",
         HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
@@ -57,27 +49,23 @@ class GoogleAPIServiceTest {
   @Test
   void testReverseGeocodeReturnsExceptionOnAPIError() throws Exception {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocode_OK.json",
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocode_OK.json",
         HttpStatus.INTERNAL_SERVER_ERROR);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api
-    assertThrows(HttpServerErrorException.class, () -> {
-      googleAPIService.reverseGeocode(location);
-    });
+    assertThrows(HttpServerErrorException.class, () -> googleAPIService.reverseGeocode(location));
   }
 
   // This exception is very unlikely to occur unless the google codebase fails
   @Test
   void testReverseGeocodeReturnsParseException() throws Exception {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocode_Err.json", HttpStatus.OK);
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocode_Err.json", HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api
-    HttpStatus status = assertThrows(HttpServerErrorException.class, () -> {
-      googleAPIService.reverseGeocode(location);
-    }).getStatusCode();
+    HttpStatus status = assertThrows(HttpServerErrorException.class, () -> googleAPIService.reverseGeocode(location)).getStatusCode();
 
     assertEquals(HttpStatus.EXPECTATION_FAILED, status);
   }
@@ -85,7 +73,7 @@ class GoogleAPIServiceTest {
   @Test
   void parseReverseGeocodeDetailed() throws IOException {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocode_OK.json", HttpStatus.OK);
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocode_OK.json", HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api
@@ -100,7 +88,7 @@ class GoogleAPIServiceTest {
   @Test
   void parseReverseGeocodeObfuscatedCityAvailable() throws IOException {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocode_OK.json", HttpStatus.OK);
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocode_OK.json", HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api
@@ -115,7 +103,7 @@ class GoogleAPIServiceTest {
   @Test
   void parseReverseGeocodeObfuscatedStateAvailable() throws IOException {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocodeState_OK.json", HttpStatus.OK);
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocodeState_OK.json", HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api
@@ -130,7 +118,7 @@ class GoogleAPIServiceTest {
   @Test
   void parseReverseGeocodeObfuscatedCountryAvailable() throws IOException {
     // Setup Mockito
-    googleAPIServiceMocking.mockReverseGeocode("ExternalAPI/GoogleAPIServiceTest/reverseGeocodeCountry_OK.json", HttpStatus.OK);
+    googleAPIServiceMocking.mockReverseGeocode("GoogleAPIServiceTest/reverseGeocodeCountry_OK.json", HttpStatus.OK);
     Location location = new Location(40.714224, -73.961452);
 
     // Call mock api

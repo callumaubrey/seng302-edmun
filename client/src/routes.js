@@ -15,6 +15,7 @@ import SearchUsers from './pages/SearchUsers/App';
 import SearchActivity from "./pages/SearchActivity/App";
 import HashTag from './pages/HashTag/App';
 import HomeFeed from './pages/HomeFeed/App';
+import ForgotPassword from './pages/ForgotPassword/App';
 import ResetPassword from './pages/ResetPassword/App';
 
 const routes = [
@@ -32,6 +33,8 @@ const routes = [
     {path: '/activities/search', component: SearchActivity},
     {path: '/profiles', component: SearchUsers, name: 'Users' },
     {path: '/hashtag/:hashtag', component: HashTag },
+    {path: '/home', component: HomeFeed },
+    {path: '/forgot-password', component: ForgotPassword}
     {path: '/home', component: HomeFeed },
     {path: '/resetpassword/:token', component: ResetPassword}
     ];
