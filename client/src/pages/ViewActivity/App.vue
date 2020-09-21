@@ -10,8 +10,12 @@
     <div v-else-if="!isAuthorized">
       <ForbiddenMessage></ForbiddenMessage>
     </div>
-    <div v-else-if="!locationDataLoading" class="container">
-      <div>
+
+
+    <!-- Main Row of the page -->
+    <b-row v-else-if="!locationDataLoading">
+      <!-- Left Side bar -->
+      <b-col lg="3" style="min-width: 25em; background: #2c3136; margin-top: -50px; padding-top: 3em;">
         <!-- Image and Name -->
         <b-row>
           <b-img center rounded="circle" width="150px" height="150px"
@@ -19,13 +23,14 @@
                  alt="Center image"></b-img>
         </b-row>
         <b-row align-h="center">
-          <h3>{{ activityName }}</h3>
+          <h3 style="color: white">{{ activityName }}</h3>
         </b-row>
 
         <!-- Summary -->
         <FollowerSummary class="text-center"
                          :activityId="parseInt($route.params.activityId)"
-                         :key="followSummaryKey"></FollowerSummary>
+                         :key="followSummaryKey"
+                         style="color: white"></FollowerSummary>
         <b-row align-h="center">
           <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
                          :visibility="visibility"
@@ -50,125 +55,143 @@
           </b-dropdown>
         </b-row>
 
-        <!-- Content -->
-        <b-tabs content-class="mt-3" align="center">
-          <b-tab title="About" active>
-            <b-row align-h="center">
-              <b-col cols="9">
-                <b-card style="margin: 1em" title="About:">
-                  <div v-if="locationDataLoading">
-                    <div class="text-center text-primary my-2">
-                      <b-spinner class="align-middle"></b-spinner>
-                      <strong> Loading...</strong>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <b-row>
-                      <b-col cols="3"><b>Activity Type(s):</b></b-col>
-                      <b-col><p>{{ activityTypes }}</p></b-col>
-                    </b-row>
-                    <b-row v-if="!continuous">
-                      <b-col cols="3"><b>Start:</b></b-col>
-                      <b-col><p>{{ startTime }}</p></b-col>
-                    </b-row>
-                    <b-row v-if="!continuous">
-                      <b-col cols="3"><b>End:</b></b-col>
-                      <b-col><p>{{ endTime }}</p></b-col>
-                    </b-row>
-                    <b-row v-if="location==null">
-                      <b-col cols="3"><b>Location:</b></b-col>
-                      <b-col><p>No location available</p></b-col>
-                    </b-row>
-                    <b-row v-if="location!=null">
-                      <b-col cols="3"><b>Location:</b></b-col>
-                      <b-col><p>{{ locationString }}</p></b-col>
-                    </b-row>
-                    <b-row>
-                      <b-col cols="3"><b>Description:</b></b-col>
-                      <b-col><p>{{ description }}</p></b-col>
-                    </b-row>
-                    <b-row>
-                      <b-col cols="3"><b>Hashtags:</b></b-col>
-                      <b-col>
-                        <p>
+<!--        About-->
+        <b-card style="margin: 1em">
+          <div v-if="locationDataLoading">
+            <div class="text-center text-primary my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong> Loading...</strong>
+            </div>
+          </div>
+          <div v-else>
+            <b-col>
+              <label>
+                <b>Activity Type(s):</b>
+              </label>
+              <p>{{ activityTypes }}</p>
+
+              <div v-if="!continuous">
+                <label>
+                  <b>Start:</b>
+                </label>
+                <p>{{ startTime }}</p>
+                <label>
+                  <b>End:</b>
+                </label>
+                <p>{{ endTime }}</p>
+              </div>
+
+              <div v-if="location==null">
+                <label>
+                  <b>Location:</b>
+                </label>
+                <p>No location available</p>
+              </div>
+
+              <div v-if="location!=null">
+                <label>
+                  <b>Location:</b>
+                </label>
+                <p>{{ locationString }}</p>
+              </div>
+
+              <div>
+                <label>
+                  <b>Description:</b>
+                </label>
+                <p style="text-align: justify;">{{ description }}</p>
+              </div>
+
+              <div>
+                <label>
+                  <b>Hashtags:</b>
+                </label>
+                <p>
                             <span v-for="hashtag in hashtags" v-bind:key="hashtag">
                               <b-link @click="clickHashtag(hashtag)"
                               >{{ hashtag }}&nbsp;</b-link
                               >
                             </span>
-                        </p>
+                </p>
+              </div>
+            </b-col>
+          </div>
+        </b-card>
+      </b-col>
+
+
+
+          <!-- Tab Content -->
+      <b-col style="min-width: 50%">
+          <b-tabs align="center">
+            <b-tab title="Location" active>
+              <b-row align-h="center" v-if="metrics.length > 0">
+                <b-col cols="9">
+                  <b-row>
+                    <div class="d-flex flex-row flex-nowrap">
+                      <div v-for="(metric, i) in metrics" v-bind:key="metric">
+                        <b-card v-if="i == metrics.length - 1" :title="metric.title"
+                                class="metric-card"
+                                style="margin-right:0;">
+                          <b-card-body>
+                            <p style="font-size:14px;">{{ metric.description }}</p>
+                          </b-card-body>
+                        </b-card>
+                        <b-card v-else :title="metric.title" class="metric-card">
+                          <b-card-body>
+                            <p style="font-size:14px;">{{ metric.description }}</p>
+                          </b-card-body>
+                        </b-card>
+                      </div>
+                    </div>
+                  </b-row>
+                </b-col>
+              </b-row>
+              <b-row v-else align-h="center">
+                <b-col cols="9">
+                  <b-card style="margin-top: 1em">
+                    <b-card-body>
+                      No metrics available
+                    </b-card-body>
+                  </b-card>
+                </b-col>
+              </b-row>
+              <b-row align-h="center">
+                <b-col cols="9">
+                  <b-card style="margin-top: 1em">
+                    <b-row align-h="center">
+                      <b-col>
+                        <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
+                        <b-card-body v-else>No Location</b-card-body>
                       </b-col>
                     </b-row>
-                  </div>
-                </b-card>
-              </b-col>
-            </b-row>
-
-            <b-row align-h="center" v-if="metrics.length > 0">
+                  </b-card>
+                </b-col>
+              </b-row>
+            </b-tab>
+            <b-tab title="Participants">
+              <b-row align-h="center">
+                <b-col cols="9">
+                  <b-card style="margin-top: 1em" title="Participants:">
+                    <FollowerUserList :activity-id="parseInt($route.params.activityId)"
+                                      :logged-in-id="loggedInId"
+                                      :activity-creator-id="activityOwner.id"></FollowerUserList>
+                  </b-card>
+                </b-col>
+              </b-row>
+            </b-tab>
+            <b-tab title="Results">
               <b-col cols="9">
-                <b-row class="horizontal-scroll">
-                  <div class="d-flex flex-row flex-nowrap">
-                    <div v-for="(metric, i) in metrics" v-bind:key="metric">
-                      <b-card v-if="i == metrics.length - 1" :title="metric.title"
-                              class="metric-card"
-                              style="margin-right:0;">
-                        <b-card-body>
-                          <p style="font-size:14px;">{{ metric.description }}</p>
-                        </b-card-body>
-                      </b-card>
-                      <b-card v-else :title="metric.title" class="metric-card">
-                        <b-card-body>
-                          <p style="font-size:14px;">{{ metric.description }}</p>
-                        </b-card-body>
-                      </b-card>
-                    </div>
-                  </div>
-                </b-row>
+                <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                           :logged-in-id="loggedInId"
+                                           :profile-id="profileId"
+                                           style="padding-bottom: 10px"></RecordActivityResultModal>
+                <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
               </b-col>
-            </b-row>
-            <b-row v-else align-h="center">
-              <b-col cols="9">
-                <b-card style="margin: 1em">
-                  <b-card-body>
-                    No metrics available
-                  </b-card-body>
-                </b-card>
-              </b-col>
-            </b-row>
-            <b-row align-h="center">
-              <b-col cols="9">
-                <b-card style="margin: 1em">
-                  <b-row align-h="center">
-                    <b-col>
-                      <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
-                      <b-card-body v-else>No Location</b-card-body>
-                    </b-col>
-                  </b-row>
-                </b-card>
-              </b-col>
-            </b-row>
-          </b-tab>
-          <b-tab title="Participants">
-            <b-row align-h="center">
-              <b-col cols="9">
-                <b-card style="margin: 1em" title="Participants:">
-                  <FollowerUserList :activity-id="parseInt($route.params.activityId)"
-                                    :logged-in-id="loggedInId"
-                                    :activity-creator-id="activityOwner.id"></FollowerUserList>
-                </b-card>
-              </b-col>
-            </b-row>
-          </b-tab>
-          <b-tab title="Results">
-            <RecordActivityResultModal :activity-id="this.$route.params.activityId"
-                                       :logged-in-id="loggedInId"
-                                       :profile-id="profileId"
-                                       style="padding-bottom: 10px"></RecordActivityResultModal>
-            <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
-          </b-tab>
-        </b-tabs>
-      </div>
-    </div>
+            </b-tab>
+          </b-tabs>
+        </b-col>
+    </b-row>
   </div>
 </template>
 
@@ -205,7 +228,7 @@ const App = {
       isLoggedIn: false,
       userName: "",
       loggedInId: null,
-      profileId: null, 
+      profileId: null,
       activityName: "",
       description: "",
       activityTypes: [],
