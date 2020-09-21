@@ -34,7 +34,7 @@ const routes = [
     {path: '/profiles', component: SearchUsers, name: 'Users' },
     {path: '/hashtag/:hashtag', component: HashTag },
     {path: '/home', component: HomeFeed },
-    {path: '/forgot-password', component: ForgotPassword}
+    {path: '/forgot-password', component: ForgotPassword},
     {path: '/home', component: HomeFeed },
     {path: '/resetpassword/:token', component: ResetPassword}
     ];

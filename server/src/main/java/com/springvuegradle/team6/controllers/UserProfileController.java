@@ -473,7 +473,8 @@ public class UserProfileController {
     if (passwordTokenRepository.findByToken(token) == null) {
       return new ResponseEntity<>("No such user exists", HttpStatus.NOT_FOUND);
     }
-    Profile profile = passwordTokenRepository.findByToken(token).getProfile();
+    PasswordToken passwordToken = passwordTokenRepository.findByToken(token);
+    Profile profile = passwordToken.getProfile();
 
     // Check if passwords are matched
     if (!request.newPassword.equals(request.repeatPassword)) {
@@ -481,6 +482,9 @@ public class UserProfileController {
     }
     profile.setPassword(request.newPassword);
     repository.save(profile);
+
+    // Delete token
+    passwordTokenRepository.delete(passwordToken);
     return ResponseEntity.ok("Password Edited Successfully");
   }
 
