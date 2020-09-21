@@ -153,6 +153,12 @@ export default {
         activity_mode_filter, start_date, end_date,
         longitude, latitude, radius)},
 
+    getLocationAutocompleteByName: (name) =>instance.get('/location/autocomplete?name='+name),
+
+    getLocationAutocompleteByLatLon: (latitude, longitude) => instance.get('/location/autocomplete?lat='+latitude+'&lon='+longitude),
+
+    getGeocodePlaceId: (placeId) => instance.get('/location/geocode?id='+placeId),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
