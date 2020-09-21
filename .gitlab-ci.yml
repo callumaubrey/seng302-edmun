@@ -26,7 +26,6 @@ setup:
 junit:
   stage: test
   script:
-    - rm -rf /home/gitlab-runner/builds/
     - cd server
     - ./gradlew test
 
