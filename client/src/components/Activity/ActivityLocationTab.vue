@@ -91,8 +91,11 @@
       mapClicked: async function (event) {
         let lat = event.latlng.lat;
         let lng = event.latlng.lng;
-        console.log(lat)
-        console.log(lng)
+        if (lng > 180) {
+          lng = lng - 360;
+        } else if (lng < -180) {
+          lng = lng + 360;
+        }
 
         // Update set location on v-model
         this.$emit('locationSelect', event.latlng);
