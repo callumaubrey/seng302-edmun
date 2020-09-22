@@ -1,5 +1,5 @@
 <template>
-  <div id="app" v-if="isLoggedIn">
+  <div id="app" v-if="isLoggedIn" style="overflow: hidden">
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
     <div v-if="archived">
       <h1 align="center">This activity has been deleted</h1>
@@ -15,7 +15,7 @@
     <!-- Main Row of the page -->
     <b-row v-else-if="!locationDataLoading">
       <!-- Left Side bar -->
-      <b-col lg="3" style="min-width: 25em; background: #2c3136; margin-top: -50px; padding-top: 3em;">
+      <b-col lg="3" class="content_container" style="min-width: 25em; max-height: 100% !important; background: #2c3136; padding-top: 5em;">
         <!-- Image and Name -->
         <b-row>
           <b-img center rounded="circle" width="150px" height="150px"
@@ -161,7 +161,7 @@
                   <b-card style="margin-top: 1em">
                     <b-row align-h="center">
                       <b-col>
-                        <h4 v-if="location && location.name">
+                        <h4 v-if="location && location.name" align="center">
                           {{location.name}}
                         </h4>
                         <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
@@ -184,13 +184,15 @@
               </b-row>
             </b-tab>
             <b-tab title="Results">
-              <b-col cols="9">
-                <RecordActivityResultModal :activity-id="this.$route.params.activityId"
-                                           :logged-in-id="loggedInId"
-                                           :profile-id="profileId"
-                                           style="padding-bottom: 10px"></RecordActivityResultModal>
-                <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
-              </b-col>
+              <b-card align-h="center">
+                <b-col cols="9">
+                  <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                             :logged-in-id="loggedInId"
+                                             :profile-id="profileId"
+                                             style="padding-bottom: 10px"></RecordActivityResultModal>
+                  <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
+                </b-col>
+              </b-card>
             </b-tab>
           </b-tabs>
         </b-col>
@@ -491,6 +493,14 @@ export default App;
   .metric-card .card-title {
     font-size: 18px;
     margin-left: 7px;
+  }
+
+  .content_container {
+    margin-top: -50px;
+    height: calc(100vh - 66px);
+    max-height: calc(100vh - 66px);
+    /** This is kinda of a dirty way to fill page height. It requires knowing the navbar height. If it was
+    to change this page would break. However alternatives would be harder to understand and quite complicated**/
   }
 </style>
 
