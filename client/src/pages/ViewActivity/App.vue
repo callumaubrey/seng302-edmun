@@ -170,6 +170,9 @@
             <ActivityResults :profile-id="profileId"
                              :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
+          <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
+            <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
+          </b-tab>
         </b-tabs>
       </div>
     </div>
@@ -188,6 +191,7 @@
   import AdminMixin from "../../mixins/AdminMixin";
   import ActivityResults from "../../components/ActivityResults";
   import MapPane from "../../components/MapPane/MapPane";
+  import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
 
   const App = {
     name: "App",
@@ -200,7 +204,8 @@
       FollowerSummary,
       ShareActivity,
       ForbiddenMessage,
-      RecordActivityResultModal
+      RecordActivityResultModal,
+      PathInfoMapView
     },
     data: function () {
       return {
