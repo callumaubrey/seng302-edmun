@@ -33,6 +33,7 @@ public class EmailService {
     public boolean sendPasswordTokenEmail(String to, String subject, String token, String userName) {
         emailSender.setUsername(configProperties.getUsername());
         emailSender.setPassword(configProperties.getPassword());
+        String url = configProperties.getUrl() + token;
         try {
             MimeMessage message = emailSender.createMimeMessage();
             SimpleMailMessage message1 = new SimpleMailMessage();
@@ -42,7 +43,8 @@ public class EmailService {
             helper.setFrom("no_reply@edmun.com");
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText("<html><body>Hi, " + userName + ". <br><br>Click the link below to reset your password. <br><br>http://localhost:9500/resetpassword/" + token + "</body></html>", true);
+            helper.setText("<html><body>Hi, " + userName + ". <br><br>Click the link below to reset your password. <br><br>" +
+                configProperties.getUrl() + "resetpassword/" + token + "</body></html>", true);
 
             emailSender.send(message);
             return true;

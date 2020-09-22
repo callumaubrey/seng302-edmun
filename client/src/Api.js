@@ -237,5 +237,8 @@ export default {
         "/profiles/resetpassword", data),
 
     getNumberOfActivitiesFollowed: (profileId) => instance.get(
-        "/profiles/"+ profileId + "/subscriptions/activities/following")
+        "/profiles/"+ profileId + "/subscriptions/activities/following"),
+
+    resetPassword: (token, data) => instance.put(
+        "/profiles/forgotpassword/" + token, data)
 }
