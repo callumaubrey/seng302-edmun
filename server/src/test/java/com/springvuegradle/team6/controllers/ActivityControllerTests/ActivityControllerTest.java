@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTests;
 
+import static java.lang.System.getProperty;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -10,11 +11,16 @@ import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.transaction.Transactional;
+
+import javassist.bytecode.ByteArray;
+import org.apache.lucene.util.IOUtils;
+import org.assertj.core.internal.Bytes;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -25,6 +31,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -2341,4 +2348,5 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertTrue(
         activityRepository.findById(Integer.parseInt(activityId)).get().getMetrics().isEmpty());
   }
+  
 }

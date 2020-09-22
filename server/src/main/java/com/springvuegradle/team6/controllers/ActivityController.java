@@ -7,8 +7,10 @@ import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.requests.objects.EmailRolePair;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
 
+import java.io.File;
 import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,17 +25,8 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This controller contains end points related to getting, creating, editing and deleting the
@@ -68,18 +61,20 @@ public class ActivityController {
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
   private final LocationService locationService;
+  private final FileService fileService;
 
   ActivityController(
-      ProfileRepository profileRepository,
-      ActivityRepository activityRepository,
-      ActivityRoleRepository activityRoleRepository,
-      LocationRepository locationRepository,
-      TagRepository tagRepository,
-      SubscriptionHistoryRepository subscriptionHistoryRepository,
-      ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricRepository activityQualificationMetricRepository,
-      ActivityResultRepository activityResultRepository,
-      LocationService locationService) {
+          ProfileRepository profileRepository,
+          ActivityRepository activityRepository,
+          ActivityRoleRepository activityRoleRepository,
+          LocationRepository locationRepository,
+          TagRepository tagRepository,
+          SubscriptionHistoryRepository subscriptionHistoryRepository,
+          ActivityHistoryRepository activityHistoryRepository,
+          ActivityQualificationMetricRepository activityQualificationMetricRepository,
+          ActivityResultRepository activityResultRepository,
+          LocationService locationService,
+          FileService fileService) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -90,6 +85,7 @@ public class ActivityController {
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
     this.locationService = locationService;
+    this.fileService = fileService;
   }
 
   /**
@@ -1158,12 +1154,13 @@ public class ActivityController {
     }
   }
 
+  @PutMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
   public ResponseEntity editActivityImage(
           @PathVariable int profileId,
           @PathVariable int activityId,
-          @RequestBody @Valid EditActivityImageRequest request,
-          HttpSession sesion) {
-    Object id = sesion.getId();
+          @RequestParam("File") MultipartFile file,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
 
     Optional<Activity> optionalActivity = activityRepository.findById(activityId);
     if (optionalActivity.isEmpty()) {
@@ -1173,8 +1170,15 @@ public class ActivityController {
     if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
       return new ResponseEntity("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
     }
-    // need to delete old photo if there is one.
-    // parse bytes from json and save in a folder in resources.
+
+    String fileName = fileService.uploadActivityImage(file, activityId);
+    if (fileName == null) {
+      return new ResponseEntity<>("Failed to upload image",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    activity.setFileName(fileName);
+    activityRepository.save(activity);
+
 
     return new ResponseEntity<>("Allgood",HttpStatus.ACCEPTED);
   }
