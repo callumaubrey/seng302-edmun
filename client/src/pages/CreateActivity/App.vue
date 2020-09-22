@@ -210,6 +210,19 @@
                   </b-form>
                 </b-container>
               </b-tab>
+
+              <!-- Activity Image Editing -->
+              <b-tab>
+                <template v-slot:title>
+                  Activity Image
+                </template>
+                <b-row style="font-size: 6em;" align-content="center">
+                  <b-col style="max-width: 600px; height: 300px; margin:auto;">
+                    <UserImage is-activity
+                               editable></UserImage>
+                  </b-col>
+                </b-row>
+              </b-tab>
               <b-tab>
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
@@ -271,6 +284,7 @@
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+  import UserImage from "../../components/Activity/UserImage/UserImage";
 
   export default {
     mixins: [validationMixin, locationMixin],
@@ -280,6 +294,7 @@
       NavBar,
       SearchTag,
       ActivityLocationTab,
+      UserImage
     },
     data() {
       return {
@@ -503,7 +518,9 @@
                   currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 }).catch((err) => {
                   console.error(err);
-                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  store.newNotification(
+                      'Activity created successfully, Path was unable to be created. Try again later.',
+                      'warning', 4);
                   currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 });
               })
@@ -544,7 +561,9 @@
                   currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 }).catch((err) => {
                   console.error(err);
-                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
+                  store.newNotification(
+                      'Activity created successfully, Path was unable to be created. Try again later.',
+                      'warning', 4);
                   currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 });
               })
@@ -558,7 +577,7 @@
         }
       },
 
-      submitPath: function(activityId) {
+      submitPath: function (activityId) {
         // Update path
         return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
       },
