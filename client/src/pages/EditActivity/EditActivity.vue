@@ -216,7 +216,7 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path">
+              <b-tab title="Activity Path" >
                 <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" :activityId = "activityId" :path = "path"></PathInfoMapCreateEdit>
               </b-tab>
 

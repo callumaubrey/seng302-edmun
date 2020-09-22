@@ -50,20 +50,15 @@
         this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId, true);
       },
       pathEdited: function() {
-        console.log(this.path.locations)
         this.path = this.$refs.path_editor.getUpdatedPathObject()
-        // console.log(this.path.locations.length)
-        console.log(this.path.locations)
-        // this.pathKeypointSelected = this.path.locations.length - 1
       },
       selectedKeyPoint: function(index) {
-        // this.pathKeypointSelected = index
+        this.pathKeypointSelected = index
         this.$refs.path_editor.setMapCenterFromIndex(index)
       },
       updateActivity: function(profileId, activityId) {
         return this.$refs.path_editor.updatePathInActivity(profileId, activityId)
       },
-
     },
     mounted() {
       if (this.activityId != null) {
