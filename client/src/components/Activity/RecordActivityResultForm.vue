@@ -92,6 +92,7 @@
                   v-model="$v.startFinish.startDate.$model"
               ></b-form-input>
               <b-form-invalid-feedback id="start-date-feedback">Start date must be in a valid format
+                (DD-MM-YYYY).
               </b-form-invalid-feedback>
             </b-form-group>
             <b-form-group id="start-time-input-group" label="Start Time"
@@ -119,7 +120,8 @@
                   type="date"
                   v-model="$v.startFinish.endDate.$model"
               ></b-form-input>
-              <b-form-invalid-feedback id="end-date-feedback">This is a required field and cannot be
+              <b-form-invalid-feedback id="end-date-feedback">End date must be in a valid format
+                (DD-MM-YYYY) and cannot be
                 before start date.
               </b-form-invalid-feedback>
             </b-form-group>
@@ -246,6 +248,11 @@ export default {
     },
     startFinish: {
       startDate: {
+        dateValidate(val) {
+          let startDate = new Date(val)
+          //check if duration year is not more than 4 digits
+          return !isNaN(startDate.getFullYear());
+        },
         required
       },
       endDate: {
@@ -253,6 +260,10 @@ export default {
         dateValidate(val) {
           let startDate = new Date(this.startFinish.startDate);
           let endDate = new Date(val);
+          //check if duration year is not more than 4 digits
+          if (isNaN(endDate.getFullYear())) {
+            return false
+          }
           return endDate >= startDate;
         }
       },
@@ -583,7 +594,8 @@ export default {
      * Set specialMetricSelected attribute to true if the form is only used for editing and special metric is selected
      */
     setSpecialMetricSelectedFlag() {
-      if (!this.isCreateResult && this.specialMetricTitle !== 'None' && this.specialMetricTitle !== null) {
+      if (!this.isCreateResult && this.specialMetricTitle !== 'None' && this.specialMetricTitle
+          !== null) {
         this.specialMetricSelected = true
       } else {
         this.specialMetricSelected = false
