@@ -54,9 +54,9 @@ export default {
       } else {
         this.$refs.map.routePoints.push(marker)
       }
-      this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
+      let id = this.$refs.map.markers.length
+      this.$refs.map.createMarker(id, 1, latitude, longitude, "", null)
       this.$refs.map.updateStartFinishMarkers()
-      this.count += 1
       this.$emit('pathEdited')
     },
 
@@ -131,13 +131,14 @@ export default {
      * Load activity path into editor
      * @param profileId
      * @param activityId
+     * @param draggable
      */
-    getPathFromActivity(profileId, activityId) {
+    getPathFromActivity(profileId, activityId, draggable=false) {
       api.getActivityPath(profileId, activityId).then((res) => {
         this.autoRoute = res.data.type === "DEFINED";
         this.canChangeSelection = false;
 
-        this.$refs.map.setPath(res.data, true);
+        this.$refs.map.setPath(res.data, true, false, draggable);
       }).catch((err) => {
         console.error(err);
       });

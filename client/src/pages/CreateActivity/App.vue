@@ -225,7 +225,9 @@
 
               <!-- Path Editor -->
               <b-tab title="Activity Path">
-                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+<!--                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>-->
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
+
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -270,12 +272,12 @@
   import {store} from "../../store";
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-  import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+  import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
-      ModifyPathMapPane,
+      PathInfoMapCreateEdit,
       ActivityMetricsEditor,
       NavBar,
       SearchTag,
@@ -560,7 +562,7 @@
 
       submitPath: function(activityId) {
         // Update path
-        return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
+        return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, activityId);
       },
 
       getDates: function () {

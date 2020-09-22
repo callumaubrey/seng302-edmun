@@ -256,7 +256,9 @@
         },
         async mounted() {
             if(this.path.locations != null) {
-                await this.getDirectionInfo();
+                if (this.path.type != "STRAIGHT") {
+                    await this.getDirectionInfo();
+                }
                 this.generateKeypointInfoFromPath();
                 this.generateDirectionInfo();
             }
@@ -264,12 +266,12 @@
         watch: {
             path: async function() {
                 if (this.path.id != null) {
-                    if (this.path.type != "STRAIGHT") {
+                    if (this.path.type != "STRAIGHT" && this.path.locations.length >= 2) {
                         await this.getDirectionInfo();
                     }
                     this.generateKeypointInfoFromPath();
                     this.generateDirectionInfo();
-                    this.selectedKeypoint = this.path.locations.length - 1
+                    // this.selectedKeypoint = this.path.locations.length - 1
                 }else {
                     this.keypointInfo = []
                 }

@@ -410,7 +410,6 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
               currentObj.path = response.data.path
-              currentObj.$refs.pathInfoCreateEdit.setPath(response.data.path)
               if (response.data.continuous === false) {
                 currentObj.isContinuous = '1';
                 [currentObj.durationForm.startDate,
@@ -560,9 +559,9 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
         }
       },
 
-      // updatePath: function() {
-      //   return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
-      // },
+      updatePath: function() {
+        return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, this.activityId);
+      },
 
       getISODates: function () {
         let startDateISO;
@@ -657,9 +656,6 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
         this.selectedVisibility = val
       },
 
-      // loadActivityPath: function() {
-      //   this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
-      // }
     },
     mounted: async function () {
       this.activityId = this.$route.params.activityId;
@@ -667,7 +663,6 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
-      // this.loadActivityPath();
     }
   }
 </script>

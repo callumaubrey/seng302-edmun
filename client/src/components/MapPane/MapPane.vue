@@ -354,7 +354,7 @@
       /**
        * Sets Route points using path
        **/
-      setPath(path, show_keypoints = false, only_start_finish = false) {
+      setPath(path, show_keypoints = false, only_start_finish = false, draggable=false) {
         if (path === null) {
           this.routePoints = [];
           return;
@@ -373,17 +373,17 @@
 
             // Title
             let title = null;
-            if (i === 0) {
+            if (i === 0 && !draggable) {
               title = "Start";
             }
-            if (i === path.locations.length - 1) {
+            if (i === path.locations.length - 1 && !draggable) {
               title = "Finish";
             }
 
             if (!only_start_finish || (only_start_finish && (i === 0 || i === path.locations.length
                 - 1))) {
               this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
-                  "", title, false);
+                  "", title, draggable);
             }
           }
           this.getLatestMarker().icon = this.pathEndMarker;
