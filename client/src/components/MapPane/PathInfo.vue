@@ -162,8 +162,8 @@
 
                     // Calculate type
                     let type = "keypoint";
-                    if(i === 0) type = "start";
                     if(i === this.path.locations.length-1) type = "end";
+                    if(i === 0) type = "start";
 
                     this.keypointInfo.push({
                         index: i,
