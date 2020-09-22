@@ -1,24 +1,26 @@
 <template>
   <div id="app" v-if="isLoggedIn" style="overflow: hidden">
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
-    <div v-if="archived">
-      <h1 align="center">This activity has been deleted</h1>
-    </div>
-    <div v-else-if="notFound">
-      <h1 align="center">This activity does not exist</h1>
-    </div>
-    <div v-else-if="!isAuthorized">
-      <ForbiddenMessage></ForbiddenMessage>
-    </div>
+
 
 
     <!-- Main Row of the page -->
-    <b-row v-else-if="!locationDataLoading" style="width: 100%">
+    <b-container fluid class="content_container">
+      <div v-if="archived">
+        <h1 align="center">This activity has been deleted</h1>
+      </div>
+      <div v-else-if="notFound">
+        <h1 align="center">This activity does not exist</h1>
+      </div>
+      <div v-else-if="!isAuthorized">
+        <ForbiddenMessage></ForbiddenMessage>
+      </div>
+      <b-row v-else-if="!locationDataLoading" class="content_container">
       <!-- Left Side bar -->
-      <b-col lg="3" class="content_container" style="min-width: 25em; max-height: 100% !important; background: #2c3136; padding-top: 5em;">
+      <b-col lg="3" class="pt-4" style="max-height: 100% !important; background: #2c3136;">
         <!-- Image and Name -->
         <b-row style="font-size: 6em;" align-content="center">
-          <b-col style="max-width: 600px; height: 300px; margin:auto;">
+          <b-col style="max-width: 460px; height: 230px; margin:auto;">
             <UserImage :id="parseInt($route.params.activityId)" is-activity
                        :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
                        save-on-change></UserImage>
@@ -124,22 +126,22 @@
 
 
           <!-- Tab Content -->
-      <b-col style="min-width: 50%; width: 100%">
+      <b-col class="p-0 pt-4 mh-100">
           <b-tabs pills align="center" style="height: 100%">
             <br>
             <!-- Route Tab -->
-            <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()" active>
+            <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()"  active>
               <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
             </b-tab>
 
             <!-- Location Map Tab -->
-            <b-tab title="Location"  @click="$refs.mapPane.refreshMap()" v-if="this.location || this.activity.path">
-              <b-col>
+            <b-tab title="Location"
+                   @click="$refs.mapPane.refreshMap()"
+                   v-if="this.location || this.activity.path">
                 <h4 v-if="location && location.name" align="center">
                   {{location.name}}
                 </h4>
-                <MapPane ref="mapPane" :path-overlay="false" :can-hide="false"></MapPane>
-              </b-col>
+                <MapPane ref="mapPane" maximise :path-overlay="false" :can-hide="false"></MapPane>
 
 
               <!-- Participants Tab -->
@@ -191,6 +193,7 @@
           </b-tabs>
         </b-col>
     </b-row>
+    </b-container>
   </div>
 </template>
 
