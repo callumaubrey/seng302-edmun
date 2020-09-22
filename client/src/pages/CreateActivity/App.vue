@@ -225,9 +225,7 @@
 
               <!-- Path Editor -->
               <b-tab title="Activity Path">
-<!--                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>-->
                 <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
-
               </b-tab>
 
               <!-- Metrics Editor -->

@@ -20,7 +20,6 @@ export default {
     return {
       autoRoute: false,
       canChangeSelection: true,
-      toPass: []
     }
   },
 
@@ -203,13 +202,5 @@ export default {
       return api.updateActivityPath(profileId, activityId, pathObj);
     }
   },
-  mounted() {
-    // this.$refs.pathInfo.data = this.$refs.map.markers
-    if(this.$refs.map.markers == null) {
-      this.toPass = []
-    } else {
-      this.toPass = this.$refs.map.markers
-    }
-  }
 }
 </script>
