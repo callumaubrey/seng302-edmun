@@ -14,7 +14,7 @@
       <div>
         <!-- Image and Name -->
         <b-row style="font-size: 6em;" align-content="center">
-          <b-col>
+          <b-col style="max-width: 600px; height: 300px; margin:auto;">
             <UserImage :id="parseInt($route.params.activityId)" is-activity
                        :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
                        save-on-change></UserImage>

@@ -1,8 +1,12 @@
 <template>
-    <div class="d-flex justify-content-center">
-        <div class="user-profile-img-container"
+    <div class="d-flex justify-content-center fill_space">
+
+        <!-- Profile Image Template -->
+        <div v-if="!isActivity"
+             class="user-profile-img-container"
              @mouseover="show_overlay=true"
              @mouseleave="show_overlay=false">
+
 
             <b-overlay :show="show_overlay && editable"
                        variant="dark" opacity="0.5"
@@ -49,6 +53,65 @@
 
             </b-overlay>
 
+        </div>
+
+        <!-- Activity Image Template -->
+        <div v-else
+             class="fill_space"
+             @mouseover="show_overlay=true"
+             @mouseleave="show_overlay=false">
+            <b-overlay :show="show_overlay && editable"
+                       variant="dark" opacity="0.5"
+                       rounded="lg" class="activity-profile-overlay fill_space">
+
+                <!-- Avatar Image -->
+                <b-img v-if="!default_image"
+                       :src="image_src" alt=""
+                       rounded="lg"
+                       @error="handleInvalidSrcError"
+                       class="user-profile-img fill_space"></b-img>
+                <!-- Default Image -->
+                <div v-else
+                     class="activity_default_img_container user-profile-img fill_space rounded-lg">
+                    <b-img :src="require('@/assets/goatonly_navbar.png')" style="max-height: 50%"></b-img>
+                </div>
+
+                <!-- Overlay Content -->
+                <template v-slot:overlay>
+                    <div class="text-center user-profile-overlay-content">
+
+                        <!-- Add Option -->
+                        <div v-if="default_image">
+                            <label for="file-upload">
+                  <span class="fa-stack fa-2x user-profile-img-icon-add">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fas fa-plus fa-stack-1x fa-inverse"></i>
+                  </span>
+                            </label>
+                        </div>
+
+                        <!-- Edit and Delete Options -->
+                        <div v-else>
+                            <label for="file-upload">
+                  <span class="fa-stack fa-2x user-profile-img-icon-edit">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fas fa-pen fa-stack-1x fa-inverse"></i>
+                  </span>
+                            </label>
+                            <span class="fa-stack fa-2x user-profile-img-icon-remove" @click="handleImageDelete">
+                  <i class="fas fa-circle fa-stack-2x"></i>
+                  <i class="fas fa-trash fa-stack-1x fa-inverse"></i>
+                </span>
+                        </div>
+
+                        <!-- Image Input -->
+                        <input id="file-upload" class="d-none"
+                               accept=".gif,.jpg,.png,.jpeg" type="file"
+                               @change="handleImageUpload"/>
+                    </div>
+                </template>
+
+            </b-overlay>
         </div>
     </div>
 </template>
@@ -281,4 +344,19 @@
         color: #f84040;
         cursor: pointer;
     }
+
+    .activity_default_img_container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #6c757d;
+    }
+
+    .fill_space {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
 </style>
