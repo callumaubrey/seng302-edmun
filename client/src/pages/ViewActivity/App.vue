@@ -153,10 +153,11 @@
             <!-- Participants Tab -->
             <b-tab title="Participants">
                 <b-col align="center" class="activity-page-content">
-                  <b-card style="margin-top: 1em" title="Participants:">
+                  <b-card style="margin-top: 1em" :title="'Members of ' + activityName + ':'">
                     <FollowerUserList :activity-id="parseInt($route.params.activityId)"
-                                      :logged-in-id="loggedInId"
-                                      :activity-creator-id="activityOwner.id"></FollowerUserList>
+                                      :logged-in-id="parseInt(loggedInId)"
+                                      :activity-creator-id="activityOwner.id"
+                    style="padding-top: 2em"></FollowerUserList>
                   </b-card>
                 </b-col>
             </b-tab>

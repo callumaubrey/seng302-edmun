@@ -4,11 +4,31 @@
         <!-- Commented out sections are for future roles that are in the api calls but i didn't realise we weren't using yet -->
         <b-card no-body>
             <b-tabs card>
-                <b-tab key="Participants" title="Participants" @click="currentGroup='Participants'">
-                <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in participants">
+                <b-tab key="Organisers" @click="currentGroup='Organisers'">
+                    <template v-slot:title>
+                        <b-row><b-col>Organisers</b-col><b-col><b-badge>{{organisers.length}}</b-badge></b-col></b-row>
+                    </template>
+                    <b-card style="margin-top:10px;" :key="user.PROFILE_ID" v-for="user in organisers">
+                        <b-row class="text-center" align-v="center">
+                            <b-col class="text-center">
+                                {{ user.FULL_NAME }}
+                            </b-col>
+                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">
+                                <b-dropdown class="m-md-2" id="dropdown-1" text="Organiser">
+                                    <b-dropdown-item @click="changeRole(user, 'participant')">Participant</b-dropdown-item>
+                                </b-dropdown>
+                            </b-col>
+                        </b-row>
+                    </b-card>
+                </b-tab>
+                <b-tab key="Participants" @click="currentGroup='Participants'">
+                    <template v-slot:title>
+                        <b-row><b-col>Participants</b-col><b-col><b-badge>{{participants.length}}</b-badge></b-col></b-row>
+                    </template>
+                <b-card style="margin-top:10px;" :key="user.PROFILE_ID" v-for="user in participants">
                     <b-row class="text-center" align-v="center">
                         <b-col class="text-center">
-                            {{ user.full_name }}
+                            {{ user.FULL_NAME }}
                         </b-col>
                         <b-col v-if="activityCreatorId==loggedInId" class="text-center">
                             <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
@@ -20,51 +40,44 @@
                     </b-row>
                 </b-card>
             </b-tab>
-                <b-tab key="Organisers" title="Organisers" @click="currentGroup='Organisers'">
-                    <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in organisers">
-                        <b-row class="text-center" align-v="center">
-                            <b-col class="text-center">
-                                {{ user.full_name }}
-                            </b-col>
-                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                                <b-dropdown class="m-md-2" id="dropdown-1" text="Organiser">
-                                    <b-dropdown-item @click="changeRole(user, 'participant')">Participant</b-dropdown-item>
-                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
-                                </b-dropdown>
-                            </b-col>
-                        </b-row>
-                    </b-card>
-                </b-tab>
-                <b-tab key="Accessors" title="Accessors" @click="currentGroup='Accessors'">
-                    <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in accessors">
-                        <b-row class="text-center" align-v="center">
-                            <b-col class="text-center">
-                                {{ user.full_name }}
-                            </b-col>
-                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                                <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
-                                </b-dropdown>
-                            </b-col>
-                        </b-row>
-                    </b-card>
-                </b-tab>
-                <!-- followers tabs could be added if we please just uncomment
 
-                <b-tab key="Followers" title="Followers" @click="currentGroup='Followers'">
-                    <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in followers">
+<!--                <b-tab key="Followers" @click="currentGroup='Followers'">-->
+<!--                    <template v-slot:title>-->
+<!--                        <b-row><b-col>Followers</b-col><b-col><b-badge>{{followers.length}}</b-badge></b-col></b-row>-->
+<!--                    </template>-->
+<!--                    <b-card style="margin-top:10px;" :key="user.PROFILE_ID" v-for="user in followers">-->
+
+<!--                        <b-row class="text-center" align-v="center">-->
+<!--                            <b-col class="text-center">-->
+<!--                                {{ user.FULL_NAME }}-->
+<!--                            </b-col>-->
+<!--                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">-->
+<!--                                <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">-->
+<!--                                    <b-dropdown-item>Organiser</b-dropdown-item>-->
+<!--                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>-->
+<!--                                </b-dropdown>-->
+<!--                            </b-col>-->
+<!--                        </b-row>-->
+<!--                    </b-card>-->
+<!--                </b-tab>-->
+                <b-tab key="Accessors" @click="currentGroup='Accessors'">
+                    <template v-slot:title>
+                        <b-row><b-col>Accessors</b-col><b-col><b-badge>{{accessors.length}}</b-badge></b-col></b-row>
+                    </template>
+                    <b-card style="margin-top:10px;" :key="user.PROFILE_ID" v-for="user in accessors">
                         <b-row class="text-center" align-v="center">
                             <b-col class="text-center">
-                                {{ user.full_name }}
+                                {{ user.FULL_NAME }}
                             </b-col>
                             <b-col v-if="activityCreatorId==loggedInId" class="text-center">
                                 <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                    <b-dropdown-item>Organiser</b-dropdown-item>
+                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
                                 </b-dropdown>
                             </b-col>
                         </b-row>
                     </b-card>
-                </b-tab>-->
+                </b-tab>
+
             </b-tabs>
         </b-card>
 
@@ -185,7 +198,7 @@
                     });
             },*/
             changeRole: async function (user, role) {
-                await api.getProfile(user.profile_id)
+                await api.getProfile(user.PROFILE_ID)
                     .then((res) => {
                         this.roleData = {
                             subscriber: {
@@ -219,7 +232,7 @@
                     });
             },
             removeRole: async function (user) {
-                await api.getProfile(user.profile_id)
+                await api.getProfile(user.PROFILE_ID)
                     .then((res) => {
                         this.roleData = {
                             email: res.data.primary_email.address
