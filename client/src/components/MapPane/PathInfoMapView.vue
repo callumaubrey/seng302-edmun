@@ -27,6 +27,13 @@
         methods: {
             markerClicked: function (id) {
                 this.pathKeypointSelected = id;
+            },
+
+            /**
+             * Pass through method
+             */
+            refreshMap() {
+                this.$refs.pathMapPane.refreshMap();
             }
         },
         watch: {

@@ -209,8 +209,6 @@ export default {
     } else {
       this.toPass = this.$refs.map.markers
     }
-
-    // console.log(this.$refs.map.markers)
   }
 }
 </script>
