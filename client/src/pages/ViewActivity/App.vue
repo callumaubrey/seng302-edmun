@@ -1,5 +1,5 @@
 <template>
-  <div id="app" v-if="isLoggedIn" style="overflow: hidden">
+  <div id="app" v-if="isLoggedIn">
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"></NavBar>
 
 
@@ -117,6 +117,13 @@
                             </span>
                 </p>
               </div>
+
+              <div>
+                <label>
+                  <b>Activity Creator:</b>
+                </label>
+                <p>{{ activityOwner.firstname }} {{ activityOwner.lastname }}</p>
+              </div>
             </b-col>
           </div>
         </b-card>
@@ -129,37 +136,40 @@
       <b-col class="p-0 pt-4 mh-100">
           <b-tabs pills align="center" style="height: 100%">
             <br>
-            <!-- Route Tab -->
-            <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()"  active>
-              <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
-            </b-tab>
 
             <!-- Location Map Tab -->
             <b-tab title="Location"
                    @click="$refs.mapPane.refreshMap()"
-                   v-if="this.location || this.activity.path">
+                   v-if="this.location || this.activity.path" active
+            class="activity-page-content">
+              <b-card>
                 <h4 v-if="location && location.name" align="center">
                   {{location.name}}
                 </h4>
-                <MapPane ref="mapPane" maximise :path-overlay="false" :can-hide="false"></MapPane>
-
-
-              <!-- Participants Tab -->
+                <MapPane ref="mapPane" :path-overlay="false" :can-hide="true"></MapPane>
+              </b-card>
             </b-tab>
+
+            <!-- Participants Tab -->
             <b-tab title="Participants">
-              <b-row align-h="center">
-                <b-col cols="9">
+                <b-col align="center" class="activity-page-content">
                   <b-card style="margin-top: 1em" title="Participants:">
                     <FollowerUserList :activity-id="parseInt($route.params.activityId)"
                                       :logged-in-id="loggedInId"
                                       :activity-creator-id="activityOwner.id"></FollowerUserList>
                   </b-card>
                 </b-col>
-              </b-row>
+            </b-tab>
+
+            <!-- Route Tab -->
+            <b-tab :disabled="activity.path == null" title="Route" @click="$refs.pathInfoMap.refreshMap()" class="activity-page-content">
+              <b-card class="activity-page-content"  title="Activities Route:" align="center">
+                <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
+              </b-card>
             </b-tab>
 
             <!-- Results and metrics Tab -->
-            <b-tab title="Results" style="padding-left: 10em; padding-right: 10em">
+            <b-tab :disabled="activity.metrics.length == 0" title="Results" class="activity-page-content">
               <b-col cols="9">
                 <b-row>
                   <div class="d-flex flex-row flex-nowrap">
@@ -185,7 +195,7 @@
                 <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                            :logged-in-id="loggedInId"
                                            :profile-id="profileId"
-                                           style="padding-bottom: 10px"></RecordActivityResultModal>
+                                           style="padding-bottom: 1em"></RecordActivityResultModal>
                 <ActivityResults :profile-id="profileId"
                                  :activity-id="$route.params.activityId"></ActivityResults>
               </b-card>
@@ -502,6 +512,11 @@
     max-height: calc(100vh - 66px);
     /** This is kinda of a dirty way to fill page height. It requires knowing the navbar height. If it was
     to change this page would break. However alternatives would be harder to understand and quite complicated**/
+  }
+
+  .activity-page-content {
+    padding-right: 2em;
+    padding-left: 2em;
   }
 </style>
 
