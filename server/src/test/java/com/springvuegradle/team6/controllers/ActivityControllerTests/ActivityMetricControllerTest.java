@@ -338,7 +338,7 @@ public class ActivityMetricControllerTest {
             + "  \"metric_id\": \""
             + metric.getId()
             + "\",\n"
-            + "  \"value\": \"01:00:00\"\n"
+            + "  \"value\": \"PT1H0M0.0S\"\n"
             + "}";
 
     String jsonStringUser =
@@ -1283,7 +1283,7 @@ public class ActivityMetricControllerTest {
             + "  \"metric_id\": \""
             + metric.getId()
             + "\",\n"
-            + "  \"value\": \"01:00:00\"\n"
+            + "  \"value\": \"PT1H\"\n"
             + "}";
 
     String jsonStringUser =

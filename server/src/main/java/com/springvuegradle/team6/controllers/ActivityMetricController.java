@@ -19,13 +19,12 @@ import com.springvuegradle.team6.models.repositories.ActivityQualificationMetric
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.CustomizedActivityResultRepositoryImpl;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.requests.EditActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
@@ -197,10 +196,8 @@ public class ActivityMetricController {
       activityResultRepository.save(result);
       message += "distance: " + request.getValue() + " km";
     } else if (metricUnit.equals(Unit.TimeDuration)) {
-      // in the format H:I:S
-      String durationString =
-          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
-      Duration duration = Duration.parse(durationString);
+      // in the format PTnHnMn.nS
+      Duration duration = Duration.parse(request.getValue());
       ActivityResult result = new ActivityResultDuration(metric, profile, duration);
       result.overrideResult(request.getSpecialMetric());
       activityResultRepository.save(result);
@@ -440,7 +437,7 @@ public class ActivityMetricController {
       activityResultId = activityResultRepository.save(result).getId();
       message += "distance: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
-      // in the format H:I:S
+      // in the format PTnHnMn.nS
       Optional<ActivityResultDuration> optionalResult =
           activityResultRepository.findSpecificDurationResult(resultId);
       if (!optionalResult.isPresent()) {
@@ -451,16 +448,14 @@ public class ActivityMetricController {
       Integer oldResultId = oldResult.getId();
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
-      String durationString =
-          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
-      Duration duration = Duration.parse(durationString);
+      Duration duration = Duration.parse(request.getValue());
       ActivityResultDuration result =
           new ActivityResultDuration(activityQualificationMetric, profile, duration);
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
-      message += "duration: " + durationString;
+      message += "duration: " + duration.toString();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
           activityResultRepository.findSpecificStartFinishResult(resultId);

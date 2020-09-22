@@ -69,15 +69,15 @@
 
 
         <b-input-group v-if="result.type==='TimeDuration'">
-          <b-form-input :state="validateState('hour')" placeholder="Hours"
+          <b-form-input v-model="$v.duration.hour.$model" :state="validateDurationState('hour')"
                         :disabled="specialMetricSelected"
-                        v-model="$v.hour.$model"></b-form-input>
-          <b-form-input :state="validateState('minute')" placeholder="Minutes"
+                        placeholder="Hours"></b-form-input>
+          <b-form-input v-model="$v.duration.minute.$model" :state="validateDurationState('minute')"
                         :disabled="specialMetricSelected"
-                        v-model="$v.minute.$model"></b-form-input>
-          <b-form-input :state="validateState('second')" placeholder="Seconds"
+                        placeholder="Minutes"></b-form-input>
+          <b-form-input v-model="$v.duration.second.$model" :state="validateDurationState('second')"
                         :disabled="specialMetricSelected"
-                        v-model="$v.second.$model"></b-form-input>
+                        placeholder="Seconds"></b-form-input>
         </b-input-group>
 
         <b-input-group id="result-startfinish-feedback" v-if="result.type==='TimeStartFinish'">
@@ -162,6 +162,7 @@
 <script>
 import api from "@/Api";
 import {validationMixin} from "vuelidate";
+import {required} from "vuelidate/lib/validators";
 
 let durationRegex = /(\d+)h (\d+)m (\d+)s/;
 
@@ -179,11 +180,13 @@ export default {
         "Technical Failure": "TechnicalFailure"
       },
       resultErrorMessage: null,
-      hour: null,
-      minute: null,
-      second: null,
       specialMetricTitle: null,
       specialMetricSelected: false,
+      duration: {
+        hour: null,
+        minute: null,
+        second: null,
+      },
       startFinish: {
         startDate: null,
         startTime: null,
@@ -194,62 +197,70 @@ export default {
     }
   },
   validations: {
-    hour: {
-      validateHour(val) {
-        this.hour = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Hours must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
+    duration: {
+      hour: {
+        validateHour(val) {
+          this.hour = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Hours must be an integer"
+            return false
+          } else {
+            this.resultErrorMessage = null
+            return true
+          }
         }
-      }
-    },
-    minute: {
-      validateMinute(val) {
-        this.minute = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Minutes must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
+      },
+      minute: {
+        validateMinute(val) {
+          this.minute = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Minutes must be an integer"
+            return false
+          } else if (val >= 60) {
+            this.resultErrorMessage = "Minutes must be less than 60"
+            return false
+          } else {
+            this.resultErrorMessage = null
+            return true
+          }
         }
-      }
-    },
-    second: {
-      validateSecond(val) {
-        this.second = val;
-        let integerRegex = new RegExp("^\\d+$");
-        if (!integerRegex.test(val)) {
-          this.resultErrorMessage = "Seconds must be an integer"
-          return false
-        } else {
-          this.resultErrorMessage = null
-          return true
+      },
+      second: {
+        validateSecond(val) {
+          this.second = val;
+          let integerRegex = new RegExp("^\\d+$");
+          if (!integerRegex.test(val)) {
+            this.resultErrorMessage = "Seconds must be an integer"
+            return false
+          } else if (val >= 60) {
+            this.resultErrorMessage = "Seconds must be less than 60"
+            return false
+          } else {
+            this.resultErrorMessage = null
+            return true
+          }
         }
       }
     },
     startFinish: {
-      startDate: {},
+      startDate: {
+        required
+      },
       endDate: {
+        required,
         dateValidate(val) {
-          let startDate = new Date(this.startDate);
+          let startDate = new Date(this.startFinish.startDate);
           let endDate = new Date(val);
-          if (endDate < startDate) {
-            return false;
-          }
-          return true;
+          return endDate >= startDate;
         }
       },
       startTime: {},
       endTime: {
         timeValidate(val) {
-          let startTime = this.startTime;
-          if (this.startDate == this.endDate) {
+          let startTime = this.startFinish.startTime;
+          if (this.startFinish.startDate === this.startFinish.endDate) {
             if (val && startTime) {
               let splitStartTime = startTime.split(":");
               let splitEndTime = val.split(":");
@@ -332,6 +343,10 @@ export default {
       const {$dirty, $error} = this.$v.startFinish[name];
       return $dirty ? !$error : null;
     },
+    validateDurationState(name) {
+      const {$dirty, $error} = this.$v.duration[name];
+      return $dirty ? !$error : null;
+    },
     validateState(name) {
       const {$dirty, $error} = this.$v[name];
       return $dirty ? !$error : null;
@@ -340,9 +355,13 @@ export default {
      * Calls POST activity result endpoint, and also resets the form upon success
      */
     createActivityResult() {
+      console.log(this.result.type)
       if (this.result.type === 'TimeDuration') {
-        this.$v.$touch()
-        if (this.$v.$anyError) {
+        console.log("I WAS HERE")
+        this.$v.duration.$touch()
+        if (this.$v.duration.$anyError) {
+          console.log(this.$v)
+          console.log("ERROR")
           return;
         }
         this.convertToDurationStringFormat();
@@ -381,8 +400,8 @@ export default {
      */
     editActivityResult() {
       if (this.result.type === 'TimeDuration') {
-        this.$v.$touch()
-        if (this.$v.$anyError) {
+        this.$v.duration.$touch()
+        if (this.$v.duration.$anyError) {
           return;
         }
         this.convertToDurationStringFormat();
@@ -445,33 +464,40 @@ export default {
      * Combine hour, minute and second variables to form a duration string
      */
     convertToDurationStringFormat() {
-      if (this.hour.length === 1) {
-        this.hour = '0' + this.hour;
+      if (this.duration.hour.length === 1) {
+        this.duration.hour = '0' + this.duration.hour;
       }
-      if (this.minute.length === 1) {
-        this.minute = '0' + this.minute;
+      if (this.duration.minute.length === 1) {
+        this.duration.minute = '0' + this.duration.minute;
       }
-      if (this.second.length === 1) {
-        this.second = '0' + this.second;
+      if (this.duration.second.length === 1) {
+        this.duration.second = '0' + this.duration.second;
       }
-      this.result.result = this.hour + ':' + this.minute + ':' + this.second
+      this.result.result = "PT" + this.duration.hour + "H" + this.duration.minute + "M"
+          + this.duration.second + ".0S"
     },
     /**
      * Combine date time input and convert them into ISO date time string to be sent to backend
      */
     parseDateTimeInputIntoISODateTimeString() {
-      let startDate = new Date(this.startFinish.startDate);
-      let endDate = new Date(this.startFinish.endDate);
-
-      if (this.startFinish.startTime !== "" && this.startFinish.startTime != null) {
-        startDate = new Date(this.startFinish.startDate + " " + this.startFinish.startTime);
+      let startDateISO;
+      if (this.startFinish.startTime === "00:00" || this.startFinish.startTime == null
+          || this.startFinish.startTime === "") {
+        startDateISO = this.startFinish.startDate + "T" + "00:00" + ":00Z"
+      } else {
+        startDateISO = this.startFinish.startDate + "T" + this.startFinish.startTime
+            + ":00Z";
       }
 
-      if (this.startFinish.endTime !== "" && this.startFinish.endTime != null) {
-        endDate = new Date(this.startFinish.endDate + " " + this.startFinish.endTime);
+      let endDateISO;
+      if (this.startFinish.endTime === "00:00" || this.startFinish.endTime == null
+          || this.startFinish.endTime === "") {
+        endDateISO = this.startFinish.endDate + "T" + "00:00" + ":00Z"
+      } else {
+        endDateISO = this.startFinish.endDate + "T" + this.startFinish.endTime + ":00Z";
       }
-      this.result.result_start = startDate.toISOString();
-      this.result.result_finish = endDate.toISOString();
+      this.result.result_start = startDateISO
+      this.result.result_finish = endDateISO
     },
     /**
      * Break ISO Date time string down into its respective date time input boxes
@@ -499,9 +525,9 @@ export default {
       if (this.result.type === 'TimeDuration' && this.result.result !== null) {
         let matches = this.result.result.match(durationRegex);
         if (matches) {
-          this.hour = matches[1] === undefined ? 0 : matches[1]
-          this.minute = matches[2] === undefined ? 0 : matches[2]
-          this.second = matches[3] === undefined ? 0 : matches[3]
+          this.duration.hour = matches[1] === undefined ? 0 : matches[1]
+          this.duration.minute = matches[2] === undefined ? 0 : matches[2]
+          this.duration.second = matches[3] === undefined ? 0 : matches[3]
         }
       }
     },
@@ -521,11 +547,17 @@ export default {
       this.result.description = null;
       this.$v.result.$reset();
 
-      this.hour = null;
-      this.minute = null;
-      this.second = null;
+      this.startFinish.endTime = null;
+      this.startFinish.startTime = null;
+      this.startFinish.startDate = null;
+      this.startFinish.endDate = null;
+      this.$v.startFinish.$reset();
+
+      this.duration.hour = null;
+      this.duration.minute = null;
+      this.duration.second = null;
       this.specialMetricTitle = null;
-      this.$v.$reset();
+      this.$v.duration.$reset();
     },
     /**
      * Compute special metric title by using special metric enum and specialMetricDict
