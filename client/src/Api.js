@@ -236,6 +236,9 @@ export default {
     sendForgotPasswordEmail: (data) => instance.post(
         "/profiles/resetpassword", data),
 
+    getNumberOfActivitiesFollowed: (profileId) => instance.get(
+        "/profiles/"+ profileId + "/subscriptions/activities/following"),
+
     resetPassword: (token, data) => instance.put(
         "/profiles/forgotpassword/" + token, data)
 }

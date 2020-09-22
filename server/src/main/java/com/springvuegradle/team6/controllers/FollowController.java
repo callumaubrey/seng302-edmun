@@ -705,4 +705,31 @@ public class FollowController {
     return new ResponseEntity("Success", HttpStatus.OK);
   }
 
+  /**
+   * Gets the count of non archived activities a user follows
+   * @param profileId profile ID of user who the count is for
+   * @param httpSession HttpSession object
+   * @return Bad Request if not logged in or URL id dosent match session ID, else OK with the count
+   */
+  @GetMapping("profiles/{profileId}/subscriptions/activities/following")
+  public ResponseEntity getNumberOfActivitiesUserFollows(
+      @PathVariable int profileId,
+      HttpSession httpSession) {
+    Object id = httpSession.getAttribute("id");
+    if (id == null) {
+      return new ResponseEntity("Not logged in", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    Profile profile = profileRepository.findById(profileId);
+    if (profile == null) {
+      return new ResponseEntity("No such profile", HttpStatus.BAD_REQUEST);
+    }
+
+    if (profile.getId() != Integer.parseInt(id.toString())) {
+      return new ResponseEntity("You can only view your activities followed", HttpStatus.BAD_REQUEST);
+    }
+
+    Long count = subscriptionHistoryRepository.findUsersActiveFollowings(profileId);
+    return new ResponseEntity(count, HttpStatus.OK);
+  }
 }
