@@ -18,22 +18,22 @@ import HomeFeed from './pages/HomeFeed/App';
 import ForgotPassword from './pages/ForgotPassword/App';
 
 const routes = [
-    {path: '/', component: Home},
-    {path: '/register', component: Register},
-    {path: '/login', component: Login},
-    {path: '/admin', component: Admin},
-    {path: '/admin/dashboard', component: AdminDashboard, name: 'AdminDashboard'},
-    {path: '/profiles/:id', component: Profile},
-    {path: '/profiles/edit/:id', component: EditProfile},
-    {path: '/profiles/:id/activities/create', component: CreateActivity},
-    {path: '/profiles/:id/activities/:activityId/edit', component: EditActivity},
-    {path: '/profiles/:id/activities/:activityId', component: Activity},
-    {path: '/profiles/:id/activities/', component: ListActivity},
-    {path: '/activities/search', component: SearchActivity},
-    {path: '/profiles', component: SearchUsers, name: 'Users' },
-    {path: '/hashtag/:hashtag', component: HashTag },
-    {path: '/home', component: HomeFeed },
-    {path: '/forgot-password', component: ForgotPassword}
-    ];
+  {path: '/', component: Home},
+  {path: '/register', component: Register},
+  {path: '/login', component: Login},
+  {path: '/admin', component: Admin},
+  {path: '/admin/dashboard', component: AdminDashboard, name: 'AdminDashboard'},
+  {path: '/profiles/:id', component: Profile, name: "Profile"},
+  {path: '/profiles/edit/:id', component: EditProfile},
+  {path: '/profiles/:id/activities/create', component: CreateActivity},
+  {path: '/profiles/:id/activities/:activityId/edit', component: EditActivity},
+  {path: '/profiles/:id/activities/:activityId', component: Activity},
+  {path: '/profiles/:id/activities/', component: ListActivity},
+  {path: '/activities/search', component: SearchActivity},
+  {path: '/profiles', component: SearchUsers, name: 'Users'},
+  {path: '/hashtag/:hashtag', component: HashTag},
+  {path: '/home', component: HomeFeed},
+  {path: '/forgot-password', component: ForgotPassword}
+];
 
 export default routes;

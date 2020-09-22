@@ -113,12 +113,6 @@
         <b-row>
             <b-col>
               <SearchProfileList :profile_data="data"></SearchProfileList>
-              <template v-slot:table-busy>
-                <div class="text-center text-primary my-2">
-                  <b-spinner class="align-middle"></b-spinner>
-                  <strong> Loading...</strong>
-                </div>
-              </template>
             </b-col>
         </b-row>
         <b-row v-if="this.data != null">

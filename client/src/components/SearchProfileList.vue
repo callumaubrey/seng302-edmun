@@ -1,8 +1,8 @@
 <template>
   <div>
     <b-card v-for="profile in profile_data" :key="profile.profile_id"
-            class="profile-card rounded mb-3"
-            @click="goToProfile(profile.profile_id)">
+            class="profile-card rounded mb-3">
+
       <b-card-body class="profile-card-body">
         <b-row>
           <b-col cols="1.0">
@@ -11,9 +11,9 @@
                    width="80px"></b-img>
           </b-col>
           <b-col class="title">
-            <b-card-title>{{ profile.firstname }} {{ profile.middlename }} {{ profile.lastname }},
-              {{ profile.nickname }}
-            </b-card-title>
+            <router-link :to="{name: 'Profile', params: { id: profile.profile_id}}">
+              {{ profile.firstname }} {{ profile.lastname }}
+            </router-link>
             <b-card-sub-title class="mb-2">{{ profile.primary_email }}</b-card-sub-title>
           </b-col>
           <b-col v-if="profile.activity_types !== ''"
@@ -22,6 +22,15 @@
                               :key="type"
                               :type_name="type" class="float-right"></ActivityTypeIcon>
           </b-col>
+        </b-row>
+        <b-row v-if="isAdmin" class="justify-content-md-end">
+          <b-button class="actionBtn" size="sm" @click="emitEditEventToParent(profile)">
+            Edit
+          </b-button>
+          <b-button id="btnDelete" class="actionBtn" danger size="sm"
+                    variant="danger" @click="emitDeleteEvenToParent(profile)">
+            Delete
+          </b-button>
         </b-row>
       </b-card-body>
     </b-card>
@@ -49,6 +58,12 @@ export default {
   methods: {
     goToProfile(profile_id) {
       this.$router.push('/profiles/' + profile_id);
+    },
+    emitEditEventToParent(profile) {
+      this.$emit('edit-event', profile)
+    },
+    emitDeleteEvenToParent(profile) {
+      this.$emit('delete-event', profile)
     }
   }
 
@@ -66,6 +81,10 @@ export default {
 
 .title {
   font-size: 150%;
+}
+
+.actionBtn {
+  margin: 2px 5px;
 }
 
 </style>
