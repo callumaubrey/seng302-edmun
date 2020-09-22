@@ -1158,7 +1158,7 @@ public class ActivityController {
   public ResponseEntity editActivityImage(
           @PathVariable int profileId,
           @PathVariable int activityId,
-          @RequestParam("File") MultipartFile file,
+          @RequestParam("file") MultipartFile file,
           HttpSession session) {
     Object id = session.getAttribute("id");
 
@@ -1169,6 +1169,10 @@ public class ActivityController {
     Activity activity = optionalActivity.get();
     if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
       return new ResponseEntity("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (!(file.getContentType().equals("image/png") || file.getContentType().equals("image/jpg") || file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
     }
 
     String fileName = fileService.uploadActivityImage(file, activityId);
