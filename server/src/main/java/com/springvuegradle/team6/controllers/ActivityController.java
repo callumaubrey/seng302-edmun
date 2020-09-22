@@ -472,8 +472,6 @@ public class ActivityController {
 
     // Set creation date to now
     activity.setCreationDate(LocalDateTime.now());
-    activity.setFileName(request.photoFileName);
-
     activityRepository.save(activity);
 
     addMetricsToActivity(activity, request.metrics);

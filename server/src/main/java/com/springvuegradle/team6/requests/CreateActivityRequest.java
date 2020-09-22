@@ -54,12 +54,6 @@ public class CreateActivityRequest {
   @JsonProperty("metrics")
   public List<@Valid ActivityQualificationMetric> metrics;
 
-  @JsonProperty("photo_filename")
-  @Pattern(
-      regexp = "([^\\s]+(\\.(?i)(jpg|jpeg|png|gif))$)",
-      message = "Those image formats are not supported")
-  public String photoFileName;
-
   public LocationUpdateRequest getLocation() {
     return location;
   }
