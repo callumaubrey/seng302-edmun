@@ -36,6 +36,7 @@ public class FileService {
     public String uploadProfileImage(MultipartFile file, int profileId) {
         try {
             String fileName = "profile" + profileId + "." + file.getContentType().replaceFirst("image/", "");
+            System.out.println(profileDirectory + fileName);
             File newFile = new File(profileDirectory + fileName);
             newFile.createNewFile();
             BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile));
