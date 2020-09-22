@@ -33,32 +33,32 @@ public class FileService {
      * @param file the file to be saved
      * @return returns null if successful, a response entity if failed.
      */
-    public ResponseEntity<String> uploadProfileImage(MultipartFile file, int profileId) {
+    public String uploadProfileImage(MultipartFile file, int profileId) {
         try {
-            String path = profileDirectory + "profile" + profileId + "." + file.getContentType().replaceFirst("image/", "");
-            File newFile = new File(path);
+            String fileName = "profile" + profileId + "." + file.getContentType().replaceFirst("image/", "");
+            File newFile = new File(profileDirectory + fileName);
             newFile.createNewFile();
             BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile));
             stream.write(file.getBytes());
             stream.close();
+            return fileName;
         } catch (IOException ex) {
-            return new ResponseEntity<>("Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);
+            return null;
         }
-        return null;
     }
 
-    public ResponseEntity<String> uploadActivityImage(MultipartFile file, int activityId) {
+    public String uploadActivityImage(MultipartFile file, int activityId) {
         try {
-            String path = activityDirectory + "activity" + activityId + "." + file.getContentType().replaceFirst("image/", "");
-            File newFile = new File(path);
+            String fileName = "activity" + activityId + "." + file.getContentType().replaceFirst("image/", "");
+            File newFile = new File(activityDirectory + fileName);
             newFile.createNewFile();
             BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile));
             stream.write(file.getBytes());
             stream.close();
+            return fileName;
         } catch (IOException ex) {
-            return new ResponseEntity<>("Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);
+            return null;
         }
-        return null;
     }
 
 
