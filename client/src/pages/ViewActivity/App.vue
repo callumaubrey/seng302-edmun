@@ -13,7 +13,7 @@
 
 
     <!-- Main Row of the page -->
-    <b-row v-else-if="!locationDataLoading">
+    <b-row v-else-if="!locationDataLoading" style="width: 100%">
       <!-- Left Side bar -->
       <b-col lg="3" class="content_container" style="min-width: 25em; max-height: 100% !important; background: #2c3136; padding-top: 5em;">
         <!-- Image and Name -->
@@ -46,13 +46,12 @@
                           v-bind:activityOwnerId="parseInt(this.$route.params.id)"
                           v-bind:loggedInId="loggedInId"></FollowUnfollow>
         </b-row>
-        <b-row align-h="center">
-          <b-dropdown text="Actions"
-                      v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
-                      class="m-md-2">
-            <b-dropdown-item @click="editActivity()">Edit</b-dropdown-item>
-            <b-dropdown-item @click="deleteActivity()">Delete</b-dropdown-item>
-          </b-dropdown>
+        <b-row align="center" v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin">
+          <b-col>
+            <i class="fas fa-edit" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer" @click="editActivity()"></i>
+            <i class="far fa-trash-alt" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer;" @click="deleteActivity()"></i>
+          </b-col>
+
         </b-row>
 
 <!--        About-->
@@ -117,60 +116,24 @@
             </b-col>
           </div>
         </b-card>
+        <br>
       </b-col>
 
 
 
           <!-- Tab Content -->
-      <b-col style="min-width: 50%">
-          <b-tabs align="center">
-            <b-tab title="Location" active>
-              <b-row align-h="center" v-if="metrics.length > 0">
-                <b-col cols="9">
-                  <b-row>
-                    <div class="d-flex flex-row flex-nowrap">
-                      <div v-for="(metric, i) in metrics" v-bind:key="metric">
-                        <b-card v-if="i == metrics.length - 1" :title="metric.title"
-                                class="metric-card"
-                                style="margin-right:0;">
-                          <b-card-body>
-                            <p style="font-size:14px;">{{ metric.description }}</p>
-                          </b-card-body>
-                        </b-card>
-                        <b-card v-else :title="metric.title" class="metric-card">
-                          <b-card-body>
-                            <p style="font-size:14px;">{{ metric.description }}</p>
-                          </b-card-body>
-                        </b-card>
-                      </div>
-                    </div>
-                  </b-row>
-                </b-col>
-              </b-row>
-              <b-row v-else align-h="center">
-                <b-col cols="9">
-                  <b-card style="margin-top: 1em">
-                    <b-card-body>
-                      No metrics available
-                    </b-card-body>
-                  </b-card>
-                </b-col>
-              </b-row>
-              <b-row align-h="center">
-                <b-col cols="9">
-                  <b-card style="margin-top: 1em">
-                    <b-row align-h="center">
+      <b-col style="min-width: 50%; width: 100%">
+          <b-tabs pills align="center" style="height: 100%">
+            <br>
+            <b-tab style="height: 100%" title="Location" active @click="this.$refs.mapPane.refreshMap()" v-if="this.location || this.activity.path">
+
                       <b-col>
                         <h4 v-if="location && location.name" align="center">
                           {{location.name}}
                         </h4>
-                        <MapPane ref="mapPane" v-if="this.location || this.activity.path"></MapPane>
-                        <b-card-body v-else>No Location</b-card-body>
+                        <MapPane style="height: 100%" ref="mapPane" :can-hide="false" :maximise="true" ></MapPane>
                       </b-col>
-                    </b-row>
-                  </b-card>
-                </b-col>
-              </b-row>
+
             </b-tab>
             <b-tab title="Participants">
               <b-row align-h="center">
@@ -183,16 +146,37 @@
                 </b-col>
               </b-row>
             </b-tab>
-            <b-tab title="Results">
-              <b-card align-h="center">
+            <b-tab title="Results" v-if="metrics.length != 0">
+                <b-row align-h="center" v-if="metrics.length > 0">
+                  <b-col cols="9">
+                    <b-row>
+                      <div class="d-flex flex-row flex-nowrap">
+                        <div v-for="(metric, i) in metrics" v-bind:key="metric">
+                          <b-card v-if="i == metrics.length - 1" :title="metric.title"
+                                  class="metric-card"
+                                  style="margin-right:0;">
+                            <b-card-body>
+                              <p style="font-size:14px;">{{ metric.description }}</p>
+                            </b-card-body>
+                          </b-card>
+                          <b-card v-else :title="metric.title" class="metric-card">
+                            <b-card-body>
+                              <p style="font-size:14px;">{{ metric.description }}</p>
+                            </b-card-body>
+                          </b-card>
+                        </div>
+                      </div>
+                    </b-row>
+                  </b-col>
+                </b-row>
                 <b-col cols="9">
                   <RecordActivityResultModal :activity-id="this.$route.params.activityId"
                                              :logged-in-id="loggedInId"
                                              :profile-id="profileId"
-                                             style="padding-bottom: 10px"></RecordActivityResultModal>
+                                             style="padding-bottom: 10px"
+                                             ></RecordActivityResultModal>
                   <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
                 </b-col>
-              </b-card>
             </b-tab>
           </b-tabs>
         </b-col>
