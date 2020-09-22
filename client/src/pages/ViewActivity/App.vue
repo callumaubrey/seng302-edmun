@@ -17,10 +17,12 @@
       <!-- Left Side bar -->
       <b-col lg="3" class="content_container" style="min-width: 25em; max-height: 100% !important; background: #2c3136; padding-top: 5em;">
         <!-- Image and Name -->
-        <b-row>
-          <b-img center rounded="circle" width="150px" height="150px"
-                 src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
-                 alt="Center image"></b-img>
+        <b-row style="font-size: 6em;" align-content="center">
+          <b-col style="max-width: 600px; height: 300px; margin:auto;">
+            <UserImage :id="parseInt($route.params.activityId)" is-activity
+                       :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
+                       save-on-change></UserImage>
+          </b-col>
         </b-row>
         <b-row align-h="center">
           <h3 style="color: white">{{ activityName }}</h3>
@@ -178,6 +180,17 @@
                   <ActivityResults :profile-id="profileId" :activity-id="$route.params.activityId"></ActivityResults>
                 </b-col>
             </b-tab>
+            <b-tab title="Results">
+              <RecordActivityResultModal :activity-id="this.$route.params.activityId"
+                                         :logged-in-id="loggedInId"
+                                         :profile-id="profileId"
+                                         style="padding-bottom: 10px"></RecordActivityResultModal>
+              <ActivityResults :profile-id="profileId"
+                               :activity-id="$route.params.activityId"></ActivityResults>
+            </b-tab>
+            <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
+              <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
+            </b-tab>
           </b-tabs>
         </b-col>
     </b-row>
@@ -196,10 +209,13 @@
   import AdminMixin from "../../mixins/AdminMixin";
   import ActivityResults from "../../components/ActivityResults";
   import MapPane from "../../components/MapPane/MapPane";
+  import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
+  import UserImage from "../../components/Activity/UserImage/UserImage";
 
   const App = {
     name: "App",
     components: {
+      UserImage,
       MapPane,
       ActivityResults,
       NavBar,
@@ -208,7 +224,8 @@
       FollowerSummary,
       ShareActivity,
       ForbiddenMessage,
-      RecordActivityResultModal
+      RecordActivityResultModal,
+      PathInfoMapView
     },
     data: function () {
       return {
@@ -250,60 +267,60 @@
       getUserName: function () {
         let vueObj = this;
 
-      api.getFirstName()
-      .then((res) => {
-        vueObj.userName = res.data;
-      })
-      .catch(() => {
-        vueObj.isLoggedIn = false;
-        vueObj.$router.push('/login');
-      });
-    },
-    getLoggedInId: function () {
-      let vueObj = this;
+        api.getFirstName()
+            .then((res) => {
+              vueObj.userName = res.data;
+            })
+            .catch(() => {
+              vueObj.isLoggedIn = false;
+              vueObj.$router.push('/login');
+            });
+      },
+      getLoggedInId: function () {
+        let vueObj = this;
 
-      api.getProfileId()
-      .then((res) => {
-        vueObj.loggedInId = res.data;
-        vueObj.isLoggedIn = true;
-      }).catch(() => {
-        vueObj.isLoggedIn = false;
-        vueObj.$router.push('/login');
-      })
-    },
-    setProfileId: function () {
-      let vueObj = this;
-      vueObj.profileId = this.$route.params.id;
-    },
-    deleteActivity() {
-      // double check for if user clicks button when hidden.
-      if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
-        if (!confirm("Are you sure you want to delete this activity?")) {
-          return;
+        api.getProfileId()
+            .then((res) => {
+              vueObj.loggedInId = res.data;
+              vueObj.isLoggedIn = true;
+            }).catch(() => {
+          vueObj.isLoggedIn = false;
+          vueObj.$router.push('/login');
+        })
+      },
+      setProfileId: function () {
+        let vueObj = this;
+        vueObj.profileId = this.$route.params.id;
+      },
+      deleteActivity() {
+        // double check for if user clicks button when hidden.
+        if (parseInt(this.profileId) === parseInt(this.loggedInId) || this.loggedInIsAdmin) {
+          if (!confirm("Are you sure you want to delete this activity?")) {
+            return;
+          }
+
+          let profileId = this.$route.params.id;
+          let activityId = this.$route.params.activityId;
+          api.deleteActivity(profileId, activityId)
+              .then(() => {
+                this.$router.push("/profiles/" + profileId + "/activities/");
+              })
+              .catch(err => alert(err));
         }
-
+      },
+      editActivity() {
         let profileId = this.$route.params.id;
         let activityId = this.$route.params.activityId;
-        api.deleteActivity(profileId, activityId)
-        .then(() => {
-          this.$router.push("/profiles/" + profileId + "/activities/");
-        })
-        .catch(err => alert(err));
-      }
-    },
-    editActivity() {
-      let profileId = this.$route.params.id;
-      let activityId = this.$route.params.activityId;
 
-      if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
-        this.$router.push(
-            "/profiles/" + profileId + "/activities/" + activityId + "/edit"
-        );
-      }
-    },
-    getActivityData() {
-      let vueObj = this;
-      let activityId = this.$route.params.activityId;
+        if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
+          this.$router.push(
+              "/profiles/" + profileId + "/activities/" + activityId + "/edit"
+          );
+        }
+      },
+      getActivityData() {
+        let vueObj = this;
+        let activityId = this.$route.params.activityId;
 
         api.getActivity(activityId)
             .then((res) => {
@@ -450,9 +467,9 @@
         }
       }
 
-  }
-};
-export default App;
+    }
+  };
+  export default App;
 </script>
 
 <style>

@@ -314,8 +314,70 @@ public class ActivityPathControllerTest {
             MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
                 .session(session))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void removeActivityPathFromValidActivityWithPath() throws Exception {
+        Location start = new Location(0,0);
+        Location end = new Location(45,45);
+        locationRepository.save(start);
+        locationRepository.save(end);
+        ArrayList<Location> pathLocations = new ArrayList<>();
+        pathLocations.add(start);
+        pathLocations.add(end);
+
+        Path path = new Path();
+        path.setType(PathType.STRAIGHT);
+        path.setLocations(pathLocations);
+        pathRepository.save(path);
+
+        Activity activity = new Activity();
+        activity.setPath(path);
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+
+        // Get Activity path
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        // Remove Path
+        mvc.perform(
+            MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isOk());
+
+        // Check Cannot get path
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void removeActivityPathFromValidActivityWithoutPath() throws Exception {
+        Activity activity = new Activity();
+        activity.setProfile(profileRepository.findById(id));
+        activityRepository.save(activity);
+
+
+        // Check Cannot get path
+        mvc.perform(
+            MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().is4xxClientError());
+
+        // Remove Path, and check idempotence
+        mvc.perform(
+            MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/{activityId}/path", id, activity.getId())
+                .session(session))
+            .andExpect(status().isAccepted());
 
 
     }
-
 }
