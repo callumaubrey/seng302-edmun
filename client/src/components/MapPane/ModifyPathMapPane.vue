@@ -187,6 +187,10 @@ export default {
       }
       return pathObj;
     },
+    setMapCenterFromIndex(index) {
+      let coordinates = this.$refs.map.markers[index].position
+      this.$refs.map.setMapCenter(coordinates[0], coordinates[1])
+    },
 
     /**
      * upload activity path in editor

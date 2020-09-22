@@ -1,7 +1,7 @@
 <template>
   <b-row class="mb-5">
     <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
-      <PathInfo ref="pathInfo" :path="newPath" ></PathInfo>
+      <PathInfo ref="pathInfo" :path="path" :selected-keypoint="pathKeypointSelected" v-on:selected="selectedKeyPoint"></PathInfo>
     </b-col>
     <b-col style="padding: 0em">
       <ModifyPathMapPane ref="path_editor" v-on:pathEdited="pathEdited" ></ModifyPathMapPane>
@@ -18,7 +18,7 @@
     components: {PathInfo, ModifyPathMapPane},
     props: {
       activityId: {
-        type: Number,
+        type: String,
         default: null
       },
       profileId: {
@@ -48,15 +48,22 @@
         this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
       },
       pathEdited: function() {
-        this.newPath = this.$refs.path_editor.getUpdatedPathObject()
+        console.log(this.path.locations)
+        this.path = this.$refs.path_editor.getUpdatedPathObject()
+        // console.log(this.path.locations.length)
+        console.log(this.path.locations)
+        this.pathKeypointSelected = this.path.locations.length - 1
       },
+      selectedKeyPoint: function(index) {
+        this.pathKeypointSelected = index
+        this.$refs.path_editor.setMapCenterFromIndex(index)
+      }
 
     },
     mounted() {
       if (this.activityId != null) {
         this.loadActivityPath()
       }
-      this.newPath = this.path
     }
 
 

@@ -255,9 +255,11 @@
             }
         },
         async mounted() {
-            await this.getDirectionInfo();
-            this.generateKeypointInfoFromPath();
-            this.generateDirectionInfo();
+            if(this.path.locations != null) {
+                await this.getDirectionInfo();
+                this.generateKeypointInfoFromPath();
+                this.generateDirectionInfo();
+            }
         },
         watch: {
             path: async function() {
@@ -267,6 +269,7 @@
                     }
                     this.generateKeypointInfoFromPath();
                     this.generateDirectionInfo();
+                    this.selectedKeypoint = this.path.locations.length - 1
                 }else {
                     this.keypointInfo = []
                 }
