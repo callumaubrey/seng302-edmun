@@ -14,8 +14,7 @@ Feature: Adding performance metrics to an activity for users to record their res
       | Distance Travelled  | Distance        |
       | Start and Stop Time | TimeStartFinish |
       | Time waited         | TimeDuration    |
-    Then I will receive "201" status code
-    And there will be an activity "I hate cucumber tests" with metrics
+    Then there will be an activity "I hate cucumber tests" with metrics
       | Name                | Unit            |
       | Checkpoints Reached | Count           |
       | Distance Travelled  | Distance        |
@@ -27,14 +26,14 @@ Feature: Adding performance metrics to an activity for users to record their res
   Scenario: Create an activity without metrics
     Given there are no activities in the database
     When I create an activity "I hate cucumber tests" without metrics
-    Then I will receive "201" status code
-    And there will be an activity "I hate cucumber tests" without metrics
+    Then there will be an activity "I hate cucumber tests" without metrics
 
       # AC1 Edit an activity
   @U33
   Scenario: Edit an activity and add metrics
     Given there are no activities in the database
-    And I create an activity "I hate cucumber tests"
+    And I create an activity "I hate cucumber tests" with metrics
+      | Name | Unit |
     When I add metrics to activity "I hate cumcumber tests"
       | Name               | Unit     |
       | Eggs Grabbed       | Count    |

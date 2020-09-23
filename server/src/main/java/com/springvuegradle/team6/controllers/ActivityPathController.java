@@ -219,15 +219,15 @@ public class ActivityPathController {
     }
 
     /**
-     * Deletes path from an activity. Method is Idempotent.
-     * NOT_FOUND: Activity does not exist
-     * UNAUTHORIZED: not logged in as creator or admin
-     * ACCEPTED: Path does not exist
-     * OK: On Success
-     * @param profileId activity profile id
+     * Deletes an activities path if it exists. Endpoint is idempotent
+     * 200 OK: On successful delete
+     * 202 ACCEPTED: If path does not exist
+     * 401 UNAUTHORIZED: If session id is not creator/organiser/admin
+     * 404 NOT_FOUND:  If activity does not exist or path does not exist.
+     * @param profileId activity owners id
      * @param activityId activity id
-     * @param session session state
-     * @return HTTP Response
+     * @param session session data
+     * @return Activity path if exists otherwise 4xx error
      */
     @DeleteMapping("/profiles/{profileId}/activities/{activityId}/path")
     public ResponseEntity removeActivityPath(
@@ -248,7 +248,7 @@ public class ActivityPathController {
         }
         Activity activity = optionalActivity.get();
 
-        // Check authorisation
+        // Check authority
         if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, activityRoleRepository)) {
             return new ResponseEntity<>(
                 "You are not authorized to edit the path of this activity",
@@ -260,13 +260,11 @@ public class ActivityPathController {
         if (optionalPath.isEmpty()) {
             return new ResponseEntity<>("Path does not exist", HttpStatus.ACCEPTED);
         }
-
-        // Remove path from activity
-        activity.setPath(null);
-        activityRepository.save(activity);
+        Path path = optionalPath.get();
 
         // Remove path
-        Path path = optionalPath.get();
+        activity.setPath(null);
+        activityRepository.save(activity);
         pathRepository.delete(path);
 
         return new ResponseEntity<>(HttpStatus.OK);

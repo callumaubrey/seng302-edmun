@@ -6,10 +6,12 @@
             <AdminSideBar :loggedInId="loggedInId" :loggedInIsAdmin="loggedInIsAdmin"
                           :userData="userData" v-if="adminAccess"></AdminSideBar>
             <div>
-                <b-row>
-                    <b-img alt="Center image" center height="150px" rounded="circle"
-                           src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
-                           width="150px"></b-img>
+                <b-row style="font-size: 6em;" align-content="center">
+                    <b-col>
+                        <UserImage :id="profileId"
+                                   :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
+                                   save-on-change></UserImage>
+                    </b-col>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -135,10 +137,12 @@
     import {store} from "../../store";
     import ActivityList from "../../components/Activity/ActivityList";
     import MapPane from "../../components/MapPane/MapPane";
+    import UserImage from "../../components/Activity/UserImage/UserImage";
 
     const App = {
         name: 'App',
         components: {
+            UserImage,
             ActivityList,
             NavBar,
             AdminSideBar,

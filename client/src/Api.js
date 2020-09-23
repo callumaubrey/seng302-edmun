@@ -153,6 +153,12 @@ export default {
         activity_mode_filter, start_date, end_date,
         longitude, latitude, radius)},
 
+    getLocationAutocompleteByName: (name) =>instance.get('/location/autocomplete?name='+name),
+
+    getLocationAutocompleteByLatLon: (latitude, longitude) => instance.get('/location/autocomplete?lat='+latitude+'&lon='+longitude),
+
+    getGeocodePlaceId: (placeId) => instance.get('/location/geocode?id='+placeId),
+
     // (U)pdate
     updateForId: (id, name) => instance.put('students/' + id, {name}),
 
@@ -177,7 +183,6 @@ export default {
 
     updateActivityPath: (profileId, activityId, data) => instance.put(
         `profiles/${profileId}/activities/${activityId}/path`, data),
-
 
     updateAdminRights: (profileId, data) => instance.put(
         '/admin/profiles/' + profileId + '/role', data),
@@ -230,4 +235,14 @@ export default {
 
     deleteActivityPath: (profileId, activityId) => instance.delete(
         `profiles/${profileId}/activities/${activityId}/path`),
+            "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
+
+    sendForgotPasswordEmail: (data) => instance.post(
+        "/profiles/resetpassword", data),
+
+    getNumberOfActivitiesFollowed: (profileId) => instance.get(
+        "/profiles/"+ profileId + "/subscriptions/activities/following"),
+
+    resetPassword: (token, data) => instance.put(
+        "/profiles/forgotpassword/" + token, data)
 }
