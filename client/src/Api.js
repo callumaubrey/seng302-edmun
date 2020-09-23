@@ -215,12 +215,7 @@ export default {
       + resultId, data),
 
   updateActivityImage: (profileId, activityId, imageFile) => instance.put(
-      "/profiles/" + profileId + "/activities/" + activityId + "/image", imageFile,
-      {
-        headers: {
-          'Content-Type': "image/png",
-        }
-      }
+      "/profiles/" + profileId + "/activities/" + activityId + "/image", imageFile
   ),
   // (D)elete
 

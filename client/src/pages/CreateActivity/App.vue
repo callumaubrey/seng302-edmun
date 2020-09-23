@@ -522,10 +522,11 @@
           console.log(this.$refs.image.image_data)
           let vueObj = this;
           api.createActivity(userId, data)
-              .then(function (res) {
+              .then(async function (res) {
                 const activityId = res.data;
-                console.log(vueObj.$refs.image.image_data)
-                api.updateActivityImage(userId, activityId, vueObj.$refs.image.image_data).then(
+                let formData = new FormData();
+                formData.append("file", vueObj.$refs.image.image_data)
+                api.updateActivityImage(userId, activityId, formData).then(
                     (response) => {
                       console.log(response)
                     }).catch((err) => {
@@ -597,7 +598,6 @@
               });
         }
       },
-
       submitPath: function (activityId) {
         // Update path
         return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
