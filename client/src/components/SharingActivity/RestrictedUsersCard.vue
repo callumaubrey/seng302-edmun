@@ -1,8 +1,10 @@
 <template>
   <div>
-    <b-card v-for="profile in roleData.users" :key="profile.profile_id"
-            v-bind:class="{'border-variant-danger': !profile.selected}">
+    <b-card v-for="(profile, index) in roleData.users" v-bind:key="index"
+            v-bind:class="{'border-variant-danger': profile.selected === false}">
+      {{ roleData.users }}
       <b-card-body>
+        {{ profile }}
         <b-row>
           <b-col cols="1.0">
             <b-img alt="Center image" center height="50px" rounded="circle"
@@ -18,11 +20,11 @@
           </b-col>
           <b-col>
             <b-form-select v-model="profile.role" :options="activityRoles"
-                           v-on:change.native="rowColor(profile)"></b-form-select>
+                           v-on:change.native="rowChanged(profile, index)"></b-form-select>
           </b-col>
           <b-form-checkbox
               v-model="profile.selected"
-              v-on:change.native="rowColor(profile)"
+              v-on:change="rowColor(profile, index)"
           >
           </b-form-checkbox>
         </b-row>
@@ -57,23 +59,37 @@ export default {
     }
   },
   methods: {
-    rowColor(profile) {
-      console.log(profile.selected)
-      this.roleChanged(profile)
+    rowColor(profile, index) {
+      this.rowChanged(profile, index)
     },
-    roleChanged(profile) {
-      this.$emit('rowChanged', profile)
+    rowChanged(profile, index) {
+      let obj = {}
+      obj.index = index
+      obj.item = profile
+      this.$emit('rowChanged', obj)
     },
     selectAll: function () {
+      console.log("SELECT FLAG")
       this.$emit('selectAll')
     },
     deselectAll: function () {
+      console.log("DESELECT FLAG")
       this.$emit('deselectAll')
     },
   },
   beforeMount() {
     console.log(this.roleData)
     this.data = this.roleData;
+  },
+  watch: {
+    roleData: {
+      handler: function (roleData) {
+        console.log(roleData)
+        // check someData and eventually call
+        this.$forceUpdate()
+      },
+      immediate: true
+    }
   }
 }
 </script>

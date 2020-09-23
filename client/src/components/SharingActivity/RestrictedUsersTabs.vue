@@ -50,12 +50,12 @@
         </b-tab>
 
         <b-tab key="Accessors" title="Accessors">
-          <!--          <restricted-users-table v-on:rowChanged="accessorsChanged"-->
-          <!--                                  v-on:selectAll="selectAllAccessors"-->
-          <!--                                  v-on:deselectAll="deselectAllAccessors"-->
-          <!--                                  :role-data="rolesData.accessors"-->
-          <!--                                  :activity-roles="activityRoles"-->
-          <!--                                  :fields="fields"></restricted-users-table>-->
+          <restricted-users-table :activity-roles="activityRoles"
+                                  :fields="fields"
+                                  :role-data="rolesData.accessors"
+                                  v-on:deselectAll="deselectAllAccessors"
+                                  v-on:rowChanged="accessorsChanged"
+                                  v-on:selectAll="selectAllAccessors"></restricted-users-table>
           <RestrictedUsersCard
               :activity-roles="activityRoles"
               :role-data="rolesData.accessors"
@@ -148,10 +148,21 @@ export default {
       },
 
     },
-    beforeMount() {
-      this.data = this.rolesData
+  beforeMount() {
+    this.data = this.rolesData
+  },
+  watch: {
+    rolesData: {
+      handler: function (rolesData) {
+        console.log("TAB")
+        console.log(rolesData)
+        // check someData and eventually call
+        this.$forceUpdate()
+      },
+      immediate: true
     }
   }
+}
 </script>
 
 <style scoped>

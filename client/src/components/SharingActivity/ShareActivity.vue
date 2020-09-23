@@ -75,21 +75,21 @@
 </template>
 
 <script>
-  import api from '@/Api'
-  import RestrictedUsersTabs from "./RestrictedUsersTabs";
-  import AddUsers from "./AddUsers";
+import api from '@/Api'
+import RestrictedUsersTabs from "./RestrictedUsersTabs";
+import AddUsers from "./AddUsers";
 
-  export default {
+export default {
 
-    name: "ShareActivity",
-    components: {RestrictedUsersTabs, AddUsers},
-    props: {
-      profileId: String,
-      activityId: String,
-      modal: Boolean,
-      visibility: String,
-    },
-    data() {
+  name: "ShareActivity",
+  components: {RestrictedUsersTabs, AddUsers},
+  props: {
+    profileId: String,
+    activityId: String,
+    modal: Boolean,
+    visibility: String,
+  },
+  data() {
       return {
         // selectedVisibility: null,
         selected: 'Public',
@@ -258,7 +258,9 @@
         this.organisers.users[value.index] = value.item;
       },
       updateParticipants(value) {
+        console.log(value)
         this.participants.users[value.index] = value.item;
+        this.$set(this.participants.users, value.index, value.item);
       },
       updateFollowers(value) {
         this.followers.users[value.index] = value.item;

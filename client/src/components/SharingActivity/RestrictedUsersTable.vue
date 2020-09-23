@@ -1,6 +1,8 @@
 <template>
   <div>
+    {{ data.users }}
     <b-table :items="data.users" :fields="fields">
+
       <!-- This v-slot deals with deciding to keep the user or not-->
       <template v-slot:cell(selected)="row">
         <b-form-checkbox
@@ -11,6 +13,7 @@
       </template>
       <!-- This v-slot deals with selecting the role for the user-->
       <template v-slot:cell(role)="row">
+        {{ row }}
         <b-form-select v-model="row.item.role" :options="activityRoles"
                        v-on:change="rowChanged(row)"></b-form-select>
       </template>
