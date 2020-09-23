@@ -1,28 +1,27 @@
 <template>
     <div id="app" v-if="isLoggedIn">
         <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
-        <b-container>
-            <b-row>
-                <b-col>
-                    <h1>Account settings</h1>
-                </b-col>
-            </b-row>
-            <hr>
-            <div class="clickable" v-b-toggle="'collapse-2'">
-                <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Profile Info</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Edit basic profile information</b-col>
-                        <b-col><p align="right"></p></b-col>
-                    </b-row>
-                </b-container>
-            </div>
-            <b-collapse id="collapse-2">
-                <hr>
-                <b-container>
+        <b-container >
+          <b-row style="height: 780px">
+              <b-col style="flex: 0 0 20%; font-size: 5em;" class="p-0" >
+                <div>
+                  <UserImage :id="profileId"
+                             :editable="true"
+                             save-on-change style="padding :20px"></UserImage>
+                  <h3 style="padding-top: 10px ; text-align: center">Edit Profile</h3>
+                </div>
+              </b-col>
+            <b-col>
+
+<!--            <b-row>-->
+<!--                <b-col>-->
+<!--                    <h1>Account settings</h1>-->
+<!--                </b-col>-->
+<!--            </b-row>-->
+
+          <b-tabs >
+            <b-tab title="Profile">
+                <b-container style="padding-top: 20px">
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
@@ -51,7 +50,7 @@
                     <b-row>
                         <b-col>
                             <b-form-group
-                                    label="Nickname"
+                                label="Nickname"
                             >
                                 <b-form-input v-on:input="resetProfileMessage()" placeholder="Enter nickname"
                                               :state="validateProfile('nickname')"
@@ -60,7 +59,7 @@
                         </b-col>
                         <b-col>
                             <b-form-group
-                                    label="Date of birth"
+                                label="Date of birth"
 
                             >
                                 <b-form-input v-on:input="resetProfileMessage()" type="date"
@@ -71,7 +70,7 @@
                         </b-col>
                         <b-col>
                             <b-form-group
-                                    label="Gender"
+                                label="Gender"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="genderOptions"
                                                v-model="$v.profileForm.gender.$model"></b-form-select>
@@ -82,8 +81,8 @@
                     <b-row>
                         <b-col>
                             <b-form-group
-                                    label="Fitness level"
-                                    description="How fit are you?"
+                                label="Fitness level"
+                                description="How fit are you?"
                             >
                                 <b-form-select v-on:change="resetProfileMessage()" :options="fitnessOptions"
                                                v-model="profileForm.fitness"></b-form-select>
@@ -93,7 +92,7 @@
                     <b-row>
                         <b-col>
                             <b-form-group
-                                    label="Bio"
+                                label="Bio"
                             >
                                 <b-form-textarea v-on:input="resetProfileMessage()"
                                                  placeholder="Let others know more about you"
@@ -114,22 +113,8 @@
                         </b-col>
                     </b-row>
                 </b-container>
-            </b-collapse>
-            <hr>
-
-            <div v-b-toggle="'collapse-1'" class="clickable">
-                <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Email Address</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Add or remove email addresses from your account</b-col>
-                        <b-col><h6 align="right">{{totalEmails()}} email address</h6></b-col>
-                    </b-row>
-                </b-container>
-            </div>
-            <b-collapse id="collapse-1">
+            </b-tab>
+            <b-tab title="Email Address">
                 <b-container>
                     <hr>
                     <div id="emailBody">
@@ -180,21 +165,8 @@
                         </b-row>
                     </div>
                 </b-container>
-            </b-collapse>
-            <hr>
-            <div v-b-toggle="'collapse-3'" class="clickable">
-                <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Passports</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Add or remove passports from your account</b-col>
-                        <b-col><h6 align="right">{{totalPassports()}} passport</h6></b-col>
-                    </b-row>
-                </b-container>
-            </div>
-            <b-collapse id="collapse-3">
+            </b-tab>
+            <b-tab title="Passports">
                 <b-container>
                     <hr>
                     <div v-for="(country, index) in yourCountries" :key="index">
@@ -230,22 +202,8 @@
                         </b-col>
                     </b-row>
                 </b-container>
-            </b-collapse>
-            <hr>
-            <div v-b-toggle="'collapse-4'" class="clickable">
-                <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Activity Types</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Add or remove activity types from your account</b-col>
-                        <b-col><h6 align="right">{{totalActivitys()}} activity types</h6></b-col>
-                    </b-row>
-                </b-container>
-            </div>
-
-            <b-collapse id="collapse-4">
+            </b-tab>
+            <b-tab title="Activity Types">
                 <b-container>
                     <hr>
                     <div v-for="(activites, index) in yourActivites" :key="index">
@@ -279,22 +237,10 @@
                         </b-col>
                     </b-row>
                 </b-container>
-            </b-collapse>
-            <hr>
-            <div v-b-toggle="'collapse-5'" class="clickable">
-                <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Password</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Change your password</b-col>
-                    </b-row>
-                </b-container>
-            </div>
-            <b-collapse id="collapse-5">
-                <b-container>
-                    <hr>
+
+            </b-tab>
+            <b-tab title="Password">
+                <b-container style="padding-top: 20px">
                     <b-row>
                         <b-col sm="6">
                             <label>Current Password</label>
@@ -302,7 +248,7 @@
                                           v-model="passwordForm.oldPassword"></b-form-input>
                         </b-col>
                     </b-row>
-                    <b-row class="my-1">
+                    <b-row class="my-3">
                         <b-col sm="6">
                             <label>New Password</label>
                             <b-form-input type="password" id="password" placeholder="Enter new password"
@@ -321,8 +267,8 @@
                             </b-form-invalid-feedback>
                         </b-col>
                     </b-row>
-                    <b-row>
-                        <b-col sm="1">
+                    <b-row style="padding-top: 10px">
+                        <b-col>
                             <b-button align="left" v-on:click="savePassword">Save</b-button>
                         </b-col>
                     </b-row>
@@ -332,23 +278,9 @@
                         </b-col>
                     </b-row>
                 </b-container>
-            </b-collapse>
-            <hr>
-
-            <div v-b-toggle="'collapse-6'" class="clickable">
+            </b-tab>
+            <b-tab title = "Location">
                 <b-container>
-                    <b-row>
-                        <b-col><h3 class=edit-title>Location</h3></b-col>
-                        <b-col><h5 align="right">Change</h5></b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col>Change your current location</b-col>
-                    </b-row>
-                </b-container>
-            </div>
-            <b-collapse id="collapse-6" @show="$refs.map.refreshMap()">
-                <b-container>
-                    <hr>
                     <b-form-text>
                         &#8203; <!-- Zero Width Space to prevent form text height to expand on text displayed -->
                         <span class="text-success" v-if="locationForm.state === true">
@@ -359,8 +291,10 @@
                     <ModifyLocationMapPane ref="map" :can-hide="false"
                                            v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
                 </b-container>
-            </b-collapse>
-            <hr>
+            </b-tab>
+          </b-tabs>
+            </b-col>
+          </b-row>
         </b-container>
     </div>
 </template>
@@ -373,6 +307,7 @@
     import AdminMixin from "../../mixins/AdminMixin";
     import api from '@/Api'
     import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
+    import UserImage from "../../components/Activity/UserImage/UserImage";
 
     //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
     const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
@@ -387,6 +322,7 @@
         name: 'User',
         mixins: [locationMixin],
         components: {
+            UserImage,
             ModifyLocationMapPane,
             NavBar
         },
