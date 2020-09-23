@@ -8,12 +8,15 @@ import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Role;
+import com.springvuegradle.team6.models.entities.Tag;
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
+import com.springvuegradle.team6.models.repositories.TagRepository;
+import com.springvuegradle.team6.services.LocationService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +58,9 @@ public class SetupDataLoader implements
   @Autowired
   private ActivityRoleRepository activityRoleRepository;
 
+  @Autowired
+  private TagRepository tagRepository;
+
   @Value("#{environment.ADMIN_EMAIL}")
   private String adminEmail;
 
@@ -62,6 +68,9 @@ public class SetupDataLoader implements
   private String adminPassword;
 
   private Random random = new Random();
+
+  @Autowired
+  private LocationService locationService;
 
   //The potential first names for sample users
   private String[] userFirstNames = {"Oliver", "Noah", "Leo", "Jack", "Lucas", "George", "William",
@@ -195,8 +204,22 @@ public class SetupDataLoader implements
     int randomLocation;
     int continous;
 
-    //Create activities iteratively based off of numberOfActivities
+    //Hashtags
+    Tag nzTag = new Tag("nz");
+    Tag aucklandTag = new Tag("auckland");
+    Tag christchurchTag = new Tag("christchurch");
+    Tag napierTag = new Tag("napier");
+    Tag wellingtonTag = new Tag("wellington");
+    tagRepository.save(nzTag);
+    tagRepository.save(aucklandTag);
+    tagRepository.save(christchurchTag);
+    tagRepository.save(napierTag);
+    tagRepository.save(wellingtonTag);
+
+
+
     for (int index = 1; index < numberOfActivities + 1; index++) {
+      //Create activities iteratively based off of numberOfActivities
       randomLocationPositionLat = (double) (random.nextInt(100) - 50) / 200;
       randomLocationPositionLng = (double) (random.nextInt(100) - 50) / 200;
       randomType = random.nextInt(1000);
@@ -211,9 +234,30 @@ public class SetupDataLoader implements
       activity.setProfile(creator);
       Set<ActivityType> activityTypes = new HashSet<>();
 
+      //Set hashtags
+      Set<Tag> tags = new HashSet<>();
+      switch(randomLocation) {
+        case 0:
+          tags.add(napierTag);
+          break;
+        case 1:
+          tags.add(christchurchTag);
+          break;
+        case 2:
+          tags.add(wellingtonTag);
+          break;
+        case 3:
+          tags.add(aucklandTag);
+          break;
+        default:
+          tags.add(nzTag);
+      }
+
       //Activity location. This is based off of city locations with some randomness
       Location location = new Location(locations[randomLocation][0] + randomLocationPositionLat,
           locations[randomLocation][1] + randomLocationPositionLng);
+      location.setName(locationService.getLocationAddressFromLatLng(locations[randomLocation][0] + randomLocationPositionLat,
+          locations[randomLocation][1] + randomLocationPositionLng, false));
       locationRepository.save(location);
       activity.setLocation(location);
 
