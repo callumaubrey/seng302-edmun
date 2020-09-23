@@ -6,19 +6,24 @@
 
     <b-row>
       <b-col sm="3">
-        <b-row>
-          <h6>{{ result.title }}</h6>
+        <b-row style="margin-left: 5px">
+          <h6 style="font-weight: bold">{{ result.title }}</h6>
         </b-row>
-        <b-row>
+        <b-row style="margin-left: 5px">
           <p style="font-style: italic;">{{ result.description }}</p>
         </b-row>
-
       </b-col>
-      <b-col sm="4">
-        <h6 v-if="result.type!=='TimeStartFinish'">{{ result.result }}</h6>
+
+      <b-col sm="5">
+        <div v-if="result.type!=='TimeStartFinish'">
+          <h6 style="font-weight: bold"> Result: </h6>
+          <h6>{{ result.result }}</h6>
+        </div>
         <div v-else>
-          <h6> Start time: {{ result.result_start }} </h6>
-          <h6> End time: {{ result.result_finish }} </h6>
+          <h6 style="font-weight: bold"> Start time: </h6>
+          <h6>{{ prettyStartTime }} </h6>
+          <h6 style="font-weight: bold"> End time: </h6>
+          <h6> {{ prettyEndTime }} </h6>
         </div>
       </b-col>
 
@@ -26,8 +31,8 @@
         <p style="font-style: italic; color: crimson">{{ specialMetricTitle }}</p>
       </b-col>
 
-      <b-col sm="1">
-        <b-button-group>
+      <b-col cols="0.1">
+        <b-button-group class="float-xl-left">
           <b-button @click="result.isEditMode=true" class="button-group" id="edit-result-button"
                     variant="success">Edit
           </b-button>
@@ -80,67 +85,67 @@
                         placeholder="Seconds"></b-form-input>
         </b-input-group>
 
-        <b-input-group id="result-startfinish-feedback" v-if="result.type==='TimeStartFinish'">
-          <div>
-            <b-form-group id="start-date-input-group" label="Start Date"
-                          label-for="start-date-input">
-              <b-form-input
-                  :disabled="specialMetricSelected"
-                  :state="validateStartFinishState('startDate')"
-                  id="start-date-input"
-                  type="date"
-                  v-model="$v.startFinish.startDate.$model"
-              ></b-form-input>
-              <b-form-invalid-feedback id="start-date-feedback">Start date must be in a valid format
-                (DD-MM-YYYY).
-              </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group id="start-time-input-group" label="Start Time"
-                          label-for="start-time-input">
-              <b-form-input
-                  :disabled="specialMetricSelected"
-                  :state="validateStartFinishState('startTime')"
-                  aria-describedby="start-time-feedback"
-                  id="start-time-input"
-                  type="time"
-                  v-model="$v.startFinish.startTime.$model"
-              ></b-form-input>
-              <b-form-invalid-feedback id="start-time-feedback">Start time must be in a valid format
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </div>
-          <div>
-            <b-form-group id="end-date-input-group" label="End Date" label-for="end-date-input"
-                          style="padding-left: 5px">
-              <b-form-input
-                  :disabled="specialMetricSelected"
-                  :state="validateStartFinishState('endDate')"
-                  aria-describedby="end-date-feedback"
-                  id="end-date-input"
-                  type="date"
-                  v-model="$v.startFinish.endDate.$model"
-              ></b-form-input>
-              <b-form-invalid-feedback id="end-date-feedback">End date must be in a valid format
-                (DD-MM-YYYY) and cannot be
-                before start date.
-              </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group id="end-time-input-group" label="End Time" label-for="end-time-input"
-                          style="padding-left: 5px">
-              <b-form-input
-                  :disabled="specialMetricSelected"
-                  :state="validateStartFinishState('endTime')"
-                  aria-describedby="end-time-feedback"
-                  id="end-time-input"
-                  type="time"
-                  v-model="$v.startFinish.endTime.$model"
-              ></b-form-input>
-              <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same
-                as
-                start time.
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </div>
+        <div v-if="result.type==='TimeStartFinish'">
+          <b-form-group id="start-date-input-group" label="Start Date"
+                        label-for="start-date-input" style="margin-left: 5px">
+            <b-form-input
+                id="start-date-input"
+                v-model="$v.startFinish.startDate.$model"
+                :disabled="specialMetricSelected"
+                :state="validateStartFinishState('startDate')"
+                type="date"
+            ></b-form-input>
+            <b-form-invalid-feedback id="start-date-feedback">Start date must be in a valid format
+              (DD-MM-YYYY).
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group id="start-time-input-group" label="Start Time"
+                        label-for="start-time-input" style="margin-left: 5px">
+            <b-form-input
+                id="start-time-input"
+                v-model="$v.startFinish.startTime.$model"
+                :disabled="specialMetricSelected"
+                :state="validateStartFinishState('startTime')"
+                aria-describedby="start-time-feedback"
+                type="time"
+            ></b-form-input>
+            <b-form-invalid-feedback id="start-time-feedback">Start time must be in a valid format
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group id="end-date-input-group" label="End Date" label-for="end-date-input"
+                        style="padding-left: 5px">
+            <b-form-input
+                id="end-date-input"
+                v-model="$v.startFinish.endDate.$model"
+                :disabled="specialMetricSelected"
+                :state="validateStartFinishState('endDate')"
+                aria-describedby="end-date-feedback"
+                type="date"
+            ></b-form-input>
+            <b-form-invalid-feedback id="end-date-feedback">End date must be in a valid format
+              (DD-MM-YYYY) and cannot be
+              before start date.
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group id="end-time-input-group" label="End Time" label-for="end-time-input"
+                        style="padding-left: 5px">
+            <b-form-input
+                id="end-time-input"
+                v-model="$v.startFinish.endTime.$model"
+                :disabled="specialMetricSelected"
+                :state="validateStartFinishState('endTime')"
+                aria-describedby="end-time-feedback"
+                type="time"
+            ></b-form-input>
+            <b-form-invalid-feedback id="end-time-feedback">End time cannot be before or the same
+              as
+              start time.
+            </b-form-invalid-feedback>
+          </b-form-group>
+        </div>
+
+        <b-input-group id="result-startfinish-feedback">
+
         </b-input-group>
         <p style="color: crimson" v-if="resultErrorMessage!=null">{{ resultErrorMessage }}</p>
       </b-col>
@@ -325,6 +330,14 @@ export default {
       }
       return metricTitleDict
     },
+    prettyStartTime() {
+      let dateSplit = this.result.result_start.split("T");
+      return dateSplit[0] + " " + dateSplit[1];
+    },
+    prettyEndTime() {
+      let dateSplit = this.result.result_finish.split("T");
+      return dateSplit[0] + " " + dateSplit[1];
+    }
 
   },
   methods: {
