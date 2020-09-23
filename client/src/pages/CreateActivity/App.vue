@@ -357,7 +357,11 @@
         startDate: {
           required,
           dateValidate(val) {
-
+            let startDate = new Date(val)
+            //check if duration year is not more than 4 digits
+            if (isNaN(startDate.getFullYear())) {
+              return false
+            }
             return val >= new Date().toISOString().split('T')[0];
           }
         },
@@ -366,6 +370,10 @@
           dateValidate(val) {
             let startDate = new Date(this.durationForm.startDate);
             let endDate = new Date(val);
+            //check if duration year is not more than 4 digits
+            if (isNaN(endDate.getFullYear())) {
+              return false
+            }
             return endDate >= startDate;
 
           }
