@@ -541,15 +541,20 @@ public class UserProfileController {
     }
 
     if (file == null) {
-      profile.setPhotoFilename(null);
-      profile = repository.save(profile);
-      return new ResponseEntity<>("OK", HttpStatus.OK);
+      return new ResponseEntity<>("Must submit an image file", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!(file.getContentType().equals("image/png")
+            || file.getContentType().equals("image/jpg")
+            || file.getContentType().equals("image/jpeg")
+            || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
     }
 
     String fileName = fileService.uploadProfileImage(file, id);
 
     if (fileName == null) {
-      return new ResponseEntity<>("Image or image type not valid", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>("File service failed to upload image.", HttpStatus.BAD_REQUEST);
     }
 
     profile.setPhotoFilename(fileName);
