@@ -534,21 +534,21 @@ public class ActivityMetricsFeatureSteps {
   @Then("the details of my participation is recorded disqualified")
   public void the_details_of_my_participation_is_recorded_disqualified() throws Exception {
     JSONArray result = getResultsRequest(activityId, loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
-    Assert.assertEquals(SpecialMetric.Disqualified.ordinal(), Integer.parseInt(special_metric));
+    String special_metric = result.getJSONObject(0).get("special_metric").toString();
+    Assert.assertEquals(SpecialMetric.Disqualified.toString(), special_metric);
   }
 
   @Then("the details of my participation is recorded technical failure")
   public void the_details_of_my_participation_is_recorded_technical_failure() throws Exception {
     JSONArray result = getResultsRequest(activityId, loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
-    Assert.assertEquals(SpecialMetric.TechnicalFailure.ordinal(), Integer.parseInt(special_metric));
+    String special_metric = result.getJSONObject(0).get("special_metric").toString();
+    Assert.assertEquals(SpecialMetric.TechnicalFailure.toString(), special_metric);
   }
 
   @Then("the details of my participation is recorded as did not finish")
   public void the_details_of_my_participation_is_recorded_as_did_not_finish() throws Exception {
     JSONArray result = getResultsRequest(activityId, loginSteps.profileId);
-    String special_metric = result.getJSONObject(0).get("specialMetric").toString();
-    Assert.assertEquals(SpecialMetric.DidNotFinish.ordinal(), Integer.parseInt(special_metric));
+    String special_metric = result.getJSONObject(0).get("special_metric").toString();
+    Assert.assertEquals(SpecialMetric.DidNotFinish.toString(), special_metric);
   }
 }

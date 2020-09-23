@@ -10,7 +10,7 @@ Feature: Recording my participation outcome in an activity
   Scenario: I can add the details of my participation in an activity with a duration metric
     Given there is an activity that has a duration metric
     And I am a participant of the activity
-    When I add the details of my participation in the activity with duration of "00:00:11"
+    When I add the details of my participation in the activity with duration of "PT11S"
     Then the details of my participation is recorded as "PT11S" for the duration metric
 
   @U29
