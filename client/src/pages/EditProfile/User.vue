@@ -8,14 +8,16 @@
                   <UserImage :id="profileId"
                              :editable="true"
                              save-on-change style="padding :20px"></UserImage>
-                  <h3 style="padding-top: 10px ; text-align: center">Edit Profile</h3>
+                    <h4 style="padding-top: 10px ; text-align: center">{{displayName}}</h4>
                 </div>
               </b-col>
-            <b-col>
-
-          <b-tabs >
+            <b-col style="padding-left: 30px">
+                <b-col style="padding-bottom: 10px; padding-left: 0px">
+                    <h3>Edit Profile</h3>
+                </b-col>
+          <b-tabs class = "p-0">
             <b-tab title="Profile">
-                <b-container style="padding-top: 20px">
+                <b-container style="padding-top: 20px;">
                     <b-row>
                         <b-col sm="4">
                             <label>First Name</label>
@@ -376,6 +378,7 @@
                 passwordUpdateMessage: "",
                 activityUpdateMessage: "",
                 loggedInIsAdmin: false,
+                displayName: ""
             }
         },
         validations: {
@@ -485,6 +488,7 @@
                 api.updateProfile(userId, updateData).then(function (response) {
                     vueObj.emailErrorMessage = "";
                     vueObj.profileUpdateMessage = response.data;
+                    vueObj.displayName = vueObj.profileForm.firstname + " " + vueObj.profileForm.lastname
                 }).catch(function (error) {
                     vueObj.profileUpdateMessage = "";
                     vueObj.profileErrorMessage = error.response.data;
@@ -636,6 +640,7 @@
                 api.updateActivityTypes(userId, data).then(function (response) {
                     if (response.status == 200) {
                         vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
+                        vueObj.activityErrorMessage = ""
                     }
                 }).catch(function (error) {
                     if (error.response.status == 400) {
@@ -808,6 +813,7 @@
                         vueObj.profileForm.firstname = response.data.firstname;
                         vueObj.profileForm.middlename = response.data.middlename;
                         vueObj.profileForm.lastname = response.data.lastname;
+                        vueObj.displayName = response.data.firstname + " " + response.data.lastname
                         vueObj.profileForm.nickname = response.data.nickname;
                         vueObj.profileForm.gender = response.data.gender;
                         if (vueObj.profileForm.gender) {
