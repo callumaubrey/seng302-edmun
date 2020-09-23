@@ -27,18 +27,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @AutoConfigureMockMvc
 public class ActivitySharingFeatureSteps {
 
-  @Autowired
-  private ProfileRepository profileRepository;
+  @Autowired private ProfileRepository profileRepository;
 
   @Autowired private ActivityRepository activityRepository;
 
-  @Autowired
-  private ActivityRoleRepository activityRoleRepository;
+  @Autowired private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private MockMvc mvc;
 
-  @Autowired
-  private LoginSteps loginSteps;
+  @Autowired private LoginSteps loginSteps;
 
   private ResultActions mvcResponse;
 
@@ -47,201 +44,83 @@ public class ActivitySharingFeatureSteps {
   private String activityId;
 
   @Given("There is an activity {string} with {string} access")
-  public void there_is_an_activity_with_access(String activityName, String visibility) throws Exception {
+  public void there_is_an_activity_with_access(String activityName, String visibility)
+      throws Exception {
     jsonString =
-            "{\n"
-                    + "  \"activity_name\": \""
-                    + activityName
-                    + "\",\n"
-                    + "  \"description\": \"tramping iz fun\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Hike\",\n"
-                    + "    \"Bike\"\n"
-                    + "  ],\n"
-                    + "  \"visibility\": \""
-                    + visibility
-                    + "\",\n"
-                    + "  \"continuous\": true"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityName
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"visibility\": \""
+            + visibility
+            + "\",\n"
+            + "  \"continuous\": true"
+            + "}";
     String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     activityId =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(createActivityUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(loginSteps.session))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.post(createActivityUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
   }
 
   @Given("user {string} creates activity {string} with {string} access")
-  public void user_creates_activity_with_access(String email, String activityName, String visibility) throws Exception {
+  public void user_creates_activity_with_access(
+      String email, String activityName, String visibility) throws Exception {
     jsonString =
-            "{\n"
-                    + "  \"activity_name\": \""
-                    + activityName
-                    + "\",\n"
-                    + "  \"description\": \"tramping iz fun\",\n"
-                    + "  \"activity_type\":[ \n"
-                    + "    \"Hike\",\n"
-                    + "    \"Bike\"\n"
-                    + "  ],\n"
-                    + "  \"visibility\": \""
-                    + visibility
-                    + "\",\n"
-                    + "  \"continuous\": true"
-                    + "}";
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityName
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"visibility\": \""
+            + visibility
+            + "\",\n"
+            + "  \"continuous\": true"
+            + "}";
     String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     activityId =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(createActivityUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(loginSteps.session))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mvc.perform(
+                MockMvcRequestBuilders.post(createActivityUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
   }
 
   @When("user {string} sets activity {string} to {string} access")
-  public void user_sets_activity_to_access(String email, String activityName, String visibility) throws Exception {
-    jsonString =
-            "{\n"
-                    + "  \"visibility\": \""
-                    + visibility
-                    + "\""
-                    + "}";
-    String changeVisibilityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId + "/visibility";
+  public void user_sets_activity_to_access(String email, String activityName, String visibility)
+      throws Exception {
+    jsonString = "{\n" + "  \"visibility\": \"" + visibility + "\"" + "}";
+    String changeVisibilityUrl =
+        "/profiles/" + loginSteps.profileId + "/activities/" + activityId + "/visibility";
     mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.put(changeVisibilityUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(loginSteps.session));
+        mvc.perform(
+            MockMvcRequestBuilders.put(changeVisibilityUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session));
   }
 
   @When("user {string} views {string}")
   public void user_views(String email, String activityName) throws Exception {
-    String password = "Password1";
-    MockHttpSession session = new MockHttpSession();
-    jsonString =
-            "{\n"
-                    + "\t\"email\": \""
-                    + email
-                    + "\",\n"
-                    + "\t\"password\": \""
-                    + password
-                    + "\"\n"
-                    + "}";
-    String loginUrl = "/login";
-    mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(loginUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session))
-    .andExpect(status().isOk());
-
-    mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.get("/activities/" + activityId)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(session));
-  }
-
-  @Then("I have response status {string} on activity {string}")
-  public void i_have_response_status_on_activity(String statusCode, String activityName) throws Exception {
-    mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
-  }
-
-  @Given("user {string} has role {string} on activity {string}")
-  public void user_has_role_on_activity(String email, String role, String activityName)
-      throws Exception {
-    Activity activity = activityRepository.findByActivityName(activityName);
-    Profile profile = profileRepository.findByEmails_address(email);
-
-    // Creator assigns user 'Access' role
-    String jsonString =
-        "{\n"
-            + "  \"subscriber\": { \n"
-            + "  \"email\": \"" + email + "\",\n"
-            + "  \"role\": \"" + role + "\"\n"
-            + "  }\n"
-            + "}";
-
-    mvcResponse =
-        mvc.perform(
-            MockMvcRequestBuilders.put(
-                "/profiles/"
-                    + loginSteps.profileId
-                    + "/activities/"
-                    + activity.getId()
-                    + "/subscriber")
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(loginSteps.session));
-
-    List<ActivityRole> activityRole = activityRoleRepository
-        .findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
-    ActivityRole activityRoleFound = activityRole.get(0);
-    Assert.assertEquals(role, activityRoleFound.getActivityRoleType().toString());
-  }
-
-  @When("user {string} adds user roles")
-  public void user_adds_user_roles(String string, io.cucumber.datatable.DataTable dataTable) throws Exception {
-    String password = "Password1";
-    MockHttpSession session = new MockHttpSession();
-    jsonString =
-        "{\n"
-            + "\t\"email\": \""
-            + string
-            + "\",\n"
-            + "\t\"password\": \""
-            + password
-            + "\"\n"
-            + "}";
-    String loginUrl = "/login";
-    mvcResponse =
-        mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
-            .andExpect(status().isOk());
-
-    Profile profile = profileRepository.findByEmails_address(string);
-
-    for (Map<String, String> activityMapping : dataTable.asMaps()) {
-      String email = activityMapping.get("UserEmail");
-      String role = activityMapping.get("Role");
-
-      String jsonString =
-          "{\n"
-              + "  \"subscriber\": { \n"
-              + "  \"email\": \"" + email + "\",\n"
-              + "  \"role\": \"" + role +  "\"\n"
-              + "  }\n"
-              + "}";
-
-      mvcResponse = mvc.perform(
-          MockMvcRequestBuilders.put(
-              "/profiles/" + profile.getId() + "/activities/" + activityId + "/subscriber")
-              .content(jsonString)
-              .contentType(MediaType.APPLICATION_JSON)
-              .session(session));
-    }
-  }
-
-  @Then("user {string} gets users of role {string} for activity {string} should show")
-  public void user_gets_users_of_role_for_activity_should_show(
-      String email,
-      String role,
-      String activityName,
-      io.cucumber.datatable.DataTable dataTable) throws Exception {
     String password = "Password1";
     MockHttpSession session = new MockHttpSession();
     jsonString =
@@ -256,25 +135,150 @@ public class ActivitySharingFeatureSteps {
     String loginUrl = "/login";
     mvcResponse =
         mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.get("/activities/" + activityId)
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                .session(session));
+  }
+
+  @Then("I have response status {string} on activity {string}")
+  public void i_have_response_status_on_activity(String statusCode, String activityName)
+      throws Exception {
+    mvcResponse.andExpect(status().is(Integer.parseInt(statusCode)));
+  }
+
+  @Given("user {string} has role {string} on activity {string}")
+  public void user_has_role_on_activity(String email, String role, String activityName)
+      throws Exception {
+    Activity activity = activityRepository.findByActivityName(activityName);
+    Profile profile = profileRepository.findByEmails_address(email);
+
+    // Creator assigns user 'Access' role
+    String jsonString =
+        "{\n"
+            + "  \"subscriber\": { \n"
+            + "  \"email\": \""
+            + email
+            + "\",\n"
+            + "  \"role\": \""
+            + role
+            + "\"\n"
+            + "  }\n"
+            + "}";
+
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/profiles/"
+                        + loginSteps.profileId
+                        + "/activities/"
+                        + activity.getId()
+                        + "/subscriber")
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session));
+
+    List<ActivityRole> activityRole =
+        activityRoleRepository.findByActivity_IdAndProfile_Id(activity.getId(), profile.getId());
+    ActivityRole activityRoleFound = activityRole.get(0);
+    Assert.assertEquals(role, activityRoleFound.getActivityRoleType().toString());
+  }
+
+  @When("user {string} adds user roles")
+  public void user_adds_user_roles(String string, io.cucumber.datatable.DataTable dataTable)
+      throws Exception {
+    String password = "Password1";
+    MockHttpSession session = new MockHttpSession();
+    jsonString =
+        "{\n"
+            + "\t\"email\": \""
+            + string
+            + "\",\n"
+            + "\t\"password\": \""
+            + password
+            + "\"\n"
+            + "}";
+    String loginUrl = "/login";
+    mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    Profile profile = profileRepository.findByEmails_address(string);
+
+    for (Map<String, String> activityMapping : dataTable.asMaps()) {
+      String email = activityMapping.get("UserEmail");
+      String role = activityMapping.get("Role");
+
+      String jsonString =
+          "{\n"
+              + "  \"subscriber\": { \n"
+              + "  \"email\": \""
+              + email
+              + "\",\n"
+              + "  \"role\": \""
+              + role
+              + "\"\n"
+              + "  }\n"
+              + "}";
+
+      mvcResponse =
+          mvc.perform(
+              MockMvcRequestBuilders.put(
+                      "/profiles/" + profile.getId() + "/activities/" + activityId + "/subscriber")
+                  .content(jsonString)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .session(session));
+    }
+  }
+
+  @Then("user {string} gets users of role {string} for activity {string} should show")
+  public void user_gets_users_of_role_for_activity_should_show(
+      String email, String role, String activityName, io.cucumber.datatable.DataTable dataTable)
+      throws Exception {
+    String password = "Password1";
+    MockHttpSession session = new MockHttpSession();
+    jsonString =
+        "{\n"
+            + "\t\"email\": \""
+            + email
+            + "\",\n"
+            + "\t\"password\": \""
+            + password
+            + "\"\n"
+            + "}";
+    String loginUrl = "/login";
+    mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
     String response =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/activities/" + activityId + "/members")
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.get("/activities/" + activityId + "/members")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    int tableSize = dataTable.asList().size();
+    int tableSize = dataTable.asList().size() - 1;
 
     JSONObject obj = new JSONObject(response);
     JSONArray participants = obj.getJSONArray("Participant");
@@ -300,7 +304,8 @@ public class ActivitySharingFeatureSteps {
   }
 
   @When("user {string} removes user")
-  public void user_removes_user(String email, io.cucumber.datatable.DataTable dataTable) throws Exception {
+  public void user_removes_user(String email, io.cucumber.datatable.DataTable dataTable)
+      throws Exception {
     String password = "Password1";
     MockHttpSession session = new MockHttpSession();
     jsonString =
@@ -315,10 +320,10 @@ public class ActivitySharingFeatureSteps {
     String loginUrl = "/login";
     mvcResponse =
         mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
@@ -330,18 +335,24 @@ public class ActivitySharingFeatureSteps {
 
     String jsonString = "{\n" + "\"email\": \"" + userEmail + "\"\n" + "}";
 
-    mvcResponse = mvc.perform(
-        MockMvcRequestBuilders.delete(
-            "/profiles/" + profile.getId() + "/activities/" + activityId + "/subscriber")
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().is2xxSuccessful());
+    mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(
+                        "/profiles/"
+                            + profile.getId()
+                            + "/activities/"
+                            + activityId
+                            + "/subscriber")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
   }
 
   @When("user {string} removes user roles")
-  public void user_removes_user_roles(String email, io.cucumber.datatable.DataTable dataTable) throws Exception {
+  public void user_removes_user_roles(String email, io.cucumber.datatable.DataTable dataTable)
+      throws Exception {
     String password = "Password1";
     MockHttpSession session = new MockHttpSession();
     jsonString =
@@ -356,10 +367,10 @@ public class ActivitySharingFeatureSteps {
     String loginUrl = "/login";
     mvcResponse =
         mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
@@ -371,18 +382,24 @@ public class ActivitySharingFeatureSteps {
 
     String jsonString = "{\n" + "\"email\": \"" + userEmail + "\"\n" + "}";
 
-    mvcResponse = mvc.perform(
-        MockMvcRequestBuilders.delete(
-            "/profiles/" + profile.getId() + "/activities/" + activityId + "/subscriber")
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .session(session))
-        .andExpect(status().is2xxSuccessful());
+    mvcResponse =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(
+                        "/profiles/"
+                            + profile.getId()
+                            + "/activities/"
+                            + activityId
+                            + "/subscriber")
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().is2xxSuccessful());
   }
 
   @When("user {string} changes user roles")
-  public void user_changes_user_roles(String string, io.cucumber.datatable.DataTable dataTable) throws Exception {
+  public void user_changes_user_roles(String string, io.cucumber.datatable.DataTable dataTable)
+      throws Exception {
     String email = "";
     String oldRole = "";
     String newRole = "";
@@ -395,15 +412,23 @@ public class ActivitySharingFeatureSteps {
     String jsonString =
         "{\n"
             + "  \"subscriber\": { \n"
-            + "  \"email\": \"" + email + "\",\n"
-            + "  \"role\": \"" + newRole +"\"\n"
+            + "  \"email\": \""
+            + email
+            + "\",\n"
+            + "  \"role\": \""
+            + newRole
+            + "\"\n"
             + "  }\n"
             + "}";
 
     mvcResponse =
         mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/profiles/" + loginSteps.profileId + "/activities/" + activityId + "/subscriber")
+                    "/profiles/"
+                        + loginSteps.profileId
+                        + "/activities/"
+                        + activityId
+                        + "/subscriber")
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(loginSteps.session));
@@ -425,19 +450,22 @@ public class ActivitySharingFeatureSteps {
     String loginUrl = "/login";
     mvcResponse =
         mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
     Activity activity = activityRepository.findByActivityName(activityName);
 
-    mvcResponse = mvc.perform(
-        MockMvcRequestBuilders.delete(
-            "/profiles/{profileId}/activities/{activityId}", profile.getId(), activity.getId())
-            .session(session));
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.delete(
+                    "/profiles/{profileId}/activities/{activityId}",
+                    profile.getId(),
+                    activity.getId())
+                .session(session));
   }
 
   @Then("activity {string} exists")
@@ -448,9 +476,7 @@ public class ActivitySharingFeatureSteps {
 
   @When("the user {string} edits activity {string} description to {string}")
   public void the_user_edits_activity_description_to(
-      String email,
-      String activityName,
-      String description) throws Exception {
+      String email, String activityName, String description) throws Exception {
     String password = "Password1";
     MockHttpSession session = new MockHttpSession();
     jsonString =
@@ -465,10 +491,10 @@ public class ActivitySharingFeatureSteps {
     String loginUrl = "/login";
     mvcResponse =
         mvc.perform(
-            MockMvcRequestBuilders.post(loginUrl)
-                .content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session))
+                MockMvcRequestBuilders.post(loginUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
             .andExpect(status().isOk());
 
     Profile profile = profileRepository.findByEmails_address(email);
@@ -478,7 +504,9 @@ public class ActivitySharingFeatureSteps {
             + "  \"activity_name\": \""
             + activityName
             + "\",\n"
-            + "  \"description\": \"" + description  + "\",\n"
+            + "  \"description\": \""
+            + description
+            + "\",\n"
             + "  \"activity_type\":[ \n"
             + "    \"Hike\",\n"
             + "    \"Bike\"\n"
@@ -489,11 +517,12 @@ public class ActivitySharingFeatureSteps {
             + "  \"continuous\": true"
             + "}";
     String editActivityUrl = "/profiles/" + profile.getId() + "/activities/" + activity.getId();
-    mvcResponse = mvc.perform(
-        MockMvcRequestBuilders.put(editActivityUrl)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(session));
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.put(editActivityUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session));
   }
 
   @Then("the activity {string} should have description {string}")

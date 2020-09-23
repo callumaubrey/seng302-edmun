@@ -112,6 +112,7 @@ public class LoginSteps {
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
+            .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();

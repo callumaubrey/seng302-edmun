@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.steps;
 
+import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.entities.Role;
@@ -7,6 +8,8 @@ import com.springvuegradle.team6.models.repositories.RoleRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.HashSet;
+import java.util.Set;
 import org.json.JSONArray;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,21 @@ public class AdminFeatureSteps {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private RoleRepository roleRepository;
+
+  @Given("there is a global admin {string}")
+  public void there_is_a_global_admin(String email) {
+    Set<Email> emails = new HashSet<>();
+    Email adminEmail = new Email(email);
+    adminEmail.setPrimary(true);
+    emails.add(adminEmail);
+    Profile adminProfile = new Profile();
+    adminProfile.setEmails(emails);
+    adminProfile.setPassword("Password1");
+    List<Role> roles = new ArrayList<>();
+    roles.add(roleRepository.findByName("ROLE_ADMIN"));
+    adminProfile.setRoles(roles);
+    profileRepository.save(adminProfile);
+  }
 
   @Given("There is a normal user with email {string} registered in the database")
   public void there_is_a_normal_user_with_email_registered_in_the_database(String email)
@@ -91,6 +109,17 @@ public class AdminFeatureSteps {
   public void i_log_in_as_the_default_admin_with_email_and_password(String email, String password)
       throws Exception {
     session = new MockHttpSession();
+    Set<Email> emails = new HashSet<>();
+    Email adminEmail = new Email(email);
+    adminEmail.setPrimary(true);
+    emails.add(adminEmail);
+    Profile adminProfile = new Profile();
+    adminProfile.setEmails(emails);
+    adminProfile.setPassword(password);
+    List<Role> roles = new ArrayList<>();
+    roles.add(roleRepository.findByName("ROLE_ADMIN"));
+    adminProfile.setRoles(roles);
+    profileRepository.save(adminProfile);
     jsonString =
         "{\n"
             + "\t\"email\": \""
@@ -188,7 +217,6 @@ public class AdminFeatureSteps {
             .getResponse()
             .getContentAsString();
     Assert.assertTrue(profileData.contains(email));
-
   }
 
   @When("I add {string} to the user's list of additional email")
@@ -413,7 +441,7 @@ public class AdminFeatureSteps {
     List<String> expected = new ArrayList<>();
     expected.add("ROLE_USER");
     expected.add("ROLE_USER_ADMIN");
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getJSONObject(i).getString("roleName"));
     }
@@ -438,7 +466,7 @@ public class AdminFeatureSteps {
     JSONArray arr = new JSONArray(content);
     List<String> expected = new ArrayList<>();
     expected.add("ROLE_USER");
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getJSONObject(i).getString("roleName"));
     }
@@ -463,7 +491,7 @@ public class AdminFeatureSteps {
     JSONArray arr = new JSONArray(content);
     List<String> expected = new ArrayList<>();
     expected.add("ROLE_ADMIN");
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     for (int i = 0; i < arr.length(); i++) {
       list.add(arr.getJSONObject(i).getString("roleName"));
     }
