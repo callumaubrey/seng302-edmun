@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.unit.DataSize;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -1182,6 +1183,11 @@ public class ActivityController {
       return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
     }
 
+    // Check image size
+    if (file.getSize() > Activity.MAX_IMAGE_SIZE) {
+      return new ResponseEntity<>("Image limit of " + DataSize.ofBytes(Activity.MAX_IMAGE_SIZE), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
     String fileName = fileService.uploadActivityImage(file, activityId);
     if (fileName == null) {
       return new ResponseEntity<>("Failed to upload image",HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1191,6 +1197,6 @@ public class ActivityController {
     activityRepository.save(activity);
 
 
-    return new ResponseEntity<>("Allgood",HttpStatus.ACCEPTED);
+    return new ResponseEntity<>("OK",HttpStatus.ACCEPTED);
   }
 }
