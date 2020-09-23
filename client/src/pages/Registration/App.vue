@@ -131,20 +131,21 @@
 </template>
 
 <script>
-    import NavBar from '@/components/NavBar.vue';
-    import {alphaNum, email, helpers, required, sameAs} from 'vuelidate/lib/validators'
-    import api from '@/Api'
-    import {mutations} from "../../store";
+import NavBar from '@/components/NavBar.vue';
+import {alphaNum, email, helpers, required, sameAs} from 'vuelidate/lib/validators'
+import api from '@/Api'
+import {mutations} from "../../store";
 
-    const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
-    const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
-    export default {
-        components: {
-            NavBar
-        },
-        data() {
-            return {
-                date_of_birth: null,
+const passwordValidate = helpers.regex('passwordValidate',
+    new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
+export default {
+  components: {
+    NavBar
+  },
+  data() {
+    return {
+      date_of_birth: null,
                 firstname: null,
                 middlename: null,
                 lastname: null,
@@ -190,10 +191,14 @@
             date_of_birth: {
                 required,
                 dateValidate(value) {
-                    const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
-                    const date = new Date(value);
-                    const today = new Date();
-                    return date <= today && date >= oldestDate;
+                  const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
+                  const date = new Date(value);
+                  const today = new Date();
+                  //check if duration year is not more than 4 digits
+                  if (isNaN(date.getFullYear())) {
+                    return false
+                  }
+                  return date <= today && date >= oldestDate;
                 }
             },
             gender: {

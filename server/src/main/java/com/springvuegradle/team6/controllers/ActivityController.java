@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
-import com.springvuegradle.team6.requests.CreateActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
-import com.springvuegradle.team6.requests.EditActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.requests.objects.EmailRolePair;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -25,17 +23,8 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This controller contains end points related to getting, creating, editing and deleting the
@@ -70,18 +59,20 @@ public class ActivityController {
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
   private final LocationService locationService;
+  private final FileService fileService;
 
   ActivityController(
-      ProfileRepository profileRepository,
-      ActivityRepository activityRepository,
-      ActivityRoleRepository activityRoleRepository,
-      LocationRepository locationRepository,
-      TagRepository tagRepository,
-      SubscriptionHistoryRepository subscriptionHistoryRepository,
-      ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricRepository activityQualificationMetricRepository,
-      ActivityResultRepository activityResultRepository,
-      LocationService locationService) {
+          ProfileRepository profileRepository,
+          ActivityRepository activityRepository,
+          ActivityRoleRepository activityRoleRepository,
+          LocationRepository locationRepository,
+          TagRepository tagRepository,
+          SubscriptionHistoryRepository subscriptionHistoryRepository,
+          ActivityHistoryRepository activityHistoryRepository,
+          ActivityQualificationMetricRepository activityQualificationMetricRepository,
+          ActivityResultRepository activityResultRepository,
+          LocationService locationService,
+          FileService fileService) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -92,6 +83,7 @@ public class ActivityController {
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
     this.locationService = locationService;
+    this.fileService = fileService;
   }
 
   /**
@@ -1158,5 +1150,47 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * This endpoints edits the image of an activity. it writes a file in a directory specified in application properties.
+   * It also saves the filename in the activity entity.
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param file the image file. Must be a PNG,JPG,JPEG or GIF
+   * @param session the session
+   * @return ACCEPTED if successful, 4xx error if not.
+   */
+  @PutMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity editActivityImage(
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestParam("file") MultipartFile file,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
+      return new ResponseEntity("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (!(file.getContentType().equals("image/png") || file.getContentType().equals("image/jpg") || file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
+    }
+
+    String fileName = fileService.uploadActivityImage(file, activityId);
+    if (fileName == null) {
+      return new ResponseEntity<>("Failed to upload image",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    activity.setFileName(fileName);
+    activityRepository.save(activity);
+
+
+    return new ResponseEntity<>("Allgood",HttpStatus.ACCEPTED);
   }
 }
