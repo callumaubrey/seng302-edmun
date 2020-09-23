@@ -59,6 +59,9 @@
       updateActivity: function(profileId, activityId) {
         return this.$refs.path_editor.updatePathInActivity(profileId, activityId)
       },
+      refresh: function () {
+          this.$refs.path_editor.refreshMap()
+      }
     },
     mounted() {
       if (this.activityId != null) {

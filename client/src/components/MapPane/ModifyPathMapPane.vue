@@ -166,6 +166,9 @@ export default {
       return pathObj;
     },
 
+    /**
+     * Returns a path object in the same format as a get request from the backend, using editor data
+     **/
     getUpdatedPathObject() {
       if(this.$refs.map.routePoints.length === 0) {
         return {}
@@ -187,6 +190,10 @@ export default {
       }
       return pathObj;
     },
+
+    /**
+     * Updates the center of the map using lat and lng
+     **/
     setMapCenterFromIndex(index) {
       let coordinates = this.$refs.map.markers[index].position
       this.$refs.map.setMapCenter(coordinates[0], coordinates[1])
@@ -200,6 +207,10 @@ export default {
     updatePathInActivity(profileId, activityId) {
       let pathObj = this.getPathObject();
       return api.updateActivityPath(profileId, activityId, pathObj);
+    },
+
+    refreshMap(){
+      this.$refs.map.refreshMap()
     }
   },
 }

@@ -199,7 +199,7 @@
                 </b-container>
               </b-tab>
 
-              <b-tab>
+              <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
                   Activity Location
@@ -216,7 +216,7 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path" >
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
                 <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" :activityId = "activityId" :path = "path"></PathInfoMapCreateEdit>
               </b-tab>
 

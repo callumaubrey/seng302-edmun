@@ -257,6 +257,7 @@
        * lng: longitude of the marker
        * content: content of the tooltip
        * title: title of the tooltip
+       * draggable: if the marker can be dragged
        *
        * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
        **/
