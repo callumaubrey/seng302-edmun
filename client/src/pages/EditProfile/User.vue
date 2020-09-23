@@ -13,12 +13,6 @@
               </b-col>
             <b-col>
 
-<!--            <b-row>-->
-<!--                <b-col>-->
-<!--                    <h1>Account settings</h1>-->
-<!--                </b-col>-->
-<!--            </b-row>-->
-
           <b-tabs >
             <b-tab title="Profile">
                 <b-container style="padding-top: 20px">
@@ -126,16 +120,12 @@
                             <hr>
                         </div>
                         <div v-for="(email, index) in emails" :key="index">
-                            <b-row>
+                            <b-row style="padding-right: 15px">
                                 <b-col><label>{{email}}</label></b-col>
-                                <b-col>
-                                    <b-button class="invisible-btn" style="float: right;" @click="deleteEmail(index)">
-                                        Remove
-                                    </b-button>
-                                    <b-button class="invisible-btn" style="float: right;" @click="makePrimary(index)">
-                                        Make Primary
-                                    </b-button>
+                                <b-col align="right" style="flex: 0 0 35px;">
+                                    <i class="fas fa-star " style="color:rgba(71,222,70,0.88); font-size: 1.5em; cursor: pointer;" @click="makePrimary(index)"></i>
                                 </b-col>
+                                    <i class="fas fa-trash-alt" style="color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deleteEmail(index)"></i>
                             </b-row>
                             <hr>
                         </div>
@@ -156,7 +146,7 @@
                                 </b-form-invalid-feedback>
                             </b-col>
                             <b-col id="emailAdd" class="col-25">
-                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5" class="invisible-btn"
+                                <b-button v-if="this.emails.length + this.primaryEmail.length < 5"
                                           style="float: right;" v-on:click="createEmail">Submit
                                 </b-button>
                             </b-col>
@@ -175,9 +165,7 @@
                                 <label>{{country[0]}}</label>
                             </b-col>
                             <b-col>
-                                <b-button class="invisible-btn" style="float: right;" @click="deletePassport(index)">
-                                    Remove
-                                </b-button>
+                                <i class="fas fa-trash-alt" style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deletePassport(index)"></i>
                             </b-col>
                         </b-row>
                         <hr>
@@ -197,7 +185,7 @@
                             </b-form-invalid-feedback>
                         </b-col>
                         <b-col>
-                            <b-button class="invisible-btn" style="float: right;" v-on:click="addPassport">Submit
+                            <b-button style="float: right;" v-on:click="addPassport">Submit
                             </b-button>
                         </b-col>
                     </b-row>
@@ -212,9 +200,7 @@
                                 <label>{{activites}}</label>
                             </b-col>
                             <b-col>
-                                <b-button class="invisible-btn" style="float: right;" @click="deleteActivity(index)">
-                                    Remove
-                                </b-button>
+                                <i class="fas fa-trash-alt" style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deleteActivity(index)"></i>
                             </b-col>
                         </b-row>
                         <hr>
@@ -232,7 +218,7 @@
                             </b-form-invalid-feedback>
                         </b-col>
                         <b-col>
-                            <b-button class="invisible-btn" style="float: right;" v-on:click="addActivity">Submit
+                            <b-button style="float: right;" v-on:click="addActivity">Submit
                             </b-button>
                         </b-col>
                     </b-row>
