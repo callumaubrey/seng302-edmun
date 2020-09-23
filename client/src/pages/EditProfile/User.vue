@@ -267,7 +267,7 @@
                     </b-row>
                 </b-container>
             </b-tab>
-            <b-tab title = "Location">
+            <b-tab title = "Location" @click="$refs.map.refreshMap()">
                 <b-container>
                     <b-form-text>
                         &#8203; <!-- Zero Width Space to prevent form text height to expand on text displayed -->
