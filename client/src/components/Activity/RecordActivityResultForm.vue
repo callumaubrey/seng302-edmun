@@ -366,26 +366,24 @@ export default {
      * Calls POST activity result endpoint, and also resets the form upon success
      */
     createActivityResult() {
-      console.log(this.result.type)
-      if (this.result.type === 'TimeDuration') {
-        console.log("I WAS HERE")
-        this.$v.duration.$touch()
-        if (this.$v.duration.$anyError) {
-          console.log(this.$v)
-          console.log("ERROR")
-          return;
-        }
-        this.convertToDurationStringFormat();
-      } else if (this.result.type === 'TimeStartFinish') {
-        this.$v.startFinish.$touch();
-        if (this.$v.startFinish.$anyError) {
-          return;
-        }
-        this.parseDateTimeInputIntoISODateTimeString();
-      } else {
-        this.$v.result.$touch();
-        if (this.$v.result.$anyError) {
-          return;
+      if (this.specialMetricTitle === null || this.specialMetricTitle === 'None') {
+        if (this.result.type === 'TimeDuration') {
+          this.$v.duration.$touch()
+          if (this.$v.duration.$anyError) {
+            return;
+          }
+          this.convertToDurationStringFormat();
+        } else if (this.result.type === 'TimeStartFinish') {
+          this.$v.startFinish.$touch();
+          if (this.$v.startFinish.$anyError) {
+            return;
+          }
+          this.parseDateTimeInputIntoISODateTimeString();
+        } else {
+          this.$v.result.$touch();
+          if (this.$v.result.$anyError) {
+            return;
+          }
         }
       }
       let data = {
@@ -410,22 +408,24 @@ export default {
      * Calls PUT activity result endpoint
      */
     editActivityResult() {
-      if (this.result.type === 'TimeDuration') {
-        this.$v.duration.$touch()
-        if (this.$v.duration.$anyError) {
-          return;
-        }
-        this.convertToDurationStringFormat();
-      } else if (this.result.type === 'TimeStartFinish') {
-        this.$v.startFinish.$touch();
-        if (this.$v.startFinish.$anyError) {
-          return;
-        }
-        this.parseDateTimeInputIntoISODateTimeString();
-      } else {
-        this.$v.result.$touch();
-        if (this.$v.result.$anyError) {
-          return;
+      if (this.specialMetricTitle == null || this.specialMetricTitle === 'None') {
+        if (this.result.type === 'TimeDuration') {
+          this.$v.duration.$touch()
+          if (this.$v.duration.$anyError) {
+            return;
+          }
+          this.convertToDurationStringFormat();
+        } else if (this.result.type === 'TimeStartFinish') {
+          this.$v.startFinish.$touch();
+          if (this.$v.startFinish.$anyError) {
+            return;
+          }
+          this.parseDateTimeInputIntoISODateTimeString();
+        } else {
+          this.$v.result.$touch();
+          if (this.$v.result.$anyError) {
+            return;
+          }
         }
       }
       let data = {

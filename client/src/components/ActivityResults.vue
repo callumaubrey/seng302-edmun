@@ -252,6 +252,9 @@ export default {
      * @returns {string}
      */
     getSplitDate: function (date) {
+      if (date == null) {
+        return null;
+      }
       let dateSplit = date.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     },

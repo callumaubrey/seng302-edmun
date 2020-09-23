@@ -54,17 +54,22 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-public class ActivityMetricControllerTest {
+class ActivityMetricControllerTest {
 
-  @Autowired private ActivityRepository activityRepository;
+  @Autowired
+  private ActivityRepository activityRepository;
 
-  @Autowired private ProfileRepository profileRepository;
+  @Autowired
+  private ProfileRepository profileRepository;
 
-  @Autowired private ActivityQualificationMetricRepository activityQualificationMetricRepository;
+  @Autowired
+  private ActivityQualificationMetricRepository activityQualificationMetricRepository;
 
-  @Autowired private ActivityResultRepository activityResultRepository;
+  @Autowired
+  private ActivityResultRepository activityResultRepository;
 
-  @Autowired private ActivityRoleRepository activityRoleRepository;
+  @Autowired
+  private ActivityRoleRepository activityRoleRepository;
 
   @Autowired private ActivityHistoryRepository activityHistoryRepository;
 
@@ -547,6 +552,52 @@ public class ActivityMetricControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
+        .andExpect(status().isOk());
+
+    List<ActivityResult> results =
+        activityResultRepository.findSingleUsersResultsOnActivity(
+            activity.getId(), profile.getId());
+    Assert.assertEquals(1, results.size());
+
+    Set<ActivityHistory> foundHistory =
+        activityHistoryRepository.findByActivity_id(activity.getId());
+    Assert.assertEquals(1, foundHistory.size());
+  }
+
+  @Test
+  void createResultWithSpecialMetricWithoutResultIsOk() throws Exception {
+    Activity activity = new Activity();
+    Profile profile = profileRepository.findById(id);
+    activity.setProfile(profile);
+    activity.setActivityName("My running activity");
+    activity.setContinuous(true);
+    activity = activityRepository.save(activity);
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.TimeStartFinish);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile);
+    activityRole.setActivityRoleType(ActivityRoleType.Creator);
+    activityRoleRepository.save(activityRole);
+
+    String jsonString =
+        "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": null,\n"
+            + "\"special_metric\": \"DidNotFinish\" }";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/{profileId}/activities/{activityId}/result",
+            profile.getId(),
+            activity.getId())
+            .content(jsonString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
         .andExpect(status().isOk());
 
     List<ActivityResult> results =
@@ -1096,7 +1147,7 @@ public class ActivityMetricControllerTest {
 
     Optional<ActivityResultCount> result =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
-    Assert.assertEquals(20, result.get().getValue());
+    Assert.assertEquals((Integer) 20, result.get().getValue());
   }
 
   @Test
@@ -1167,6 +1218,77 @@ public class ActivityMetricControllerTest {
     Optional<ActivityResultDistance> result =
         activityResultRepository.findSpecificDistanceResult(Integer.parseInt(resultId));
     Assert.assertEquals(10.23, result.get().getValue(), 0.01);
+  }
+
+  @Test
+  void updateActivityResultDistanceWithoutValueAndWithSpecialMetricExpectOk() throws Exception {
+    Activity activity = activityRepository.findById(activityId).get();
+
+    // Create metric
+    ActivityQualificationMetric metric = new ActivityQualificationMetric();
+    metric.setTitle("title");
+    metric.setActivity(activity);
+    metric.setUnit(Unit.Distance);
+    metric = activityQualificationMetricRepository.save(metric);
+
+    Profile profile1 = new Profile();
+    profile1.setFirstname("Johnny");
+    profile1.setLastname("Dong");
+    Set<Email> email1 = new HashSet<Email>();
+    email1.add(new Email("example1@email.com"));
+    profile1.setEmails(email1);
+    profile1.setPassword("Password1");
+    profile1 = profileRepository.save(profile1);
+
+    ActivityRole activityRole = new ActivityRole();
+    activityRole.setActivity(activity);
+    activityRole.setProfile(profile1);
+    activityRole.setActivityRoleType(ActivityRoleType.Participant);
+    activityRoleRepository.save(activityRole);
+
+    mvc.perform(MockMvcRequestBuilders.get("/logout/").session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    String jsonString =
+        "{\n" + "  \"metric_id\": \"" + metric.getId() + "\",\n" + "  \"value\": null,\n"
+            + "\"special_metric\": \"DidNotFinish\" }";
+
+    String jsonStringUser =
+        "{\n" + "  \"email\": \"example1@email.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(jsonStringUser)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk())
+        .andDo(print());
+
+    float distanceFloat = (float) 20.34;
+    ActivityResultDistance distanceResult =
+        new ActivityResultDistance(metric, profile1, distanceFloat);
+    distanceResult = activityResultRepository.save(distanceResult);
+
+    String resultId =
+        mvc.perform(
+            MockMvcRequestBuilders.put(
+                "/profiles/{profileId}/activities/{activityId}/result/{resultId}",
+                profile1.getId(),
+                activity.getId(),
+                distanceResult.getId())
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    Optional<ActivityResultDistance> result =
+        activityResultRepository.findSpecificDistanceResult(Integer.parseInt(resultId));
+    Assert.assertNull(result.get().getValue());
   }
 
   @Test
@@ -1475,7 +1597,7 @@ public class ActivityMetricControllerTest {
 
     Optional<ActivityResultCount> result1 =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
-    Assert.assertEquals(10, result1.get().getValue());
+    Assert.assertEquals((Integer) 10, result1.get().getValue());
   }
 
   @Test
@@ -1524,7 +1646,7 @@ public class ActivityMetricControllerTest {
     Optional<ActivityResultCount> result1 =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
     System.err.println(result1.isPresent());
-    Assert.assertEquals(10, result1.get().getValue());
+    Assert.assertEquals((Integer) 10, result1.get().getValue());
   }
 
   @Test
@@ -1575,7 +1697,7 @@ public class ActivityMetricControllerTest {
 
     Optional<ActivityResultCount> result1 =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
-    Assert.assertEquals(10, result1.get().getValue());
+    Assert.assertEquals((Integer) 10, result1.get().getValue());
   }
 
   @Test
@@ -1630,7 +1752,7 @@ public class ActivityMetricControllerTest {
 
     Optional<ActivityResultCount> result1 =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
-    Assert.assertEquals(10, result1.get().getValue());
+    Assert.assertEquals((Integer) 10, result1.get().getValue());
   }
 
   @Test
@@ -2079,7 +2201,7 @@ public class ActivityMetricControllerTest {
 
     Optional<ActivityResultCount> result1 =
         activityResultRepository.findSpecificCountResult(Integer.parseInt(resultId));
-    Assert.assertEquals(10, result1.get().getValue());
+    Assert.assertEquals((Integer) 10, result1.get().getValue());
   }
 
   @Test
