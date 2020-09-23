@@ -67,6 +67,9 @@ public class SetupDataLoader implements
   @Value("#{environment.ADMIN_PASSWORD}")
   private String adminPassword;
 
+  @Value("#{environment.generate_sample_data}")
+  private Boolean generateSampleData;
+
   private Random random = new Random();
 
   @Autowired
@@ -108,7 +111,6 @@ public class SetupDataLoader implements
     createRoleIfNotFound("ROLE_ADMIN");
     createRoleIfNotFound("ROLE_USER");
     createRoleIfNotFound("ROLE_USER_ADMIN");
-
     Role adminRole = roleRepository.findByName("ROLE_ADMIN");
     Profile user = new Profile();
     profileRepository.save(user);
@@ -119,8 +121,11 @@ public class SetupDataLoader implements
     Collection<Role> roles = new ArrayList<>(Arrays.asList(adminRole));
     user.setRoles(roles);
 
-    createSampleUsers(50);
-    createSampleActivities(50);
+    if (generateSampleData) {
+      System.out.println("----- Generating Sample Data -----");
+      createSampleUsers(50);
+      createSampleActivities(50);
+    }
   }
 
   /**
@@ -151,9 +156,10 @@ public class SetupDataLoader implements
   /**
    * Creates semi random users, used for populating the database
    * <p>
-   * First Name: chooses a random name from the first name list Last Name: always Edmun to identify
-   * sample users Primary Email: FirstName LastName Index @testemail.com (this is to ensure there
-   * are no primary keys being the same) Role: Assigns the profile to be a user
+   * First Name: chooses a random name from the first name list Last Name: always Edmun to identify sample users
+   * Primary Email: FirstName LastName Index @testemail.com (this is to ensure there
+   * are no primary keys being the same)
+   * Role: Assigns the profile to be a user
    *
    * @param numberOfUsers The number of users you want to create
    */
@@ -198,25 +204,19 @@ public class SetupDataLoader implements
     String[] locationNames = {"Napier", "Christchurch", "Auckland", "Wellington"};
     double[][] locations = {{-39.548530, 176.796837}, {-43.522663, 172.554899},
         {-36.892801, 174.768907}, {-41.112469, 175.060221}};
-    double randomLocationPositionLng;
-    double randomLocationPositionLat;
+    ArrayList<Tag> locationTags = new ArrayList<>();
+    Double randomLocationPositionLng;
+    Double randomLocationPositionLat;
     int randomType;
     int randomLocation;
-    int continous;
+    int continuous;
 
-    //Hashtags
-    Tag nzTag = new Tag("nz");
-    Tag aucklandTag = new Tag("auckland");
-    Tag christchurchTag = new Tag("christchurch");
-    Tag napierTag = new Tag("napier");
-    Tag wellingtonTag = new Tag("wellington");
-    tagRepository.save(nzTag);
-    tagRepository.save(aucklandTag);
-    tagRepository.save(christchurchTag);
-    tagRepository.save(napierTag);
-    tagRepository.save(wellingtonTag);
-
-
+    //tags
+    for (int i = 0; i < locationNames.length; i++) {
+      Tag tag = new Tag(locationNames[i]);
+      tagRepository.save(tag);
+      locationTags.add(tag);
+    }
 
     for (int index = 1; index < numberOfActivities + 1; index++) {
       //Create activities iteratively based off of numberOfActivities
@@ -224,11 +224,9 @@ public class SetupDataLoader implements
       randomLocationPositionLng = (double) (random.nextInt(100) - 50) / 200;
       randomType = random.nextInt(1000);
       randomLocation = random.nextInt(4);
-      Profile randomUser = profileRepository.findAll()
-          .get(random.nextInt((int) profileRepository.count()));
       Profile creator = profileRepository.findAll()
           .get(random.nextInt((int) profileRepository.count()));
-      continous = random.nextInt(4);
+      continuous = random.nextInt(4);
 
       Activity activity = new Activity();
       activity.setProfile(creator);
@@ -236,28 +234,17 @@ public class SetupDataLoader implements
 
       //Set hashtags
       Set<Tag> tags = new HashSet<>();
-      switch(randomLocation) {
-        case 0:
-          tags.add(napierTag);
-          break;
-        case 1:
-          tags.add(christchurchTag);
-          break;
-        case 2:
-          tags.add(wellingtonTag);
-          break;
-        case 3:
-          tags.add(aucklandTag);
-          break;
-        default:
-          tags.add(nzTag);
-      }
+      tags.add(locationTags.get(randomLocation));
 
       //Activity location. This is based off of city locations with some randomness
       Location location = new Location(locations[randomLocation][0] + randomLocationPositionLat,
           locations[randomLocation][1] + randomLocationPositionLng);
-      location.setName(locationService.getLocationAddressFromLatLng(locations[randomLocation][0] + randomLocationPositionLat,
-          locations[randomLocation][1] + randomLocationPositionLng, false));
+      String locationName = locationService
+          .getLocationAddressFromLatLng(locations[randomLocation][0] + randomLocationPositionLat,
+              locations[randomLocation][1] + randomLocationPositionLng, false);
+      if (locationName != null) {
+        location.setName(locationName);
+      }
       locationRepository.save(location);
       activity.setLocation(location);
 
@@ -292,7 +279,7 @@ public class SetupDataLoader implements
       }
 
       //Activity Type
-      if (continous >= 2) {
+      if (continuous >= 2) {
         activity.setContinuous(true);
       } else {
         activity.setStartTimeByString("2000-04-28T15:50:41+1300");
@@ -300,6 +287,8 @@ public class SetupDataLoader implements
         activity.setContinuous(false);
       }
       activity.setActivityTypes(activityTypes);
+
+      activity.setTags(tags);
       activityRepository.save(activity);
 
       //participants
