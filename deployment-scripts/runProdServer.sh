@@ -20,3 +20,4 @@ java -jar prod-server/libs/server-0.0.1-SNAPSHOT.jar
 \ --spring.mail.properties.mail.smtp.connectiontimeout=5000
 \ --spring.mail.properties.mail.smtp.timeout=5000
 \ --spring.mail.properties.mail.smtp.writetimeout=5000
+\ --spring.mail.url = 'https://csse-s302g7.canterbury.ac.nz/prod/#/'
