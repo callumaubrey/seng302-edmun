@@ -15,26 +15,23 @@ import javax.transaction.Transactional;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+@AutoConfigureMockMvc
 public class ActivityMetricsFeatureSteps {
 
-  @Autowired
-  private ActivityFollowingFeatureSteps activityFollowingFeatureSteps;
+  @Autowired private ActivityFollowingFeatureSteps activityFollowingFeatureSteps;
 
-  @Autowired
-  private ActivityHashtagFeatureSteps activityHashtagFeatureSteps;
+  @Autowired private ActivityHashtagFeatureSteps activityHashtagFeatureSteps;
 
-  @Autowired
-  private LoginSteps loginSteps;
+  @Autowired private LoginSteps loginSteps;
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Autowired
-  private ActivityRepository activityRepository;
+  @Autowired private ActivityRepository activityRepository;
 
   @When("I create an activity {string} with metrics")
   public void i_create_an_activity_with_metrics(
@@ -96,7 +93,8 @@ public class ActivityMetricsFeatureSteps {
   }
 
   @Transactional
-  //ensures all method calls in this test case EAGERLY loads object, a way to fix LazyInitializationException
+  // ensures all method calls in this test case EAGERLY loads object, a way to fix
+  // LazyInitializationException
   @Then("there will be an activity {string} without metrics")
   public void there_will_be_an_activity_without_metrics(String string)
       throws UnsupportedEncodingException {
@@ -135,13 +133,13 @@ public class ActivityMetricsFeatureSteps {
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}",
-            loginSteps.profileId,
-            activityFollowingFeatureSteps.activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(loginSteps.session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}",
+                    loginSteps.profileId,
+                    activityFollowingFeatureSteps.activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session))
         .andExpect(status().isOk());
   }
 
@@ -150,9 +148,9 @@ public class ActivityMetricsFeatureSteps {
       String activityName, io.cucumber.datatable.DataTable dataTable) throws Exception {
     String activityResponse =
         mvc.perform(
-            MockMvcRequestBuilders.get(
-                "/activities/{activityId}", activityFollowingFeatureSteps.activityId)
-                .session(loginSteps.session))
+                MockMvcRequestBuilders.get(
+                        "/activities/{activityId}", activityFollowingFeatureSteps.activityId)
+                    .session(loginSteps.session))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -210,13 +208,13 @@ public class ActivityMetricsFeatureSteps {
             + "}\n";
 
     mvc.perform(
-        MockMvcRequestBuilders.put(
-            "/profiles/{profileId}/activities/{activityId}",
-            loginSteps.profileId,
-            activityId)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(loginSteps.session))
+            MockMvcRequestBuilders.put(
+                    "/profiles/{profileId}/activities/{activityId}",
+                    loginSteps.profileId,
+                    activityId)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session))
         .andExpect(status().isOk());
   }
 }

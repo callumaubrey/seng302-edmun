@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -27,7 +26,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-@DirtiesContext
 public class ActivityHashtagFeatureSteps {
 
   private String jsonString;
@@ -234,7 +232,7 @@ public class ActivityHashtagFeatureSteps {
       String hashTag = hashTagMapping.get("Hashtag").toLowerCase();
       hashTags.add(hashTag);
     }
-    Assert.assertTrue(autocompleteResult.equals(hashTags));
+    Assert.assertEquals(autocompleteResult, hashTags);
   }
 
   @Then("I will receive {string} status code")

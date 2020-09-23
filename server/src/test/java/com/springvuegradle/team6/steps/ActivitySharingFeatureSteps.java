@@ -17,14 +17,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@DirtiesContext
+@AutoConfigureMockMvc
 public class ActivitySharingFeatureSteps {
 
   @Autowired
@@ -278,23 +278,23 @@ public class ActivitySharingFeatureSteps {
 
     JSONObject obj = new JSONObject(response);
     JSONArray participants = obj.getJSONArray("Participant");
-    if (role == "participant") {
+    if (role.equals("participant")) {
       Assert.assertEquals(tableSize, participants.length());
     }
     JSONArray organisers = obj.getJSONArray("Organiser");
-    if (role == "organiser") {
+    if (role.equals("organiser")) {
       Assert.assertEquals(tableSize, organisers.length());
     }
     JSONArray creators = obj.getJSONArray("Creator");
-    if (role == "creator") {
+    if (role.equals("creator")) {
       Assert.assertEquals(tableSize, creators.length());
     }
     JSONArray followers = obj.getJSONArray("Follower");
-    if (role == "follower") {
+    if (role.equals("follower")) {
       Assert.assertEquals(tableSize, followers.length());
     }
     JSONArray accesses = obj.getJSONArray("Access");
-    if (role == "access") {
+    if (role.equals("access")) {
       Assert.assertEquals(tableSize, accesses.length());
     }
   }

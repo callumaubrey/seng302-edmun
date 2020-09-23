@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,10 +26,9 @@ import java.util.List;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@SpringBootTest
-@ActiveProfiles("test")
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-@DirtiesContext
+@ActiveProfiles("test")
+@SpringBootTest
 public class AdminFeatureSteps {
   public String normalUserId;
   public String userAdminId;
@@ -158,6 +156,7 @@ public class AdminFeatureSteps {
 
   @Given("I receive response status code {int}")
   public void i_receive_response_status_code(Integer statusCode) throws Exception {
+    System.out.println(mvcResponse.andReturn().getResponse().getContentAsString());
     mvcResponse.andExpect(status().is(statusCode));
   }
 
@@ -189,6 +188,7 @@ public class AdminFeatureSteps {
             .getResponse()
             .getContentAsString();
     Assert.assertTrue(profileData.contains(email));
+
   }
 
   @When("I add {string} to the user's list of additional email")
