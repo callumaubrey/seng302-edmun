@@ -9,33 +9,59 @@
                                   :role-data="rolesData.organisers"
                                   :activity-roles="activityRoles"
                                   :fields="fields"></restricted-users-table>
+          <RestrictedUsersCard
+              :activity-roles="activityRoles"
+              :role-data="rolesData.organisers"
+              v-on:deselectAll="deselectAllOrganisers"
+              v-on:rowChanged="organisersChanged"
+              v-on:selectAll="selectAllOrganisers"></RestrictedUsersCard>
         </b-tab>
 
+
         <b-tab key="Participants" title="Participants">
-          <restricted-users-table v-on:rowChanged="participantsChanged"
-                                  v-on:selectAll="selectAllParticipants"
-                                  v-on:deselectAll="deselectAllParticipants"
-                                  :role-data="rolesData.participants"
-                                  :activity-roles="activityRoles"
-                                  :fields="fields"></restricted-users-table>
+          <!--          <restricted-users-table v-on:rowChanged="participantsChanged"-->
+          <!--                                  v-on:selectAll="selectAllParticipants"-->
+          <!--                                  v-on:deselectAll="deselectAllParticipants"-->
+          <!--                                  :role-data="rolesData.participants"-->
+          <!--                                  :activity-roles="activityRoles"-->
+          <!--                                  :fields="fields"></restricted-users-table>-->
+          <RestrictedUsersCard
+              :activity-roles="activityRoles"
+              :role-data="rolesData.participants"
+              v-on:deselectAll="deselectAllParticipants"
+              v-on:rowChanged="participantsChanged"
+              v-on:selectAll="selectAllParticipants"
+          ></RestrictedUsersCard>
         </b-tab>
 
         <b-tab key="Followers" title="Followers">
-          <restricted-users-table v-on:rowChanged="followersChanged"
-                                  v-on:selectAll="selectAllFollowers"
-                                  v-on:deselectAll="deselectAllFollowers"
-                                  :role-data="rolesData.followers"
-                                  :activity-roles="activityRoles"
-                                  :fields="fields"></restricted-users-table>
+          <!--          <restricted-users-table v-on:rowChanged="followersChanged"-->
+          <!--                                  v-on:selectAll="selectAllFollowers"-->
+          <!--                                  v-on:deselectAll="deselectAllFollowers"-->
+          <!--                                  :role-data="rolesData.followers"-->
+          <!--                                  :activity-roles="activityRoles"-->
+          <!--                                  :fields="fields"></restricted-users-table>-->
+          <RestrictedUsersCard
+              :activity-roles="activityRoles"
+              :role-data="rolesData.followers"
+              v-on:deselectAll="deselectAllFollowers"
+              v-on:rowChanged="followersChanged"
+              v-on:selectAll="selectAllFollowers"></RestrictedUsersCard>
         </b-tab>
 
         <b-tab key="Accessors" title="Accessors">
-          <restricted-users-table v-on:rowChanged="accessorsChanged"
-                                  v-on:selectAll="selectAllAccessors"
-                                  v-on:deselectAll="deselectAllAccessors"
-                                  :role-data="rolesData.accessors"
-                                  :activity-roles="activityRoles"
-                                  :fields="fields"></restricted-users-table>
+          <!--          <restricted-users-table v-on:rowChanged="accessorsChanged"-->
+          <!--                                  v-on:selectAll="selectAllAccessors"-->
+          <!--                                  v-on:deselectAll="deselectAllAccessors"-->
+          <!--                                  :role-data="rolesData.accessors"-->
+          <!--                                  :activity-roles="activityRoles"-->
+          <!--                                  :fields="fields"></restricted-users-table>-->
+          <RestrictedUsersCard
+              :activity-roles="activityRoles"
+              :role-data="rolesData.accessors"
+              v-on:deselectAll="deselectAllAccessors"
+              v-on:rowChanged="accessorsChanged"
+              v-on:selectAll="selectAllAccessors"></RestrictedUsersCard>
         </b-tab>
       </b-tabs>
     </b-card>
@@ -44,28 +70,30 @@
 </template>
 
 <script>
-  import RestrictedUsersTable from "./RestrictedUsersTable";
+import RestrictedUsersTable from "./RestrictedUsersTable";
+import RestrictedUsersCard from "@/components/SharingActivity/RestrictedUsersCard.vue";
 
-  export default {
-    name: "ShareActivityUserList",
-    props: ["rolesData"],
-    components: {
-      RestrictedUsersTable
-    },
-    data() {
-      return {
-        activityRoles: [
-          {value: "organiser", text: "Organiser"},
-          {value: "participant", text: "Participant"},
-          {value: "follower", text: "Follower"},
-          {value: "access", text: "Access"}
-        ],
-        data: null,
-        fields: [
-          {
-            key: 'full_name',
-            label: 'Name',
-            sortable: true
+export default {
+  name: "ShareActivityUserList",
+  props: ["rolesData"],
+  components: {
+    RestrictedUsersCard,
+    RestrictedUsersTable
+  },
+  data() {
+    return {
+      activityRoles: [
+        {value: "organiser", text: "Organiser"},
+        {value: "participant", text: "Participant"},
+        {value: "follower", text: "Follower"},
+        {value: "access", text: "Access"}
+      ],
+      data: null,
+      fields: [
+        {
+          key: 'full_name',
+          label: 'Name',
+          sortable: true
           },
           {
             key: 'primary_email',

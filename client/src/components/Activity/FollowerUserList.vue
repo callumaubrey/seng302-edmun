@@ -7,47 +7,65 @@
                 <b-tab key="Participants" title="Participants" @click="currentGroup='Participants'">
                 <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in participants">
                     <b-row class="text-center" align-v="center">
-                        <b-col class="text-center">
-                            {{ user.full_name }}
-                        </b-col>
-                        <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                            <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                <b-dropdown-item @click="changeRole(user, 'organiser')">Organiser</b-dropdown-item>
-                                <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
+                      <b-col cols="2">
+                        <b-img alt="Center image" center height="80px" rounded="circle"
+                               src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+                               width="80px"></b-img>
+                      </b-col>
+                      <b-col class="text-lg-left">
+                        {{ user.full_name }}
+                      </b-col>
+                      <b-col v-if="activityCreatorId==loggedInId" class="text-right">
+                        <b-dropdown id="dropdown-1" class="m-md-2" text="Participant">
+                          <b-dropdown-item @click="changeRole(user, 'organiser')">Organiser
+                          </b-dropdown-item>
+                          <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
 
-                            </b-dropdown>
-                        </b-col>
+                        </b-dropdown>
+                      </b-col>
                     </b-row>
                 </b-card>
             </b-tab>
                 <b-tab key="Organisers" title="Organisers" @click="currentGroup='Organisers'">
-                    <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in organisers">
-                        <b-row class="text-center" align-v="center">
-                            <b-col class="text-center">
-                                {{ user.full_name }}
-                            </b-col>
-                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                                <b-dropdown class="m-md-2" id="dropdown-1" text="Organiser">
-                                    <b-dropdown-item @click="changeRole(user, 'participant')">Participant</b-dropdown-item>
-                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
-                                </b-dropdown>
-                            </b-col>
-                        </b-row>
-                    </b-card>
+                  <b-card style="margin-top:10px;" :key="user.profile_id"
+                          v-for="user in organisers">
+                    <b-row align-v="center" class="text-center">
+                      <b-col cols="2">
+                        <b-img alt="Center image" center height="80px" rounded="circle"
+                               src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+                               width="80px"></b-img>
+                      </b-col>
+                      <b-col class="text-lg-left">
+                        {{ user.full_name }}
+                      </b-col>
+                      <b-col v-if="activityCreatorId==loggedInId" class="text-right">
+                        <b-dropdown id="dropdown-1" class="m-md-2" text="Organiser">
+                          <b-dropdown-item @click="changeRole(user, 'participant')">Participant
+                          </b-dropdown-item>
+                          <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
+                        </b-dropdown>
+                      </b-col>
+                    </b-row>
+                  </b-card>
                 </b-tab>
                 <b-tab key="Accessors" title="Accessors" @click="currentGroup='Accessors'">
-                    <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in accessors">
-                        <b-row class="text-center" align-v="center">
-                            <b-col class="text-center">
-                                {{ user.full_name }}
-                            </b-col>
-                            <b-col v-if="activityCreatorId==loggedInId" class="text-center">
-                                <b-dropdown class="m-md-2" id="dropdown-1" text="Participant">
-                                    <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
-                                </b-dropdown>
-                            </b-col>
-                        </b-row>
-                    </b-card>
+                  <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in accessors">
+                    <b-row align-v="center" class="text-center">
+                      <b-col cols="2">
+                        <b-img alt="Center image" center height="80px" rounded="circle"
+                               src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+                               width="80px"></b-img>
+                      </b-col>
+                      <b-col class="text-lg-left">
+                        {{ user.full_name }}
+                      </b-col>
+                      <b-col v-if="activityCreatorId==loggedInId" class="text-right">
+                        <b-dropdown id="dropdown-1" class="m-md-2" text="Participant">
+                          <b-dropdown-item @click="removeRole(user)">Remove</b-dropdown-item>
+                        </b-dropdown>
+                      </b-col>
+                    </b-row>
+                  </b-card>
                 </b-tab>
                 <!-- followers tabs could be added if we please just uncomment
 
@@ -72,29 +90,29 @@
 </template>
 
 <script>
-    import api from '@/Api';
+import api from '@/Api';
 
-    export default {
-        name: "FollowerUserList",
+export default {
+  name: "FollowerUserList",
 
-        // Component Properties
-        props: {
-            activityId: {
-                type: Number,
-                default: null,
-            },
-            activityCreatorId: {
-                type: Number,
-                default: null,
-            },
-            loggedInId: {
-                type: Number,
-                default: null,
-            }
-        },
+  // Component Properties
+  props: {
+    activityId: {
+      type: Number,
+      default: null,
+    },
+    activityCreatorId: {
+      type: Number,
+      default: null,
+    },
+    loggedInId: {
+      type: Number,
+      default: null,
+    }
+  },
 
-        // Component Members
-        data() {
+  // Component Members
+  data() {
             return {
                 organisers: [],
                 participants: [],
@@ -187,55 +205,55 @@
             changeRole: async function (user, role) {
                 await api.getProfile(user.profile_id)
                     .then((res) => {
-                        this.roleData = {
-                            subscriber: {
-                                email: res.data.primary_email.address,
-                                role: role
-                            }
-                        };
-                        console.log(res.data.primary_email.address);
-                        console.log(role);
+                      this.roleData = {
+                        subscriber: {
+                          email: res.data.primary_email.address,
+                          role: role
+                        }
+                      };
+                      console.log(res.data.primary_email.address);
+                      console.log(role);
                     }).catch(err => {
-                        console.log(err)
-                        return;
-                    });
-                await api.updateRole(this.activityCreatorId, this.activityId, this.roleData)
-                    .then(() => {
-                        if (role == "organiser") {
-                            this.participantOffset -= 1;
-                            const index = this.participants.indexOf(user);
-                            this.participants.splice(index, 1);
-                            this.organisers.push(user);
-                        } else {
-                            this.organiserOffset -= 1;
-                            const index = this.participants.indexOf(user);
+                  console.log(err)
+
+                });
+              await api.updateRole(this.activityCreatorId, this.activityId, this.roleData)
+              .then(() => {
+                if (role == "organiser") {
+                  this.participantOffset -= 1;
+                  const index = this.participants.indexOf(user);
+                  this.participants.splice(index, 1);
+                  this.organisers.push(user);
+                } else {
+                  this.organiserOffset -= 1;
+                  const index = this.participants.indexOf(user);
                             this.organisers.splice(index, 1);
                             this.participants.push(user);
                         }
                     })
                     .catch(err => {
                         console.log(err);
-                        return;
+
                     });
             },
             removeRole: async function (user) {
-                await api.getProfile(user.profile_id)
-                    .then((res) => {
-                        this.roleData = {
-                            email: res.data.primary_email.address
-                        };
-                        console.log(res.data.primary_email.address);
-                    }).catch(err => {
-                        console.log(err)
-                        return;
-                    });
-                await api.removeRole(this.activityCreatorId, this.activityId, this.roleData)
-                    .then(() => {
-                        console.log("there is a bug so this will never run");
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+              await api.getProfile(user.profile_id)
+              .then((res) => {
+                this.roleData = {
+                  email: res.data.primary_email.address
+                };
+                console.log(res.data.primary_email.address);
+              }).catch(err => {
+                console.log(err)
+
+              });
+              await api.removeRole(this.activityCreatorId, this.activityId, this.roleData)
+              .then(() => {
+                console.log("there is a bug so this will never run");
+              })
+              .catch(err => {
+                console.log(err);
+              });
                 if (this.currentGroup == "Participants") {
                     this.participantOffset -= 1;
                     const index = this.participants.indexOf(user);

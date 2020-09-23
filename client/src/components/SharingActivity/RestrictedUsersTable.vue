@@ -61,6 +61,8 @@
       }
     },
     beforeMount() {
+      console.log("TABLE")
+      console.log(this.roleData)
       this.data = this.roleData;
     }
   }
