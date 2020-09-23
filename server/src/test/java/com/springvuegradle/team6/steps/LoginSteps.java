@@ -4,6 +4,7 @@ import io.cucumber.java.en.Given;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -11,6 +12,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc
 public class LoginSteps {
 
   public String jsonString;
@@ -35,10 +37,11 @@ public class LoginSteps {
                 MockMvcRequestBuilders.post(createProfileUrl)
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
             .getContentAsString();
+    System.out.println("FLAG");
+    System.err.println(profileId);
   }
 
   @Given("I log in with email {string} and password {string}")
@@ -64,7 +67,6 @@ public class LoginSteps {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    ;
   }
 
   @Given("I registered a user with email {string} and password {string}")
@@ -86,6 +88,8 @@ public class LoginSteps {
             .andReturn()
             .getResponse()
             .getContentAsString();
+    System.out.println("FLAG");
+    System.out.println(profileId);
   }
 
   @Given("I log in as a user with email {string} and password {string}")
@@ -108,10 +112,10 @@ public class LoginSteps {
                     .content(jsonString)
                     .contentType(MediaType.APPLICATION_JSON)
                     .session(session))
+            .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
-    ;
   }
 
   @Given("the following users are registered")
