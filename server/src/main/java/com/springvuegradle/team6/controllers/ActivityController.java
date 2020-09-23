@@ -10,8 +10,6 @@ import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
 
-import java.io.File;
-import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -1154,6 +1152,15 @@ public class ActivityController {
     }
   }
 
+  /**
+   * This endpoints edits the image of an activity. it writes a file in a directory specified in application properties.
+   * It also saves the filename in the activity entity.
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param file the image file. Must be a PNG,JPG,JPEG or GIF
+   * @param session the session
+   * @return ACCEPTED if successful, 4xx error if not.
+   */
   @PutMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
   public ResponseEntity editActivityImage(
           @PathVariable int profileId,
