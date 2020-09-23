@@ -166,6 +166,9 @@ export default {
         '/profiles/' + profileId,
         updateData),
 
+    updateProfileImage: (profileId, image) => instance.put(
+        'profiles/' + profileId + '/image', image),
+
     updateActivityTypes: (profileId, data) => instance.put(
         '/profiles/' + profileId + '/activity-types', data),
 
@@ -202,12 +205,23 @@ export default {
                            data) => instance.put(
         "/profiles/" + profileId + '/activities/' + activityId + '/result/'
         + resultId, data),
+
+    updateActivityImage: (activityId, image) => instance.put(
+        'profiles/1/activities/' + activityId + "/image", image),
+
+
     // (D)elete
 
     removeForId: (id) => instance.delete('students/' + id),
 
     deleteActivity: (profileId, activityId) => instance.delete(
         '/profiles/' + profileId + '/activities/' + activityId),
+
+    deleteActivityImage: (activityId) => instance.delete(
+        'profiles/1/activities/' + activityId + "/image"),
+
+    deleteProfileImage: (profileId) => instance.delete(
+        'profiles/' + profileId + '/image'),
 
     removeRole: (profileId, activityId, data) => instance.delete(
         '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
