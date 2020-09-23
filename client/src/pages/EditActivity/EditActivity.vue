@@ -264,18 +264,17 @@ import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
 import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 import {store} from "../../store";
 
-
-  export default {
-    mixins: [validationMixin, locationMixin],
-    components: {
-      ModifyPathMapPane,
-      ActivityMetricsEditor,
-      SearchTag,
-      NavBar,
-      ForbiddenMessage,
-      ActivityLocationTab
-    },
-    data() {
+export default {
+  mixins: [validationMixin, locationMixin],
+  components: {
+    ModifyPathMapPane,
+    ActivityMetricsEditor,
+    SearchTag,
+    NavBar,
+    ForbiddenMessage,
+    ActivityLocationTab
+  },
+  data() {
       return {
         isLoggedIn: false,
         userName: '',
@@ -335,6 +334,11 @@ import {store} from "../../store";
         startDate: {
           required,
           dateValidate(val) {
+            let startDate = new Date(val)
+            //check if duration year is not more than 4 digits
+            if (isNaN(startDate.getFullYear())) {
+              return false
+            }
             return val >= new Date().toISOString().split('T')[0];
           }
         },
@@ -343,6 +347,10 @@ import {store} from "../../store";
           validateDate() {
             let startDate = new Date(this.durationForm.startDate);
             let endDate = new Date(this.durationForm.endDate);
+            //check if duration year is not more than 4 digits
+            if (isNaN(endDate.getFullYear())) {
+              return false
+            }
             return startDate <= endDate;
           }
         },

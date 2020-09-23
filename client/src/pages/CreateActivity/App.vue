@@ -260,29 +260,29 @@
 </template>
 
 <script>
-  import NavBar from "@/components/NavBar.vue";
-  import SearchTag from "../../components/SearchTag";
-  import {validationMixin} from "vuelidate";
-  import {required} from 'vuelidate/lib/validators';
-  import locationMixin from "../../mixins/locationMixin";
-  import AdminMixin from "../../mixins/AdminMixin";
-  import api from '@/Api'
-  import {store} from "../../store";
-  import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-  import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-  import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+import NavBar from "@/components/NavBar.vue";
+import SearchTag from "../../components/SearchTag";
+import {validationMixin} from "vuelidate";
+import {required} from 'vuelidate/lib/validators';
+import locationMixin from "../../mixins/locationMixin";
+import AdminMixin from "../../mixins/AdminMixin";
+import api from '@/Api'
+import {store} from "../../store";
+import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 
-  export default {
-    mixins: [validationMixin, locationMixin],
-    components: {
-      ModifyPathMapPane,
-      ActivityMetricsEditor,
-      NavBar,
-      SearchTag,
-      ActivityLocationTab,
-    },
-    data() {
-      return {
+export default {
+  mixins: [validationMixin, locationMixin],
+  components: {
+    ModifyPathMapPane,
+    ActivityMetricsEditor,
+    NavBar,
+    SearchTag,
+    ActivityLocationTab,
+  },
+  data() {
+    return {
         isLoggedIn: true,
         userName: '',
         isContinuous: '0',
@@ -342,7 +342,11 @@
         startDate: {
           required,
           dateValidate(val) {
-
+            let startDate = new Date(val)
+            //check if duration year is not more than 4 digits
+            if (isNaN(startDate.getFullYear())) {
+              return false
+            }
             return val >= new Date().toISOString().split('T')[0];
           }
         },
@@ -351,6 +355,10 @@
           dateValidate(val) {
             let startDate = new Date(this.durationForm.startDate);
             let endDate = new Date(val);
+            //check if duration year is not more than 4 digits
+            if (isNaN(endDate.getFullYear())) {
+              return false
+            }
             return endDate >= startDate;
 
           }
