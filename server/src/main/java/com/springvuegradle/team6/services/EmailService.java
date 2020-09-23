@@ -1,5 +1,6 @@
 package com.springvuegradle.team6.services;
 
+import com.springvuegradle.team6.properties.SpringEmailConfigProperties;
 import com.springvuegradle.team6.security.ConfigProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
@@ -21,7 +22,7 @@ public class EmailService {
     private JavaMailSenderImpl emailSender;
 
     @Autowired
-    ConfigProperties configProperties;
+    SpringEmailConfigProperties springEmailConfigProperties;
 
     /**
      * Method to send email when user forgets their password.
@@ -31,9 +32,9 @@ public class EmailService {
      * @param userName the name of the recipient
      */
     public boolean sendPasswordTokenEmail(String to, String subject, String token, String userName) {
-        emailSender.setUsername(configProperties.getUsername());
-        emailSender.setPassword(configProperties.getPassword());
-        String url = configProperties.getUrl() + token;
+        emailSender.setUsername(springEmailConfigProperties.getUsername());
+        emailSender.setPassword(springEmailConfigProperties.getPassword());
+        String url = springEmailConfigProperties.getUrl() + token;
         try {
             MimeMessage message = emailSender.createMimeMessage();
             SimpleMailMessage message1 = new SimpleMailMessage();
@@ -44,7 +45,7 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText("<html><body>Hi, " + userName + ". <br><br>Click the link below to reset your password. <br><br>" +
-                configProperties.getUrl() + "resetpassword/" + token + "</body></html>", true);
+                springEmailConfigProperties.getUrl() + "resetpassword/" + token + "</body></html>", true);
 
             emailSender.send(message);
             return true;
