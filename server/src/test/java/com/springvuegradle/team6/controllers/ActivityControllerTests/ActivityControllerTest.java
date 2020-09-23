@@ -12,6 +12,7 @@ import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -50,6 +51,9 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test", "IMAGE.ACTIVITY.DIRECTORY=./src/test/resources/", "IMAGE.PROFILE.DIRECTORY=./src/test/resources/"})
 class ActivityControllerTest {
+
+  @Autowired
+  private GoogleAPIServiceMocking googleAPIService;
 
   @Autowired private ActivityRepository activityRepository;
 
@@ -306,6 +310,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityWithLocationReturnStatusIsCreated() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -352,6 +357,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLongitudeOnEdgeOfBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -398,6 +404,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLongitudeOnEdgeOfNegativeBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -444,6 +451,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLatitudeOnEdgeOfBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -490,6 +498,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLatitudeOnEdgeOfNegativeBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
