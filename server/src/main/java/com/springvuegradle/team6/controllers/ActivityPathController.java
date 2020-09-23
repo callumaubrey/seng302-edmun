@@ -217,4 +217,56 @@ public class ActivityPathController {
 
         return ResponseEntity.ok(path);
     }
+
+    /**
+     * Deletes an activities path if it exists. Endpoint is idempotent
+     * 200 OK: On successful delete
+     * 202 ACCEPTED: If path does not exist
+     * 401 UNAUTHORIZED: If session id is not creator/organiser/admin
+     * 404 NOT_FOUND:  If activity does not exist or path does not exist.
+     * @param profileId activity owners id
+     * @param activityId activity id
+     * @param session session data
+     * @return Activity path if exists otherwise 4xx error
+     */
+    @DeleteMapping("/profiles/{profileId}/activities/{activityId}/path")
+    public ResponseEntity removeActivityPath(
+        @PathVariable int profileId,
+        @PathVariable int activityId,
+        HttpSession session) {
+
+        // Check user is logged in
+        Object id = session.getAttribute("id");
+        if (id == null) {
+            return new ResponseEntity<>("Must be logged in", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check if activity exists
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if (optionalActivity.isEmpty()) {
+            return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+        }
+        Activity activity = optionalActivity.get();
+
+        // Check authority
+        if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(), activityId, activityRoleRepository)) {
+            return new ResponseEntity<>(
+                "You are not authorized to edit the path of this activity",
+                HttpStatus.UNAUTHORIZED);
+        }
+
+        // Check Path exists
+        Optional<Path> optionalPath = Optional.ofNullable(activity.getPath());
+        if (optionalPath.isEmpty()) {
+            return new ResponseEntity<>("Path does not exist", HttpStatus.ACCEPTED);
+        }
+        Path path = optionalPath.get();
+
+        // Remove path
+        activity.setPath(null);
+        activityRepository.save(activity);
+        pathRepository.delete(path);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

@@ -13,10 +13,12 @@
     <div v-else-if="!locationDataLoading" class="container">
       <div>
         <!-- Image and Name -->
-        <b-row>
-          <b-img center rounded="circle" width="150px" height="150px"
-                 src="https://library.kissclipart.com/20180919/uke/kissclipart-running-clipart-running-logo-walking-8d4133548d1b34c4.jpg"
-                 alt="Center image"></b-img>
+        <b-row style="font-size: 6em;" align-content="center">
+          <b-col style="max-width: 600px; height: 300px; margin:auto;">
+            <UserImage :id="parseInt($route.params.activityId)" is-activity
+                       :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
+                       save-on-change></UserImage>
+          </b-col>
         </b-row>
         <b-row align-h="center">
           <h3>{{ activityName }}</h3>
@@ -170,6 +172,9 @@
             <ActivityResults :profile-id="profileId"
                              :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
+          <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
+            <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
+          </b-tab>
         </b-tabs>
       </div>
     </div>
@@ -188,10 +193,13 @@
   import AdminMixin from "../../mixins/AdminMixin";
   import ActivityResults from "../../components/ActivityResults";
   import MapPane from "../../components/MapPane/MapPane";
+  import PathInfoMapView from "../../components/MapPane/PathInfoMapView";
+  import UserImage from "../../components/Activity/UserImage/UserImage";
 
   const App = {
     name: "App",
     components: {
+      UserImage,
       MapPane,
       ActivityResults,
       NavBar,
@@ -200,7 +208,8 @@
       FollowerSummary,
       ShareActivity,
       ForbiddenMessage,
-      RecordActivityResultModal
+      RecordActivityResultModal,
+      PathInfoMapView
     },
     data: function () {
       return {

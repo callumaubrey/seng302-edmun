@@ -13,6 +13,7 @@ public class ConfigProperties {
 
     private String username;
     private String password;
+    private String url;
 
     public String getUsername() {
         return username;
@@ -28,5 +29,13 @@ public class ConfigProperties {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return this.url;
     }
 }
