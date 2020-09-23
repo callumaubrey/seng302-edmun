@@ -517,7 +517,7 @@ public class UserProfileController {
    * @param session the current http session
    * @return response entity ok for success or 4xx for unsuccessful
    */
-  @PutMapping("/{id}/photo")
+  @PutMapping("/{id}/image")
   public ResponseEntity updatePhoto(
           @PathVariable Integer id,
           @RequestParam MultipartFile file,
