@@ -219,7 +219,8 @@
                 <b-row style="font-size: 6em;" align-content="center">
                   <b-col style="max-width: 600px; height: 300px; margin:auto;">
                     <UserImage is-activity
-                               editable></UserImage>
+                               editable
+                               ref="image"></UserImage>
                   </b-col>
                 </b-row>
               </b-tab>
@@ -518,21 +519,33 @@
             visibility: this.selectedVisibility,
             metrics: this.$refs.metric_editor.getMetricData()
           };
+          console.log(this.$refs.image.image_data)
+          let vueObj = this;
           api.createActivity(userId, data)
               .then(function (res) {
                 const activityId = res.data;
+                console.log(vueObj.$refs.image.image_data)
+                api.updateActivityImage(userId, activityId, vueObj.$refs.image.image_data).then(
+                    (response) => {
+                      console.log(response)
+                    }).catch((err) => {
+                  console.log(err)
+                })
+
                 currentObj.submitPath(activityId).then(() => {
                   store.newNotification('Activity created successfully', 'success', 4)
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                  // currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 }).catch((err) => {
                   console.error(err);
                   store.newNotification(
                       'Activity created successfully, Path was unable to be created. Try again later.',
                       'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
+                  // currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
                 });
+
               })
-              .catch(function () {
+              .catch(function (err) {
+                console.log(err)
                 currentObj.$bvToast.toast('Failed to create activity, server error', {
                   toaster: "b-toaster-bottom-center",
                   variant: "danger",
