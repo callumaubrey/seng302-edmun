@@ -369,9 +369,10 @@
                 })
               }
           );
-
         }
+      }
     }
+  }
 </script>
 
 <style scoped>
