@@ -112,21 +112,13 @@
 
         <b-row>
             <b-col>
-                <b-table
-                        class="cursor-pointer"
-                        hover
-                        :fields="fields"
-                        :items="data"
-                        :busy="tableIsLoading"
-                        @row-clicked="itemRowClicked"
-                >
-                    <template v-slot:table-busy>
-                        <div class="text-center text-primary my-2">
-                            <b-spinner class="align-middle"></b-spinner>
-                            <strong> Loading...</strong>
-                        </div>
-                    </template>
-                </b-table>
+              <SearchProfileList :profile_data="data"></SearchProfileList>
+              <template v-if="tableIsLoading">
+                <div class="text-center text-primary my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong> Loading...</strong>
+                </div>
+              </template>
             </b-col>
         </b-row>
         <b-row v-if="this.data != null">
@@ -146,42 +138,43 @@
 </template>
 
 <script>
-    import api from '@/Api'
+import api from '@/Api'
+import SearchProfileList from "@/components/SearchProfileList";
 
-    export default {
-        name: 'Search',
-
-        data() {
-            return {
-                searchQuery: '',
-                searchBy: 'fullName',
-                fields: [
-                    {key: 'lastname', sortable: true},
-                    {key: 'firstname', sortable: true},
-                    {key: 'middlename', sortable: true},
-                    {key: 'nickname', sortable: true},
-                    {key: 'primary_email', sortable: true},
-                    {key: 'activity_types', sortable: false},
-                ],
-                currentPage: 1,
-                count: 1,
-                limit: 10,
-                data: null,
-                routeQuery: {},
-                offset: null,
-                activityTypesForm: {
-                    options: [],
-                    search: "",
-                    selectedOptions: [],
-                    method: "AND"
-                },
-                tableIsLoading: false,
-            }
-        },
-        computed: {
-            criteria() {
-                // Compute the search criteria
-                return this.activityTypesForm.search.trim().toLowerCase()
+export default {
+  name: 'Search',
+  components: {SearchProfileList},
+  data() {
+    return {
+      searchQuery: '',
+      searchBy: 'fullName',
+      fields: [
+        {key: 'lastname', sortable: true},
+        {key: 'firstname', sortable: true},
+        {key: 'middlename', sortable: true},
+        {key: 'nickname', sortable: true},
+        {key: 'primary_email', sortable: true},
+        {key: 'activity_types', sortable: false},
+      ],
+      currentPage: 1,
+      count: 1,
+      limit: 10,
+      data: null,
+      routeQuery: {},
+      offset: null,
+      activityTypesForm: {
+        options: [],
+        search: "",
+        selectedOptions: [],
+        method: "AND"
+      },
+      tableIsLoading: false,
+    }
+  },
+  computed: {
+    criteria() {
+      // Compute the search criteria
+      return this.activityTypesForm.search.trim().toLowerCase()
             },
             availableOptions() {
                 const criteria = this.criteria;
@@ -243,27 +236,30 @@
                 this.routeQuery.limit = this.limit;
                 api.instance.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
-                        currentObj.data = res.data.results;
-                        console.log("data");
-                        console.log(res.data);
-                        currentObj.updateUrl();
-                        currentObj.tableIsLoading = false;
+                      currentObj.data = res.data.results;
+                      this.getProfileImage(currentObj.data);
+                      currentObj.updateUrl();
+                      currentObj.tableIsLoading = false;
                     })
-                    .catch(err => {
-                        currentObj.tableIsLoading = false;
-                        console.log(err)
-                    });
+                .catch(err => {
+                  currentObj.tableIsLoading = false;
+                  console.log(err)
+                });
             },
-            searchNames: function (query){
-                if (this.searchBy === 'email') {
-                    this.routeQuery = {email: this.searchQuery.trim()};
-                    query += '?email=' + this.searchQuery.trim();
-                }
-                else if (this.searchBy === 'nickname') {
-                    this.routeQuery = {nickname: this.searchQuery.trim()};
-                    query += '?nickname=' + this.searchQuery.trim();
-                }
-                else {
+          getProfileImage(users) {
+            for (let i = 0; i < users.length; i++) {
+              this.$set(users[i], 'imageSrc',
+                  process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
+            }
+          },
+          searchNames: function (query) {
+            if (this.searchBy === 'email') {
+              this.routeQuery = {email: this.searchQuery.trim()};
+              query += '?email=' + this.searchQuery.trim();
+            } else if (this.searchBy === 'nickname') {
+              this.routeQuery = {nickname: this.searchQuery.trim()};
+              query += '?nickname=' + this.searchQuery.trim();
+            } else {
                     this.routeQuery = {fullname: this.searchQuery.trim()};
                     query += '?fullname=' + this.searchQuery.trim();
                 }

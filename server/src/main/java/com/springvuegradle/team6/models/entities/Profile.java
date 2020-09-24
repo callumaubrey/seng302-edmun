@@ -27,6 +27,8 @@ import java.util.*;
     })
 public class Profile {
 
+  public static final long MAX_IMAGE_SIZE = 20L * 1000L * 1000L; // 20 MB
+
   @Id
   @GeneratedValue
   @Column(name = "id")
