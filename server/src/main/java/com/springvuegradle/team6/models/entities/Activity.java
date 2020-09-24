@@ -195,6 +195,9 @@ public class Activity implements Serializable {
   @JoinColumn(name = "path_id")
   private Path path;
 
+  @Column(name = "photo_filename")
+  private String fileName;
+
   public String getActivityName() {
     return activityName;
   }
@@ -317,6 +320,10 @@ public class Activity implements Serializable {
   public void setMetrics(List<ActivityQualificationMetric> metrics) {
     this.activityQualificationMetrics = metrics;
   }
+
+  public void setFileName(String fileName) { this.fileName = fileName; }
+
+  public String getFileName() { return this.fileName; }
 
   @Override
   public boolean equals(Object o) {

@@ -26,12 +26,11 @@ public class ActivityResultCount extends ActivityResult {
     this.result = result;
   }
 
-  public int getValue() {
+  public Integer getValue() {
     return this.result;
   }
 
   public Integer getResult() {
     return this.result;
   }
-
 }

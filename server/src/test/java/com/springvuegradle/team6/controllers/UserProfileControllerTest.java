@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -31,7 +33,10 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -1086,5 +1091,104 @@ class UserProfileControllerTest {
             .content(resetPasswordJson)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testAddProfilePhotoValidAndReturnOk() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+            "orig",
+            "image/png",
+            "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().isOk());
+
+    profile = profileRepository.findById(profile.getId()).get();
+    Assert.assertEquals("profile" + profile.getId() + ".png", profile.getPhotoFilename());
+  }
+
+  @Test
+  void testAddProfilePhotoInvalidTypeAndReturn4xx() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+            "orig",
+            "application/pdf",
+            "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().is4xxClientError());
   }
 }

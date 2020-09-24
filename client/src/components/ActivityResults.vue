@@ -93,12 +93,21 @@ export default {
       allResultsFields: [
         {key: 'firstname', tdClass: 'smallCol'},
         {key: 'value', tdClass: 'medCol'},
-        {key: 'ranking', tdClass: 'smallCol'}
+        {key: 'special_metric_title', tdClass: 'smallCol'},
+        {key: 'ranking', tdClass: 'smallCol'},
       ],
       myResultsFields: [
         {key: 'value', label: 'Value', class: 'medCol'},
+        {key: 'special_metric_title', tdClass: 'smallCol'},
         {key: 'personal ranking', tdStyle: 'smallCol'},
       ],
+      // key (special metric enum), value (special metric title)
+      specialMetricDict: {
+        null: null,
+        "DidNotFinish": "Did not finish",
+        "Disqualified": "Disqualified",
+        "TechnicalFailure": "Technical Failure"
+      },
       selectedResult: null,
       metricTitleDict: {},
       allResults: [],
@@ -188,8 +197,10 @@ export default {
                 this.myResultsFields = [
                   {key: 'result_start', label: 'Start', class: 'medCol'},
                   {key: 'result_finish', label: 'End', class: 'medCol'},
+                  {key: 'special_metric_title', label: 'Special Metric', class: 'smallCol'},
                   {key: 'personal_ranking', tdStyle: 'smallCol'},
                 ];
+                res.data[i].special_metric_title = this.specialMetricDict[res.data[i].special_metric]
                 res.data[i].result_start = this.getSplitDate(res.data[i].result_start);
                 res.data[i].result_finish = this.getSplitDate(res.data[i].result_finish);
               } else {
@@ -198,10 +209,11 @@ export default {
                 }
                 this.myResultsFields = [
                   {key: 'value', label: 'Value', class: 'medCol'},
+                  {key: 'special_metric_title', label: 'Special Metric', class: 'smallCol'},
                   {key: 'personal_ranking', tdStyle: 'smallCol'},
                 ]
               }
-
+              res.data[i].special_metric_title = this.specialMetricDict[res.data[i].special_metric]
               res.data[i].personal_ranking = i + 1;
               this.myResults = res.data;
             }
@@ -224,16 +236,20 @@ export default {
                   {key: 'fullname', tdClass: 'smallCol'},
                   {key: 'result_start', label: 'Start', class: 'medCol'},
                   {key: 'result_finish', label: 'End', class: 'medCol'},
+                  {key: 'special_metric_title', label: 'Special Metric', class: 'smallCol'},
                   {key: 'ranking', tdStyle: 'smallCol'}
                 ];
+                res.data[i].special_metric_title = this.specialMetricDict[res.data[i].special_metric]
                 res.data[i].result_start = this.getSplitDate(res.data[i].result_start);
                 res.data[i].result_finish = this.getSplitDate(res.data[i].result_finish);
               } else {
                 this.allResultsFields = [
                   {key: 'fullname', tdClass: 'smallCol'},
                   {key: 'value', tdClass: 'medCol'},
+                  {key: 'special_metric_title', label: 'Special Metric', class: 'smallCol'},
                   {key: 'ranking', tdClass: 'smallCol'}
                 ];
+                res.data[i].special_metric_title = this.specialMetricDict[res.data[i].special_metric]
                 if (res.data[i].type == "TimeDuration") {
                   res.data[i].value = res.data[i].pretty_result;
                 }
@@ -252,6 +268,9 @@ export default {
      * @returns {string}
      */
     getSplitDate: function (date) {
+      if (date == null) {
+        return null;
+      }
       let dateSplit = date.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     },
@@ -286,7 +305,7 @@ export default {
 }
 
 .table.smallCol {
-  max-width: 50px
+  max-width: 50px;
 }
 
 .medCol {
