@@ -65,7 +65,7 @@
                  variant="dark" opacity="0.5"
                  rounded="lg" class="activity-profile-overlay fill_space">
 
-        <!-- Avatar Image -->
+        <!-- Activity Image -->
         <b-img v-if="!default_image"
                :src="image_src" alt=""
                rounded="lg"
@@ -125,6 +125,7 @@
 
 <script>
   import axios from 'axios'
+  import api from '@/Api';
 
   /**
    * User Image can be used with either activityId or userId. Component
@@ -138,7 +139,7 @@
     data: function () {
       return {
         show_overlay: false,
-        image_src: this.getUserImageSrc(this.userId),
+        image_src: null,
 
         // Assume this is true until 404 error
         user_has_image: true,
@@ -161,9 +162,12 @@
         type: Boolean,
         default: false,
       },
-      id: {
+      userId: {
         type: Number,
         default: -1
+      },
+      activityId: {
+        type: Number,
       },
       isActivity: {
         type: Boolean,
@@ -185,7 +189,7 @@
        * Updates user image using image src generator function
        */
       setUserImg: function () {
-        this.getUserImageSrc(this.id);
+        this.getUserImageSrc(this.userId, this.activityId);
       },
 
       handleInvalidSrcError: function () {
@@ -198,15 +202,24 @@
        * @param id either activity or user id
        * @returns the url location of where to get/update/delete the image
        */
-      getUserImageSrc: function (id) {
+      getUserImageSrc: function (userId, activityId) {
         /**
          * ==============================================
          * REPLACE ME WITH ACTUAL ROUTE
          * Make sure to check if user or activity for url
          * ==============================================
          */
-        let image_url = `${id}`;
-        return `${image_url}?cache=` + Math.random();
+        if (this.isActivity) {
+          api.getActivityImage(userId, activityId).then((response) => {
+            let image = response.data;
+            console.log(image)
+            this.image_src = URL.createObjectURL(image)
+            console.log(this.image_src)
+          }).catch(() => {
+            this.default_image = true;
+          })
+        }
+        return api.getActivityImage(userId, activityId);
       },
 
       /**
@@ -272,7 +285,7 @@
         };
 
         // Call api
-        axios.put(this.getUserImageSrc(id), this.image_data, request_config)
+        axios.put(this.getUserImageSrc(id, this.activityId), this.image_data, request_config)
             .then(() => {
               this.$emit('success');
             })
@@ -314,7 +327,7 @@
        * @param id activity or user id
        */
       deleteImageToAPI: function (id) {
-        axios.delete(this.getUserImageSrc(id))
+        axios.delete(this.getUserImageSrc(id, this.activityId))
             .then(() => {
               this.$emit('success');
             })

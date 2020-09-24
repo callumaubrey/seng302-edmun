@@ -170,6 +170,8 @@ export default {
   getGeocodePlaceId: (placeId) => instance.get(
       '/location/geocode?id=' + placeId),
 
+  getActivityImage: (profileId, activityId) => instance.get('/profiles/'+profileId+'/activities/'+activityId+'/image'),
+
   // (U)pdate
   updateForId: (id, name) => instance.put('students/' + id, {name}),
 
