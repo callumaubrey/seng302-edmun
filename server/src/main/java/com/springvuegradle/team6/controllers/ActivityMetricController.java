@@ -19,13 +19,12 @@ import com.springvuegradle.team6.models.repositories.ActivityQualificationMetric
 import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityResultRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
+import com.springvuegradle.team6.models.repositories.CustomizedActivityResultRepositoryImpl;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.models.repositories.*;
 import com.springvuegradle.team6.requests.CreateActivityResultRequest;
 import com.springvuegradle.team6.requests.EditActivityResultRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpSession;
@@ -135,7 +134,8 @@ public class ActivityMetricController {
         // Doing your own result
         if (!ownerProfile.getId().equals(profile.getId())) {
           // If we are not the owner then we check if participant
-          if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Participant) && !activityRole.getActivityRoleType().equals(ActivityRoleType.Organiser)) {
+          if (!activityRole.getActivityRoleType().equals(ActivityRoleType.Participant)
+              && !activityRole.getActivityRoleType().equals(ActivityRoleType.Organiser)) {
             return new ResponseEntity("You must be a participant", HttpStatus.UNAUTHORIZED);
           }
         }
@@ -166,16 +166,6 @@ public class ActivityMetricController {
     ActivityQualificationMetric metric = metricOptional.get();
     Unit metricUnit = metric.getUnit();
 
-    if (metricUnit.equals(Unit.TimeStartFinish)) {
-      if (request.getEnd() == null || request.getStart() == null) {
-        return new ResponseEntity("Start/end datetime is empty", HttpStatus.BAD_REQUEST);
-      }
-    } else {
-      if (request.getValue().isEmpty() || request.getValue() == null) {
-        return new ResponseEntity("Request value is empty", HttpStatus.BAD_REQUEST);
-      }
-    }
-
     String message =
         profile.getFirstname()
             + " participated in "
@@ -184,37 +174,77 @@ public class ActivityMetricController {
             + activity.getActivityName()
             + " and recorded ";
 
-    if (metricUnit.equals(Unit.Count)) {
-      ActivityResult result =
-          new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
-      result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
-      message += request.getValue();
-    } else if (metricUnit.equals(Unit.Distance)) {
-      ActivityResult result =
-          new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
-      result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
-      message += "distance: " + request.getValue() + " km";
-    } else if (metricUnit.equals(Unit.TimeDuration)) {
-      // in the format H:I:S
-      String durationString =
-          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
-      Duration duration = Duration.parse(durationString);
-      ActivityResult result = new ActivityResultDuration(metric, profile, duration);
-      result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
-      message += "duration: " + request.getValue();
-    } else if (metricUnit.equals(Unit.TimeStartFinish)) {
-      ActivityResult result =
-          new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
-      result.overrideResult(request.getSpecialMetric());
-      activityResultRepository.save(result);
-      message +=
-          "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+    if (request.getValue() != null || (request.getStart() != null && request.getEnd() != null)) {
+      ActivityResult result;
+      switch (metricUnit.toString()) {
+        case ("Count"):
+          result = new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          message += request.getValue();
+          break;
+        case ("Distance"):
+          result =
+              new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          message += "distance: " + request.getValue() + " km";
+          break;
+        case ("TimeDuration"):
+          // in the format PTnHnMn.nS
+          Duration duration = Duration.parse(request.getValue());
+          result = new ActivityResultDuration(metric, profile, duration);
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          message += "duration: " + request.getValue();
+          break;
+        case ("TimeStartFinish"):
+          result =
+              new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          message +=
+              "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+          break;
+      }
+    } else if (request.getSpecialMetric() != null) {
+      ActivityResult result;
+      switch (metricUnit.toString()) {
+        case ("Count"):
+          result = new ActivityResultCount(metric, profile, null);
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          break;
+        case ("Distance"):
+          result = new ActivityResultDistance(metric, profile, null);
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          break;
+        case ("TimeDuration"):
+          result = new ActivityResultDuration(metric, profile, null);
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          break;
+        case ("TimeStartFinish"):
+          result = new ActivityResultStartFinish(metric, profile, null, null);
+          result.overrideResult(request.getSpecialMetric());
+          activityResultRepository.save(result);
+          break;
+      }
+    } else {
+      if (metricUnit.equals(Unit.TimeStartFinish)) {
+        if (request.getEnd() == null || request.getStart() == null) {
+          return new ResponseEntity("Start/end datetime is empty", HttpStatus.BAD_REQUEST);
+        }
+      } else {
+        if (request.getValue().isEmpty() || request.getValue() == null) {
+          return new ResponseEntity("Request value is empty", HttpStatus.BAD_REQUEST);
+        }
+      }
     }
 
-    List<ActivityResult> results = activityResultRepository.findSingleMetricResultsOnActivity(activityId, metric.getId());
+    List<ActivityResult> results =
+        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metric.getId());
     if (results.size() > 0) {
       metric.setEditable(false);
       activityQualificationMetricRepository.save(metric);
@@ -370,16 +400,6 @@ public class ActivityMetricController {
     ActivityQualificationMetric metric = metricOptional.get();
     Unit metricUnit = metric.getUnit();
 
-    if (metricUnit.equals(Unit.TimeStartFinish)) {
-      if (request.getEnd() == null || request.getStart() == null) {
-        return new ResponseEntity("Must provide start AND end times", HttpStatus.BAD_REQUEST);
-      }
-    } else {
-      if (request.getValue().isEmpty() || request.getValue() == null) {
-        return new ResponseEntity("Request value is empty", HttpStatus.BAD_REQUEST);
-      }
-    }
-
     String message = "";
     if (loggedInProfile == profile) {
       message +=
@@ -412,9 +432,14 @@ public class ActivityMetricController {
       Integer oldResultId = oldResult.getId();
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
-      ActivityResultCount result =
-          new ActivityResultCount(
-              activityQualificationMetric, profile, Integer.parseInt(request.getValue()));
+      ActivityResultCount result;
+      if (request.getValue() != null) {
+        result =
+            new ActivityResultCount(
+                activityQualificationMetric, profile, Integer.parseInt(request.getValue()));
+      } else {
+        result = new ActivityResultCount(activityQualificationMetric, profile, null);
+      }
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
@@ -431,16 +456,21 @@ public class ActivityMetricController {
       Integer oldResultId = oldResult.getId();
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
-      ActivityResultDistance result =
-          new ActivityResultDistance(
-              activityQualificationMetric, profile, Float.parseFloat(request.getValue()));
+      ActivityResultDistance result;
+      if (request.getValue() != null) {
+        result =
+            new ActivityResultDistance(
+                activityQualificationMetric, profile, Float.parseFloat(request.getValue()));
+      } else {
+        result = new ActivityResultDistance(activityQualificationMetric, profile, null);
+      }
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
       message += "distance: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
-      // in the format H:I:S
+      // in the format PTnHnMn.nS
       Optional<ActivityResultDuration> optionalResult =
           activityResultRepository.findSpecificDurationResult(resultId);
       if (!optionalResult.isPresent()) {
@@ -451,16 +481,18 @@ public class ActivityMetricController {
       Integer oldResultId = oldResult.getId();
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
-      String durationString =
-          Duration.between(LocalTime.MIN, LocalTime.parse(request.getValue())).toString();
-      Duration duration = Duration.parse(durationString);
-      ActivityResultDuration result =
-          new ActivityResultDuration(activityQualificationMetric, profile, duration);
+      ActivityResultDuration result;
+      if (request.getValue() != null) {
+        Duration duration = Duration.parse(request.getValue());
+        result = new ActivityResultDuration(activityQualificationMetric, profile, duration);
+      } else {
+        result = new ActivityResultDuration(activityQualificationMetric, profile, null);
+      }
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
-      message += "duration: " + durationString;
+      message += "duration: " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
           activityResultRepository.findSpecificStartFinishResult(resultId);
@@ -472,9 +504,14 @@ public class ActivityMetricController {
       Integer oldResultId = oldResult.getId();
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
-      ActivityResultStartFinish result =
-          new ActivityResultStartFinish(
-              activityQualificationMetric, profile, request.getStart(), request.getEnd());
+      ActivityResultStartFinish result;
+      if (request.getStart() != null && request.getStart() != null) {
+        result =
+            new ActivityResultStartFinish(
+                activityQualificationMetric, profile, request.getStart(), request.getEnd());
+      } else {
+        result = new ActivityResultStartFinish(activityQualificationMetric, profile, null, null);
+      }
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
@@ -540,14 +577,17 @@ public class ActivityMetricController {
   /**
    * Gets all an activities results for a particular user
    *
-   * @param profileId the id of the user who has the results
+   * @param profileId  the id of the user who has the results
    * @param activityId the id of the activity
    * @param session
    * @return activity results, if user has no results return 404
    */
   @GetMapping("/activities/{activityId}/result/{metricId}/{profileId}")
   public ResponseEntity getActivityResultsByMetricAndProfileId(
-      @PathVariable int profileId, @PathVariable int activityId, @PathVariable int metricId, HttpSession session) {
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      @PathVariable int metricId,
+      HttpSession session) {
     Object id = session.getAttribute("id");
 
     if (id == null) {
@@ -576,7 +616,9 @@ public class ActivityMetricController {
       }
     }
 
-    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricIdAndProfile(metricId, profileId);
+    List<ActivityResult> results =
+        customizedActivityResultRepository.getSortedResultsByMetricIdAndProfile(
+            metricId, profileId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }
@@ -611,7 +653,8 @@ public class ActivityMetricController {
       return new ResponseEntity("Activity metric does not exist", HttpStatus.NOT_FOUND);
     }
 
-    List<ActivityResult> results = customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
+    List<ActivityResult> results =
+        customizedActivityResultRepository.getSortedResultsByMetricId(metricId);
     if (results.isEmpty()) {
       return new ResponseEntity("No results for this activity", HttpStatus.NOT_FOUND);
     }
@@ -690,7 +733,8 @@ public class ActivityMetricController {
     activityResultRepository.delete(activityResult);
 
     int metricId = activityResult.getMetricId();
-    List<ActivityResult> results = activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
+    List<ActivityResult> results =
+        activityResultRepository.findSingleMetricResultsOnActivity(activityId, metricId);
     if (results.size() == 0) {
       ActivityQualificationMetric metric = activityQualificationMetricRepository.getOne(metricId);
       metric.setEditable(true);

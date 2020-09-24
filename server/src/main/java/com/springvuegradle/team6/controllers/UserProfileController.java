@@ -1,10 +1,7 @@
 package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Location;
-import com.springvuegradle.team6.models.entities.PasswordToken;
-import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
@@ -20,6 +17,7 @@ import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.requests.ResetPasswordRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.EmailService;
+import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
@@ -29,19 +27,13 @@ import javax.validation.Valid;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin(
@@ -76,15 +68,17 @@ public class UserProfileController {
   private final LocationRepository locationRepository;
   private final LocationService locationService;
   private final PasswordTokenRepository passwordTokenRepository;
+  private final FileService fileService;
 
   UserProfileController(
-      ProfileRepository rep,
-      CountryRepository countryRepository,
-      EmailRepository emailRepository,
-      RoleRepository roleRep,
-      LocationRepository locationRepository,
-      LocationService locationService,
-      PasswordTokenRepository passwordTokenRepository) {
+          ProfileRepository rep,
+          CountryRepository countryRepository,
+          EmailRepository emailRepository,
+          RoleRepository roleRep,
+          LocationRepository locationRepository,
+          LocationService locationService,
+          PasswordTokenRepository passwordTokenRepository,
+          FileService fileService) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
@@ -92,6 +86,7 @@ public class UserProfileController {
     this.locationRepository = locationRepository;
     this.locationService = locationService;
     this.passwordTokenRepository = passwordTokenRepository;
+    this.fileService = fileService;
   }
 
   /**
@@ -517,5 +512,131 @@ public class UserProfileController {
     }
 
     return new ResponseEntity("Password reset link sent", HttpStatus.OK);
+  }
+
+  /**
+   * Updates and saves the users profile image and the link to it in the db
+   * @param id the users id
+   * @param file the image file
+   * @param session the current http session
+   * @return response entity ok for success or 4xx for unsuccessful
+   */
+  @PutMapping("/{id}/image")
+  public ResponseEntity updatePhoto(
+          @PathVariable Integer id,
+          @RequestParam MultipartFile file,
+          HttpSession session) {
+
+    Optional<Profile> p = repository.findById(id);
+    if (p.isEmpty()) {
+      return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+    }
+    Profile profile = p.get();
+
+    // Check if authorised
+    ResponseEntity<String> authorisedResponse =
+            UserSecurityService.checkAuthorised(id, session, repository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    if (file == null) {
+      return new ResponseEntity<>("Must submit an image file", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!(file.getContentType().equals("image/png")
+            || file.getContentType().equals("image/jpg")
+            || file.getContentType().equals("image/jpeg")
+            || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Check image size
+    if (file.getSize() > Profile.MAX_IMAGE_SIZE) {
+      return new ResponseEntity<>("Image limit of " + DataSize.ofBytes(Activity.MAX_IMAGE_SIZE), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+
+    String fileName = fileService.uploadProfileImage(file, id);
+
+    if (fileName == null) {
+      return new ResponseEntity<>("File service failed to upload image.", HttpStatus.BAD_REQUEST);
+    }
+
+    profile.setPhotoFilename(fileName);
+    profile = repository.save(profile);
+    return new ResponseEntity<>("OK", HttpStatus.OK);
+  }
+
+  /**
+   * Removes profile image
+   * @param id the users id
+   * @param session the current http session
+   * @return response entity ok for success or 4xx for unsuccessful
+   */
+  @DeleteMapping("/{id}/image")
+  public ResponseEntity removeProfileImage(
+      @PathVariable Integer id,
+      HttpSession session) {
+
+    Optional<Profile> p = repository.findById(id);
+    if (p.isEmpty()) {
+      return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+    }
+    Profile profile = p.get();
+
+    // Check if authorised
+    ResponseEntity<String> authorisedResponse =
+        UserSecurityService.checkAuthorised(id, session, repository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    // Remove activity file
+    if(!fileService.removeProfileImage(profile.getPhotoFilename())) {
+      return new ResponseEntity<>("Failed to delete image", HttpStatus.EXPECTATION_FAILED);
+    }
+    profile.setPhotoFilename(null);
+    repository.save(profile);
+
+    return new ResponseEntity<>("OK",HttpStatus.OK);
+  }
+
+
+  /**
+   * Get main image of a profile
+   * @param id profile id
+   * @param session the session
+   * @return image content
+   */
+  @GetMapping("/{id}/image")
+  public ResponseEntity<byte[]> getActivityImage(
+      @PathVariable int id,
+      HttpSession session) {
+
+    // Check image exists
+    Optional<Profile> optionalProfile = Optional.ofNullable(repository.findById(id));
+    if (optionalProfile.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    Profile profile = optionalProfile.get();
+
+    // Get MIME type from extension
+    String mimeType = fileService.getMIMEType(profile.getPhotoFilename());
+    if(mimeType == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Get image data
+    byte[] data = fileService.getProfileImage(profile.getPhotoFilename());
+    if (data.length == 0) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Prepare response
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(mimeType));
+
+    return new ResponseEntity<byte[]>(data, headers, HttpStatus.OK);
   }
 }
