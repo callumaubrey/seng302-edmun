@@ -1,9 +1,11 @@
 <template>
   <div id="app">
     <!-- this block deals with create activity result form -->
-    <b-button @click="$bvModal.show('record-result-modal')" id="activity-result-modal-button">Record
-      Activity Result
-    </b-button>
+    <b-row>
+      <b-button @click="$bvModal.show('record-result-modal')" id="activity-result-modal-button" class="record-button">
+        Record Activity Result
+      </b-button>
+    </b-row>
 
     <b-modal hide-footer id="record-result-modal" size="xl" title="Record Activity Result">
 
@@ -168,6 +170,12 @@ export default {
 </script>
 
 <style>
+
+  .record-button {
+    margin-left: 15px;
+    background-color: #1c9e34;
+    border-color: #1c9e34;
+  }
 
 
 </style>
