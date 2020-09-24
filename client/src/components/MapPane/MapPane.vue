@@ -489,7 +489,7 @@
         if (this.routePoints.length === 0) {
           this.center = marker.position;
         } else {
-          this.$parent.clickOnMarker(marker.position)
+          this.$emit("clickOnMarker", marker)
         }
       },
 
@@ -508,6 +508,17 @@
         this.savedMarkers = [this.markers[index].position, index]
         this.markers[index].position = newCoords
         this.$parent.handleDragEvent(index, newCoords)
+      },
+
+      /**
+       * Checks that the given marker is the end marker
+       * @param marker: marker to be checked
+       **/
+      isEndMarker(marker) {
+        if (marker.id == this.markers[this.markers.length - 1].id) {
+          return true
+        }
+        return false
       },
     },
 

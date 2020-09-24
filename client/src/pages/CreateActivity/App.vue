@@ -210,6 +210,22 @@
                   </b-form>
                 </b-container>
               </b-tab>
+              <!-- Activity Image Editing -->
+              <b-tab>
+                <template v-slot:title>
+                  Activity Image
+                </template>
+                <b-row style="font-size: 6em;" align-content="center">
+                  <b-col style="max-width: 800px; height: 450px; margin:auto;">
+                    <UserImage is-activity
+                               editable
+                               ref="image"
+                               image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
+                    ></UserImage>
+                  </b-col>
+                </b-row>
+              </b-tab>
+
               <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
@@ -225,7 +241,8 @@
 
               <!-- Path Editor -->
               <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit"
+                                       :profileId="profileId"></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -267,10 +284,10 @@
   import locationMixin from "../../mixins/locationMixin";
   import AdminMixin from "../../mixins/AdminMixin";
   import api from '@/Api'
-  import {store} from "../../store";
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
+  import UserImage from "../../components/Activity/UserImage/UserImage";
 
   export default {
     mixins: [validationMixin, locationMixin],
@@ -280,6 +297,7 @@
       NavBar,
       SearchTag,
       ActivityLocationTab,
+      UserImage
     },
     data() {
       return {
@@ -503,20 +521,16 @@
             visibility: this.selectedVisibility,
             metrics: this.$refs.metric_editor.getMetricData()
           };
+          console.log(this.$refs.image.image_data)
           api.createActivity(userId, data)
-              .then(function (res) {
+              .then(async function (res) {
                 const activityId = res.data;
-                currentObj.submitPath(activityId).then(() => {
-                  store.newNotification('Activity created successfully', 'success', 4)
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                });
+                await currentObj.apiAfterActivityCreation(userId, activityId);
+                await currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
               })
-              .catch(function () {
-                currentObj.$bvToast.toast('Failed to create activity, server error', {
+              .catch(function (err) {
+                console.log(err)
+                currentObj.$root.$bvToast.toast('Failed to create activity, server error', {
                   toaster: "b-toaster-bottom-center",
                   variant: "danger",
                   solid: true
@@ -545,19 +559,13 @@
             metrics: this.$refs.metric_editor.getMetricData()
           };
           api.createActivity(userId, data)
-              .then(function (res) {
+              .then(async function (res) {
                 const activityId = res.data;
-                currentObj.submitPath(activityId).then(() => {
-                  store.newNotification('Activity created successfully', 'success', 4)
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification('Activity created successfully, Path was unable to be created. Try again later.', 'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                });
+                await currentObj.apiAfterActivityCreation(userId, activityId);
+                await currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
               })
               .catch(function () {
-                currentObj.$bvToast.toast('Failed to create activity, server error', {
+                currentObj.$root.$bvToast.toast('Failed to create activity, server error', {
                   toaster: "b-toaster-bottom-center",
                   variant: "danger",
                   solid: true
@@ -565,8 +573,46 @@
               });
         }
       },
+      apiAfterActivityCreation: async function (userId, activityId) {
+        let currentObj = this;
+        let activityImage = currentObj.$refs.image.image_data
+        let error = false;
+        if (activityImage != null) {
+          let formData = new FormData();
+          formData.append("file", currentObj.$refs.image.image_data)
+          await api.updateActivityImage(activityId, formData).then(
+              () => {
+              }).catch(() => {
+            error = true;
+            currentObj.$root.$bvToast.toast(
+                'Activity created successfully, but image failed to upload.',
+                {
+                  variant: "warning",
+                  solid: true
+                })
+          })
+        }
 
-      submitPath: function(activityId) {
+        await currentObj.submitPath(activityId).then(
+            () => {
+        }).catch(() => {
+          error = true;
+          currentObj.$root.$bvToast.toast(
+              'Activity created successfully, Path was unable to be created. Try again later.',
+              {
+                variant: "warning",
+                solid: true
+              })
+        });
+
+        if (!error) {
+          this.$root.$bvToast.toast('Activity created successfully', {
+            variant: "success",
+            solid: true
+          })
+        }
+      },
+      submitPath: function (activityId) {
         // Update path
         return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, activityId);
       },
