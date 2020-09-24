@@ -1,6 +1,6 @@
 <template>
   <div>
-    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
+    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map" v-on:clickOnMarker="clickOnMarker"></map-pane>
   </div>
 </template>
 
@@ -20,11 +20,15 @@ export default {
     return {
       autoRoute: false,
       canChangeSelection: true,
+      addMarker: true,
     }
   },
 
   methods: {
     mapClicked(event) {
+      if (!this.addMarker) {
+        return
+      }
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
       if (this.autoRoute && marker) {
@@ -46,12 +50,16 @@ export default {
     },
 
     clickOnMarker(marker) {
-      const latitude = marker[0]
-      const longitude = marker[1]
-      if (this.autoRoute && marker != null) {
-        this.getRoutePoints(marker)
+      const markerPosition = marker.position
+      if (this.$refs.map.isEndMarker(marker)) {
+        return
+      }
+      const latitude = markerPosition[0]
+      const longitude = markerPosition[1]
+      if (this.autoRoute && markerPosition != null) {
+        this.getRoutePoints(markerPosition)
       } else {
-        this.$refs.map.routePoints.push(marker)
+        this.$refs.map.routePoints.push(markerPosition)
       }
       let id = this.$refs.map.markers.length
       this.$refs.map.createMarker(id, 1, latitude, longitude, "", null)
@@ -59,7 +67,8 @@ export default {
       this.$emit('pathEdited')
     },
 
-    handleDragEvent(index, newCoords) {
+    async handleDragEvent(index, newCoords) {
+      this.addMarker = false
       if (!this.autoRoute) {
         this.$refs.map.editSingleRoutePoint(newCoords, index)
         this.$refs.map.routePoints.push(newCoords)
@@ -68,7 +77,14 @@ export default {
         this.getRoutePoints([])
       }
       this.$refs.map.updateStartFinishMarkers()
+      await this.sleep(100).then(() => {
+        this.addMarker = true
+      })
       this.$emit('pathEdited')
+    },
+
+    async sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     },
 
     getRoutePoints(coordinates) {
