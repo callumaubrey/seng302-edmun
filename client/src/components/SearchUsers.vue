@@ -113,6 +113,12 @@
         <b-row>
             <b-col>
               <SearchProfileList :profile_data="data"></SearchProfileList>
+              <template v-if="tableIsLoading">
+                <div class="text-center text-primary my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong> Loading...</strong>
+                </div>
+              </template>
             </b-col>
         </b-row>
         <b-row v-if="this.data != null">
@@ -230,27 +236,30 @@ export default {
                 this.routeQuery.limit = this.limit;
                 api.instance.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
                     .then((res) => {
-                        currentObj.data = res.data.results;
-                        console.log("data");
-                        console.log(res.data);
-                        currentObj.updateUrl();
-                        currentObj.tableIsLoading = false;
+                      currentObj.data = res.data.results;
+                      this.getProfileImage(currentObj.data);
+                      currentObj.updateUrl();
+                      currentObj.tableIsLoading = false;
                     })
-                    .catch(err => {
-                        currentObj.tableIsLoading = false;
-                        console.log(err)
-                    });
+                .catch(err => {
+                  currentObj.tableIsLoading = false;
+                  console.log(err)
+                });
             },
-            searchNames: function (query){
-                if (this.searchBy === 'email') {
-                    this.routeQuery = {email: this.searchQuery.trim()};
-                    query += '?email=' + this.searchQuery.trim();
-                }
-                else if (this.searchBy === 'nickname') {
-                    this.routeQuery = {nickname: this.searchQuery.trim()};
-                    query += '?nickname=' + this.searchQuery.trim();
-                }
-                else {
+          getProfileImage(users) {
+            for (let i = 0; i < users.length; i++) {
+              this.$set(users[i], 'imageSrc',
+                  process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
+            }
+          },
+          searchNames: function (query) {
+            if (this.searchBy === 'email') {
+              this.routeQuery = {email: this.searchQuery.trim()};
+              query += '?email=' + this.searchQuery.trim();
+            } else if (this.searchBy === 'nickname') {
+              this.routeQuery = {nickname: this.searchQuery.trim()};
+              query += '?nickname=' + this.searchQuery.trim();
+            } else {
                     this.routeQuery = {fullname: this.searchQuery.trim()};
                     query += '?fullname=' + this.searchQuery.trim();
                 }

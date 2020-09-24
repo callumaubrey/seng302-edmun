@@ -132,6 +132,12 @@
         </template>
         <SearchProfileList :is-admin=true :profile_data="data" v-on:edit-event="editUserClicked"
                            v-on:delete-event="openDeleteModal"></SearchProfileList>
+        <template v-if="tableIsLoading">
+          <div class="text-center text-primary my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong> Loading...</strong>
+          </div>
+        </template>
       </b-col>
     </b-row>
     <b-row v-if="this.data != null">
@@ -252,8 +258,7 @@ export default {
       api.instance.get(query + '&offset=' + this.offset + "&limit=" + this.limit)
       .then((res) => {
         currentObj.data = res.data.results;
-        console.log("data");
-        console.log(res.data);
+        this.getProfileImage(currentObj.data);
         currentObj.updateUrl();
         currentObj.tableIsLoading = false;
       })
@@ -261,6 +266,12 @@ export default {
         currentObj.tableIsLoading = false;
         console.log(err)
       });
+    },
+    getProfileImage(users) {
+      for (let i = 0; i < users.length; i++) {
+        this.$set(users[i], 'imageSrc',
+            process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image");
+      }
     },
     searchNames: function (query) {
       if (this.searchBy === 'email') {

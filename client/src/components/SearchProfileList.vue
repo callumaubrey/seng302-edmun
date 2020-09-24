@@ -6,8 +6,9 @@
       <b-card-body class="profile-card-body">
         <b-row>
           <b-col cols="1.0">
-            <b-img alt="Center image" center height="80px" rounded="circle"
-                   src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
+            <b-img :src="profile.imageSrc" center height="80px"
+                   onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
+                   rounded="circle"
                    width="80px"></b-img>
           </b-col>
           <b-col class="title">
@@ -57,6 +58,7 @@ export default {
   },
   methods: {
     goToProfile(profile_id) {
+      console.log('/profiles/' + profile_id);
       this.$router.push('/profiles/' + profile_id);
     },
     emitEditEventToParent(profile) {
