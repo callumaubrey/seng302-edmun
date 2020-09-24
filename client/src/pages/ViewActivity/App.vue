@@ -14,10 +14,11 @@
       <div>
         <!-- Image and Name -->
         <b-row style="font-size: 6em;" align-content="center">
-          <b-col style="max-width: 600px; height: 300px; margin:auto;">
+          <b-col style="max-width: 800px; height: 450px; margin:auto;">
             <UserImage :id="parseInt($route.params.activityId)" is-activity
                        :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
-                       save-on-change></UserImage>
+                       save-on-change
+                       image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"></UserImage>
           </b-col>
         </b-row>
         <b-row align-h="center">
@@ -157,7 +158,8 @@
             <b-row align-h="center">
               <b-col cols="9">
                 <b-card style="margin: 1em" title="Participants:">
-                  <FollowerUserList ref="followUserList" :activity-id="parseInt($route.params.activityId)"
+                  <FollowerUserList ref="followUserList"
+                                    :activity-id="parseInt($route.params.activityId)"
                                     :logged-in-id="loggedInId"
                                     :activity-creator-id="activityOwner.id"></FollowerUserList>
                 </b-card>
@@ -173,8 +175,10 @@
                              :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
           <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
-            <PathInfoMapView ref="pathInfoMap" :path="activity.path" v-if="activity.path != null"></PathInfoMapView>
-            <h5 v-else style="text-align: center; padding-top: 30px">A path can be added in Edit Activity</h5>
+            <PathInfoMapView ref="pathInfoMap" :path="activity.path"
+                             v-if="activity.path != null"></PathInfoMapView>
+            <h5 v-else style="text-align: center; padding-top: 30px">A path can be added in Edit
+              Activity</h5>
           </b-tab>
         </b-tabs>
       </div>
@@ -445,7 +449,7 @@
               this.activityName);
           map.setMapCenter(this.location.latitude, this.location.longitude);
         }
-      this.$refs.followUserList.getMembers();
+        this.$refs.followUserList.getMembers();
 
         if (this.activity.path !== null) {
           map.setPath(this.activity.path, true, true);

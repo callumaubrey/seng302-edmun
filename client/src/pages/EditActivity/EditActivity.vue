@@ -11,8 +11,7 @@
           <!-- Title -->
           <b-row align-h="between">
             <b-col>
-              <b-button @click="goToActivity()" style="float: right;">View activity
-              </b-button>
+
               <h3>Edit Your Activity: {{ form.name }}</h3>
               <hr>
             </b-col>
@@ -199,6 +198,25 @@
                 </b-container>
               </b-tab>
 
+              <!-- Activity Image Editing -->
+              <b-tab>
+                <template v-slot:title>
+                  Activity Image
+                </template>
+                <b-row style="font-size: 6em;" align-content="center">
+                  <b-col style="max-width: 800px; height: 450px; margin:auto;">
+                    <UserImage is-activity
+                               editable
+                               ref="image"
+                               :id="this.activityId"
+                               image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
+                    >
+
+                    </UserImage>
+                  </b-col>
+                </b-row>
+              </b-tab>
+
               <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
@@ -217,7 +235,9 @@
 
               <!-- Activity Path Editor -->
               <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" :activityId = "activityId" :path = "path"></PathInfoMapCreateEdit>
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
+                                       :activityId="activityId"
+                                       :path="path"></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -241,6 +261,8 @@
               <b-button id="saveButton" type="submit" v-on:click="onSubmit" variant="primary">Save
                 changes
               </b-button>
+              <b-button @click="goToActivity()" style="float: right;">Cancel
+              </b-button>
             </b-col>
           </b-row>
 
@@ -251,19 +273,18 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
-import SearchTag from "../../components/SearchTag";
-import ForbiddenMessage from "../../components/ForbiddenMessage";
-import {validationMixin} from "vuelidate";
-import {required} from 'vuelidate/lib/validators';
-import locationMixin from "../../mixins/locationMixin";
-import AdminMixin from "../../mixins/AdminMixin";
-import api from '@/Api'
-import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-import {store} from "../../store";
-import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
-
+  import NavBar from "@/components/NavBar.vue";
+  import SearchTag from "../../components/SearchTag";
+  import ForbiddenMessage from "../../components/ForbiddenMessage";
+  import {validationMixin} from "vuelidate";
+  import {required} from 'vuelidate/lib/validators';
+  import locationMixin from "../../mixins/locationMixin";
+  import AdminMixin from "../../mixins/AdminMixin";
+  import api from '@/Api'
+  import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+  import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+  import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
+  import UserImage from "../../components/Activity/UserImage/UserImage";
 
   export default {
     mixins: [validationMixin, locationMixin],
@@ -273,7 +294,8 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
       SearchTag,
       NavBar,
       ForbiddenMessage,
-      ActivityLocationTab
+      ActivityLocationTab,
+      UserImage
     },
     data() {
       return {
@@ -509,15 +531,10 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
         };
         if (this.isContinuous === '0') {
           api.updateActivity(userId, this.activityId, data)
-              .then(() => {
-                currentObj.updatePath().then(()=> {
-                  store.newNotification('Activity updated successfully', 'success', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
-                });
+              .then(async () => {
+                await currentObj.apiAfterActivityEdit(userId, this.activityId)
+                await currentObj.$router.push(
+                    '/profiles/' + userId + '/activities/' + this.activityId);
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -526,7 +543,6 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
                   solid: true
                 })
               });
-
         } else {
           this.$v.durationForm.$touch();
           if (this.$v.durationForm.$anyError) {
@@ -548,15 +564,10 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
             metrics: this.$refs.metric_editor.getMetricData()
           };
           api.updateActivity(userId, this.activityId, data)
-              .then(() => {
-                currentObj.updatePath().then(()=> {
-                  store.newNotification('Activity updated successfully', 'success', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification('Activity updated successfully, path could not be updated. Try again later.', 'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
-                });
+              .then(async () => {
+                await currentObj.apiAfterActivityEdit(userId, this.activityId);
+                await currentObj.$router.push(
+                    '/profiles/' + userId + '/activities/' + this.activityId);
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -565,10 +576,59 @@ import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdi
                   solid: true
                 })
               });
+
         }
       },
+      apiAfterActivityEdit: async function (userId, activityId) {
+        let currentObj = this;
+        let activityImage = currentObj.$refs.image.image_data
+        let error = false;
+        if (activityImage != null) {
+          let formData = new FormData();
+          formData.append("file", currentObj.$refs.image.image_data)
+          await api.updateActivityImage(activityId, formData).then(
+              () => {
 
-      updatePath: function() {
+              }).catch(() => {
+            error = true;
+            currentObj.$root.$bvToast.toast(
+                'Activity updated successfully, but image failed to update.',
+                {
+                  variant: "warning",
+                  solid: true
+                })
+          })
+        } else {
+          await api.deleteActivityImage(activityId).then(
+              () => {
+              }).catch(() => {
+            error = true;
+            currentObj.$root.$bvToast.toast(
+                'Activity updated successfully, but image failed to update.',
+                {
+                  variant: "warning",
+                  solid: true
+                })
+          })
+        }
+        await currentObj.updatePath().then(() => {
+        }).catch(() => {
+          error = true;
+          currentObj.$root.$bvToast.toast(
+              'Activity updated successfully, path could not be updated. Try again later.',
+              {
+                variant: "warning",
+                solid: true
+              })
+        });
+        if (!error) {
+          this.$root.$bvToast.toast('Activity updated successfully', {
+            variant: "success",
+            solid: true
+          })
+        }
+      },
+      updatePath: function () {
         return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, this.activityId);
       },
 
