@@ -216,10 +216,12 @@
                   Activity Image
                 </template>
                 <b-row style="font-size: 6em;" align-content="center">
-                  <b-col style="max-width: 600px; height: 300px; margin:auto;">
+                  <b-col style="max-width: 800px; height: 450px; margin:auto;">
                     <UserImage is-activity
                                editable
-                               ref="image"></UserImage>
+                               ref="image"
+                               image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
+                    ></UserImage>
                   </b-col>
                 </b-row>
               </b-tab>
@@ -574,16 +576,14 @@
       apiAfterActivityCreation: async function (userId, activityId) {
         let currentObj = this;
         let activityImage = currentObj.$refs.image.image_data
+        let error = false;
         if (activityImage != null) {
           let formData = new FormData();
           formData.append("file", currentObj.$refs.image.image_data)
-          await api.updateActivityImage(userId, activityId, formData).then(
+          await api.updateActivityImage(activityId, formData).then(
               () => {
-                currentObj.$root.$bvToast.toast('Activity created successfully', {
-                  variant: "success",
-                  solid: true
-                })
               }).catch(() => {
+            error = true;
             currentObj.$root.$bvToast.toast(
                 'Activity created successfully, but image failed to upload.',
                 {
@@ -593,13 +593,10 @@
           })
         }
 
-        await currentObj.submitPath(activityId).then(() => {
-          currentObj.$root.$bvToast.toast('Activity created successfully', {
-            variant: "success",
-            solid: true
-          })
-
+        await currentObj.submitPath(activityId).then(
+            () => {
         }).catch(() => {
+          error = true;
           currentObj.$root.$bvToast.toast(
               'Activity created successfully, Path was unable to be created. Try again later.',
               {
@@ -607,6 +604,13 @@
                 solid: true
               })
         });
+
+        if (!error) {
+          this.$root.$bvToast.toast('Activity created successfully', {
+            variant: "success",
+            solid: true
+          })
+        }
       },
       submitPath: function (activityId) {
         // Update path

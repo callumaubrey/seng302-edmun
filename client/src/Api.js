@@ -170,7 +170,8 @@ export default {
   getGeocodePlaceId: (placeId) => instance.get(
       '/location/geocode?id=' + placeId),
 
-  getActivityImage: (profileId, activityId) => instance.get('/profiles/'+profileId+'/activities/'+activityId+'/image'),
+  getActivityImage: (profileId, activityId) => instance.get(
+      '/profiles/' + profileId + '/activities/' + activityId + '/image'),
 
   // (U)pdate
   updateForId: (id, name) => instance.put('students/' + id, {name}),
@@ -181,6 +182,9 @@ export default {
 
   updateActivityTypes: (profileId, data) => instance.put(
       '/profiles/' + profileId + '/activity-types', data),
+
+  updateProfileImage: (profileId, image) => instance.put(
+      'profiles/' + profileId + '/image', image),
 
   updateProfileEmails: (profileId, data) => instance.put(
       '/profiles/' + profileId + '/emails', data),
@@ -216,15 +220,22 @@ export default {
       "/profiles/" + profileId + '/activities/' + activityId + '/result/'
       + resultId, data),
 
-  updateActivityImage: (profileId, activityId, imageFile) => instance.put(
-      "/profiles/" + profileId + "/activities/" + activityId + "/image", imageFile
+  updateActivityImage: (activityId, imageFile) => instance.put(
+      "/profiles/1/activities/" + activityId + "/image", imageFile
   ),
   // (D)elete
 
   removeForId: (id) => instance.delete('students/' + id),
 
-  deleteActivity: (profileId, activityId) => instance.delete(
-      '/profiles/' + profileId + '/activities/' + activityId),
+  deleteActivity: (activityId) => instance.delete(
+      '/profiles/1/activities/' + activityId),
+
+  deleteActivityImage: (activityId) => instance.delete(
+      "/profiles/1/activities/" + activityId + "/image"
+  ),
+
+  deleteProfileImage: (profileId) => instance.delete(
+      'profiles/' + profileId + '/image'),
 
   removeRole: (profileId, activityId, data) => instance.delete(
       '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
@@ -261,5 +272,5 @@ export default {
       "/profiles/" + profileId + "/subscriptions/activities/following"),
 
   resetPassword: (token, data) => instance.put(
-      "/profiles/forgotpassword/" + token, data)
+      "/profiles/forgotpassword/" + token, data),
 }

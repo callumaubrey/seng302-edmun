@@ -204,10 +204,15 @@
                   Activity Image
                 </template>
                 <b-row style="font-size: 6em;" align-content="center">
-                  <b-col style="max-width: 600px; height: 300px; margin:auto;">
+                  <b-col style="max-width: 800px; height: 450px; margin:auto;">
                     <UserImage is-activity
                                editable
-                               ref="image"></UserImage>
+                               ref="image"
+                               :id="this.activityId"
+                               image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
+                    >
+
+                    </UserImage>
                   </b-col>
                 </b-row>
               </b-tab>
@@ -528,7 +533,8 @@
           api.updateActivity(userId, this.activityId, data)
               .then(async () => {
                 await currentObj.apiAfterActivityEdit(userId, this.activityId)
-                await currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                await currentObj.$router.push(
+                    '/profiles/' + userId + '/activities/' + this.activityId);
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -559,8 +565,9 @@
           };
           api.updateActivity(userId, this.activityId, data)
               .then(async () => {
-                await currentObj.apiAfterActivityEdit(userId, this.activityId)
-                await currentObj.$router.push('/profiles/' + userId + '/activities/' + this.activityId);
+                await currentObj.apiAfterActivityEdit(userId, this.activityId);
+                await currentObj.$router.push(
+                    '/profiles/' + userId + '/activities/' + this.activityId);
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -575,16 +582,27 @@
       apiAfterActivityEdit: async function (userId, activityId) {
         let currentObj = this;
         let activityImage = currentObj.$refs.image.image_data
+        let error = false;
         if (activityImage != null) {
           let formData = new FormData();
           formData.append("file", currentObj.$refs.image.image_data)
-          await api.updateActivityImage(userId, activityId, formData).then(
+          await api.updateActivityImage(activityId, formData).then(
               () => {
-                currentObj.$root.$bvToast.toast('Activity updated successfully', {
-                  variant: "success",
+
+              }).catch(() => {
+            error = true;
+            currentObj.$root.$bvToast.toast(
+                'Activity updated successfully, but image failed to update.',
+                {
+                  variant: "warning",
                   solid: true
                 })
+          })
+        } else {
+          await api.deleteActivityImage(activityId).then(
+              () => {
               }).catch(() => {
+            error = true;
             currentObj.$root.$bvToast.toast(
                 'Activity updated successfully, but image failed to update.',
                 {
@@ -593,21 +611,22 @@
                 })
           })
         }
-
         await currentObj.updatePath().then(() => {
-          currentObj.$root.$bvToast.toast('Activity updated successfully', {
-            variant: "success",
-            solid: true
-          })
         }).catch(() => {
+          error = true;
           currentObj.$root.$bvToast.toast(
               'Activity updated successfully, path could not be updated. Try again later.',
               {
                 variant: "warning",
                 solid: true
               })
-
         });
+        if (!error) {
+          this.$root.$bvToast.toast('Activity updated successfully', {
+            variant: "success",
+            solid: true
+          })
+        }
       },
       updatePath: function () {
         return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, this.activityId);

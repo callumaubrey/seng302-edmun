@@ -60,7 +60,7 @@
          class="fill_space"
          @mouseover="show_overlay=true"
          @mouseleave="show_overlay=false"
-     >
+    >
       <b-overlay :show="show_overlay && editable"
                  variant="dark" opacity="0.5"
                  rounded="lg" class="activity-profile-overlay fill_space">
@@ -124,7 +124,6 @@
 </template>
 
 <script>
-  import axios from 'axios'
   import api from '@/Api';
 
   /**
@@ -139,7 +138,7 @@
     data: function () {
       return {
         show_overlay: false,
-        image_src: null,
+        image_src: this.getUserImageSrc(this.id),
 
         // Assume this is true until 404 error
         user_has_image: true,
@@ -162,12 +161,9 @@
         type: Boolean,
         default: false,
       },
-      userId: {
+      id: {
         type: Number,
         default: -1
-      },
-      activityId: {
-        type: Number,
       },
       isActivity: {
         type: Boolean,
@@ -189,7 +185,7 @@
        * Updates user image using image src generator function
        */
       setUserImg: function () {
-        this.getUserImageSrc(this.userId, this.activityId);
+        this.getUserImageSrc(this.id);
       },
 
       handleInvalidSrcError: function () {
@@ -202,24 +198,15 @@
        * @param id either activity or user id
        * @returns the url location of where to get/update/delete the image
        */
-      getUserImageSrc: function (userId, activityId) {
-        /**
-         * ==============================================
-         * REPLACE ME WITH ACTUAL ROUTE
-         * Make sure to check if user or activity for url
-         * ==============================================
-         */
+      getUserImageSrc: function (id) {
+        let image_url;
         if (this.isActivity) {
-          api.getActivityImage(userId, activityId).then((response) => {
-            let image = response.data;
-            console.log(image)
-            this.image_src = URL.createObjectURL(image)
-            console.log(this.image_src)
-          }).catch(() => {
-            this.default_image = true;
-          })
+          image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/1/activities/"
+              + id + "/image"
+        } else {
+          image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/" + id + "/image"
         }
-        return api.getActivityImage(userId, activityId);
+        return `${image_url}?cache=` + Math.random();
       },
 
       /**
@@ -277,49 +264,71 @@
        * @param id activity or user id
        */
       putImageToAPI: function (id) {
-        // Set MIME data type
-        let request_config = {
-          headers: {
-            'Content-Type': this.image_data.type
-          }
-        };
+        let formData = new FormData();
+        formData.append("file", this.image_data)
+        if (this.isActivity) {
+          api.updateActivityImage(id, formData)
+              .then(() => {
+                this.$emit('success');
+                this.$bvToast.toast("Activity Image updated successfully", {
+                  variant: "success",
+                  solid: true
+                })
+              })
+              .catch((error) => {
+                let error_message = '';
 
-        // Call api
-        axios.put(this.getUserImageSrc(id, this.activityId), this.image_data, request_config)
-            .then(() => {
-              this.$emit('success');
-            })
-            .catch((error) => {
-              let error_message = '';
-
-              if (error.response) {
-                console.log(error.response);
-                switch (error.response.status) {
-                  case 400:
-                    error_message = 'Image must be of type gif, png or jpeg';
-                    break;
-                  case 401:
-                    error_message = 'Must be logged in to change photo';
-                    break;
-                  case 403:
-                    error_message = 'Unauthorised to change photo';
-                    break;
-                  case 404:
-                    error_message = (this.isActivity ? 'activity' : 'user') + ' does not exist';
-                    break;
-                  case 500:
-                    error_message = 'Internal server error, try again later';
-                    break;
-                  default:
-                    error_message = 'Unknown error occurred';
+                if (error.response) {
+                  console.log(error.response);
+                  switch (error.response.status) {
+                    case 400:
+                      error_message = 'Image must be of type gif, png or jpeg';
+                      break;
+                    case 401:
+                      error_message = 'Must be logged in to change photo';
+                      break;
+                    case 403:
+                      error_message = 'Unauthorised to change photo';
+                      break;
+                    case 404:
+                      error_message = (this.isActivity ? 'activity' : 'user') + ' does not exist';
+                      break;
+                    case 500:
+                      error_message = 'Internal server error, try again later';
+                      break;
+                    default:
+                      error_message = 'Unknown error occurred';
+                  }
+                } else {
+                  error_message = 'Could not connect to server';
                 }
-              } else {
-                error_message = 'Could not connect to server';
-              }
 
-              this.setUserImg();
-              this.$emit('error', error_message);
-            });
+                this.$bvToast.toast(error_message, {
+                  variant: "danger",
+                  solid: true
+                })
+
+                this.setUserImg();
+                this.$emit('error', error_message);
+              });
+        } else {
+          api.updateProfileImage(id, formData).then(
+              () => {
+                this.$emit('success');
+                this.$bvToast.toast("Profile Image updated successfully", {
+                  variant: "success",
+                  solid: true
+                })
+              }
+          ).catch(() => {
+                this.$bvToast.toast("Profile Image failed to update", {
+                  variant: "danger",
+                  solid: true
+                })
+              }
+          );
+        }
+
       },
 
       /**
@@ -327,15 +336,42 @@
        * @param id activity or user id
        */
       deleteImageToAPI: function (id) {
-        axios.delete(this.getUserImageSrc(id, this.activityId))
-            .then(() => {
-              this.$emit('success');
-            })
-            .catch((error) => {
-              console.error(error);
-              this.setUserImg();
-              this.$emit('error');
-            });
+        if (this.isActivity) {
+          api.deleteActivityImage(id)
+              .then(() => {
+                this.$emit('success');
+                this.$bvToast.toast("Activity Image updated successfully", {
+                  variant: "success",
+                  solid: true
+                })
+              })
+              .catch(() => {
+                this.$bvToast.toast("Activity Image failed to update", {
+                  variant: "danger",
+                  solid: true
+                })
+                this.setUserImg();
+                this.$emit('error');
+              });
+        } else {
+          api.deleteProfileImage(id).then(
+              () => {
+                this.$emit('success');
+                this.$bvToast.toast("Profile Image updated successfully", {
+                  variant: "success",
+                  solid: true
+                })
+              }
+          ).catch(() => {
+                this.$bvToast.toast("Profile Image failed to update", {
+                  variant: "danger",
+                  solid: true
+                })
+              }
+          );
+
+        }
+
       }
     }
   }
