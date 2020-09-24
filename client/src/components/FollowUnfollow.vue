@@ -103,6 +103,7 @@
                 await api.subscribeToActivity(this.loggedInId, this.activityId)
                     .then(() => {
                         this.getCanFollow();
+                        this.$emit("activityFollowed");
                         store.newNotification("Activity Followed", "success", 2)
                     })
                     .catch((err) => {
@@ -115,6 +116,7 @@
                     .then(() => {
                         store.newNotification("Activity Unfollowed", "success", 2)
                         this.getCanFollow();
+                        this.$emit("activityFollowed");
                     })
                     .catch((err) => {
                         alert(err.body)
@@ -134,6 +136,7 @@
                         this.isGoing = true
                         this.isSubscribed = true
                         store.newNotification("Activity Participation Updated", "success", 2)
+                        this.$emit("activityFollowed");
                     })
                     .catch((err) => {
                         console.log(err)
@@ -152,6 +155,7 @@
                         this.displayFollowButton = true
                         this.displayGoingButton = true
                         this.isGoing = false
+                        this.$emit("activityFollowed");
                     })
                     .catch((err) => {
                         alert(err.body)

@@ -28,7 +28,8 @@
         <!-- Summary -->
         <FollowerSummary class="text-center"
                          :activityId="parseInt($route.params.activityId)"
-                         :key="followSummaryKey"></FollowerSummary>
+                         :key="followSummaryKey"
+                          ref="followSummary"></FollowerSummary>
         <b-row align-h="center">
           <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
                          :visibility="visibility"
@@ -42,7 +43,8 @@
         <b-row align-h="center">
           <FollowUnfollow v-bind:activityId="parseInt(this.$route.params.activityId)"
                           v-bind:activityOwnerId="parseInt(this.$route.params.id)"
-                          v-bind:loggedInId="loggedInId"></FollowUnfollow>
+                          v-bind:loggedInId="loggedInId"
+                          v-on:activityFollowed="activityIsFollowed"></FollowUnfollow>
         </b-row>
         <b-row align-h="center">
           <b-dropdown text="Actions"
@@ -454,8 +456,10 @@
         if (this.activity.path !== null) {
           map.setPath(this.activity.path, true, true);
         }
+      },
+      activityIsFollowed() {
+        this.$refs.followSummary.loadFollowerSummary();
       }
-
     }
   };
   export default App;

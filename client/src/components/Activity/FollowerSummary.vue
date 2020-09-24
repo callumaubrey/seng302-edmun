@@ -40,6 +40,7 @@
                 const currentObj = this;
                 api.getActivityMemberCounts(this.activityId)
                     .then(function (response) {
+                      currentObj.user_groups = [];
                         currentObj.user_groups.push({
                             "name": "Participants",
                             "count": response.data.participants
