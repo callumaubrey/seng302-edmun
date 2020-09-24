@@ -74,4 +74,12 @@ For Server:
 To view sonarqube analysis on a browser use: https://csse-s302g7.canterbury.ac.nz/sonarqube/account/security/
 - use VM credentials for login.
 
-
+### Authors
+*  Callum Aubrey
+*  Harry Collard
+*  Yu Duan
+*  Connor Macdonald
+*  Martin Lopez
+*  Cheng Yi Kok
+*  Louis Davies
+*  William Morris
