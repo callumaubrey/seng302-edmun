@@ -108,4 +108,30 @@ public class FileService {
       File file = new File(activityDirectory + fileName);
       return file.delete();
     }
+
+  /**
+   * Get Image byte data from filename
+   * @param photoFilename filename of image
+   * @return byte data from file otherwise empty
+   */
+  public byte[] getProfileImage(String photoFilename) {
+      File file = new File(profileDirectory + photoFilename);
+      try {
+        return Files.readAllBytes(file.toPath());
+      } catch (IOException e) {
+        Logger.getLogger("FileService")
+            .log(Level.WARNING, String.format("File does not exist '%s'", photoFilename));
+        return new byte[]{};
+      }
+    }
+
+  /**
+   * Removes profile image
+   * @param photoFilename profile filename
+   * @return true on success
+   */
+  public boolean removeProfileImage(String photoFilename) {
+      File file = new File(profileDirectory + photoFilename);
+      return file.delete();
+    }
 }
