@@ -30,7 +30,7 @@
           </b-col>
         </b-row>
         <b-row align-h="center">
-          <h3 style="color: white">{{ activityName }}</h3>
+          <h3 style="color: white; padding-top: 15px">{{ activityName }}</h3>
         </b-row>
 
         <!-- Summary -->
@@ -160,6 +160,7 @@
                     <FollowerUserList :activity-id="parseInt($route.params.activityId)"
                                       :logged-in-id="parseInt(loggedInId)"
                                       :activity-creator-id="activityOwner.id"
+                                      ref="followerUserList"
                     style="padding-top: 2em"></FollowerUserList>
                   </b-card>
                 </b-col>
@@ -453,7 +454,7 @@
         this.visibility = value;
         this.shareActivityKey += 1;
         this.followSummaryKey += 1;
-        this.$refs.followUserList.getMembers();
+        this.$refs.followerUserList.getMembers();
       },
       async setUpMap() {
         let userLocation = await api.getLocation(this.profileId);
