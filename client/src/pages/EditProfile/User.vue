@@ -1,9 +1,10 @@
 <template>
   <div id="app" v-if="isLoggedIn">
-    <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden" v-bind:loggedInId="loggedInID"></NavBar>
-    <b-container >
+    <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:hideElements="hidden"
+            v-bind:loggedInId="loggedInID"></NavBar>
+    <b-container>
       <b-row style="height: 780px">
-        <b-col style="flex: 0 0 20%; font-size: 5em;" class="p-0" >
+        <b-col style="flex: 0 0 20%; font-size: 5em;" class="p-0">
           <div>
             <UserImage :id="profileId"
                        :editable="true"
@@ -15,30 +16,35 @@
           <b-col style="padding-bottom: 10px; padding-left: 0px">
             <h3>Edit Profile</h3>
           </b-col>
-          <b-tabs class = "p-0">
+          <b-tabs class="p-0">
             <b-tab title="Profile">
               <b-container style="padding-top: 20px;">
                 <b-row>
                   <b-col sm="4">
                     <label>First Name</label>
-                    <b-form-input v-on:input="resetProfileMessage()" id="input-default" placeholder="Enter name"
+                    <b-form-input v-on:input="resetProfileMessage()" id="input-default"
+                                  placeholder="Enter name"
                                   :state="validateProfile('firstname')"
-                                  v-model="$v.profileForm.firstname.$model" required trim></b-form-input>
+                                  v-model="$v.profileForm.firstname.$model" required
+                                  trim></b-form-input>
                     <b-form-invalid-feedback>Invalid first name</b-form-invalid-feedback>
                   </b-col>
 
                   <b-col sm="4">
                     <label>Middle Name</label>
                     <b-form-input v-on:input="resetProfileMessage()" id="input-default"
-                                  placeholder="Enter middle name" :state="validateProfile('middlename')"
+                                  placeholder="Enter middle name"
+                                  :state="validateProfile('middlename')"
                                   v-model="$v.profileForm.middlename.$model"></b-form-input>
                     <b-form-invalid-feedback>Invalid middle name</b-form-invalid-feedback>
                   </b-col>
                   <b-col sm="4">
                     <label>Last Name</label>
                     <b-form-input v-on:input="resetProfileMessage()" id="input-default"
-                                  placeholder="Enter last name" :state="validateProfile('lastname')" :max="5"
-                                  v-model="$v.profileForm.lastname.$model" required trim></b-form-input>
+                                  placeholder="Enter last name" :state="validateProfile('lastname')"
+                                  :max="5"
+                                  v-model="$v.profileForm.lastname.$model" required
+                                  trim></b-form-input>
                     <b-form-invalid-feedback>Invalid last name</b-form-invalid-feedback>
                   </b-col>
                 </b-row>
@@ -125,9 +131,13 @@
                     <b-row style="padding-right: 15px">
                       <b-col><label>{{email}}</label></b-col>
                       <b-col align="right" style="flex: 0 0 35px;">
-                        <i class="fas fa-star " style="color:rgba(71,222,70,0.88); font-size: 1.5em; cursor: pointer;" @click="makePrimary(index)"></i>
+                        <i class="fas fa-star "
+                           style="color:rgba(71,222,70,0.88); font-size: 1.5em; cursor: pointer;"
+                           @click="makePrimary(index)"></i>
                       </b-col>
-                      <i class="fas fa-trash-alt" style="color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deleteEmail(index)"></i>
+                      <i class="fas fa-trash-alt"
+                         style="color: #ff3c2f; font-size: 1.5em; cursor: pointer;"
+                         @click="deleteEmail(index)"></i>
                     </b-row>
                     <hr>
                   </div>
@@ -135,7 +145,8 @@
                     <b-col>
                       <b-form-group style="font-weight: bold" for="emailInput"
                                     description="Maximum of 5 emails allowed">
-                        <b-input v-if="this.emails.length + this.primaryEmail.length < 5" type="email"
+                        <b-input v-if="this.emails.length + this.primaryEmail.length < 5"
+                                 type="email"
                                  name="email"
                                  placeholder="john@example.com" :state="validateEmail('emailInput')"
                                  v-model="$v.emailForm.emailInput.$model"></b-input>
@@ -167,7 +178,9 @@
                       <label>{{country[0]}}</label>
                     </b-col>
                     <b-col>
-                      <i class="fas fa-trash-alt" style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deletePassport(index)"></i>
+                      <i class="fas fa-trash-alt"
+                         style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;"
+                         @click="deletePassport(index)"></i>
                     </b-col>
                   </b-row>
                   <hr>
@@ -177,7 +190,8 @@
                     <b-form-group
                         description="Add a new passport"
                     >
-                      <b-form-select v-model="selectedCountry" :options="availCountries"></b-form-select>
+                      <b-form-select v-model="selectedCountry"
+                                     :options="availCountries"></b-form-select>
                     </b-form-group>
                     <b-form-valid-feedback :state='passportsUpdateMessage != ""'>
                       {{passportsUpdateMessage}}
@@ -202,7 +216,9 @@
                       <label>{{activites}}</label>
                     </b-col>
                     <b-col>
-                      <i class="fas fa-trash-alt" style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;" @click="deleteActivity(index)"></i>
+                      <i class="fas fa-trash-alt"
+                         style="float: right; color: #ff3c2f; font-size: 1.5em; cursor: pointer;"
+                         @click="deleteActivity(index)"></i>
                     </b-col>
                   </b-row>
                   <hr>
@@ -210,7 +226,8 @@
                 <b-row>
                   <b-col>
                     <b-form-group description="Add a new activity type">
-                      <b-form-select v-model="selectedActivity" :options="availActivitys"></b-form-select>
+                      <b-form-select v-model="selectedActivity"
+                                     :options="availActivitys"></b-form-select>
                     </b-form-group>
                     <b-form-valid-feedback :state='activityUpdateMessage != ""'>
                       {{activityUpdateMessage}}
@@ -232,7 +249,8 @@
                 <b-row>
                   <b-col sm="6">
                     <label>Current Password</label>
-                    <b-form-input type="password" id="input-default" placeholder="Enter current password"
+                    <b-form-input type="password" id="input-default"
+                                  placeholder="Enter current password"
                                   v-model="passwordForm.oldPassword"></b-form-input>
                   </b-col>
                 </b-row>
@@ -242,13 +260,15 @@
                     <b-form-input type="password" id="password" placeholder="Enter new password"
                                   :state="validatePassword('password')"
                                   v-model="$v.passwordForm.password.$model"></b-form-input>
-                    <b-form-invalid-feedback> Password should contain at least 8 characters with at least one
+                    <b-form-invalid-feedback> Password should contain at least 8 characters with at
+                      least one
                       digit, one lower case and one upper case
                     </b-form-invalid-feedback>
                   </b-col>
                   <b-col sm="6">
                     <label>Repeat New Password</label>
-                    <b-form-input id="repeatPassword" type="password" placeholder="Enter new password again"
+                    <b-form-input id="repeatPassword" type="password"
+                                  placeholder="Enter new password again"
                                   :state="validatePassword('passwordRepeat')"
                                   v-model="$v.passwordForm.passwordRepeat.$model"></b-form-input>
                     <b-form-invalid-feedback id="email-error"> Passwords must be the same
@@ -267,17 +287,19 @@
                 </b-row>
               </b-container>
             </b-tab>
-            <b-tab title = "Location" @click="$refs.map.refreshMap()">
+            <b-tab title="Location" @click="$refs.map.refreshMap()">
               <b-container>
                 <b-form-text>
-                  &#8203; <!-- Zero Width Space to prevent form text height to expand on text displayed -->
+                  &#8203;
+                  <!-- Zero Width Space to prevent form text height to expand on text displayed -->
                   <span class="text-success" v-if="locationForm.state === true">
                             Location updated
                         </span>
                   <span class="text-danger" v-if="locationForm.state === false">{{locationForm.error_message}}</span>
                 </b-form-text>
                 <ModifyLocationMapPane ref="map" :can-hide="false"
-                                       v-model="locationForm.value" @input="submitLocation"></ModifyLocationMapPane>
+                                       v-model="locationForm.value"
+                                       @input="submitLocation"></ModifyLocationMapPane>
               </b-container>
             </b-tab>
           </b-tabs>
@@ -299,7 +321,8 @@
 
   //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
   const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
-  const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+  const passwordValidate = helpers.regex('passwordValidate',
+      new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
   const countryData = axios.create({
     baseURL: "https://restcountries.eu/rest/v2/all",
@@ -422,7 +445,8 @@
           required,
           email,
           uniqueEmail() {
-            if (this.emails.includes(this.emailForm.emailInput) || this.primaryEmail.includes(this.emailForm.emailInput)) {
+            if (this.emails.includes(this.emailForm.emailInput) || this.primaryEmail.includes(
+                this.emailForm.emailInput)) {
               return false
             } else {
               return true;
@@ -533,17 +557,20 @@
           api.updateProfile(userId, updateData).then(function (response) {
             if (response.status == 200) {
               vueObj.passportsErrorMessage = "";
-              vueObj.passportsUpdateMessage = addedPassport[0] + " was successfully added to passports";
+              vueObj.passportsUpdateMessage = addedPassport[0]
+                  + " was successfully added to passports";
               vueObj.yourCountries = tempPassports;
               vueObj.passportsCode = tempCodes;
               vueObj.selectedCountry = null;
             } else {
               vueObj.passportsUpdateMessage = "";
-              vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
+              vueObj.passportsErrorMessage = "Failed to add " + addedPassport
+                  + " to passports, please try again later";
             }
           }).catch(function () {
             vueObj.passportsUpdateMessage = "";
-            vueObj.passportsErrorMessage = "Failed to add " + addedPassport + " to passports, please try again later";
+            vueObj.passportsErrorMessage = "Failed to add " + addedPassport
+                + " to passports, please try again later";
           });
         } else {
           this.passportsUpdateMessage = "";
@@ -565,13 +592,15 @@
           api.updateActivityTypes(userId, data).then(function (response) {
             if (response.status == 200) {
               vueObj.activityErrorMessage = null;
-              vueObj.activityUpdateMessage = addedActivity + " was successfully added to activity's";
+              vueObj.activityUpdateMessage = addedActivity
+                  + " was successfully added to activity's";
               vueObj.selectedActivity = null;
             }
           }).catch(function (error) {
             if (error.response.status == 400) {
               vueObj.activityUpdateMessage = "";
-              vueObj.activityUpdateMessage = "Failed to add " + addedActivity + " to activitys, please try again later";
+              vueObj.activityUpdateMessage = "Failed to add " + addedActivity
+                  + " to activitys, please try again later";
             }
           });
         } else {
@@ -615,16 +644,19 @@
         }
         api.updateProfile(userId, updateData).then(function (response) {
           if (response.status == 200) {
-            vueObj.passportsUpdateMessage = removedPassport[0] + " has been successfully removed from passports";
+            vueObj.passportsUpdateMessage = removedPassport[0]
+                + " has been successfully removed from passports";
             vueObj.yourCountries = tempPassports;
             vueObj.passportsCode = tempCodes;
           } else {
             vueObj.passportsUpdateMessage = "";
-            vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
+            vueObj.passportsErrorMessage = "Failed to remove " + removedPassport
+                + " from passports, please try again later";
           }
         }).catch(function () {
           vueObj.passportsUpdateMessage = "";
-          vueObj.passportsErrorMessage = "Failed to remove " + removedPassport + " from passports, please try again later";
+          vueObj.passportsErrorMessage = "Failed to remove " + removedPassport
+              + " from passports, please try again later";
         });
       },
       deleteActivity(index) {
@@ -640,13 +672,15 @@
 
         api.updateActivityTypes(userId, data).then(function (response) {
           if (response.status == 200) {
-            vueObj.activityUpdateMessage = deletedActivity + " was successfully deleted from activities"
+            vueObj.activityUpdateMessage = deletedActivity
+                + " was successfully deleted from activities"
             vueObj.activityErrorMessage = ""
           }
         }).catch(function (error) {
           if (error.response.status == 400) {
             vueObj.activityUpdateMessage = "";
-            vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity + " from activities";
+            vueObj.activityUpdateMessage = "Failed to delete " + deletedActivity
+                + " from activities";
           }
         });
       },
@@ -659,7 +693,7 @@
 
         // Update location is new value set. If null delete current location
         let apiRequest = null;
-        if(this.locationForm.value !== null) {
+        if (this.locationForm.value !== null) {
           let data = {
             latitude: this.locationForm.value.lat,
             longitude: this.locationForm.value.lng
@@ -716,11 +750,13 @@
             vueObj.primaryEmail = tempPrimary;
           } else {
             vueObj.emailUpdateMessage = "";
-            vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
+            vueObj.emailErrorMessage = "Failed to update " + newPrimary
+                + " as primary, please try again later";
           }
         }).catch(function () {
           vueObj.emailUpdateMessage = "";
-          vueObj.emailErrorMessage = "Failed to update " + newPrimary + " as primary, please try again later";
+          vueObj.emailErrorMessage = "Failed to update " + newPrimary
+              + " as primary, please try again later";
         });
       },
       deleteEmail(index) {
@@ -742,12 +778,14 @@
             vueObj.emails = tempEmails;
           } else {
             vueObj.emailUpdateMessage = "";
-            vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
+            vueObj.emailErrorMessage = "Failed to remove " + removedEmail
+                + " from your emails, please try again later"
           }
 
         }).catch(function () {
           vueObj.emailUpdateMessage = "";
-          vueObj.emailErrorMessage = "Failed to remove " + removedEmail + " from your emails, please try again later"
+          vueObj.emailErrorMessage = "Failed to remove " + removedEmail
+              + " from your emails, please try again later"
         });
 
       },
@@ -778,11 +816,13 @@
             vueObj.emailForm.emailInput = null;
           } else {
             vueObj.emailUpdateMessage = "";
-            vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
+            vueObj.emailErrorMessage = "Failed to add " + newEmail
+                + " to your emails, please try again later";
           }
         }).catch(function () {
           vueObj.emailUpdateMessage = "";
-          vueObj.emailErrorMessage = "Failed to add " + newEmail + " to your emails, please try again later";
+          vueObj.emailErrorMessage = "Failed to add " + newEmail
+              + " to your emails, please try again later";
         });
       },
       // (R)ead
@@ -801,7 +841,8 @@
         .then(function (response) {
           for (let i = 0; i < response.data.passports.length; i++) {
             vueObj.passportsCode.push(response.data.passports[i].isoCode);
-            vueObj.yourCountries.push([response.data.passports[i].countryName, response.data.passports[i].isoCode]);
+            vueObj.yourCountries.push(
+                [response.data.passports[i].countryName, response.data.passports[i].isoCode]);
           }
 
           for (let j = 0; j < response.data.additional_email.length; j++) {
@@ -814,7 +855,8 @@
           vueObj.profileForm.nickname = response.data.nickname;
           vueObj.profileForm.gender = response.data.gender;
           if (vueObj.profileForm.gender) {
-            vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase() + vueObj.profileForm.gender.slice(1);
+            vueObj.profileForm.gender = vueObj.profileForm.gender.charAt(0).toUpperCase()
+                + vueObj.profileForm.gender.slice(1);
           }
           vueObj.profileForm.date_of_birth = response.data.date_of_birth;
           vueObj.primaryEmail = [response.data.primary_email.address];
@@ -828,9 +870,9 @@
             vueObj.locationForm.value = {
               name: response.data.location.name,
               lat: response.data.location.latitude,
-              lng: response.data.location.longitude};
+              lng: response.data.location.longitude
+            };
           }
-
 
         })
         .catch(function (e) {
@@ -878,7 +920,8 @@
         return api.getProfileId()
         .then(function (response) {
           currentObj.profileId = response.data;
-          if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id) && !currentObj.loggedInIsAdmin) {
+          if (parseInt(currentObj.profileId) !== parseInt(currentObj.$route.params.id)
+              && !currentObj.loggedInIsAdmin) {
             currentObj.$router.push("/login");
           }
         })
