@@ -131,7 +131,7 @@
         data: function(){
             return {
                 show_overlay: false,
-                image_src: this.getUserImageSrc(this.userId),
+                image_src: this.getUserImageSrc(this.id),
 
                 // Assume this is true until 404 error
                 user_has_image: true,
@@ -191,9 +191,9 @@
                 let image_url;
 
                 if (this.isActivity === true) {
-                  image_url = "/profiles/1/activities/" + id + "/image"
+                  image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/1/activities/" + id + "/image"
                 } else {
-                  image_url = "/profiles/" + id + "/image"
+                  image_url =  process.env.VUE_APP_SERVER_ADD + "/profiles/" + id + "/image"
                 }
                 return image_url;
             },
