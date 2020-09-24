@@ -64,25 +64,11 @@
       },
       deselectAll: function () {
         this.$emit('deselectAll')
-      },
-      // async getProfileImage(users) {
-      //   for (let i = 0; i < users.length; i++) {
-      //     await api.getProfileImage(users[i].profile_id)
-      //     .then(() => {
-      //       console.log("YES")
-      //       this.$set(users[i], 'imageSrc', process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
-      //     })
-      //     .catch(() => {
-      //       this.$set(users[i], 'imageSrc', "https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg")
-      //       // users[i].imageSrc = "https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg";
-      //     })
-      //   }
-      // }
+      }
     },
     async beforeMount() {
       this.data = this.roleData;
       this.selectAll();
-      // await this.getProfileImage(this.data.users)
     }
   }
 </script>
