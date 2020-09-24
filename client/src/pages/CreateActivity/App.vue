@@ -210,7 +210,6 @@
                   </b-form>
                 </b-container>
               </b-tab>
-
               <!-- Activity Image Editing -->
               <b-tab>
                 <template v-slot:title>
@@ -224,7 +223,8 @@
                   </b-col>
                 </b-row>
               </b-tab>
-              <b-tab>
+
+              <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
                   Activity Location
@@ -238,8 +238,8 @@
               </b-tab>
 
               <!-- Path Editor -->
-              <b-tab title="Activity Path">
-                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -284,13 +284,12 @@
   import {store} from "../../store";
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-  import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+  import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
   import UserImage from "../../components/Activity/UserImage/UserImage";
-
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
-      ModifyPathMapPane,
+      PathInfoMapCreateEdit,
       ActivityMetricsEditor,
       NavBar,
       SearchTag,
@@ -600,7 +599,7 @@
       },
       submitPath: function (activityId) {
         // Update path
-        return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
+        return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, activityId);
       },
 
       getDates: function () {
