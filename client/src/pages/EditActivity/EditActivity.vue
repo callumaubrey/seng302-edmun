@@ -208,7 +208,7 @@
                     <UserImage is-activity
                                editable
                                ref="image"
-                               :id="this.activityId"
+                               :id="activityId"
                                image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
                     >
 
@@ -565,7 +565,7 @@
           };
           api.updateActivity(userId, this.activityId, data)
               .then(async () => {
-                await currentObj.apiAfterActivityEdit(userId, this.activityId);
+                await currentObj.apiAfterActivityEdit();
                 await currentObj.$router.push(
                     '/profiles/' + userId + '/activities/' + this.activityId);
               })
@@ -579,38 +579,11 @@
 
         }
       },
-      apiAfterActivityEdit: async function (userId, activityId) {
+      apiAfterActivityEdit: async function () {
         let currentObj = this;
-        let activityImage = currentObj.$refs.image.image_data
         let error = false;
-        if (activityImage != null) {
-          let formData = new FormData();
-          formData.append("file", currentObj.$refs.image.image_data)
-          await api.updateActivityImage(activityId, formData).then(
-              () => {
 
-              }).catch(() => {
-            error = true;
-            currentObj.$root.$bvToast.toast(
-                'Activity updated successfully, but image failed to update.',
-                {
-                  variant: "warning",
-                  solid: true
-                })
-          })
-        } else {
-          await api.deleteActivityImage(activityId).then(
-              () => {
-              }).catch(() => {
-            error = true;
-            currentObj.$root.$bvToast.toast(
-                'Activity updated successfully, but image failed to update.',
-                {
-                  variant: "warning",
-                  solid: true
-                })
-          })
-        }
+        currentObj.$refs.image.saveChanges(this.activityId);
         await currentObj.updatePath().then(() => {
         }).catch(() => {
           error = true;

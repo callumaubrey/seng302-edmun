@@ -216,7 +216,6 @@
        */
       handleImageUpload: function (event) {
         this.image_data = event.target.files[0];
-        console.log(event.target.files[0])
         this.image_src = URL.createObjectURL(this.image_data);
         this.default_image = false;
 
