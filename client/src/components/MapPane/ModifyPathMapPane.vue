@@ -1,27 +1,18 @@
 <template>
   <div>
-    <b-row>
-      <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
-        <PathInfo ref="pathInfo" :points="toPass"></PathInfo>
-      </b-col>
-      <b-col style="padding: 0em">
-        <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map"></map-pane>
-      </b-col>
-    </b-row>
+    <map-pane :path-overlay="true" :can-hide="false" @onMapClick="mapClicked" ref="map" v-on:clickOnMarker="clickOnMarker"></map-pane>
   </div>
 </template>
 
 <script>
 import MapPane from "./MapPane";
 import axios from 'axios'
-import PathInfo from "./PathInfo";
 import api from '@/Api'
 
 export default {
   name: "ModifyPathMapPane",
 
   components: {
-    PathInfo,
     MapPane
   },
 
@@ -29,14 +20,15 @@ export default {
     return {
       autoRoute: false,
       canChangeSelection: true,
-      count: 0,
-      toPass: []
+      addMarker: true,
     }
   },
 
   methods: {
     mapClicked(event) {
-      const currObj = this
+      if (!this.addMarker) {
+        return
+      }
       const marker = this.$refs.map.getLatestMarker()
       const coordinates = [event.latlng.lat, event.latlng.lng]
       if (this.autoRoute && marker) {
@@ -44,7 +36,8 @@ export default {
       } else {
         this.$refs.map.routePoints.push(coordinates)
       }
-      this.$refs.map.createMarker(this.count, 3, event.latlng.lat, event.latlng.lng,
+      let id = this.$refs.map.markers.length
+      this.$refs.map.createMarker(id, 3, event.latlng.lat, event.latlng.lng,
           "", null, true)
       this.$refs.map.updateStartFinishMarkers()
 
@@ -53,23 +46,29 @@ export default {
       } else {
         this.canChangeSelection = false
       }
-      currObj.count += 1
+      this.$emit('pathEdited')
     },
 
     clickOnMarker(marker) {
-      const latitude = marker[0]
-      const longitude = marker[1]
-      if (this.autoRoute && marker != null) {
-        this.getRoutePoints(marker)
-      } else {
-        this.$refs.map.routePoints.push(marker)
+      const markerPosition = marker.position
+      if (this.$refs.map.isEndMarker(marker)) {
+        return
       }
-      this.$refs.map.createMarker(this.count, 1, latitude, longitude, "", null)
+      const latitude = markerPosition[0]
+      const longitude = markerPosition[1]
+      if (this.autoRoute && markerPosition != null) {
+        this.getRoutePoints(markerPosition)
+      } else {
+        this.$refs.map.routePoints.push(markerPosition)
+      }
+      let id = this.$refs.map.markers.length
+      this.$refs.map.createMarker(id, 1, latitude, longitude, "", null)
       this.$refs.map.updateStartFinishMarkers()
-      this.count += 1
+      this.$emit('pathEdited')
     },
 
-    handleDragEvent(index, newCoords) {
+    async handleDragEvent(index, newCoords) {
+      this.addMarker = false
       if (!this.autoRoute) {
         this.$refs.map.editSingleRoutePoint(newCoords, index)
         this.$refs.map.routePoints.push(newCoords)
@@ -78,6 +77,14 @@ export default {
         this.getRoutePoints([])
       }
       this.$refs.map.updateStartFinishMarkers()
+      await this.sleep(100).then(() => {
+        this.addMarker = true
+      })
+      this.$emit('pathEdited')
+    },
+
+    async sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     },
 
     getRoutePoints(coordinates) {
@@ -116,6 +123,7 @@ export default {
       this.$refs.map.markers = []
       this.$refs.map.setRoutePoints([])
       this.canChangeSelection = true;
+      this.$emit('pathEdited')
     },
 
     prevPoint() {
@@ -131,19 +139,21 @@ export default {
         }
         this.$refs.map.updateStartFinishMarkers()
       }
+      this.$emit('pathEdited')
     },
 
     /**
      * Load activity path into editor
      * @param profileId
      * @param activityId
+     * @param draggable
      */
-    getPathFromActivity(profileId, activityId) {
+    getPathFromActivity(profileId, activityId, draggable=false) {
       api.getActivityPath(profileId, activityId).then((res) => {
         this.autoRoute = res.data.type === "DEFINED";
         this.canChangeSelection = false;
 
-        this.$refs.map.setPath(res.data, true);
+        this.$refs.map.setPath(res.data, true, false, draggable);
       }).catch((err) => {
         console.error(err);
       });
@@ -169,8 +179,40 @@ export default {
           longitude: keypoint.position[1]
         });
       }
-
       return pathObj;
+    },
+
+    /**
+     * Returns a path object in the same format as a get request from the backend, using editor data
+     **/
+    getUpdatedPathObject() {
+      if(this.$refs.map.routePoints.length === 0) {
+        return {}
+      }
+
+      let pathObj = {
+        id: 0,
+        locations: [],
+        type: this.autoRoute ? "DEFINED" : "STRAIGHT"
+      };
+
+      // Format locations
+      for(const keypoint of this.$refs.map.markers) {
+        pathObj.locations.push({
+          latitude: keypoint.position[0],
+          longitude: keypoint.position[1]
+        });
+        pathObj.id = keypoint.id
+      }
+      return pathObj;
+    },
+
+    /**
+     * Updates the center of the map using lat and lng
+     **/
+    setMapCenterFromIndex(index) {
+      let coordinates = this.$refs.map.markers[index].position
+      this.$refs.map.setMapCenter(coordinates[0], coordinates[1])
     },
 
     /**
@@ -186,15 +228,11 @@ export default {
       }
 
       return api.deleteActivityPath(profileId, activityId);
+    },
+
+    refreshMap(){
+      this.$refs.map.refreshMap()
     }
   },
-  mounted() {
-    this.$refs.pathInfo.data = this.$refs.map.markers
-    if(this.$refs.map.markers == null) {
-      this.toPass = []
-    } else {
-      this.toPass = this.$refs.map.markers
-    }
-  }
 }
 </script>

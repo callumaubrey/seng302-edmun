@@ -75,21 +75,21 @@
 </template>
 
 <script>
-  import api from '@/Api'
-  import RestrictedUsersTabs from "./RestrictedUsersTabs";
-  import AddUsers from "./AddUsers";
+import api from '@/Api'
+import RestrictedUsersTabs from "./RestrictedUsersTabs";
+import AddUsers from "./AddUsers";
 
-  export default {
+export default {
 
-    name: "ShareActivity",
-    components: {RestrictedUsersTabs, AddUsers},
-    props: {
-      profileId: String,
-      activityId: String,
-      modal: Boolean,
-      visibility: String,
-    },
-    data() {
+  name: "ShareActivity",
+  components: {RestrictedUsersTabs, AddUsers},
+  props: {
+    profileId: String,
+    activityId: String,
+    modal: Boolean,
+    visibility: String,
+  },
+  data() {
       return {
         // selectedVisibility: null,
         selected: 'Public',
@@ -130,18 +130,28 @@
                 this.participants["users"] = res.data.Participant;
                 this.followers["users"] = res.data.Follower;
                 this.accessors["users"] = res.data.Access;
+                this.getProfileImage(this.organisers['users']);
+                this.getProfileImage(this.participants['users']);
+                this.getProfileImage(this.followers['users']);
+                this.getProfileImage(this.accessors['users']);
                 this.reformatUserData(this.organisers["users"], "organiser");
                 this.reformatUserData(this.participants["users"], "participant");
                 this.reformatUserData(this.followers["users"], "follower");
-                this.reformatUserData(this.accessors["users"], "access");
+                this.reformatUserData(this.accessors["users"], "access")
                 this.busy = false;
               }
             })
-            .catch(() => {
-              alert("An error has occurred, please refresh the page")
-            });
+        .catch(() => {
+          alert("An error has occurred, please refresh the page")
+        });
         this.showWarning = false
         this.computeUserIds();
+      },
+      async getProfileImage(users) {
+        for (let i = 0; i < users.length; i++) {
+          this.$set(users[i], 'imageSrc',
+              process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
+        }
       },
       /**
        * Gets all the user ids from all the different roles and place them into the array allUsersIds
@@ -184,8 +194,8 @@
         let vueObj = this;
         api.updateActivityVisibility(this.profileId, this.activityId, data)
             .then(function () {
-              vueObj.getCount()
-              vueObj.visibility = vueObj.selected
+              vueObj.getCount();
+              vueObj.visibility = vueObj.selected;
               vueObj.$bvModal.hide('modal-1');
               vueObj.notifyParent();
             })
@@ -198,8 +208,8 @@
         this.changeVisibilityType();
       },
       parseEmailInput() {
-        var entryArray
-        let data = this.emailInput
+        var entryArray;
+        let data = this.emailInput;
         if (data.includes(";")) {
           entryArray = data.split(';')
         } else {
@@ -207,18 +217,18 @@
         }
         this.email = entryArray
       },
-      beforeMount() {
-        this.updateSelectedValue()
+      async beforeMount() {
+        await this.updateSelectedValue()
       },
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
-            .then(function (response) {
-              currentObj.partCount = response.data.participants
-              currentObj.followerCount = response.data.followers
-              currentObj.organiserCount = response.data.organisers
-            })
-            .catch(function () {
+        .then(function (response) {
+          currentObj.partCount = response.data.participants;
+          currentObj.followerCount = response.data.followers;
+          currentObj.organiserCount = response.data.organisers;
+        })
+        .catch(function () {
               alert("An error has occurred, please refresh the page")
             });
       },
@@ -272,9 +282,9 @@
        */
       selectAll: function (users) {
         let i;
-        let len = users.length
+        let len = users.length;
         for (i = 0; i < len; i++) {
-          let user = users[i]
+          let user = users[i];
           user.selected = true;
           user._rowVariant = 'none';
         }
@@ -285,9 +295,9 @@
        */
       deselectAll: function (users) {
         let i;
-        let len = users.length
+        let len = users.length;
         for (i = 0; i < len; i++) {
-          let user = users[i]
+          let user = users[i];
           user.selected = false;
           user._rowVariant = 'danger';
         }
@@ -297,7 +307,7 @@
       },
       addUsers(users) {
         for (let user of users) {
-          user.role = "access"
+          user.role = "access";
           user.selected = true;
           user._rowVariant = 'none';
           this.accessors.users.push(user)
@@ -316,7 +326,7 @@
     watch: {
       selected: function () {
         if (this.organiserCount === 0 && this.partCount === 0 && this.followerCount === 0) {
-          this.showWarning = false
+          this.showWarning = false;
           return
         }
         if (this.visibility === "Restricted" && this.selected === "Private" || (this.visibility
