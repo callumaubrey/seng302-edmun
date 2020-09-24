@@ -264,7 +264,7 @@
         isAuthorized: true,
         metrics: [],
         followSummaryKey: 0,
-        shareActivityKey: 0
+        shareActivityKey: 0,
       }
     },
     mounted() {

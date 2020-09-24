@@ -20,8 +20,12 @@ import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.unit.DataSize;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -1182,6 +1186,11 @@ public class ActivityController {
       return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
     }
 
+    // Check image size
+    if (file.getSize() > Activity.MAX_IMAGE_SIZE) {
+      return new ResponseEntity<>("Image limit of " + DataSize.ofBytes(Activity.MAX_IMAGE_SIZE), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
     String fileName = fileService.uploadActivityImage(file, activityId);
     if (fileName == null) {
       return new ResponseEntity<>("Failed to upload image",HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1191,6 +1200,80 @@ public class ActivityController {
     activityRepository.save(activity);
 
 
-    return new ResponseEntity<>("Allgood",HttpStatus.ACCEPTED);
+    return new ResponseEntity<>("OK",HttpStatus.ACCEPTED);
+  }
+
+
+  /**
+   * Removes main image from an activity
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param session the session
+   * @return OK if successful, 4xx error if not.
+   */
+  @DeleteMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity removeActivityImage(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
+      return new ResponseEntity<>("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+
+    // Remove activity file
+    if(!fileService.removeActivityImage(activity.getFileName())) {
+      return new ResponseEntity<>("Failed to delete image", HttpStatus.EXPECTATION_FAILED);
+    }
+    activity.setFileName(null);
+    activityRepository.save(activity);
+
+    return new ResponseEntity<>("OK",HttpStatus.OK);
+  }
+
+
+  /**
+   * Get main image of an activity
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param session the session
+   * @return image content
+   */
+  @GetMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity<byte[]> getActivityImage(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      HttpSession session) {
+
+    // Check image exists
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    // Get MIME type from extension
+    String mimeType = fileService.getMIMEType(activity.getFileName());
+    if(mimeType == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Get image data
+    byte[] data = fileService.getActivityImage(activity.getFileName());
+    if (data.length == 0) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Prepare response
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(mimeType));
+
+    return new ResponseEntity<byte[]>(data, headers, HttpStatus.OK);
   }
 }
