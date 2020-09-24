@@ -258,17 +258,13 @@
 
                 if (this.isActivity === true) {
                     api.updateActivityImage(id, formData).then(
-                        (response) => {
-                          console.log(response)
-                        }).catch((error) => {
+                        ).catch((error) => {
                           console.log(error.response);
                         }
                     );
                 } else {
                     api.updateProfileImage(id, formData).then(
-                        (response) => {
-                          console.log(response)
-                        }).catch((error) => {
+                        ).catch((error) => {
                           console.log(error.response);
                         }
                     );
@@ -283,19 +279,15 @@
             deleteImageToAPI: function (id) {
                 if (this.isActivity === true) {
                     api.deleteActivityImage(id).then(
-                        (response) => {
-                          console.log(response)
-                        }).catch((error) => {
+                        ).catch((error) => {
                           console.log(error.response);
                         }
                     );
                 } else {
                     api.deleteProfileImage(id).then(
-                        (response) => {
-                          console.log(response)
-                        }).catch((error) => {
+                       ).catch((error) => {
                           console.log(error.response);
-                        }
+                       }
                     );
                 }
             }
