@@ -25,6 +25,7 @@
                        :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
                        save-on-change
                        style="min-width: 440px; min-height: 248px;"
+                       image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
             ></UserImage>
           </b-col>
         </b-row>
@@ -473,7 +474,7 @@
               this.activityName);
           map.setMapCenter(this.location.latitude, this.location.longitude);
         }
-      this.$refs.followUserList.getMembers();
+        this.$refs.followUserList.getMembers();
 
         if (this.activity.path !== null) {
           map.setPath(this.activity.path, true, true);
