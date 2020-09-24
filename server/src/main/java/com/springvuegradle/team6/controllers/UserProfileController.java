@@ -524,7 +524,7 @@ public class UserProfileController {
   @PutMapping("/{id}/image")
   public ResponseEntity updatePhoto(
           @PathVariable Integer id,
-          @RequestParam MultipartFile file,
+          @RequestParam("file") MultipartFile file,
           HttpSession session) {
 
     Optional<Profile> p = repository.findById(id);
