@@ -485,6 +485,7 @@
       },
       activityIsFollowed() {
         this.$refs.followSummary.loadFollowerSummary();
+        this.$refs.followerUserList.getMembers();
       }
 
     }
