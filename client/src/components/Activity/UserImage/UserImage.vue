@@ -371,10 +371,7 @@
           );
 
         }
-
-      }
     }
-  }
 </script>
 
 <style scoped>
