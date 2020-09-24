@@ -8,7 +8,7 @@
                 <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in participants">
                     <b-row class="text-center" align-v="center">
                       <b-col cols="2">
-                        <b-img alt="Center image" center height="80px" rounded="circle"
+                        <b-img center height="80px" rounded="circle"
                                :src="user.imageSrc"
                                onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
                                width="80px"></b-img>
@@ -32,7 +32,7 @@
                           v-for="user in organisers">
                     <b-row align-v="center" class="text-center">
                       <b-col cols="2">
-                        <b-img alt="Center image" center height="80px" rounded="circle"
+                        <b-img center height="80px" rounded="circle"
                                :src=user.imageSrc
                                onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
                                width="80px"></b-img>
@@ -54,7 +54,7 @@
                   <b-card style="margin-top:10px;" :key="user.profile_id" v-for="user in accessors">
                     <b-row align-v="center" class="text-center">
                       <b-col cols="2">
-                        <b-img alt="Center image" center height="80px" rounded="circle"
+                        <b-img center height="80px" rounded="circle"
                                :src=user.imageSrc
                                onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
                                width="80px"></b-img>

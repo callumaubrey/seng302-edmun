@@ -5,7 +5,7 @@
       <b-card-body>
         <b-row>
           <b-col cols="1.0">
-            <b-img :src=profile.imageSrc alt="Center image" center height="80px"
+            <b-img :src=profile.imageSrc center height="80px"
                    onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
                    rounded="circle"
                    width="80px"></b-img>
