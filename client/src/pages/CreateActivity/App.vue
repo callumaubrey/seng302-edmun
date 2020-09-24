@@ -239,7 +239,8 @@
 
               <!-- Path Editor -->
               <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit"
+                                       :profileId="profileId"></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -281,11 +282,11 @@
   import locationMixin from "../../mixins/locationMixin";
   import AdminMixin from "../../mixins/AdminMixin";
   import api from '@/Api'
-  import {store} from "../../store";
   import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
   import UserImage from "../../components/Activity/UserImage/UserImage";
+
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
@@ -519,34 +520,15 @@
             metrics: this.$refs.metric_editor.getMetricData()
           };
           console.log(this.$refs.image.image_data)
-          let vueObj = this;
           api.createActivity(userId, data)
               .then(async function (res) {
                 const activityId = res.data;
-                let formData = new FormData();
-                formData.append("file", vueObj.$refs.image.image_data)
-                api.updateActivityImage(userId, activityId, formData).then(
-                    (response) => {
-                      console.log(response)
-                    }).catch((err) => {
-                  console.log(err)
-                })
-
-                currentObj.submitPath(activityId).then(() => {
-                  store.newNotification('Activity created successfully', 'success', 4)
-                  // currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification(
-                      'Activity created successfully, Path was unable to be created. Try again later.',
-                      'warning', 4);
-                  // currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                });
-
+                await currentObj.apiAfterActivityCreation(userId, activityId);
+                await currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
               })
               .catch(function (err) {
                 console.log(err)
-                currentObj.$bvToast.toast('Failed to create activity, server error', {
+                currentObj.$root.$bvToast.toast('Failed to create activity, server error', {
                   toaster: "b-toaster-bottom-center",
                   variant: "danger",
                   solid: true
@@ -575,27 +557,56 @@
             metrics: this.$refs.metric_editor.getMetricData()
           };
           api.createActivity(userId, data)
-              .then(function (res) {
+              .then(async function (res) {
                 const activityId = res.data;
-                currentObj.submitPath(activityId).then(() => {
-                  store.newNotification('Activity created successfully', 'success', 4)
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                }).catch((err) => {
-                  console.error(err);
-                  store.newNotification(
-                      'Activity created successfully, Path was unable to be created. Try again later.',
-                      'warning', 4);
-                  currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
-                });
+                await currentObj.apiAfterActivityCreation(userId, activityId);
+                await currentObj.$router.push('/profiles/' + userId + '/activities/' + activityId);
               })
               .catch(function () {
-                currentObj.$bvToast.toast('Failed to create activity, server error', {
+                currentObj.$root.$bvToast.toast('Failed to create activity, server error', {
                   toaster: "b-toaster-bottom-center",
                   variant: "danger",
                   solid: true
                 })
               });
         }
+      },
+      apiAfterActivityCreation: async function (userId, activityId) {
+        let currentObj = this;
+        let activityImage = currentObj.$refs.image.image_data
+        if (activityImage != null) {
+          let formData = new FormData();
+          formData.append("file", currentObj.$refs.image.image_data)
+          await api.updateActivityImage(userId, activityId, formData).then(
+              () => {
+                currentObj.$root.$bvToast.toast('Activity created successfully', {
+                  variant: "success",
+                  solid: true
+                })
+              }).catch(() => {
+            currentObj.$root.$bvToast.toast(
+                'Activity created successfully, but image failed to upload.',
+                {
+                  variant: "warning",
+                  solid: true
+                })
+          })
+        }
+
+        await currentObj.submitPath(activityId).then(() => {
+          currentObj.$root.$bvToast.toast('Activity created successfully', {
+            variant: "success",
+            solid: true
+          })
+
+        }).catch(() => {
+          currentObj.$root.$bvToast.toast(
+              'Activity created successfully, Path was unable to be created. Try again later.',
+              {
+                variant: "warning",
+                solid: true
+              })
+        });
       },
       submitPath: function (activityId) {
         // Update path

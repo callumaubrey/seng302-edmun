@@ -66,16 +66,14 @@
                  rounded="lg" class="activity-profile-overlay fill_space">
 
         <!-- Avatar Image -->
-        <div v-if="!default_image"
-             style="overflow: hidden">
-        <b-img
+        <b-img v-if="!default_image"
                :src="image_src" alt=""
                rounded="lg"
                @error="handleInvalidSrcError"
                class="user-profile-img fill_space"
         ></b-img>
         <!-- Default Image -->
-        </div>
+
         <div v-else
              class="activity_default_img_container user-profile-img fill_space rounded-lg">
           <b-img :src="require('@/assets/goatonly_navbar.png')" style="max-height: 50%"></b-img>
@@ -108,6 +106,10 @@
                   <i class="fas fa-trash fa-stack-1x fa-inverse"></i>
                 </span>
             </div>
+
+            <span style="color: pink">
+                  {{imageWarning}}
+            </span>
 
             <!-- Image Input -->
             <input id="file-upload" class="d-none"
@@ -166,6 +168,10 @@
       isActivity: {
         type: Boolean,
         default: false
+      },
+      imageWarning: {
+        type: String,
+        default: "The image will be stretched if it does not match the aspect ratio"
       }
     },
     mounted() {
