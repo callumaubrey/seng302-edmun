@@ -1,13 +1,14 @@
 <template>
   <div>
-    <b-card v-for="(profile, index) in roleData.users" v-bind:key="index"
+    <b-card v-for="(profile, index) in data.users" v-bind:key="index"
             v-bind:class="{'border-variant-danger': profile.selected === false}">
       <b-card-body>
         <b-row>
           <b-col cols="1.0">
-            <b-img alt="Center image" center height="50px" rounded="circle"
-                   src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
-                   width="50px"></b-img>
+            <b-img :src=profile.imageSrc alt="Center image" center height="80px"
+                   onerror="this.onerror=null;this.src='https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg'"
+                   rounded="circle"
+                   width="80px"></b-img>
           </b-col>
           <b-col class="text-lg-left">
             {{ profile.full_name }}
@@ -22,7 +23,7 @@
           </b-col>
           <b-form-checkbox
               v-model="profile.selected"
-              v-on:change="rowColor(profile, index)"
+              v-on:change="rowChanged(profile, index)"
           >
           </b-form-checkbox>
         </b-row>
@@ -41,49 +42,47 @@
 
 <script>
 
+
   export default {
     name: "RestrictedUsersCard",
     data: function () {
       return {
-        data: {}
+        data: {},
+        defaultImg: "https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
       }
     },
     props: ['roleData', 'activityRoles'],
     methods: {
-      rowColor(profile, index) {
-        this.rowChanged(profile, index)
-      },
       rowChanged(profile, index) {
-        console.log("TEST")
-        console.log(this.roleData)
         let obj = {}
         obj.index = index
         obj.item = profile
         this.$emit('rowChanged', obj)
       },
       selectAll: function () {
-        console.log("SELECT FLAG")
         this.$emit('selectAll')
       },
       deselectAll: function () {
-        console.log("DESELECT FLAG")
         this.$emit('deselectAll')
       },
+      // async getProfileImage(users) {
+      //   for (let i = 0; i < users.length; i++) {
+      //     await api.getProfileImage(users[i].profile_id)
+      //     .then(() => {
+      //       console.log("YES")
+      //       this.$set(users[i], 'imageSrc', process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
+      //     })
+      //     .catch(() => {
+      //       this.$set(users[i], 'imageSrc', "https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg")
+      //       // users[i].imageSrc = "https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg";
+      //     })
+      //   }
+      // }
     },
-    beforeMount() {
-      console.log(this.roleData)
+    async beforeMount() {
       this.data = this.roleData;
-    },
-    watch: {
-      roleData: {
-        handler: function (roleData) {
-          console.log("CARD")
-          console.log(roleData)
-          // check someData and eventually call
-          this.$forceUpdate()
-        },
-        immediate: true
-      }
+      this.selectAll();
+      // await this.getProfileImage(this.data.users)
     }
   }
 </script>

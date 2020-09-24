@@ -11,11 +11,11 @@
                                   :fields="fields"
                                   :hidden="rolesData"></restricted-users-table>
         <RestrictedUsersCard
-              :activity-roles="activityRoles"
-              :role-data="data.organisers"
-              v-on:deselectAll="deselectAllOrganisers"
-              v-on:rowChanged="organisersChanged"
-              v-on:selectAll="selectAllOrganisers"></RestrictedUsersCard>
+            :activity-roles="activityRoles"
+            :role-data="rolesData.organisers"
+            v-on:deselectAll="deselectAllOrganisers"
+            v-on:rowChanged="organisersChanged"
+            v-on:selectAll="selectAllOrganisers"></RestrictedUsersCard>
         </b-tab>
 
 
@@ -29,7 +29,7 @@
                                   :hidden="rolesData"></restricted-users-table>
           <RestrictedUsersCard
               :activity-roles="activityRoles"
-              :role-data="data.participants"
+              :role-data="rolesData.participants"
               v-on:deselectAll="deselectAllParticipants"
               v-on:rowChanged="participantsChanged"
               v-on:selectAll="selectAllParticipants"
@@ -46,7 +46,7 @@
                                   :hidden="rolesData"></restricted-users-table>
           <RestrictedUsersCard
               :activity-roles="activityRoles"
-              :role-data="data.followers"
+              :role-data="rolesData.followers"
               v-on:deselectAll="deselectAllFollowers"
               v-on:rowChanged="followersChanged"
               v-on:selectAll="selectAllFollowers"></RestrictedUsersCard>
@@ -62,7 +62,7 @@
                                   :hidden="rolesData"></RestrictedUsersTable>
           <RestrictedUsersCard
               :activity-roles="activityRoles"
-              :role-data="data.accessors"
+              :role-data="rolesData.accessors"
               v-on:deselectAll="deselectAllAccessors"
               v-on:rowChanged="accessorsChanged"
               v-on:selectAll="selectAllAccessors"></RestrictedUsersCard>

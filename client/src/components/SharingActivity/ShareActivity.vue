@@ -130,18 +130,28 @@ export default {
                 this.participants["users"] = res.data.Participant;
                 this.followers["users"] = res.data.Follower;
                 this.accessors["users"] = res.data.Access;
+                this.getProfileImage(this.organisers['users']);
+                this.getProfileImage(this.participants['users']);
+                this.getProfileImage(this.followers['users']);
+                this.getProfileImage(this.accessors['users']);
                 this.reformatUserData(this.organisers["users"], "organiser");
                 this.reformatUserData(this.participants["users"], "participant");
                 this.reformatUserData(this.followers["users"], "follower");
-                this.reformatUserData(this.accessors["users"], "access");
+                this.reformatUserData(this.accessors["users"], "access")
                 this.busy = false;
               }
             })
-            .catch(() => {
-              alert("An error has occurred, please refresh the page")
-            });
+        .catch(() => {
+          alert("An error has occurred, please refresh the page")
+        });
         this.showWarning = false
         this.computeUserIds();
+      },
+      async getProfileImage(users) {
+        for (let i = 0; i < users.length; i++) {
+          this.$set(users[i], 'imageSrc',
+              process.env.VUE_APP_SERVER_ADD + "/profiles/" + users[i].profile_id + "/image")
+        }
       },
       /**
        * Gets all the user ids from all the different roles and place them into the array allUsersIds
@@ -207,18 +217,18 @@ export default {
         }
         this.email = entryArray
       },
-      beforeMount() {
-        this.updateSelectedValue()
+      async beforeMount() {
+        await this.updateSelectedValue()
       },
       getCount() {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
-            .then(function (response) {
-              currentObj.partCount = response.data.participants
-              currentObj.followerCount = response.data.followers
-              currentObj.organiserCount = response.data.organisers
-            })
-            .catch(function () {
+        .then(function (response) {
+          currentObj.partCount = response.data.participants
+          currentObj.followerCount = response.data.followers
+          currentObj.organiserCount = response.data.organisers
+        })
+        .catch(function () {
               alert("An error has occurred, please refresh the page")
             });
       },
