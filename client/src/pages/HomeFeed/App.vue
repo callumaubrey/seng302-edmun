@@ -4,8 +4,10 @@
         <b-container>
             <b-row>
                 <b-col cols="3">
-                    <b-row align-h="center">
-                        <b-avatar size="6rem" style="text-align: center"></b-avatar>
+                    <b-row align-h="center" style="font-size: 4em;">
+                        <b-col>
+                            <UserImage :id="userId" save-on-change ></UserImage>
+                        </b-col>
                     </b-row>
                     <b-row style="margin-top: 10px;" align-h="center">
                         <p style="padding-bottom:0;margin-bottom: 0;font-size:18px">{{ fullName }}</p>
@@ -37,10 +39,13 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import api from '@/Api';
+    import UserImage from "../../components/Activity/UserImage/UserImage";
+
 
     export default {
         components: {
-            NavBar
+            NavBar,
+            UserImage
         },
         data() {
             return {
