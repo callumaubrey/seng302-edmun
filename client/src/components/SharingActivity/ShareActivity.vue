@@ -194,8 +194,8 @@ export default {
         let vueObj = this;
         api.updateActivityVisibility(this.profileId, this.activityId, data)
             .then(function () {
-              vueObj.getCount()
-              vueObj.visibility = vueObj.selected
+              vueObj.getCount();
+              vueObj.visibility = vueObj.selected;
               vueObj.$bvModal.hide('modal-1');
               vueObj.notifyParent();
             })
@@ -208,8 +208,8 @@ export default {
         this.changeVisibilityType();
       },
       parseEmailInput() {
-        var entryArray
-        let data = this.emailInput
+        var entryArray;
+        let data = this.emailInput;
         if (data.includes(";")) {
           entryArray = data.split(';')
         } else {
@@ -224,9 +224,9 @@ export default {
         const currentObj = this;
         api.getActivityMemberCounts(this.activityId)
         .then(function (response) {
-          currentObj.partCount = response.data.participants
-          currentObj.followerCount = response.data.followers
-          currentObj.organiserCount = response.data.organisers
+          currentObj.partCount = response.data.participants;
+          currentObj.followerCount = response.data.followers;
+          currentObj.organiserCount = response.data.organisers;
         })
         .catch(function () {
               alert("An error has occurred, please refresh the page")
@@ -282,9 +282,9 @@ export default {
        */
       selectAll: function (users) {
         let i;
-        let len = users.length
+        let len = users.length;
         for (i = 0; i < len; i++) {
-          let user = users[i]
+          let user = users[i];
           user.selected = true;
           user._rowVariant = 'none';
         }
@@ -295,9 +295,9 @@ export default {
        */
       deselectAll: function (users) {
         let i;
-        let len = users.length
+        let len = users.length;
         for (i = 0; i < len; i++) {
-          let user = users[i]
+          let user = users[i];
           user.selected = false;
           user._rowVariant = 'danger';
         }
@@ -307,7 +307,7 @@ export default {
       },
       addUsers(users) {
         for (let user of users) {
-          user.role = "access"
+          user.role = "access";
           user.selected = true;
           user._rowVariant = 'none';
           this.accessors.users.push(user)
@@ -326,7 +326,7 @@ export default {
     watch: {
       selected: function () {
         if (this.organiserCount === 0 && this.partCount === 0 && this.followerCount === 0) {
-          this.showWarning = false
+          this.showWarning = false;
           return
         }
         if (this.visibility === "Restricted" && this.selected === "Private" || (this.visibility

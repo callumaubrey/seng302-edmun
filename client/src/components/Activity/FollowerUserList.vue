@@ -198,8 +198,6 @@ export default {
             role: role
           }
         };
-        console.log(res.data.primary_email.address);
-        console.log(role);
       }).catch(err => {
         console.log(err)
 
@@ -235,7 +233,6 @@ export default {
       });
       await api.removeRole(this.activityCreatorId, this.activityId, this.roleData)
       .then(() => {
-        console.log("there is a bug so this will never run");
       })
       .catch(err => {
         console.log(err);

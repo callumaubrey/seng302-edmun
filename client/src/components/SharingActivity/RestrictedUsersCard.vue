@@ -53,10 +53,16 @@
     },
     props: ['roleData', 'activityRoles'],
     methods: {
+
+      /**
+       * This method lets the parent (Table) that the role of the profile in this card has changed
+       * @param profile the profile of the card
+       * @param index, is the index of the profile in the list of profiles
+       */
       rowChanged(profile, index) {
-        let obj = {}
-        obj.index = index
-        obj.item = profile
+        let obj = {};
+        obj.index = index;
+        obj.item = profile;
         this.$emit('rowChanged', obj)
       },
       selectAll: function () {
