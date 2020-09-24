@@ -17,13 +17,15 @@
       </div>
       <b-row v-else-if="!locationDataLoading" class="content_container">
       <!-- Left Side bar -->
-      <b-col lg="3" class="pt-4" style="max-height: 100% !important; background: #2c3136;">
+      <b-col lg="3" class="pt-4" style="min-width: 480px; overflow-y: auto; min-height: 100% !important; background: #2c3136;">
         <!-- Image and Name -->
-        <b-row style="font-size: 6em;" align-content="center">
-          <b-col style="max-width: 460px; height: 230px; margin:auto;">
+        <b-row style="font-size: 6em;" align-h="center">
+          <b-col style="max-width: 440px; max-height: 248px; padding: 0em; margin: 0em">
             <UserImage :id="parseInt($route.params.activityId)" is-activity
                        :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
-                       save-on-change></UserImage>
+                       save-on-change
+                       style="min-width: 440px; min-height: 248px;"
+            ></UserImage>
           </b-col>
         </b-row>
         <b-row align-h="center">
@@ -59,7 +61,7 @@
         </b-row>
 
 <!--        About-->
-        <b-card style="margin: 1em">
+        <b-card style="margin: 1em; overflow: auto">
           <div v-if="locationDataLoading">
             <div class="text-center text-primary my-2">
               <b-spinner class="align-middle"></b-spinner>
