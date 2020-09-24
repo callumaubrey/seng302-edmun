@@ -6,6 +6,8 @@ import com.springvuegradle.team6.models.entities.ActivityRoleType;
 import com.springvuegradle.team6.models.entities.ActivityType;
 import com.springvuegradle.team6.models.entities.Email;
 import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.Path;
+import com.springvuegradle.team6.models.entities.PathType;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.entities.Role;
 import com.springvuegradle.team6.models.entities.Tag;
@@ -13,6 +15,7 @@ import com.springvuegradle.team6.models.repositories.ActivityRepository;
 import com.springvuegradle.team6.models.repositories.ActivityRoleRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
 import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.models.repositories.PathRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
 import com.springvuegradle.team6.models.repositories.RoleRepository;
 import com.springvuegradle.team6.models.repositories.TagRepository;
@@ -21,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -57,6 +61,9 @@ public class SetupDataLoader implements
 
   @Autowired
   private ActivityRoleRepository activityRoleRepository;
+
+  @Autowired
+  private PathRepository pathRepository;
 
   @Autowired
   private TagRepository tagRepository;
@@ -156,10 +163,9 @@ public class SetupDataLoader implements
   /**
    * Creates semi random users, used for populating the database
    * <p>
-   * First Name: chooses a random name from the first name list Last Name: always Edmun to identify sample users
-   * Primary Email: FirstName LastName Index @testemail.com (this is to ensure there
-   * are no primary keys being the same)
-   * Role: Assigns the profile to be a user
+   * First Name: chooses a random name from the first name list Last Name: always Edmun to identify
+   * sample users Primary Email: FirstName LastName Index @testemail.com (this is to ensure there
+   * are no primary keys being the same) Role: Assigns the profile to be a user
    *
    * @param numberOfUsers The number of users you want to create
    */
@@ -203,17 +209,39 @@ public class SetupDataLoader implements
     //City locations and names
     String[] locationNames = {"Napier", "Christchurch", "Auckland", "Wellington"};
     double[][] locations = {{-39.548530, 176.796837}, {-43.522663, 172.554899},
-        {-36.892801, 174.768907}, {-41.112469, 175.060221}};
+        {-36.892801, 174.768907}, {-39.496623, 176.873982}};
+
+    //SetUp Paths
+    //    Christchurch
+    List<Location> christchurchPathLocations = Arrays.asList(new Location(-43.521170, 172.626230),
+        new Location(-43.539963, 172.612831), new Location(-43.517062, 172.572292));
+    for (Location location : christchurchPathLocations) {
+      locationRepository.save(location);
+    }
+    Path christchurchDefined = new Path(christchurchPathLocations,
+        PathType.DEFINED);//Christchurch Path
+    pathRepository.save(christchurchDefined);
+
+    //    Napier
+    List<Location> napierPathLocations = Arrays.asList(new Location(-39.533703, 176.850110),
+        new Location(-39.497020, 176.864883), new Location(-39.479102, 176.917514),
+        new Location(-39.489635, 176.900073));
+    for (Location location : napierPathLocations) {
+      locationRepository.save(location);
+    }
+    Path napierDefined = new Path(napierPathLocations, PathType.DEFINED);//Napier Path
+    pathRepository.save(napierDefined);
+
     ArrayList<Tag> locationTags = new ArrayList<>();
-    Double randomLocationPositionLng;
-    Double randomLocationPositionLat;
+    double randomLocationPositionLng;
+    double randomLocationPositionLat;
     int randomType;
     int randomLocation;
     int continuous;
 
     //tags
-    for (int i = 0; i < locationNames.length; i++) {
-      Tag tag = new Tag(locationNames[i]);
+    for (String name : locationNames) {
+      Tag tag = new Tag(name);
       tagRepository.save(tag);
       locationTags.add(tag);
     }
@@ -237,6 +265,13 @@ public class SetupDataLoader implements
       tags.add(locationTags.get(randomLocation));
 
       //Activity location. This is based off of city locations with some randomness
+      if (locationNames[randomLocation].equals("Christchurch")) {
+        activity.setPath(christchurchDefined);
+      }
+      if (locationNames[randomLocation].equals("Napier")) {
+        activity.setPath(napierDefined);
+      }
+
       Location location = new Location(locations[randomLocation][0] + randomLocationPositionLat,
           locations[randomLocation][1] + randomLocationPositionLng);
       String locationName = locationService
