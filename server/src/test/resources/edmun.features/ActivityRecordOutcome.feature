@@ -10,8 +10,8 @@ Feature: Recording my participation outcome in an activity
   Scenario: I can add the details of my participation in an activity with a duration metric
     Given there is an activity that has a duration metric
     And I am a participant of the activity
-    When I add the details of my participation in the activity with duration of 30 seconds
-    Then the details of my participation is recorded as 30 seconds for the duration metric
+    When I add the details of my participation in the activity with duration of "PT11S"
+    Then the details of my participation is recorded as "PT11S" for the duration metric
 
   @U29
   #AC1
@@ -35,17 +35,17 @@ Feature: Recording my participation outcome in an activity
     Given there is an activity that has a finish metric
     And I am a participant of the activity
     When I add the details of my participation in the activity
-      | Start Time          | End Time            |
-      | 2020-01-01 13:00:00 | 2020-01-02 13:00:00 |
+      | Start Time | 2020-01-01T13:00:00+1300 |
+      | End Time   | 2020-01-02T13:00:00+1300 |
     Then the details of my participation is recorded as
-      | Start Time          | End Time            |
-      | 2020-01-01 13:00:00 | 2020-01-02 13:00:00 |
+      | Start Time | 2020-01-01T13:00:00 |
+      | End Time   | 2020-01-02T13:00:00 |
 
 
   @U29
   #AC3
   Scenario: I can disqualify myself from the activity
-    Given there is an activity
+    Given there is an activity that has a finish metric
     And I am a participant of the activity
     When I add the details of my participation as disqualified
     Then the details of my participation is recorded disqualified
@@ -53,17 +53,8 @@ Feature: Recording my participation outcome in an activity
 
   @U29
   #AC3
-  Scenario: I disqualify someone from my activity
-    Given I am a creator of an activity
-    And my activity has a participant
-    When I disqualify the participant in the activity
-    Then the details of the participant being disqualified is recorded in the activity
-
-
-  @U29
-  #AC3
   Scenario: I can record a technical failure for the activity that I participated in
-    Given there is an activity
+    Given there is an activity that has a finish metric
     And I am a participant of the activity
     When I add the details of my participation as technical failure
     Then the details of my participation is recorded technical failure
@@ -72,29 +63,10 @@ Feature: Recording my participation outcome in an activity
   @U29
   #AC3
   Scenario: I can record a did not finish outcome for the activity that I participated in
-    Given there is an activity
+    Given there is an activity that has a finish metric
     And I am a participant of the activity
     When I add the details of my participation as did not finish
     Then the details of my participation is recorded as did not finish
-
-  @U29
-  #AC4
-  Scenario: I can view outcomes of activity that I participated in the home feed
-    Given there is an activity that has a duration metric
-    And I am a participant of the activity
-    When I add the details of my participation in the activity with duration of 30 seconds
-    Then the details of the outcome of my participation is recorded as 30 seconds will display in my home feed
-
-
-  @U29
-  #AC4
-  Scenario: I can view outcomes of activity that I subscribed to in the home feed
-    Given there is an activity that has a duration metric
-    And I am a participant of the activity
-    When A participant add the details of their participation in the activity with duration of 30 seconds
-    Then the details of the outcome of their participation is recorded as 30 seconds will display in my home feed
-
-
 
 
 

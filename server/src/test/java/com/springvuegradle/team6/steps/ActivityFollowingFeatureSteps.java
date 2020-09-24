@@ -15,14 +15,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.servlet.http.HttpSession;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -30,20 +28,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
-@DirtiesContext
 public class ActivityFollowingFeatureSteps {
 
-  @Autowired
-  private ProfileRepository profileRepository;
+  @Autowired private ProfileRepository profileRepository;
 
-  @Autowired
-  private ActivityRepository activityRepository;
+  @Autowired private ActivityRepository activityRepository;
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Autowired
-  private LoginSteps loginSteps;
+  @Autowired private LoginSteps loginSteps;
 
   private ResultActions mvcResponse;
 
@@ -58,27 +51,29 @@ public class ActivityFollowingFeatureSteps {
   @Given("I create an activity {string}")
   public void i_create_an_activity(String activityName) throws Exception {
     String jsonString;
-    jsonString = "{\n" +
-            "  \"activity_name\": \"" + activityName + "\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true\n" +
-            "}";
+    jsonString =
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityName
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
     String createActivityUrl = "/profiles/" + loginSteps.profileId + "/activities";
     activityId =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(createActivityUrl)
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(loginSteps.session))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
+        mvc.perform(
+                MockMvcRequestBuilders.post(createActivityUrl)
+                    .content(jsonString)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(loginSteps.session))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
   }
 
   @Then("User with email {string} home feed shows")
@@ -114,7 +109,7 @@ public class ActivityFollowingFeatureSteps {
   }
 
   @When("User follows the activity {string}")
-  public void user_follows_the_activity(String activityName) throws Exception{
+  public void user_follows_the_activity(String activityName) throws Exception {
     Profile profile = new Profile();
     profile.setFirstname("Doe");
     profile.setLastname("John");
@@ -126,44 +121,44 @@ public class ActivityFollowingFeatureSteps {
     followerId = profile.getId();
 
     followerSession = new MockHttpSession();
-    jsonString = "{\n"
-        + "\t\"email\": \"doe@email.com\",\n"
-        + "\t\"password\": \"Password1\"\n"
-        + "}";
+    jsonString =
+        "{\n" + "\t\"email\": \"doe@email.com\",\n" + "\t\"password\": \"Password1\"\n" + "}";
     String loginUrl = "/login";
-    mvcResponse = mvc.perform(
-        MockMvcRequestBuilders.post(loginUrl)
-            .content(jsonString)
-            .contentType(MediaType.APPLICATION_JSON)
-            .session(followerSession));
+    mvcResponse =
+        mvc.perform(
+            MockMvcRequestBuilders.post(loginUrl)
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(followerSession));
 
     Activity activity = activityRepository.findByActivityName(activityName);
-    String url = "/profiles/"+ followerId + "/subscriptions/activities/" + activity.getId();
+    String url = "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId();
     mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.post(url)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(followerSession)).andExpect(status().isOk());
+        mvc.perform(
+                MockMvcRequestBuilders.post(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(followerSession))
+            .andExpect(status().isOk());
   }
 
   @Then("User is a follower of {string}")
-  public void user_is_a_follower_of(String activityName) throws Exception{
+  public void user_is_a_follower_of(String activityName) throws Exception {
     Activity activity = activityRepository.findByActivityName(activityName);
-    String url = "/profiles/"+ followerId + "/subscriptions/activities/" + activity.getId();
+    String url = "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId();
     mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.get(url)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(followerSession));
+        mvc.perform(
+            MockMvcRequestBuilders.get(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(followerSession));
     String response =
-            mvc.perform(MockMvcRequestBuilders
-                    .get("/profiles/"+ followerId+ "/subscriptions/activities/" + activity.getId())
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .session(followerSession)
-            )
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+                    .session(followerSession))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
     JSONObject obj = new JSONObject(response);
     org.junit.jupiter.api.Assertions.assertEquals(true, obj.get("subscribed"));
   }
@@ -171,56 +166,61 @@ public class ActivityFollowingFeatureSteps {
   @When("User unfollows the activity {string}")
   public void userUnfollowsTheActivity(String activityName) throws Exception {
     Activity activity = activityRepository.findByActivityName(activityName);
-    String url = "/profiles/"+ followerId + "/subscriptions/activities/" + activity.getId();
+    String url = "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId();
     mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.delete(url)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(followerSession)).andExpect(status().isOk());
+        mvc.perform(
+                MockMvcRequestBuilders.delete(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(followerSession))
+            .andExpect(status().isOk());
   }
 
   @Then("User is not a follower of {string}")
   public void userIsNotAFollowerOf(String activityName) throws Exception {
     Activity activity = activityRepository.findByActivityName(activityName);
-    String url = "/profiles/"+ followerId + "/subscriptions/activities/" + activity.getId();
+    String url = "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId();
     mvcResponse =
-            mvc.perform(
-                    MockMvcRequestBuilders.get(url)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .session(followerSession));
+        mvc.perform(
+            MockMvcRequestBuilders.get(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(followerSession));
     String response =
-            mvc.perform(MockMvcRequestBuilders
-                    .get("/profiles/"+ followerId + "/subscriptions/activities/" + activity.getId())
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        "/profiles/" + followerId + "/subscriptions/activities/" + activity.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .session(followerSession)
-            )
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+                    .session(followerSession))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
     JSONObject obj = new JSONObject(response);
     System.err.println(obj);
     org.junit.jupiter.api.Assertions.assertEquals(false, obj.get("subscribed"));
   }
 
   @When("the activity {string} has its name changed to {string}")
-  public void the_activity_has_its_name_changed_to(String activityNameBefore, String activityNameAfter) throws Exception {
+  public void the_activity_has_its_name_changed_to(
+      String activityNameBefore, String activityNameAfter) throws Exception {
     String jsonString;
-    jsonString = "{\n" +
-            "  \"activity_name\": \"" + activityNameAfter + "\",\n" +
-            "  \"description\": \"tramping iz fun\",\n" +
-            "  \"activity_type\":[ \n" +
-            "    \"Hike\",\n" +
-            "    \"Bike\"\n" +
-            "  ],\n" +
-            "  \"continuous\": true\n" +
-            "}";
+    jsonString =
+        "{\n"
+            + "  \"activity_name\": \""
+            + activityNameAfter
+            + "\",\n"
+            + "  \"description\": \"tramping iz fun\",\n"
+            + "  \"activity_type\":[ \n"
+            + "    \"Hike\",\n"
+            + "    \"Bike\"\n"
+            + "  ],\n"
+            + "  \"continuous\": true\n"
+            + "}";
 
     String editActivityUrl = "/profiles/" + loginSteps.profileId + "/activities/" + activityId;
     mvc.perform(
             MockMvcRequestBuilders.put(editActivityUrl)
-                    .content(jsonString)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .session(loginSteps.session))
-            .andExpect(status().isOk());
+                .content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(loginSteps.session))
+        .andExpect(status().isOk());
   }
 }

@@ -162,8 +162,8 @@
 
                     // Calculate type
                     let type = "keypoint";
-                    if(i === 0) type = "start";
                     if(i === this.path.locations.length-1) type = "end";
+                    if(i === 0) type = "start";
 
                     this.keypointInfo.push({
                         index: i,
@@ -255,15 +255,25 @@
             }
         },
         async mounted() {
-            await this.getDirectionInfo();
-            this.generateKeypointInfoFromPath();
-            this.generateDirectionInfo();
+            if(this.path.locations != null) {
+                if (this.path.type != "STRAIGHT") {
+                    await this.getDirectionInfo();
+                }
+                this.generateKeypointInfoFromPath();
+                this.generateDirectionInfo();
+            }
         },
         watch: {
             path: async function() {
-                await this.getDirectionInfo();
-                this.generateKeypointInfoFromPath();
-                this.generateDirectionInfo();
+                if (this.path.id != null) {
+                    if (this.path.type != "STRAIGHT" && this.path.locations.length >= 2) {
+                        await this.getDirectionInfo();
+                    }
+                    this.generateKeypointInfoFromPath();
+                    this.generateDirectionInfo();
+                }else {
+                    this.keypointInfo = []
+                }
             },
             selectedKeypoint: function () {
                 // Set offset for keypoint info
@@ -272,15 +282,15 @@
 
                 // Set offset for direction info
                 let dir_offset = 0;
-                if(this.selectedKeypoint!==0) {
+                if(this.selectedKeypoint!==0 && this.path.type == "2STRAIGHT") {
                     let keypoint_element = document.getElementById(`PathInfoStepDistanceKeypoint_${this.selectedKeypoint}`);
                     dir_offset = keypoint_element.offsetTop - 74;
+                    let dir_tab = document.getElementById("pathInfoDirectionTab");
+                    dir_tab.scrollTo({top:dir_offset, behavior:'smooth'});
                 }
 
                 let key_tab = document.getElementById("pathInfoMarkerTab");
-                let dir_tab = document.getElementById("pathInfoDirectionTab");
                 key_tab.scrollTo({top:key_offset, behavior:'smooth'});
-                dir_tab.scrollTo({top:dir_offset, behavior:'smooth'});
             }
         }
     }
