@@ -295,14 +295,15 @@
     import ModifyLocationMapPane from "../../components/MapPane/ModifyLocationMapPane";
     import UserImage from "../../components/Activity/UserImage/UserImage";
 
-    //const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
-    const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
-    const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+//const passwordValidate = helpers.regex('passwordValidate', new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
+const nameValidate = helpers.regex('nameValidate', /^[a-zA-Z]+(([' -][a-zA-Z ])?[a-zA-Z]*)*$/); // Some names have ' or - or spaces so can't use alpha
+const passwordValidate = helpers.regex('passwordValidate',
+    new RegExp("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$"));
 
-    const countryData = axios.create({
-        baseURL: "https://restcountries.eu/rest/v2/all",
-        timeout: 1000
-    });
+const countryData = axios.create({
+  baseURL: "https://restcountries.eu/rest/v2/all",
+  timeout: 1000
+});
 
     const User = {
         name: 'User',
@@ -400,10 +401,14 @@
                 date_of_birth: {
                     required,
                     dateValidate(value) {
-                        const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
-                        const date = new Date(value);
-                        const today = new Date();
-                        return date <= today && date >= oldestDate;
+                      const oldestDate = new Date(1900, 0, 1); // JavaScript months start at 0
+                      const date = new Date(value);
+                      const today = new Date();
+                      //check if duration year is not more than 4 digits
+                      if (isNaN(date.getFullYear())) {
+                        return false
+                      }
+                      return date <= today && date >= oldestDate;
                     },
                 },
                 bio: {

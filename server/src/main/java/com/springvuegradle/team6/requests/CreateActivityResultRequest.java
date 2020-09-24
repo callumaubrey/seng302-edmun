@@ -42,4 +42,24 @@ public class CreateActivityResultRequest {
   public SpecialMetric getSpecialMetric() {
     return specialMetric;
   }
+
+  public void setMetricId(int metricId) {
+    this.metricId = metricId;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public void setStart(LocalDateTime start) {
+    this.start = start;
+  }
+
+  public void setEnd(LocalDateTime end) {
+    this.end = end;
+  }
+
+  public void setSpecialMetric(SpecialMetric specialMetric) {
+    this.specialMetric = specialMetric;
+  }
 }

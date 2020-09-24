@@ -110,6 +110,9 @@ public class Profile {
   @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
   private List<Activity> activities;
 
+  @Column(name = "photo_filename")
+  private String photoFilename;
+
   /**
    * Constructor for profile object. Attribute isLocked is defaulted to false when object is created
    */
@@ -422,6 +425,14 @@ public class Profile {
 
   public void setActivities(List<Activity> activities) {
     this.activities = activities;
+  }
+
+  public String getPhotoFilename() {
+    return photoFilename;
+  }
+
+  public void setPhotoFilename(String photoFilename) {
+    this.photoFilename = photoFilename;
   }
 
   /** Clears all emails except for the primary email in emails */

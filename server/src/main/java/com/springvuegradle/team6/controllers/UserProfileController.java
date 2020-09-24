@@ -20,6 +20,7 @@ import com.springvuegradle.team6.requests.LocationUpdateRequest;
 import com.springvuegradle.team6.requests.ResetPasswordRequest;
 import com.springvuegradle.team6.security.UserSecurityService;
 import com.springvuegradle.team6.services.EmailService;
+import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
 import java.util.Arrays;
 import java.util.List;
@@ -31,17 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin(
@@ -76,15 +68,17 @@ public class UserProfileController {
   private final LocationRepository locationRepository;
   private final LocationService locationService;
   private final PasswordTokenRepository passwordTokenRepository;
+  private final FileService fileService;
 
   UserProfileController(
-      ProfileRepository rep,
-      CountryRepository countryRepository,
-      EmailRepository emailRepository,
-      RoleRepository roleRep,
-      LocationRepository locationRepository,
-      LocationService locationService,
-      PasswordTokenRepository passwordTokenRepository) {
+          ProfileRepository rep,
+          CountryRepository countryRepository,
+          EmailRepository emailRepository,
+          RoleRepository roleRep,
+          LocationRepository locationRepository,
+          LocationService locationService,
+          PasswordTokenRepository passwordTokenRepository,
+          FileService fileService) {
     this.repository = rep;
     this.countryRepository = countryRepository;
     this.roleRepository = roleRep;
@@ -92,6 +86,7 @@ public class UserProfileController {
     this.locationRepository = locationRepository;
     this.locationService = locationService;
     this.passwordTokenRepository = passwordTokenRepository;
+    this.fileService = fileService;
   }
 
   /**
@@ -517,5 +512,53 @@ public class UserProfileController {
     }
 
     return new ResponseEntity("Password reset link sent", HttpStatus.OK);
+  }
+
+  /**
+   * Updates and saves the users profile image and the link to it in the db
+   * @param id the users id
+   * @param file the image file
+   * @param session the current http session
+   * @return response entity ok for success or 4xx for unsuccessful
+   */
+  @PutMapping("/{id}/image")
+  public ResponseEntity updatePhoto(
+          @PathVariable Integer id,
+          @RequestParam MultipartFile file,
+          HttpSession session) {
+
+    Optional<Profile> p = repository.findById(id);
+    if (p.isEmpty()) {
+      return new ResponseEntity<>("Profile does not exist", HttpStatus.NOT_FOUND);
+    }
+    Profile profile = p.get();
+
+    // Check if authorised
+    ResponseEntity<String> authorisedResponse =
+            UserSecurityService.checkAuthorised(id, session, repository);
+    if (authorisedResponse != null) {
+      return authorisedResponse;
+    }
+
+    if (file == null) {
+      return new ResponseEntity<>("Must submit an image file", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!(file.getContentType().equals("image/png")
+            || file.getContentType().equals("image/jpg")
+            || file.getContentType().equals("image/jpeg")
+            || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
+    }
+
+    String fileName = fileService.uploadProfileImage(file, id);
+
+    if (fileName == null) {
+      return new ResponseEntity<>("File service failed to upload image.", HttpStatus.BAD_REQUEST);
+    }
+
+    profile.setPhotoFilename(fileName);
+    profile = repository.save(profile);
+    return new ResponseEntity<>("OK", HttpStatus.OK);
   }
 }
