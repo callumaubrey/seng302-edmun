@@ -2,9 +2,7 @@
   <div>
     <b-card v-for="(profile, index) in roleData.users" v-bind:key="index"
             v-bind:class="{'border-variant-danger': profile.selected === false}">
-      {{ roleData.users }}
       <b-card-body>
-        {{ profile }}
         <b-row>
           <b-col cols="1.0">
             <b-img alt="Center image" center height="50px" rounded="circle"
@@ -14,7 +12,7 @@
           <b-col class="text-lg-left">
             {{ profile.full_name }}
             <b-card-sub-title class="mb-2" style="padding-top: 5px">{{
-                profile.primary_email
+              profile.primary_email
               }}
             </b-card-sub-title>
           </b-col>
@@ -43,61 +41,57 @@
 
 <script>
 
-export default {
-  name: "RestrictedUsersCard",
-  data: function () {
-    return {
-      data: {}
-    }
-  },
-  props: {
-    roleData: {
-      type: Array
+  export default {
+    name: "RestrictedUsersCard",
+    data: function () {
+      return {
+        data: {}
+      }
     },
-    activityRoles: {
-      type: Array
-    }
-  },
-  methods: {
-    rowColor(profile, index) {
-      this.rowChanged(profile, index)
-    },
-    rowChanged(profile, index) {
-      let obj = {}
-      obj.index = index
-      obj.item = profile
-      this.$emit('rowChanged', obj)
-    },
-    selectAll: function () {
-      console.log("SELECT FLAG")
-      this.$emit('selectAll')
-    },
-    deselectAll: function () {
-      console.log("DESELECT FLAG")
-      this.$emit('deselectAll')
-    },
-  },
-  beforeMount() {
-    console.log(this.roleData)
-    this.data = this.roleData;
-  },
-  watch: {
-    roleData: {
-      handler: function (roleData) {
-        console.log(roleData)
-        // check someData and eventually call
-        this.$forceUpdate()
+    props: ['roleData', 'activityRoles'],
+    methods: {
+      rowColor(profile, index) {
+        this.rowChanged(profile, index)
       },
-      immediate: true
+      rowChanged(profile, index) {
+        console.log("TEST")
+        console.log(this.roleData)
+        let obj = {}
+        obj.index = index
+        obj.item = profile
+        this.$emit('rowChanged', obj)
+      },
+      selectAll: function () {
+        console.log("SELECT FLAG")
+        this.$emit('selectAll')
+      },
+      deselectAll: function () {
+        console.log("DESELECT FLAG")
+        this.$emit('deselectAll')
+      },
+    },
+    beforeMount() {
+      console.log(this.roleData)
+      this.data = this.roleData;
+    },
+    watch: {
+      roleData: {
+        handler: function (roleData) {
+          console.log("CARD")
+          console.log(roleData)
+          // check someData and eventually call
+          this.$forceUpdate()
+        },
+        immediate: true
+      }
     }
   }
-}
 </script>
 
 <style scoped>
 
-.border-variant-danger {
-  background-color: pink;
-}
+  .border-variant-danger {
+    background-color: pink;
+  }
 
 </style>

@@ -258,9 +258,7 @@ export default {
         this.organisers.users[value.index] = value.item;
       },
       updateParticipants(value) {
-        console.log(value)
         this.participants.users[value.index] = value.item;
-        this.$set(this.participants.users, value.index, value.item);
       },
       updateFollowers(value) {
         this.followers.users[value.index] = value.item;
