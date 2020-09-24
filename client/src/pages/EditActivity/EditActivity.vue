@@ -199,7 +199,7 @@
                 </b-container>
               </b-tab>
 
-              <b-tab>
+              <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
                   Activity Location
@@ -216,8 +216,8 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path">
-                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" :activityId = "activityId" :path = "path"></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -261,20 +261,21 @@ import AdminMixin from "../../mixins/AdminMixin";
 import api from '@/Api'
 import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
 import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
 import {store} from "../../store";
+import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
 
-export default {
-  mixins: [validationMixin, locationMixin],
-  components: {
-    ModifyPathMapPane,
-    ActivityMetricsEditor,
-    SearchTag,
-    NavBar,
-    ForbiddenMessage,
-    ActivityLocationTab
-  },
-  data() {
+
+  export default {
+    mixins: [validationMixin, locationMixin],
+    components: {
+      PathInfoMapCreateEdit,
+      ActivityMetricsEditor,
+      SearchTag,
+      NavBar,
+      ForbiddenMessage,
+      ActivityLocationTab
+    },
+    data() {
       return {
         isLoggedIn: false,
         userName: '',
@@ -313,7 +314,8 @@ export default {
           options: [],
           values: []
         },
-        authorised: true
+        authorised: true,
+        path: {}
       }
     },
     validations: {
@@ -416,6 +418,7 @@ export default {
               currentObj.form.name = response.data.activityName;
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
+              currentObj.path = response.data.path
               if (response.data.continuous === false) {
                 currentObj.isContinuous = '1';
                 [currentObj.durationForm.startDate,
@@ -566,7 +569,7 @@ export default {
       },
 
       updatePath: function() {
-        return this.$refs.path_editor.updatePathInActivity(this.profileId, this.activityId);
+        return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, this.activityId);
       },
 
       getISODates: function () {
@@ -662,9 +665,6 @@ export default {
         this.selectedVisibility = val
       },
 
-      loadActivityPath: function() {
-        this.$refs.path_editor.getPathFromActivity(this.profileId, this.activityId);
-      }
     },
     mounted: async function () {
       this.activityId = this.$route.params.activityId;
@@ -672,7 +672,6 @@ export default {
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
-      this.loadActivityPath();
     }
   }
 </script>

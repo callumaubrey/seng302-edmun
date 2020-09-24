@@ -173,7 +173,8 @@
                              :activity-id="$route.params.activityId"></ActivityResults>
           </b-tab>
           <b-tab title="Route" @click="$refs.pathInfoMap.refreshMap()">
-            <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
+            <PathInfoMapView ref="pathInfoMap" :path="activity.path" v-if="activity.path != null"></PathInfoMapView>
+            <h5 v-else style="text-align: center; padding-top: 30px">A path can be added in Edit Activity</h5>
           </b-tab>
         </b-tabs>
       </div>
@@ -237,7 +238,7 @@
         isAuthorized: true,
         metrics: [],
         followSummaryKey: 0,
-        shareActivityKey: 0
+        shareActivityKey: 0,
       }
     },
     mounted() {

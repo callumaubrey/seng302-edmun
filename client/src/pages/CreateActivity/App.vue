@@ -210,7 +210,7 @@
                   </b-form>
                 </b-container>
               </b-tab>
-              <b-tab>
+              <b-tab @click="$refs.map.refreshMap()">
                 <template v-slot:title>
                   <b-icon v-if="mapError" icon="exclamation-circle-fill" variant="danger"></b-icon>
                   Activity Location
@@ -224,8 +224,8 @@
               </b-tab>
 
               <!-- Path Editor -->
-              <b-tab title="Activity Path">
-                <ModifyPathMapPane ref="path_editor"></ModifyPathMapPane>
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
+                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId = "profileId" ></PathInfoMapCreateEdit>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -260,29 +260,29 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
-import SearchTag from "../../components/SearchTag";
-import {validationMixin} from "vuelidate";
-import {required} from 'vuelidate/lib/validators';
-import locationMixin from "../../mixins/locationMixin";
-import AdminMixin from "../../mixins/AdminMixin";
-import api from '@/Api'
-import {store} from "../../store";
-import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
-import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
-import ModifyPathMapPane from "../../components/MapPane/ModifyPathMapPane";
+  import NavBar from "@/components/NavBar.vue";
+  import SearchTag from "../../components/SearchTag";
+  import {validationMixin} from "vuelidate";
+  import {required} from 'vuelidate/lib/validators';
+  import locationMixin from "../../mixins/locationMixin";
+  import AdminMixin from "../../mixins/AdminMixin";
+  import api from '@/Api'
+  import {store} from "../../store";
+  import ActivityMetricsEditor from "../../components/Activity/Metric/ActivityMetricsEditor";
+  import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
+  import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
 
-export default {
-  mixins: [validationMixin, locationMixin],
-  components: {
-    ModifyPathMapPane,
-    ActivityMetricsEditor,
-    NavBar,
-    SearchTag,
-    ActivityLocationTab,
-  },
-  data() {
-    return {
+  export default {
+    mixins: [validationMixin, locationMixin],
+    components: {
+      PathInfoMapCreateEdit,
+      ActivityMetricsEditor,
+      NavBar,
+      SearchTag,
+      ActivityLocationTab,
+    },
+    data() {
+      return {
         isLoggedIn: true,
         userName: '',
         isContinuous: '0',
@@ -568,7 +568,7 @@ export default {
 
       submitPath: function(activityId) {
         // Update path
-        return this.$refs.path_editor.updatePathInActivity(this.profileId, activityId)
+        return this.$refs.pathInfoCreateEdit.updateActivity(this.profileId, activityId);
       },
 
       getDates: function () {
