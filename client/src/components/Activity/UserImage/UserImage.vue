@@ -117,7 +117,7 @@
 </template>
 
 <script>
-    import axios from 'axios'
+    import api from '@/Api'
 
     /**
      * User Image can be used with either activityId or userId. Component
@@ -131,7 +131,7 @@
         data: function(){
             return {
                 show_overlay: false,
-                image_src: this.getUserImageSrc(this.userId),
+                image_src: this.getUserImageSrc(this.id),
 
                 // Assume this is true until 404 error
                 user_has_image: true,
@@ -188,14 +188,14 @@
              * @returns the url location of where to get/update/delete the image
              */
             getUserImageSrc: function(id) {
-                /**
-                 * ==============================================
-                 * REPLACE ME WITH ACTUAL ROUTE
-                 * Make sure to check if user or activity for url
-                 * ==============================================
-                 */
-                let image_url = `${id}`;
-                return `${image_url}?cache=` + Math.random();
+                let image_url;
+
+                if (this.isActivity === true) {
+                  image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/1/activities/" + id + "/image?cache=" + Math.random();
+                } else {
+                  image_url =  process.env.VUE_APP_SERVER_ADD + "/profiles/" + id + "/image?cache=" + Math.random()
+                }
+                return image_url;
             },
 
             /**
@@ -253,37 +253,25 @@
              */
             putImageToAPI: function (id) {
                 // Set MIME data type
-                let request_config = {
-                    headers: {
-                        'Content-Type': this.image_data.type
-                    }
-                };
+                let formData = new FormData();
+                formData.append("file", this.image_data);
 
-                // Call api
-                axios.put(this.getUserImageSrc(id), this.image_data, request_config)
-                    .then(() => {
-                        this.$emit('success');
-                    })
-                    .catch((error) => {
-                        let error_message = '';
-
-                        if(error.response) {
+                if (this.isActivity === true) {
+                    api.updateActivityImage(id, formData).then(
+                        ).catch((error) => {
                             console.log(error.response);
-                            switch(error.response.status) {
-                                case 400: error_message = 'Image must be of type gif, png or jpeg'; break;
-                                case 401: error_message = 'Must be logged in to change photo'; break;
-                                case 403: error_message = 'Unauthorised to change photo'; break;
-                                case 404: error_message =  (this.isActivity ? 'activity' : 'user') +  ' does not exist'; break;
-                                case 500: error_message = 'Internal server error, try again later'; break;
-                                default: error_message = 'Unknown error occurred';
-                            }
-                        } else {
-                            error_message = 'Could not connect to server';
+                            this.$emit('error', error.response.data);
                         }
+                    );
+                } else {
+                    api.updateProfileImage(id, formData).then(
+                        ).catch((error) => {
+                            console.log(error.response);
+                            this.$emit('error', error.response.data);
+                        }
+                    );
+                }
 
-                        this.setUserImg();
-                        this.$emit('error', error_message);
-                    });
             },
 
             /**
@@ -291,15 +279,19 @@
              * @param id activity or user id
              */
             deleteImageToAPI: function (id) {
-                axios.delete(this.getUserImageSrc(id))
-                    .then(() => {
-                        this.$emit('success');
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        this.setUserImg();
-                        this.$emit('error');
-                    });
+                if (this.isActivity === true) {
+                    api.deleteActivityImage(id).then(
+                        ).catch((error) => {
+                          console.log(error.response);
+                        }
+                    );
+                } else {
+                    api.deleteProfileImage(id).then(
+                       ).catch((error) => {
+                          console.log(error.response);
+                       }
+                    );
+                }
             }
         }
     }
