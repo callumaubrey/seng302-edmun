@@ -257,6 +257,7 @@
        * lng: longitude of the marker
        * content: content of the tooltip
        * title: title of the tooltip
+       * draggable: if the marker can be dragged
        *
        * e.g. createMarker(1, -43.630629, 172.625955) will be a red marker at those coordinates
        **/
@@ -354,7 +355,7 @@
       /**
        * Sets Route points using path
        **/
-      setPath(path, show_keypoints = false, only_start_finish = false) {
+      setPath(path, show_keypoints = false, only_start_finish = false, draggable=false) {
         if (path === null) {
           this.routePoints = [];
           return;
@@ -373,17 +374,17 @@
 
             // Title
             let title = null;
-            if (i === 0) {
+            if (i === 0 && !draggable) {
               title = "Start";
             }
-            if (i === path.locations.length - 1) {
+            if (i === path.locations.length - 1 && !draggable) {
               title = "Finish";
             }
 
             if (!only_start_finish || (only_start_finish && (i === 0 || i === path.locations.length
                 - 1))) {
               this.createMarker(i, colour_id, keypoint.latitude, keypoint.longitude,
-                  "", title, false);
+                  "", title, draggable);
             }
           }
           this.getLatestMarker().icon = this.pathEndMarker;
@@ -488,7 +489,7 @@
         if (this.routePoints.length === 0) {
           this.center = marker.position;
         } else {
-          this.$parent.clickOnMarker(marker.position)
+          this.$emit("clickOnMarker", marker)
         }
       },
 
@@ -507,6 +508,17 @@
         this.savedMarkers = [this.markers[index].position, index]
         this.markers[index].position = newCoords
         this.$parent.handleDragEvent(index, newCoords)
+      },
+
+      /**
+       * Checks that the given marker is the end marker
+       * @param marker: marker to be checked
+       **/
+      isEndMarker(marker) {
+        if (marker.id == this.markers[this.markers.length - 1].id) {
+          return true
+        }
+        return false
       },
     },
 

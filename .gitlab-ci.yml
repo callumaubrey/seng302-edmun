@@ -41,6 +41,9 @@ deploy-test-server:
     # Create artifact
     - cd server
     - ./gradlew bootJar
+    # Create images directory
+    - mkdir -p /home/gitlab-runner/test/images/profile/
+    - mkdir -p /home/gitlab-runner/test/images/activity/
     # Move artifact to clean directory
     - rm -rf /home/gitlab-runner/test-server/
     - mkdir -p /home/gitlab-runner/test-server/
@@ -87,6 +90,9 @@ deploy-prod-server:
     # Create artifact
     - cd server
     - ./gradlew bootJar
+    # Create images directory
+    - mkdir -p /home/gitlab-runner/prod/images/profile/
+    - mkdir -p /home/gitlab-runner/prod/images/activity/
     # Move artifact to clean directory
     - rm -rf /home/gitlab-runner/prod-server/
     - mkdir -p /home/gitlab-runner/prod-server/

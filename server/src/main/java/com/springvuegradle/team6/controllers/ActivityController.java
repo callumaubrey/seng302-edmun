@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
-import com.springvuegradle.team6.requests.CreateActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityHashtagRequest;
-import com.springvuegradle.team6.requests.EditActivityRequest;
-import com.springvuegradle.team6.requests.EditActivityTypeRequest;
-import com.springvuegradle.team6.requests.EditActivityVisibilityRequest;
+import com.springvuegradle.team6.requests.*;
 import com.springvuegradle.team6.requests.objects.EmailRolePair;
 import com.springvuegradle.team6.security.UserSecurityService;
+import com.springvuegradle.team6.services.FileService;
 import com.springvuegradle.team6.services.LocationService;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -22,20 +20,15 @@ import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.unit.DataSize;
 import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This controller contains end points related to getting, creating, editing and deleting the
@@ -70,18 +63,20 @@ public class ActivityController {
   private final ActivityQualificationMetricRepository activityQualificationMetricRepository;
   private final ActivityResultRepository activityResultRepository;
   private final LocationService locationService;
+  private final FileService fileService;
 
   ActivityController(
-      ProfileRepository profileRepository,
-      ActivityRepository activityRepository,
-      ActivityRoleRepository activityRoleRepository,
-      LocationRepository locationRepository,
-      TagRepository tagRepository,
-      SubscriptionHistoryRepository subscriptionHistoryRepository,
-      ActivityHistoryRepository activityHistoryRepository,
-      ActivityQualificationMetricRepository activityQualificationMetricRepository,
-      ActivityResultRepository activityResultRepository,
-      LocationService locationService) {
+          ProfileRepository profileRepository,
+          ActivityRepository activityRepository,
+          ActivityRoleRepository activityRoleRepository,
+          LocationRepository locationRepository,
+          TagRepository tagRepository,
+          SubscriptionHistoryRepository subscriptionHistoryRepository,
+          ActivityHistoryRepository activityHistoryRepository,
+          ActivityQualificationMetricRepository activityQualificationMetricRepository,
+          ActivityResultRepository activityResultRepository,
+          LocationService locationService,
+          FileService fileService) {
     this.profileRepository = profileRepository;
     this.activityRepository = activityRepository;
     this.activityRoleRepository = activityRoleRepository;
@@ -92,6 +87,7 @@ public class ActivityController {
     this.activityQualificationMetricRepository = activityQualificationMetricRepository;
     this.activityResultRepository = activityResultRepository;
     this.locationService = locationService;
+    this.fileService = fileService;
   }
 
   /**
@@ -1158,5 +1154,126 @@ public class ActivityController {
     } else {
       return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * This endpoints edits the image of an activity. it writes a file in a directory specified in application properties.
+   * It also saves the filename in the activity entity.
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param file the image file. Must be a PNG,JPG,JPEG or GIF
+   * @param session the session
+   * @return ACCEPTED if successful, 4xx error if not.
+   */
+  @PutMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity editActivityImage(
+          @PathVariable int profileId,
+          @PathVariable int activityId,
+          @RequestParam("file") MultipartFile file,
+          HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
+      return new ResponseEntity("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+
+    if (!(file.getContentType().equals("image/png") || file.getContentType().equals("image/jpg") || file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/gif"))) {
+      return new ResponseEntity("Invalid image type" + file.getContentType(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Check image size
+    if (file.getSize() > Activity.MAX_IMAGE_SIZE) {
+      return new ResponseEntity<>("Image limit of " + DataSize.ofBytes(Activity.MAX_IMAGE_SIZE), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    String fileName = fileService.uploadActivityImage(file, activityId);
+    if (fileName == null) {
+      return new ResponseEntity<>("Failed to upload image",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    activity.setFileName(fileName);
+    activityRepository.save(activity);
+
+
+    return new ResponseEntity<>("OK",HttpStatus.ACCEPTED);
+  }
+
+
+  /**
+   * Removes main image from an activity
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param session the session
+   * @return OK if successful, 4xx error if not.
+   */
+  @DeleteMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity removeActivityImage(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      HttpSession session) {
+    Object id = session.getAttribute("id");
+
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>("Activity does not exist", HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+    if (!UserSecurityService.checkIsAdminOrCreatorOrOrganiser((Integer) id, activity.getProfile().getId(),activityId, activityRoleRepository)) {
+      return new ResponseEntity<>("Not authorised to edit Activity image", HttpStatus.UNAUTHORIZED);
+    }
+
+    // Remove activity file
+    if(!fileService.removeActivityImage(activity.getFileName())) {
+      return new ResponseEntity<>("Failed to delete image", HttpStatus.EXPECTATION_FAILED);
+    }
+    activity.setFileName(null);
+    activityRepository.save(activity);
+
+    return new ResponseEntity<>("OK",HttpStatus.OK);
+  }
+
+
+  /**
+   * Get main image of an activity
+   * @param profileId the owner of the activity
+   * @param activityId the activity
+   * @param session the session
+   * @return image content
+   */
+  @GetMapping(value = "/profiles/{profileId}/activities/{activityId}/image")
+  public ResponseEntity<byte[]> getActivityImage(
+      @PathVariable int profileId,
+      @PathVariable int activityId,
+      HttpSession session) {
+
+    // Check image exists
+    Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+    if (optionalActivity.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    Activity activity = optionalActivity.get();
+
+    // Get MIME type from extension
+    String mimeType = fileService.getMIMEType(activity.getFileName());
+    if(mimeType == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Get image data
+    byte[] data = fileService.getActivityImage(activity.getFileName());
+    if (data.length == 0) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // Prepare response
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(mimeType));
+
+    return new ResponseEntity<byte[]>(data, headers, HttpStatus.OK);
   }
 }

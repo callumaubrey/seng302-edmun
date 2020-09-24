@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("3")
 public class ActivityResultStartFinish extends ActivityResult {
 
-  public static final String SQL_SORT_EXPRESSION = "DATEDIFF(result_finish, result_start)";
+  public static final String SQL_SORT_EXPRESSION = "result_start";
 
   @Column(name = "result_start")
   private LocalDateTime resultStart;

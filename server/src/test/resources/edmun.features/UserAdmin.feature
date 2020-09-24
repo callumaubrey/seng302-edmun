@@ -1,5 +1,5 @@
 Feature: Create an user admin account that can do any functionality available within the system
-  
+
   Background:
     Given There is a normal user with email "adminwashere2@test.com" registered in the database
     And There is a user admin with email "useradmin@test.com" registered in the database
@@ -41,5 +41,6 @@ Feature: Create an user admin account that can do any functionality available wi
 
   @13
   Scenario: User admin cannot remove admin role from default admin
+    Given there is a global admin "test@test.com"
     When I attempt to remove admin rights from "test@test.com"
     Then "test@test.com" still has admin role

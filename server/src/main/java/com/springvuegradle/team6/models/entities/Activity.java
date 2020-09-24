@@ -56,9 +56,11 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
 public class Activity implements Serializable {
 
   // Constants
-  public static final int NAME_MAX_LENGTH = 128;
-  public static final int DESCRIPTION_MAX_LENGTH = 2048;
+  public static final int  NAME_MAX_LENGTH = 128;
+  public static final int  DESCRIPTION_MAX_LENGTH = 2048;
+  public static final long MAX_IMAGE_SIZE = 20L * 1000L * 1000L; // 20 MB
   private static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+
 
   /** This constructor is used for testing purposes only */
   public Activity() {
@@ -195,6 +197,9 @@ public class Activity implements Serializable {
   @JoinColumn(name = "path_id")
   private Path path;
 
+  @Column(name = "photo_filename")
+  private String fileName;
+
   public String getActivityName() {
     return activityName;
   }
@@ -317,6 +322,10 @@ public class Activity implements Serializable {
   public void setMetrics(List<ActivityQualificationMetric> metrics) {
     this.activityQualificationMetrics = metrics;
   }
+
+  public void setFileName(String fileName) { this.fileName = fileName; }
+
+  public String getFileName() { return this.fileName; }
 
   @Override
   public boolean equals(Object o) {

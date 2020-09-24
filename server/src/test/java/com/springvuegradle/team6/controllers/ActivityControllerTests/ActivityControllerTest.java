@@ -1,6 +1,8 @@
 package com.springvuegradle.team6.controllers.ActivityControllerTests;
 
+import static java.lang.System.getProperty;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,11 +12,17 @@ import com.springvuegradle.team6.controllers.TestDataGenerator;
 import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.repositories.*;
 
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.transaction.Transactional;
+
+import javassist.bytecode.ByteArray;
+import org.apache.lucene.util.IOUtils;
+import org.assertj.core.internal.Bytes;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -24,21 +32,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test", "IMAGE.ACTIVITY.DIRECTORY=./src/test/resources/", "IMAGE.PROFILE.DIRECTORY=./src/test/resources/"})
 class ActivityControllerTest {
+
+  @Autowired
+  private GoogleAPIServiceMocking googleAPIService;
 
   @Autowired private ActivityRepository activityRepository;
 
@@ -295,6 +310,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityWithLocationReturnStatusIsCreated() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -341,6 +357,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLongitudeOnEdgeOfBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -387,6 +404,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLongitudeOnEdgeOfNegativeBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -433,6 +451,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLatitudeOnEdgeOfBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -479,6 +498,7 @@ class ActivityControllerTest {
 
   @Test
   void createActivityLatitudeOnEdgeOfNegativeBounds() throws Exception {
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     String jsonString =
         "{\n"
             + "  \"activity_name\": \"Kaikoura Coast Track race\",\n"
@@ -2341,4 +2361,208 @@ class ActivityControllerTest {
     org.junit.jupiter.api.Assertions.assertTrue(
         activityRepository.findById(Integer.parseInt(activityId)).get().getMetrics().isEmpty());
   }
+
+  @Test
+  void editActivityImageWithValidPhotoCreatesFileAndUpdatesActvityPhotoFilename() throws Exception {
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "image/png", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().isAccepted());
+
+    activity = activityRepository.findById(activityId).get();
+    Assert.assertEquals("activity" + activityId + ".png", activity.getFileName());
+  }
+
+  @Test
+  void editActivityImageWithInvalidFileThrowsError() throws Exception {
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "application/pdf", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().isBadRequest());
+
+    activity = activityRepository.findById(activityId).get();
+    Assert.assertNull(activity.getFileName());
+  }
+
+  @Test
+  void deleteActivityImageWithValidImage() throws Exception {
+
+    // Add image
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "image/png", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isAccepted());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+
+    // Delete image
+    mvc.perform(
+        MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isOk());
+
+
+    // Check not found
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getActivityImageWithValidImage() throws Exception {
+
+    // Add image
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "image/png", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isAccepted());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+       ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+  }
+
+  @Test
+  void getActivityImageWithNonexistentImage() throws Exception {
+    // Create activity
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isNotFound());
+  }
+  
 }
