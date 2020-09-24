@@ -74,6 +74,10 @@ For Server:
 To view sonarqube analysis on a browser use: https://csse-s302g7.canterbury.ac.nz/sonarqube/account/security/
 - use VM credentials for login.
 
+### Licensing/Credits
+*  Country data is retrieved using REST Countries API 
+*  Google Maps API is used to retrieve geographical data and displaying this data using Leaflet
+
 ### Authors
 *  Callum Aubrey
 *  Harry Collard
