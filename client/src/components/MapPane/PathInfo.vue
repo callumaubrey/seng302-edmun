@@ -273,6 +273,8 @@
                     this.generateDirectionInfo();
                 }else {
                     this.keypointInfo = []
+                    this.directionSteps = []
+                    this.directionSegments = []
                 }
             },
             selectedKeypoint: function () {
