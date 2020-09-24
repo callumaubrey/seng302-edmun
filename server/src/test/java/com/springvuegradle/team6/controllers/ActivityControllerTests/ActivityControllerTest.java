@@ -2437,5 +2437,132 @@ class ActivityControllerTest {
     activity = activityRepository.findById(activityId).get();
     Assert.assertNull(activity.getFileName());
   }
+
+  @Test
+  void deleteActivityImageWithValidImage() throws Exception {
+
+    // Add image
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "image/png", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isAccepted());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+
+    // Delete image
+    mvc.perform(
+        MockMvcRequestBuilders.delete("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isOk());
+
+
+    // Check not found
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getActivityImageWithValidImage() throws Exception {
+
+    // Add image
+    MockMultipartFile file = new MockMultipartFile("file", "orig", "image/png", "bar".getBytes());
+
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/activities/{activityId}/image", id, activityId);
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isAccepted());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+       ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+  }
+
+  @Test
+  void getActivityImageWithNonexistentImage() throws Exception {
+    // Create activity
+    Activity activity = new Activity();
+    activity.setActivityName("Kaikoura Coast Track race");
+    activity.setDescription("A big and nice race on a lovely peninsula");
+    Set<ActivityType> activityTypes = new HashSet<>();
+    activityTypes.add(ActivityType.Walk);
+    activity.setActivityTypes(activityTypes);
+    activity.setContinuous(true);
+    activity.setStartTimeByString("2000-04-28T15:50:41+1300");
+    activity.setEndTimeByString("2030-08-28T15:50:41+1300");
+    activity.setProfile(profileRepository.findById(id));
+    activity.setVisibilityType(VisibilityType.Restricted);
+    activity = activityRepository.save(activity);
+    int activityId = activity.getId();
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/activities/{activityId}/image", id, activityId)
+            .session(session)
+    ).andExpect(status().isNotFound());
+  }
   
 }
