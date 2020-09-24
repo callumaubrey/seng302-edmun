@@ -191,9 +191,9 @@
                 let image_url;
 
                 if (this.isActivity === true) {
-                  image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/1/activities/" + id + "/image"
+                  image_url = process.env.VUE_APP_SERVER_ADD + "/profiles/1/activities/" + id + "/image?cache=" + Math.random();
                 } else {
-                  image_url =  process.env.VUE_APP_SERVER_ADD + "/profiles/" + id + "/image"
+                  image_url =  process.env.VUE_APP_SERVER_ADD + "/profiles/" + id + "/image?cache=" + Math.random()
                 }
                 return image_url;
             },
@@ -259,13 +259,15 @@
                 if (this.isActivity === true) {
                     api.updateActivityImage(id, formData).then(
                         ).catch((error) => {
-                          console.log(error.response);
+                            console.log(error.response);
+                            this.$emit('error', error.response.data);
                         }
                     );
                 } else {
                     api.updateProfileImage(id, formData).then(
                         ).catch((error) => {
-                          console.log(error.response);
+                            console.log(error.response);
+                            this.$emit('error', error.response.data);
                         }
                     );
                 }

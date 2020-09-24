@@ -6,7 +6,7 @@
                 <b-col cols="3">
                     <b-row align-h="center" style="font-size: 4em;">
                         <b-col>
-                            <UserImage :id="userId" save-on-change ></UserImage>
+                            <UserImage :id="userId"></UserImage>
                         </b-col>
                     </b-row>
                     <b-row style="margin-top: 10px;" align-h="center">
