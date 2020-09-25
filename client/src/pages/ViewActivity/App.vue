@@ -39,14 +39,6 @@
                          :key="followSummaryKey"
                          ref="followSummary"
                          style="color: white"></FollowerSummary>
-        <b-row align-h="center">
-          <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
-                         :visibility="visibility"
-                         :profileId="profileId"
-                         :activityId="$route.params.activityId"
-                         v-on:componentUpdate="forceRerender"
-                         :key="shareActivityKey"></ShareActivity>
-        </b-row>
 
         <!-- Actions -->
         <b-row align-h="center">
@@ -57,6 +49,13 @@
         </b-row>
         <b-row align="center" v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin">
           <b-col>
+            <ShareActivity style="padding: 0.4em; cursor: pointer"
+                           :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
+                           :visibility="visibility"
+                           :profileId="profileId"
+                           :activityId="$route.params.activityId"
+                           v-on:componentUpdate="forceRerender"
+                           :key="shareActivityKey"></ShareActivity>
             <i class="fas fa-edit" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer" @click="editActivity()"></i>
             <i class="far fa-trash-alt" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer;" @click="deleteActivity()"></i>
           </b-col>

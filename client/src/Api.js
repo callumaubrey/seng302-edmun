@@ -265,6 +265,9 @@ export default {
   deleteMetric: (profileId, activityId, metricId) => instance.delete(
       "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
 
+  deleteActivityPath: (profileId, activityId) => instance.delete(
+      `profiles/${profileId}/activities/${activityId}/path`),
+
   sendForgotPasswordEmail: (data) => instance.post(
       "/profiles/resetpassword", data),
 

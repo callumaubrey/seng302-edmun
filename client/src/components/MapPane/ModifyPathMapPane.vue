@@ -222,7 +222,12 @@ export default {
      */
     updatePathInActivity(profileId, activityId) {
       let pathObj = this.getPathObject();
-      return api.updateActivityPath(profileId, activityId, pathObj);
+
+      if (pathObj!=null) {
+        return api.updateActivityPath(profileId, activityId, pathObj);
+      }
+
+      return api.deleteActivityPath(profileId, activityId);
     },
 
     refreshMap(){

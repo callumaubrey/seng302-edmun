@@ -575,24 +575,9 @@
       },
       apiAfterActivityCreation: async function (userId, activityId) {
         let currentObj = this;
-        let activityImage = currentObj.$refs.image.image_data
         let error = false;
-        if (activityImage != null) {
-          let formData = new FormData();
-          formData.append("file", currentObj.$refs.image.image_data)
-          await api.updateActivityImage(activityId, formData).then(
-              () => {
-              }).catch(() => {
-            error = true;
-            currentObj.$root.$bvToast.toast(
-                'Activity created successfully, but image failed to upload.',
-                {
-                  variant: "warning",
-                  solid: true
-                })
-          })
-        }
 
+        currentObj.$refs.image.saveChanges(activityId);
         await currentObj.submitPath(activityId).then(
             () => {
         }).catch(() => {
