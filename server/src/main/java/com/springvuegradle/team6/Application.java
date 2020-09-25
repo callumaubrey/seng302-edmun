@@ -1,11 +1,11 @@
 package com.springvuegradle.team6;
 
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -13,11 +13,13 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Properties;
 
 @SpringBootApplication
 public class Application {
 
 	public static void main(String[] args) {
+		System.setProperty("spring.profiles.default", "production");
 		SpringApplication.run(Application.class, args);
 	}
 
@@ -36,5 +38,18 @@ public class Application {
 		return bean;
 	}
 
+	@Bean
+	public JavaMailSenderImpl getJavaMailSender() {
+		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+		mailSender.setHost("smtp.gmail.com");
+		mailSender.setPort(587);
 
+		Properties props = mailSender.getJavaMailProperties();
+		props.put("mail.transport.protocol", "smtp");
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.debug", "true");
+
+		return mailSender;
+	}
 }

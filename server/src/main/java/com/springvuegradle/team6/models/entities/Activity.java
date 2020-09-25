@@ -1,29 +1,21 @@
 package com.springvuegradle.team6.models.entities;
 
 import com.springvuegradle.team6.requests.CreateActivityRequest;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
 import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -34,6 +26,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.SortableField;
+import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -50,15 +43,24 @@ import org.hibernate.search.bridge.builtin.impl.BuiltinIterableBridge;
       @TokenFilterDef(
           factory = EdgeNGramFilterFactory.class,
           params = {
-            @Parameter(name = "minGramSize", value = "3"),
+            @Parameter(name = "minGramSize", value = "1"),
             @Parameter(name = "maxGramSize", value = "30")
           })
     })
-public class Activity {
+@AnalyzerDef(
+    name = "activityQueryAnalyzer",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+    filters = {
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+    })
+public class Activity implements Serializable {
 
   // Constants
-  public static final int NAME_MAX_LENGTH = 128;
-  public static final int DESCRIPTION_MAX_LENGTH = 2048;
+  public static final int  NAME_MAX_LENGTH = 128;
+  public static final int  DESCRIPTION_MAX_LENGTH = 2048;
+  public static final long MAX_IMAGE_SIZE = 20L * 1000L * 1000L; // 20 MB
+  private static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+
 
   /** This constructor is used for testing purposes only */
   public Activity() {
@@ -85,19 +87,17 @@ public class Activity {
       if (request.startTime != null) {
         this.startTime =
             LocalDateTime.parse(
-                request.startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+                request.startTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
       }
       if (request.endTime != null) {
         this.endTime =
             LocalDateTime.parse(
-                request.endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+                request.endTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
       }
     }
-
     if (request.location != null) {
-      this.location =
-          new NamedLocation(
-              request.location.country, request.location.state, request.location.city);
+      Location newLocation = new Location(request.location.latitude, request.location.longitude);
+      this.setLocation(newLocation);
     }
     if (request.visibility != null) {
       setVisibilityTypeByString(request.visibility);
@@ -123,6 +123,7 @@ public class Activity {
   private Integer id;
 
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "author_id", nullable = false)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @FieldBridge(impl = IntegerBridge.class)
@@ -152,16 +153,24 @@ public class Activity {
   private boolean continuous;
 
   @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
   @Column(columnDefinition = "datetime")
   private LocalDateTime startTime;
 
   @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
   @Column(columnDefinition = "datetime")
   private LocalDateTime endTime;
 
-  @ManyToOne private NamedLocation location;
+  @Spatial
+  @IndexedEmbedded(depth = 1)
+  @SortableField
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  private Location location;
 
-  @Column(columnDefinition = "datetime default NOW()")
+  @Field(analyze = Analyze.YES, store = Store.NO)
+  @SortableField
+  @Column(columnDefinition = "datetime default CURRENT_TIMESTAMP()")
   private LocalDateTime creationDate;
 
   /** Map activity id to user id to create profile_subscriptions table in database */
@@ -171,7 +180,7 @@ public class Activity {
   @Column(columnDefinition = "boolean default false")
   private boolean archived;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   @Field(analyze = Analyze.YES, store = Store.NO)
   @IndexedEmbedded
   @FieldBridge(impl = BuiltinIterableBridge.class)
@@ -181,8 +190,15 @@ public class Activity {
   @Field(analyze = Analyze.YES, store = Store.NO, name = "visibility")
   private VisibilityType visibilityType;
 
-  @OneToMany(mappedBy = "activity")
+  @OneToMany(mappedBy = "activity", cascade = CascadeType.REMOVE)
   private List<ActivityQualificationMetric> activityQualificationMetrics;
+
+  @OneToOne
+  @JoinColumn(name = "path_id")
+  private Path path;
+
+  @Column(name = "photo_filename")
+  private String fileName;
 
   public String getActivityName() {
     return activityName;
@@ -226,7 +242,7 @@ public class Activity {
 
   public void setStartTimeByString(String startTime) {
     this.startTime =
-        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
   }
 
   public LocalDateTime getEndTime() {
@@ -239,7 +255,7 @@ public class Activity {
 
   public void setEndTimeByString(String endTime) {
     this.endTime =
-        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
+        LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
   }
 
   public Integer getId() {
@@ -258,11 +274,11 @@ public class Activity {
     this.profile = profile;
   }
 
-  public NamedLocation getLocation() {
+  public Location getLocation() {
     return location;
   }
 
-  public void setLocation(NamedLocation location) {
+  public void setLocation(Location location) {
     this.location = location;
   }
 
@@ -307,6 +323,10 @@ public class Activity {
     this.activityQualificationMetrics = metrics;
   }
 
+  public void setFileName(String fileName) { this.fileName = fileName; }
+
+  public String getFileName() { return this.fileName; }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -319,7 +339,7 @@ public class Activity {
 
     Activity activity = (Activity) o;
 
-    return this.id == activity.getId();
+    return this.id.equals(activity.getId());
   }
 
   @Override
@@ -337,5 +357,13 @@ public class Activity {
 
   public void setCreationDate(LocalDateTime creationDate) {
     this.creationDate = creationDate;
+  }
+
+  public Path getPath() {
+    return path;
+  }
+
+  public void setPath(Path path) {
+    this.path = path;
   }
 }

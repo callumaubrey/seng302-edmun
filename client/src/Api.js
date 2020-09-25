@@ -5,208 +5,275 @@ const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 console.log(SERVER_URL + "@@@");
 
 const instance = axios.create({
-    baseURL: SERVER_URL,
-    withCredentials: true
+  baseURL: SERVER_URL,
+  withCredentials: true
 });
 
 export default {
 
-    instance: instance,
+  instance: instance,
 
-    // Other
-    login: (email, password) => instance.post('/login',
-        {email: email, password: password}),
+  // Other
+  login: (email, password) => instance.post('/login',
+      {email: email, password: password}),
 
-    logout: () => instance.get('/logout/'),
+  logout: () => instance.get('/logout/'),
 
-    // (C)reate
+  // (C)reate
 
-    register: (registerData) => instance.post('/profiles',
-        registerData),
+  register: (registerData) => instance.post('/profiles',
+      registerData),
 
-    createActivity: (profileId, data) => instance.post(
-        '/profiles/' + profileId + '/activities', data),
+  createActivity: (profileId, data) => instance.post(
+      '/profiles/' + profileId + '/activities', data),
 
-    subscribeToActivity: (userId, activityId) => instance.post(
-        '/profiles/' + userId + '/subscriptions/activities/' + activityId),
+  subscribeToActivity: (userId, activityId) => instance.post(
+      '/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
-    createActivityResult: (userId, activityId, data) => instance.post(
-        'profiles/' + userId + '/activities/' + activityId + '/result', data),
+  createActivityResult: (userId, activityId, data) => instance.post(
+      'profiles/' + userId + '/activities/' + activityId + '/result', data),
 
-    setActivityRoleParticipant: (userId, activityId, data) => instance.post(
-        'profiles/' + userId + '/subscriptions/activities/' + activityId + '/participate', data),
+  setActivityRoleParticipant: (userId, activityId, data) => instance.post(
+      'profiles/' + userId + '/subscriptions/activities/' + activityId
+      + '/participate', data),
 
-    // (R)ead
+  // (R)ead
 
-    getProfileRoles: () => instance.get('/profiles/role'),
+  getProfileRoles: () => instance.get('/profiles/role'),
 
-    getHomeFeed: (profileId, offset, limit) => instance.get(
-        '/feed/homefeed/' + profileId + "?offset=" + offset + "&limit="
-        + limit),
+  getHomeFeed: (profileId, offset, limit) => instance.get(
+      '/feed/homefeed/' + profileId + "?offset=" + offset + "&limit="
+      + limit),
 
-    getActivityParticipants: (activityId, offset, limit) => instance.get(
-        '/activities/' + activityId + '/members' + "?type=participant&offset="
-        + offset + "&limit=" + limit),
+  getActivityParticipants: (activityId, offset, limit) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=participant&offset="
+      + offset + "&limit=" + limit),
 
-    getActivityOrganisers: (activityId, offset, limit) => instance.get(
-        '/activities/' + activityId + '/members' + "?type=organiser&offset="
-        + offset + "&limit=" + limit),
+  getActivityOrganisers: (activityId, offset, limit) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=organiser&offset="
+      + offset + "&limit=" + limit),
 
-    getActivityAccessors: (activityId, offset, limit) => instance.get(
-        '/activities/' + activityId + '/members' + "?type=accessor&offset="
-        + offset + "&limit=" + limit),
+  getActivityAccessors: (activityId, offset, limit) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=accessor&offset="
+      + offset + "&limit=" + limit),
 
-    getActivityFollowers: (activityId, offset, limit) => instance.get(
-        '/activities/' + activityId + '/members' + "?type=follower&offset="
-        + offset + "&limit=" + limit),
+  getActivityFollowers: (activityId, offset, limit) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=follower&offset="
+      + offset + "&limit=" + limit),
 
-    getActivityCreators: (activityId, offset, limit) => instance.get(
-        '/activities/' + activityId + '/members' + "?type=creator&offset="
-        + offset + "&limit=" + limit),
+  getActivityCreators: (activityId, offset, limit) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=creator&offset="
+      + offset + "&limit=" + limit),
 
-    getActivityMembers: (activityId) => instance.get(
-        '/activities/' + activityId + '/members'),
+  getActivityMembers: (activityId) => instance.get(
+      '/activities/' + activityId + '/members'),
 
-    getLoggedInProfile: () => instance.get('/profiles/user'),
+  getLoggedInProfile: () => instance.get('/profiles/user'),
 
-    getProfileId: () => instance.get('/profiles/id'),
+  getProfileId: () => instance.get('/profiles/id'),
 
-    getProfile: (id) => instance.get('/profiles/' + id),
+  getProfile: (id) => instance.get('/profiles/' + id),
 
-    getProfileByEmailAsync: async (email) => instance.get('/profiles?email=' + email),
+  getLocation: (id) => instance.get('/profiles/' + id + '/location'),
 
-    getFirstName: () => instance.get('/profiles/firstname'),
+  getProfileByEmailAsync: async (email) => instance.get(
+      '/profiles?email=' + email),
 
-    getActivities: (profileId) => instance.get(
-        '/profiles/' + profileId + '/activities'),
+  getFirstName: () => instance.get('/profiles/firstname'),
 
-    getActivity: (activityId) => instance.get('/activities/' + activityId),
+  getActivities: (profileId) => instance.get(
+      '/profiles/' + profileId + '/activities'),
 
-    getProfileActivityTypes: () => instance.get('/profiles/activity-types'),
+  getActivity: (activityId) => instance.get('/activities/' + activityId),
 
-    getHashtagAutocomplete: (hashtag) => instance.get(
-        '/hashtag/autocomplete?hashtag=' + hashtag),
+  getProfileActivityTypes: () => instance.get('/profiles/activity-types'),
 
-    getAdminRole: (profileId) => instance.get('/admin/role/' + profileId),
+  getHashtagAutocomplete: (hashtag) => instance.get(
+      '/hashtag/autocomplete?hashtag=' + hashtag),
 
-    getActivitiesByHashtag: (hashtag) => instance.get(
-        '/activities/hashtag/' + hashtag),
+  getAdminRole: (profileId) => instance.get('/admin/role/' + profileId),
 
-    getActivityCreatorId: (activityId) => instance.get(
-        '/activities/' + activityId + '/creatorId'),
+  getActivitiesByHashtag: (hashtag) => instance.get(
+      '/activities/hashtag/' + hashtag),
 
-    getIsSubscribed: (userId, activityId) => instance.get(
-        '/profiles/' + userId + '/subscriptions/activities/' + activityId),
+  getActivityCreatorId: (activityId) => instance.get(
+      '/activities/' + activityId + '/creatorId'),
 
-    getIsParticipating: (profileId, activityId) => instance.get(
-        '/profiles/' + profileId + '/subscriptions/activities/' + activityId + '/participate'),
+  getIsSubscribed: (userId, activityId) => instance.get(
+      '/profiles/' + userId + '/subscriptions/activities/' + activityId),
 
-    getActivityMemberCounts: (activityId) => instance.get(
-        '/activities/' + activityId + '/membercount'),
+  getIsParticipating: (profileId, activityId) => instance.get(
+      '/profiles/' + profileId + '/subscriptions/activities/' + activityId
+      + '/participate'),
 
-    getActivityTypes: () => instance.get('/profiles/activity-types'),
+  getActivityMemberCounts: (activityId) => instance.get(
+      '/activities/' + activityId + '/membercount'),
 
-    getUserActivityResults: (userId, activityId, metricId) => instance.get(
-        '/activities/' + activityId + '/result/' +  metricId + '/' + userId),
+  getActivityTypes: () => instance.get('/profiles/activity-types'),
 
-    getActivityMetrics: (profileId, activityId) => instance.get(
-        '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
+  getActivityPath: (profileId, activityId) => instance.get(
+      `profiles/${profileId}/activities/${activityId}/path`),
 
-    getProfileEmails: (profileId) => instance.get('/profiles/' + profileId + '/emails'),
+  getUserActivityResults: (userId, activityId, metricId) => instance.get(
+      '/activities/' + activityId + '/result/' + metricId + '/' + userId),
 
-    getActivitiesBySearch: (search_query=undefined,
-                            types = [],
-                            types_method_and = true,
-                            hashtags = [],
-                            hashtags_method_and = true,
-                            activity_mode_filter="all",
-                            start_date=undefined,
-                            end_date=undefined,
-                            pagination_offset=0,
-                            pagination_limit=10) =>
-        {return activitySearchAPI.searchActivities(instance,
+  getActivityMetrics: (profileId, activityId) => instance.get(
+      '/profiles/' + profileId + '/activities/' + activityId + '/metrics'),
+
+  getProfileEmails: (profileId) => instance.get(
+      '/profiles/' + profileId + '/emails'),
+
+  getActivitiesBySearch: (search_query = undefined,
+      types = [],
+      types_method_and = true,
+      hashtags = [],
+      hashtags_method_and = true,
+      activity_mode_filter = "all",
+      start_date = undefined,
+      end_date = undefined,
+      pagination_offset = 0,
+      pagination_limit = 10,
+      longitude = null,
+      latitude = null,
+      radius = null,
+      sort = null) => {
+    return activitySearchAPI.searchActivities(instance,
         search_query, types, types_method_and, hashtags, hashtags_method_and,
-        activity_mode_filter, start_date, end_date, pagination_offset, pagination_limit)},
+        activity_mode_filter, start_date, end_date, pagination_offset,
+        pagination_limit,
+        longitude, latitude, radius, sort)
+  },
 
-    getActivityCountBySearch: (search_query=undefined,
-                               types = [],
-                               types_method_and = true,
-                               hashtags = [],
-                               hashtags_method_and = true,
-                               activity_mode_filter="all",
-                               start_date=undefined,
-                               end_date=undefined) =>
-        {return activitySearchAPI.searchActivitiesPageCount(instance,
+  getActivityCountBySearch: (search_query = undefined,
+      types = [],
+      types_method_and = true,
+      hashtags = [],
+      hashtags_method_and = true,
+      activity_mode_filter = "all",
+      start_date = undefined,
+      end_date = undefined,
+      longitude = null,
+      latitude = null,
+      radius = null) => {
+    return activitySearchAPI.searchActivitiesPageCount(instance,
         search_query, types, types_method_and, hashtags, hashtags_method_and,
-        activity_mode_filter, start_date, end_date)},
+        activity_mode_filter, start_date, end_date,
+        longitude, latitude, radius)
+  },
 
-    // (U)pdate
-    updateForId: (id, name) => instance.put('students/' + id, {name}),
+  getLocationAutocompleteByName: (name) => instance.get(
+      '/location/autocomplete?name=' + name),
 
-    updateProfile: (profileId, updateData) => instance.put(
-        '/profiles/' + profileId,
-        updateData),
+  getLocationAutocompleteByLatLon: (latitude, longitude) => instance.get(
+      '/location/autocomplete?lat=' + latitude + '&lon=' + longitude),
 
-    updateActivityTypes: (profileId, data) => instance.put(
-        '/profiles/' + profileId + '/activity-types', data),
+  getGeocodePlaceId: (placeId) => instance.get(
+      '/location/geocode?id=' + placeId),
 
-    updateProfileEmails: (profileId, data) => instance.put(
-        '/profiles/' + profileId + '/emails', data),
+  getActivityImage: (profileId, activityId) => instance.get(
+      '/profiles/' + profileId + '/activities/' + activityId + '/image'),
 
-    updatePassword: (profileId, data) => instance.put(
-        '/profiles/' + profileId + '/password', data),
+  // (U)pdate
+  updateForId: (id, name) => instance.put('students/' + id, {name}),
 
-    updateProfileLocation: (profileId, data) => instance.put(
-        '/profiles/' + profileId + '/location', data),
+  updateProfile: (profileId, updateData) => instance.put(
+      '/profiles/' + profileId,
+      updateData),
 
-    updateActivity: (profileId, activityId, data) => instance.put(
-        '/profiles/' + profileId + '/activities/' + activityId, data),
+  updateActivityTypes: (profileId, data) => instance.put(
+      '/profiles/' + profileId + '/activity-types', data),
 
-    updateAdminRights: (profileId, data) => instance.put(
-        '/admin/profiles/' + profileId + '/role', data),
+  updateProfileImage: (profileId, image) => instance.put(
+      'profiles/' + profileId + '/image', image),
 
-    updatePasswordWithAdmin: (profileId, data) => instance.put(
-        '/admin/profiles/' + profileId + '/password', data),
+  updateProfileEmails: (profileId, data) => instance.put(
+      '/profiles/' + profileId + '/emails', data),
 
-    updateRole: (profileId, activityId, data) => instance.put(
-        '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
-        data),
+  updatePassword: (profileId, data) => instance.put(
+      '/profiles/' + profileId + '/password', data),
 
-    updateActivityVisibility: (profileId, activityId, data) => instance.put(
-        '/profiles/' + profileId + '/activities/' + activityId + '/visibility',
-        data),
+  updateProfileLocation: (profileId, data) => instance.put(
+      '/profiles/' + profileId + '/location', data),
 
-    updateActivityResult: (profileId, activityId, resultId,
-                           data) => instance.put(
-        "/profiles/" + profileId + '/activities/' + activityId + '/result/'
-        + resultId, data),
-    // (D)elete
+  updateActivity: (profileId, activityId, data) => instance.put(
+      '/profiles/' + profileId + '/activities/' + activityId, data),
 
-    removeForId: (id) => instance.delete('students/' + id),
+  updateActivityPath: (profileId, activityId, data) => instance.put(
+      `profiles/${profileId}/activities/${activityId}/path`, data),
 
-    deleteActivity: (profileId, activityId) => instance.delete(
-        '/profiles/' + profileId + '/activities/' + activityId),
+  updateAdminRights: (profileId, data) => instance.put(
+      '/admin/profiles/' + profileId + '/role', data),
 
-    removeRole: (profileId, activityId, data) => instance.delete(
-        '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
-        {data}),
+  updatePasswordWithAdmin: (profileId, data) => instance.put(
+      '/admin/profiles/' + profileId + '/password', data),
 
-    removeLocation: (profileId) => instance.delete(
-        '/profiles/' + profileId + '/location'),
+  updateRole: (profileId, activityId, data) => instance.put(
+      '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
+      data),
 
-    unsubscribeToActivity: (profileId, activityId) => instance.delete(
-        '/profiles/' + profileId + '/subscriptions/activities/' + activityId),
+  updateActivityVisibility: (profileId, activityId, data) => instance.put(
+      '/profiles/' + profileId + '/activities/' + activityId + '/visibility',
+      data),
 
-    getAllActivityResultsByProfileId: (profileId, activityId, metricId) => instance.get('/activities/' + activityId + '/result/' + metricId + '/' + profileId),
+  updateActivityResult: (profileId, activityId, resultId,
+      data) => instance.put(
+      "/profiles/" + profileId + '/activities/' + activityId + '/result/'
+      + resultId, data),
 
-    getAllActivityResultsByMetricId: (activityId, metricId) => instance.get('/activities/' + activityId + '/result/' + metricId),
+  updateActivityImage: (activityId, imageFile) => instance.put(
+      "/profiles/1/activities/" + activityId + "/image", imageFile
+  ),
+  // (D)elete
 
-    deleteActivityResult: (profileId, activityId, resultId) => instance.delete(
-        "/profiles/" + profileId + '/activities/' + activityId + '/result/'
-        + resultId),
+  removeForId: (id) => instance.delete('students/' + id),
 
-    deleteActivityRoleParticipant: (profileId, activityId) => instance.delete(
-        "/profiles/" + profileId + '/subscriptions/activities/' + activityId + "/participate")
+  deleteActivity: (activityId) => instance.delete(
+      '/profiles/1/activities/' + activityId),
 
+  deleteActivityImage: (activityId) => instance.delete(
+      "/profiles/1/activities/" + activityId + "/image"
+  ),
 
+  deleteProfileImage: (profileId) => instance.delete(
+      'profiles/' + profileId + '/image'),
+
+  removeRole: (profileId, activityId, data) => instance.delete(
+      '/profiles/' + profileId + '/activities/' + activityId + '/subscriber',
+      {data}),
+
+  removeLocation: (profileId) => instance.delete(
+      '/profiles/' + profileId + '/location'),
+
+  unsubscribeToActivity: (profileId, activityId) => instance.delete(
+      '/profiles/' + profileId + '/subscriptions/activities/' + activityId),
+
+  getAllActivityResultsByProfileId: (profileId, activityId,
+      metricId) => instance.get(
+      '/activities/' + activityId + '/result/' + metricId + '/' + profileId),
+
+  getAllActivityResultsByMetricId: (activityId, metricId) => instance.get(
+      '/activities/' + activityId + '/result/' + metricId),
+
+  deleteActivityResult: (profileId, activityId, resultId) => instance.delete(
+      "/profiles/" + profileId + '/activities/' + activityId + '/result/'
+      + resultId),
+
+  deleteActivityRoleParticipant: (profileId, activityId) => instance.delete(
+      "/profiles/" + profileId + '/subscriptions/activities/' + activityId
+      + "/participate"),
+
+  deleteMetric: (profileId, activityId, metricId) => instance.delete(
+      "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
+
+  deleteActivityPath: (profileId, activityId) => instance.delete(
+      `profiles/${profileId}/activities/${activityId}/path`),
+
+  sendForgotPasswordEmail: (data) => instance.post(
+      "/profiles/resetpassword", data),
+
+  getNumberOfActivitiesFollowed: (profileId) => instance.get(
+      "/profiles/" + profileId + "/subscriptions/activities/following"),
+
+  resetPassword: (token, data) => instance.put(
+      "/profiles/forgotpassword/" + token, data),
 }

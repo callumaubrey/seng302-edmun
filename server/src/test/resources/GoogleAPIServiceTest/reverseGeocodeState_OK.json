@@ -1,0 +1,102 @@
+{
+  "plus_code" : {
+    "compound_code" : "P27Q+MC New York, NY, USA",
+    "global_code" : "87G8P27Q+MC"
+  },
+  "results" : [
+    {
+      "address_components" : [
+        {
+          "long_name" : "Kings County",
+          "short_name" : "Kings County",
+          "types" : [ "administrative_area_level_2", "political" ]
+        },
+        {
+          "long_name" : "Brooklyn",
+          "short_name" : "Brooklyn",
+          "types" : [ "political", "sublocality", "sublocality_level_1" ]
+        },
+        {
+          "long_name" : "New York",
+          "short_name" : "NY",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "United States",
+          "short_name" : "US",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Kings County, Brooklyn, NY, USA",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : 40.739446,
+            "lng" : -73.83336509999999
+          },
+          "southwest" : {
+            "lat" : 40.551042,
+            "lng" : -74.05663
+          }
+        },
+        "location" : {
+          "lat" : 40.6528762,
+          "lng" : -73.95949399999999
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : 40.739446,
+            "lng" : -73.83336509999999
+          },
+          "southwest" : {
+            "lat" : 40.551042,
+            "lng" : -74.05663
+          }
+        }
+      },
+      "place_id" : "ChIJOwE7_GTtwokRs75rhW4_I6M",
+      "types" : [ "administrative_area_level_2", "political" ]
+    },
+    {
+      "address_components" : [
+        {
+          "long_name" : "United States",
+          "short_name" : "US",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "United States",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : 71.5388001,
+            "lng" : -66.885417
+          },
+          "southwest" : {
+            "lat" : 18.7763,
+            "lng" : 170.5957
+          }
+        },
+        "location" : {
+          "lat" : 37.09024,
+          "lng" : -95.712891
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : 71.5388001,
+            "lng" : -66.885417
+          },
+          "southwest" : {
+            "lat" : 18.7763,
+            "lng" : 170.5957
+          }
+        }
+      },
+      "place_id" : "ChIJCzYy5IS16lQRQrfeQ5K5Oxw",
+      "types" : [ "country", "political" ]
+    }
+  ],
+  "status" : "OK"
+}

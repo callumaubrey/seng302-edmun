@@ -1,7 +1,7 @@
 package com.springvuegradle.team6.models.repositories;
 
 import com.springvuegradle.team6.models.entities.Activity;
-import com.springvuegradle.team6.models.entities.Profile;
+import com.springvuegradle.team6.models.entities.SortActivity;
 import com.springvuegradle.team6.models.entities.VisibilityType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,16 +11,24 @@ import javax.persistence.PersistenceContext;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.tomcat.jni.Local;
-import org.hibernate.search.FullTextQuery;
-import org.hibernate.search.bridge.StringBridge;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.Unit;
+import org.hibernate.search.spatial.DistanceSortField;
 
+/**
+ * Implements CustomizedActivityRepository
+ *
+ * @see com.springvuegradle.team6.models.repositories.CustomizedActivityRepository
+ */
 public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepository {
   @PersistenceContext private EntityManager em;
+  private static final String CONTINUOUS = "continuous";
+  private static final String START_TIME = "startTime";
+  private static final String END_TIME = "endTime";
+  private static final String LOCATION = "location";
 
   /**
    * Searches for a list of activities that match the given parameters and returns a list of
@@ -37,6 +45,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param limit the number of activities to return
    * @param offset the number of activities to skip
    * @param profileId the profileId of the current user logged in
+   * @param isAdmin whether or not the user is an admin
+   * @param longitude the longitude coordinate of the location of the activity
+   * @param latitude the latitude coordinate of the location of the activity
+   * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @return List of activities satisfying the parameters
    */
   @Override
@@ -52,7 +65,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       int limit,
       int offset,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius,
+      SortActivity sortActivity) {
 
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
@@ -67,13 +84,13 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             limit,
             offset,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius,
+            sortActivity);
 
-    List<Activity> result = new ArrayList<>();
-    if (jpaQuery != null) {
-      result = jpaQuery.getResultList();
-    }
-    return result;
+    return (List<Activity>) jpaQuery.getResultList();
   }
 
   /**
@@ -89,6 +106,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param startDate earliest start date for an activity
    * @param endDate latest end date for an activity
    * @param profileId the profileId of the current user logged in
+   * @param isAdmin whether or not the user is an admin
+   * @param longitude the longitude coordinate of the location of the activity
+   * @param latitude the latitude coordinate of the location of the activity
+   * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
    * @return a count of the number of activities
    */
   @Override
@@ -102,7 +124,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       LocalDateTime startDate,
       LocalDateTime endDate,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius,
+      SortActivity sortActivity) {
     org.hibernate.search.jpa.FullTextQuery jpaQuery =
         searchActivityQuery(
             terms,
@@ -116,15 +142,37 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             -1,
             -1,
             profileId,
-            isAdmin);
+            isAdmin,
+            longitude,
+            latitude,
+            radius,
+            sortActivity);
 
-    Integer count = 0;
-    if (jpaQuery != null) {
-      count = jpaQuery.getResultSize();
-    }
-    return count;
+    return jpaQuery.getResultSize();
   }
 
+  /**
+   * The general query used by searchActivity and searchActivityCount to search the database based
+   * on the given parameters and returns the result as a FullTextQuery.
+   *
+   * @param terms terms used to search the activity name
+   * @param activityTypes array of activity types
+   * @param hashtags array of hashtags
+   * @param activityTypesMethod method of searching activity types (OR or AND)
+   * @param hashTagsMethod method of searching hashtags (OR or AND)
+   * @param time either continuous or duration
+   * @param startDate earliest start date for an activity
+   * @param endDate latest end date for an activity
+   * @param limit the number of activities to return
+   * @param offset the number of activities to skip
+   * @param profileId the profileId of the current user logged in
+   * @param isAdmin whether or not the user is an admin
+   * @param longitude the longitude coordinate of the location of the activity
+   * @param latitude the latitude coordinate of the location of the activity
+   * @param radius the radius of the the circle centred at the location coordinate
+   * @param sortActivity the sorting method for the activities returned
+   * @return FullTextQuery containing results
+   */
   private org.hibernate.search.jpa.FullTextQuery searchActivityQuery(
       String terms,
       String[] activityTypes,
@@ -137,7 +185,11 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       int limit,
       int offset,
       int profileId,
-      boolean isAdmin) {
+      boolean isAdmin,
+      Double longitude,
+      Double latitude,
+      Integer radius,
+      SortActivity sortActivity) {
     FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
 
     try {
@@ -151,18 +203,17 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
             .getSearchFactory()
             .buildQueryBuilder()
             .forEntity(Activity.class)
+            .overridesForField("activity_name", "activityQueryAnalyzer")
             .get();
 
     org.apache.lucene.search.Query finalQuery = null;
 
     if (terms != null) {
-      org.apache.lucene.search.Query activityNameQuery =
-          queryBuilder.keyword().onField("activity_name").matching(terms).createQuery();
-      finalQuery = activityNameQuery;
+      finalQuery = queryBuilder.keyword().onField("activity_name").matching(terms).createQuery();
     }
 
     if (activityTypes != null && activityTypes.length > 0) {
-      BooleanJunction activityQuery =
+      BooleanJunction<?> activityQuery =
           addActivityTypeQuery(queryBuilder, activityTypes, activityTypesMethod);
       if (finalQuery == null) {
         finalQuery = activityQuery.createQuery();
@@ -173,7 +224,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     }
 
     if (hashtags != null && hashtags.length > 0) {
-      BooleanJunction hashtagQuery = addHashtagQuery(queryBuilder, hashtags, hashTagsMethod);
+      BooleanJunction<?> hashtagQuery = addHashtagQuery(queryBuilder, hashtags, hashTagsMethod);
       if (finalQuery == null) {
         finalQuery = hashtagQuery.createQuery();
       } else {
@@ -183,7 +234,7 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
     }
 
     if (time != null) {
-      BooleanJunction timeQuery = addTimeQuery(queryBuilder, time, startDate, endDate);
+      BooleanJunction<?> timeQuery = addTimeQuery(queryBuilder, time, startDate, endDate);
       if (finalQuery == null) {
         finalQuery = timeQuery.createQuery();
       } else {
@@ -192,33 +243,44 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       }
     }
 
-    if (finalQuery != null) {
-      BooleanJunction visibilityQuery = addVisibilityQuery(queryBuilder, profileId, isAdmin);
-      if (visibilityQuery != null) {
+    if (longitude != null && latitude != null && radius != null) {
+      BooleanJunction<?> locationQuery =
+          addLocationQuery(queryBuilder, longitude, latitude, radius);
+      if (finalQuery == null) {
+        finalQuery = locationQuery.createQuery();
+      } else {
         finalQuery =
-            queryBuilder.bool().must(finalQuery).must(visibilityQuery.createQuery()).createQuery();
+            queryBuilder.bool().must(finalQuery).must(locationQuery.createQuery()).createQuery();
       }
     }
 
-    if (finalQuery != null) {
-      org.apache.lucene.search.Sort sort =
-          new Sort(SortField.FIELD_SCORE, new SortField("id", SortField.Type.STRING, true));
-
-      org.hibernate.search.jpa.FullTextQuery jpaQuery =
-          fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
-
-      jpaQuery.setSort(sort);
-
-      if (limit != -1) {
-        jpaQuery.setMaxResults(limit);
-      }
-      if (offset != -1) {
-        jpaQuery.setFirstResult(offset);
-      }
-
-      return jpaQuery;
+    // If all search parameters are null
+    if (finalQuery == null) {
+      finalQuery = queryBuilder.all().createQuery();
     }
-    return null;
+
+    // Ensure that only activities that user are allowed to see are returned
+    BooleanJunction<?> visibilityQuery = addVisibilityQuery(queryBuilder, profileId, isAdmin);
+    if (visibilityQuery != null) {
+      finalQuery =
+          queryBuilder.bool().must(finalQuery).must(visibilityQuery.createQuery()).createQuery();
+    }
+
+    org.apache.lucene.search.Sort sort = sortingMethod(sortActivity, latitude, longitude);
+
+    org.hibernate.search.jpa.FullTextQuery jpaQuery =
+        fullTextEntityManager.createFullTextQuery(finalQuery, Activity.class);
+
+    jpaQuery.setSort(sort);
+
+    if (limit != -1) {
+      jpaQuery.setMaxResults(limit);
+    }
+    if (offset != -1) {
+      jpaQuery.setFirstResult(offset);
+    }
+
+    return jpaQuery;
   }
 
   /**
@@ -230,9 +292,9 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param method determines how to search the hashtags (OR or AND)
    * @return BooleanJunction that can be turned into a query used to search the activity
    */
-  private BooleanJunction addHashtagQuery(
+  private BooleanJunction<?> addHashtagQuery(
       QueryBuilder queryBuilder, String[] hashtagsArray, String method) {
-    BooleanJunction query = queryBuilder.bool();
+    BooleanJunction<?> query = queryBuilder.bool();
     for (String hashtag : hashtagsArray) {
       org.apache.lucene.search.Query hashtagQuery =
           queryBuilder.simpleQueryString().onField("tags").matching(hashtag).createQuery();
@@ -258,9 +320,9 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param method determines how to search the activity types (OR or AND)
    * @return BooleanJunction that can be turned into a query used to search the activity
    */
-  private BooleanJunction addActivityTypeQuery(
+  private BooleanJunction<?> addActivityTypeQuery(
       QueryBuilder queryBuilder, String[] activityTypesArray, String method) {
-    BooleanJunction query = queryBuilder.bool();
+    BooleanJunction<?> query = queryBuilder.bool();
     for (String activity : activityTypesArray) {
       org.apache.lucene.search.Query activityQuery =
           queryBuilder
@@ -292,22 +354,22 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param endDate latest start date for activity
    * @return BooleanJunction that can be turned into a query used to search the activity
    */
-  private BooleanJunction addTimeQuery(
+  private BooleanJunction<?> addTimeQuery(
       QueryBuilder queryBuilder, String time, LocalDateTime startDate, LocalDateTime endDate) {
-    BooleanJunction booleanJunction = queryBuilder.bool();
+    BooleanJunction<?> booleanJunction = queryBuilder.bool();
 
     Query query;
-    if (time.equals("continuous")) {
-      query = queryBuilder.keyword().onField("continuous").matching(true).createQuery();
+    if (time.equals(CONTINUOUS)) {
+      query = queryBuilder.keyword().onField(CONTINUOUS).matching(true).createQuery();
     } else {
-      query = queryBuilder.keyword().onField("continuous").matching(false).createQuery();
+      query = queryBuilder.keyword().onField(CONTINUOUS).matching(false).createQuery();
       if (startDate != null) {
         Query startDateQuery =
-            queryBuilder.range().onField("startTime").above(startDate).createQuery();
+            queryBuilder.range().onField(START_TIME).above(startDate).createQuery();
         booleanJunction.must(startDateQuery);
       }
       if (endDate != null) {
-        Query endDateQuery = queryBuilder.range().onField("endTime").below(endDate).createQuery();
+        Query endDateQuery = queryBuilder.range().onField(END_TIME).below(endDate).createQuery();
         booleanJunction.must(endDateQuery);
       }
     }
@@ -325,25 +387,32 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
    * @param profileId the profileId of the logged in user
    * @return BooleanJunction that can be turned into a query used to search the activity
    */
-  private BooleanJunction addVisibilityQuery(
+  private BooleanJunction<?> addVisibilityQuery(
       QueryBuilder queryBuilder, Integer profileId, boolean isAdmin) {
     if (isAdmin) {
       return null;
     } else {
-      BooleanJunction booleanJunction = queryBuilder.bool();
+      BooleanJunction<?> booleanJunction = queryBuilder.bool();
 
       Query publicActivityQuery =
           queryBuilder
               .keyword()
               .onField("visibility")
+              .boostedTo(0)
               .matching(VisibilityType.Public)
               .createQuery();
       Query ownActivityQuery =
-          queryBuilder.keyword().onField("profile").matching(profileId.toString()).createQuery();
+          queryBuilder
+              .keyword()
+              .onField("profile")
+              .boostedTo(0)
+              .matching(profileId.toString())
+              .createQuery();
       Query hasAccessToActivityQuery =
           queryBuilder
               .keyword()
               .onField("activityRole.profile")
+              .boostedTo(0)
               .matching(profileId.toString())
               .createQuery();
       booleanJunction.should(hasAccessToActivityQuery);
@@ -351,5 +420,106 @@ public class CustomizedActivityRepositoryImpl implements CustomizedActivityRepos
       booleanJunction.should(ownActivityQuery);
       return booleanJunction;
     }
+  }
+
+  /**
+   * Creates the BooleanJunction that can be turned into a query used to search the activity by
+   * location. Location consists of longitude and latitude, and the search searches around an area
+   * radius around the location.
+   *
+   * @param queryBuilder used for building the query
+   * @param longitude the longitude coordinate
+   * @param latitude the latitude coordinate
+   * @param radius the distance the circle area will extend from the centre of the coordinate
+   * @return BooleanJunction that can be turned into a query used to search the activity
+   */
+  private BooleanJunction<?> addLocationQuery(
+      QueryBuilder queryBuilder, Double longitude, Double latitude, Integer radius) {
+    BooleanJunction<?> booleanJunction = queryBuilder.bool();
+    org.apache.lucene.search.Query luceneQuery =
+        queryBuilder
+            .spatial()
+            .onField(LOCATION)
+            .within(radius, Unit.KM)
+            .ofLatitude(latitude)
+            .andLongitude(longitude)
+            .createQuery();
+    booleanJunction.must(luceneQuery);
+    return booleanJunction;
+  }
+
+  /**
+   * Given parameters, figure out the sorting method to use for sorting the final query.
+   *
+   * @param sortActivity the sorting method desired
+   * @param latitude the latitude coordinate of the search location
+   * @param longitude the longitude coordinate of the search location
+   * @return the sort
+   */
+  private org.apache.lucene.search.Sort sortingMethod(
+      SortActivity sortActivity, Double latitude, Double longitude) {
+    org.apache.lucene.search.Sort sort;
+    SortField sortFieldId = new SortField("id", SortField.Type.STRING, true);
+    SortField sortFieldCreationDate = new SortField("creationDate", SortField.Type.STRING, true);
+
+    if (sortActivity != null) {
+      switch (sortActivity) {
+        case EARLIEST_START_DATE:
+          sort =
+              new Sort(
+                  new SortField(START_TIME, SortField.Type.STRING),
+                  sortFieldCreationDate,
+                  sortFieldId);
+          break;
+        case LATEST_START_DATE:
+          sort =
+              new Sort(
+                  new SortField(START_TIME, SortField.Type.STRING, true),
+                  sortFieldCreationDate,
+                  sortFieldId);
+          break;
+        case EARLIEST_END_DATE:
+          sort =
+              new Sort(
+                  new SortField(END_TIME, SortField.Type.STRING),
+                  sortFieldCreationDate,
+                  sortFieldId);
+          break;
+        case LATEST_END_DATE:
+          sort =
+              new Sort(
+                  new SortField(END_TIME, SortField.Type.STRING, true),
+                  sortFieldCreationDate,
+                  sortFieldId);
+          break;
+        case CLOSEST_LOCATION:
+          sort =
+              new Sort(
+                  new DistanceSortField(latitude, longitude, LOCATION),
+                  SortField.FIELD_SCORE,
+                  sortFieldId);
+          break;
+        case FURTHEST_LOCATION:
+          sort =
+              new Sort(
+                  new DistanceSortField(latitude, longitude, LOCATION, true),
+                  SortField.FIELD_SCORE,
+                  sortFieldCreationDate,
+                  sortFieldId);
+          break;
+        default:
+          sort = new Sort(SortField.FIELD_SCORE, sortFieldCreationDate, sortFieldId);
+      }
+    } else if (longitude != null && latitude != null) {
+      sort =
+          new Sort(
+              new DistanceSortField(latitude, longitude, LOCATION),
+              SortField.FIELD_SCORE,
+              sortFieldCreationDate,
+              sortFieldId);
+    } else {
+      sort = new Sort(SortField.FIELD_SCORE, sortFieldCreationDate, sortFieldId);
+    }
+    return sort;
   }
 }

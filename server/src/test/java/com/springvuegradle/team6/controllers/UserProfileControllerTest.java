@@ -2,39 +2,64 @@ package com.springvuegradle.team6.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.NamedLocation;
+import com.springvuegradle.team6.models.entities.Location;
+import com.springvuegradle.team6.models.entities.PasswordToken;
 import com.springvuegradle.team6.models.entities.Profile;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
+import com.springvuegradle.team6.models.repositories.PasswordTokenRepository;
 import com.springvuegradle.team6.models.repositories.ProfileRepository;
-import com.springvuegradle.team6.requests.CreateProfileRequest;
-import com.springvuegradle.team6.requests.EditPasswordRequest;
-import com.springvuegradle.team6.requests.EditProfileRequest;
-import com.springvuegradle.team6.requests.LoginRequest;
+import com.springvuegradle.team6.requests.*;
+
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import javax.servlet.http.HttpSession;
+
+import com.springvuegradle.team6.services.ExternalAPI.GoogleAPIServiceMocking;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
+@TestPropertySource(properties = {
+    "ADMIN_EMAIL=test@test.com",
+    "ADMIN_PASSWORD=test",
+    "spring.mail.host=smtp.gmail.com",
+    "spring.mail.port=587",
+    "spring.mail.username=edmungoat2020",
+    "spring.mail.password=EdmunGoat2020",
+    "spring.mail.properties.mail.smtp.starttls.enable=true",
+    "spring.mail.properties.mail.smtp.starttls.required=true",
+    "spring.mail.properties.mail.smtp.auth=true",
+    "spring.mail.properties.mail.smtp.connectiontimeout=5000",
+    "spring.mail.properties.mail.smtp.timeout=5000",
+    "spring.mail.properties.mail.smtp.writetimeout=5000"
+})
 class UserProfileControllerTest {
   @Autowired private MockMvc mvc;
 
@@ -43,6 +68,14 @@ class UserProfileControllerTest {
   @Autowired private ProfileRepository profileRepository;
 
   @Autowired private EmailRepository emailRepository;
+
+  @Autowired private LocationRepository locationRepository;
+
+  @Autowired
+  private GoogleAPIServiceMocking googleAPIService;
+
+  @Autowired
+  private PasswordTokenRepository passwordTokenRepository;
 
   private CreateProfileRequest getDummyProfile() {
     CreateProfileRequest validRequest = new CreateProfileRequest();
@@ -507,21 +540,58 @@ class UserProfileControllerTest {
   }
 
   @Test
+  void getLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
+
+    Location location = new Location();
+    location.setLatitude(-43.5);
+    location.setLongitude(172.5);
+    location = locationRepository.save(location);
+
+    Profile profile = profileRepository.findById(id);
+    profile.setPrivateLocation(location);
+    profileRepository.save(profile);
+
+    String getUrl = "/profiles/%d/location";
+    getUrl = String.format(getUrl, id);
+
+    String response =
+            mvc.perform(
+                    get(getUrl)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    Double latitude = (Double) obj.get("latitude");
+    Double longitude = (Double) obj.get("longitude");
+    org.junit.jupiter.api.Assertions.assertEquals(-43.5, latitude);
+    org.junit.jupiter.api.Assertions.assertEquals(172.5, longitude);
+  }
+
+  @Test
   void updateLocation() throws Exception {
     MockHttpSession session = new MockHttpSession();
     int id = TestDataGenerator.createJohnDoeUser(mvc, mapper, session);
 
+
     String updateUrl = "/profiles/%d/location";
     updateUrl = String.format(updateUrl, id);
 
-    NamedLocation location = new NamedLocation();
-    location.setCountry("New Zealand");
-    location.setState("Canterbury");
-    location.setCity("Christchurch");
+    Double latitude = -43.525650;
+    Double longitude = 172.639847;
 
+    LocationUpdateRequest locationUpdateRequest = new LocationUpdateRequest();
+    locationUpdateRequest.latitude = latitude;
+    locationUpdateRequest.longitude = longitude;
+
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
     mvc.perform(
             put(updateUrl)
-                .content(mapper.writeValueAsString(location))
+                .content(mapper.writeValueAsString(locationUpdateRequest))
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(session))
         .andExpect(status().isOk());
@@ -636,5 +706,620 @@ class UserProfileControllerTest {
     JSONObject obj = new JSONObject(response);
     JSONArray arr = obj.getJSONArray("emails");
     org.junit.jupiter.api.Assertions.assertEquals(3, arr.length());
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeReturnsAddressString() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = ((JSONObject)obj.get("location")).get("name").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeReturnsPublicLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+            mvc.perform(
+                    get("/profiles/" + profile.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+
+    // Expecting location centered on true address
+    String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
+    String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("-43.527593", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("172.5814724", lon);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeAnotherProfileReturnsHiddenAddressString() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe2@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("johnydoe1@gmail.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("John");
+    profile2.setLastname("Doe1");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2 = profileRepository.save(profile2);
+
+    // Login as profile 1
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe2@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Login as profile 2
+    loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address = ((JSONObject)obj.get("location")).get("name").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("Canterbury, New Zealand", address);
+  }
+
+  @Test
+  void getProfileWithLatitudeAndLongitudeAnotherProfileReturnsHiddenLocation() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe2@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+
+    Set<Email> emails2 = new HashSet<>();
+    Email email2 = new Email("johnydoe1@gmail.com");
+    email2.setPrimary(true);
+    emails2.add(email2);
+    Profile profile2 = new Profile();
+    profile2.setFirstname("John");
+    profile2.setLastname("Doe1");
+    profile2.setEmails(emails2);
+    profile2.setDob("2010-01-01");
+    profile2.setPassword("Password1");
+    profile2.setGender("male");
+    profile2 = profileRepository.save(profile2);
+
+    // Login as profile 1
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe2@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    // Login as profile 2
+    loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+            mvc.perform(
+                    get("/profiles/" + profile.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+
+    // Expecting location centered on canterbury
+    String lat = ((JSONObject)obj.get("location")).get("latitude").toString();
+    String lon = ((JSONObject)obj.get("location")).get("longitude").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("-43.7542275", lat);
+    org.junit.jupiter.api.Assertions.assertEquals("171.1637245", lon);
+  }
+
+  @Test
+  @WithMockUser(
+      username = "admin",
+      roles = {"USER", "ADMIN"})
+  void getProfileWithLatitudeAndLongitudeAsAdminReturnsFullAddress() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    // Set Location
+    googleAPIService.mockReverseGeocode("controllers/46BalgaySt_OK.json");
+    mvc.perform(
+            put("/profiles/" + profile.getId() + "/location")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"latitude\": -43.527531, \"longitude\": 172.581472}}")
+                    .session(session))
+            .andExpect(status().isOk());
+
+    String response =
+        mvc.perform(
+            get("/profiles/" + profile.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .session(session))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JSONObject obj = new JSONObject(response);
+    String address =((JSONObject)obj.get("location")).get("name").toString();
+    org.junit.jupiter.api.Assertions.assertEquals("46 Balgay Street, Upper Riccarton, Christchurch 8041, New Zealand", address);
+  }
+
+  @Test
+  void testResetPasswordCheckTokenSaved() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@email.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe1@email.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNotNull(token);
+  }
+
+  @Test
+  void testResetPasswordEmailDoesNotExist() throws Exception {
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@email.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"johnydoe@email.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
+
+    PasswordToken token = passwordTokenRepository.findByProfileId(profile.getId());
+    Assert.assertNull(token);
+  }
+
+  @Test
+  void testResetPasswordAdminDoesNotGetEmail() throws Exception {
+    String resetPasswordJson = "{\n"
+        + "  \"email\": \"test@test.com\"\n"
+        + "}";
+
+    mvc.perform(
+        MockMvcRequestBuilders.post("/profiles/resetpassword")
+            .content(resetPasswordJson)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testAddProfilePhotoValidAndReturnOk() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+            "orig",
+            "image/png",
+            "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().isOk());
+
+    profile = profileRepository.findById(profile.getId()).get();
+    Assert.assertEquals("profile" + profile.getId() + ".png", profile.getPhotoFilename());
+  }
+
+  @Test
+  void testAddProfilePhotoInvalidTypeAndReturn4xx() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+            "orig",
+            "application/pdf",
+            "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+            post("/login/")
+                    .content(mapper.writeValueAsString(loginRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(session))
+            .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+            multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+            .file(file)
+            .contentType(MediaType.MULTIPART_MIXED)
+            .session(session))
+            .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testGetValidPhotoFromProfile() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+        "orig",
+        "image/png",
+        "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isOk());
+
+    profile = profileRepository.findById(profile.getId()).get();
+    Assert.assertEquals("profile" + profile.getId() + ".png", profile.getPhotoFilename());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/image", profile.getId())
+            .session(session)
+    ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+  }
+
+  @Test
+  void testDeleteValidPhotoFromProfile() throws Exception {
+    MockHttpSession session = new MockHttpSession();
+    MockMultipartFile file = new MockMultipartFile("file",
+        "orig",
+        "image/png",
+        "bar".getBytes());
+
+    Set<Email> emails = new HashSet<>();
+    Email email = new Email("johnydoe1@gmail.com");
+    email.setPrimary(true);
+    emails.add(email);
+    Profile profile = new Profile();
+    profile.setFirstname("John");
+    profile.setLastname("Doe1");
+    profile.setEmails(emails);
+    profile.setDob("2010-01-01");
+    profile.setPassword("Password1");
+    profile.setGender("male");
+    profile = profileRepository.save(profile);
+
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.email = "johnydoe1@gmail.com";
+    loginRequest.password = "Password1";
+    mvc.perform(
+        post("/login/")
+            .content(mapper.writeValueAsString(loginRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().isOk());
+
+    MockMultipartHttpServletRequestBuilder builder =
+        multipart("/profiles/{profileId}/image", profile.getId());
+    builder.with(new RequestPostProcessor() {
+      @Override
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setMethod("PUT");
+        return request;
+      }
+    });
+
+    mvc.perform(builder
+        .file(file)
+        .contentType(MediaType.MULTIPART_MIXED)
+        .session(session))
+        .andExpect(status().isOk());
+
+    profile = profileRepository.findById(profile.getId()).get();
+    Assert.assertEquals("profile" + profile.getId() + ".png", profile.getPhotoFilename());
+
+    // Get Image
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/image", profile.getId())
+            .session(session)
+    ).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes("bar".getBytes()));
+
+    // Delete Image
+    mvc.perform(
+        MockMvcRequestBuilders.delete("/profiles/{profileId}/image", profile.getId())
+            .session(session)
+    ).andExpect(status().isOk());
+
+    // Check not found
+    mvc.perform(
+        MockMvcRequestBuilders.get("/profiles/{profileId}/image", profile.getId())
+            .session(session)
+    ).andExpect(status().isNotFound());
   }
 }

@@ -4,14 +4,16 @@
         <b-container>
             <b-row>
                 <b-col cols="3">
-                    <b-row align-h="center">
-                        <b-avatar size="6rem" style="text-align: center"></b-avatar>
+                    <b-row align-h="center" style="font-size: 4em;">
+                        <b-col>
+                            <UserImage :id="userId"></UserImage>
+                        </b-col>
                     </b-row>
                     <b-row style="margin-top: 10px;" align-h="center">
                         <p style="padding-bottom:0;margin-bottom: 0;font-size:18px">{{ fullName }}</p>
                     </b-row>
                     <b-row align-h="center">
-                        <p style="font-size:14px">Following: {{ followingCount }}</p>
+                        <p style="font-size:14px">Activities followed: {{ followingCount }}</p>
                     </b-row>
                 </b-col>
                 <b-col cols="9">
@@ -37,10 +39,13 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import api from '@/Api';
+    import UserImage from "../../components/Activity/UserImage/UserImage";
+
 
     export default {
         components: {
-            NavBar
+            NavBar,
+            UserImage
         },
         data() {
             return {
@@ -87,6 +92,18 @@
                     });
 
             },
+           /**
+            * Gets the number of activities a user follows
+            */
+            getNumberOfActivitiesFollowed: function () {
+              api.getNumberOfActivitiesFollowed(this.userId)
+                .then((res) => {
+                  this.followingCount = res.data;
+                })
+              .catch((err) => {
+                console.log(err);
+              })
+            },
             goToActivity: async function (activityId) {
                 await this.getActivityOwner(activityId);
                 this.$router.push('/profiles/' + this.creatorId + '/activities/' + activityId);
@@ -130,6 +147,7 @@
             this.scroll();
             await this.getUser();
             await this.getHomeFeed();
+            this.getNumberOfActivitiesFollowed();
         }
     }
 </script>

@@ -1,14 +1,12 @@
 package com.springvuegradle.team6.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.springvuegradle.team6.models.entities.ActivityType;
-import com.springvuegradle.team6.models.entities.Country;
+import com.springvuegradle.team6.models.entities.*;
 import com.springvuegradle.team6.models.entities.Email;
-import com.springvuegradle.team6.models.entities.Profile;
-import com.springvuegradle.team6.models.entities.NamedLocation;
-import com.springvuegradle.team6.models.repositories.NamedLocationRepository;
+import com.springvuegradle.team6.models.repositories.LocationRepository;
 import com.springvuegradle.team6.models.repositories.CountryRepository;
 import com.springvuegradle.team6.models.repositories.EmailRepository;
+import com.springvuegradle.team6.services.LocationService;
 import com.springvuegradle.team6.validators.EmailCollection;
 import org.hibernate.validator.constraints.Length;
 
@@ -72,12 +70,13 @@ public class CreateProfileRequest {
     @Min(value = 0) @Max(value = 4)
     public Integer fitness = 0;
 
-    public NamedLocation location;
+    public Location location;
 
     public Profile generateProfile(
             EmailRepository emailRepository,
             CountryRepository countryRepository,
-            NamedLocationRepository locationRepository
+            LocationRepository locationRepository,
+            LocationService locationService
     ) {
         Profile profile = new Profile();
         profile.setFirstname(firstname);
@@ -121,8 +120,7 @@ public class CreateProfileRequest {
         }
 
         if(this.location != null) {
-            locationRepository.save(this.location);
-            profile.setLocation(this.location);
+            locationService.updateProfileLocation(profile, this.location, locationRepository);
         }
 
         return profile;

@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = "classpath:tearDown.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @TestPropertySource(properties = {"ADMIN_EMAIL=test@test.com", "ADMIN_PASSWORD=test"})
@@ -1769,4 +1771,58 @@ public class FollowControllerTest {
             .andExpect(status().is4xxClientError());
   }
 
+  @Test
+  void testGetUsersActivityFollowingCountIsOk() throws Exception {
+    mvc.perform(
+        MockMvcRequestBuilders.post(
+            "/profiles/" + otherId + "/subscriptions/activities/" + activityId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is2xxSuccessful());
+
+    String loginJson =
+        "{\n" + "  \"email\": \"poly@pocket.com\",\n" + "  \"password\": \"Password1\"\n" + "}";
+    mvc.perform(
+        MockMvcRequestBuilders.post("/login")
+            .content(loginJson)
+            .contentType(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is2xxSuccessful());
+
+    String response = mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/" + id + "/subscriptions/activities/following")
+            .accept(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    Assert.assertEquals(1, Integer.parseInt(response));
+  }
+
+  @Test
+  void testGetUsersActivityFollowingCountNotLoggedInReturns4xx() throws Exception {
+    mvc.perform(
+        MockMvcRequestBuilders.get("/logout/")
+            .session(session))
+        .andExpect(status().is2xxSuccessful());
+
+    mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/" + id + "/subscriptions/activities/following")
+            .accept(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testGetUsersActivityFollowingCountSessionIDAndUrlIDDontMatchReturns4xx() throws Exception {
+    mvc.perform(
+        MockMvcRequestBuilders.get(
+            "/profiles/" + id +"/subscriptions/activities/following")
+            .accept(MediaType.APPLICATION_JSON)
+            .session(session))
+        .andExpect(status().is4xxClientError());
+  }
 }

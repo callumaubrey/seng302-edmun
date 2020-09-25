@@ -2,6 +2,7 @@ package com.springvuegradle.team6.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.team6.exceptions.DuplicateRoleException;
 import com.springvuegradle.team6.exceptions.DuplicateSubscriptionException;
 import com.springvuegradle.team6.exceptions.RoleNotFoundException;
@@ -25,6 +26,8 @@ import java.util.*;
       @TokenFilterDef(factory = StandardFilterFactory.class)
     })
 public class Profile {
+
+  public static final long MAX_IMAGE_SIZE = 20L * 1000L * 1000L; // 20 MB
 
   @Id
   @GeneratedValue
@@ -63,8 +66,6 @@ public class Profile {
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   private Set<Email> emails = new HashSet<>();
 
-  ;
-
   private String password;
 
   private String bio;
@@ -75,7 +76,16 @@ public class Profile {
 
   private Integer fitness;
 
-  @ManyToOne private NamedLocation location;
+  @Column(name = "is_locked")
+  private boolean isLocked;
+  
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @JsonIgnore
+  private Location privateLocation;
+
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @JsonIgnore
+  private Location publicLocation;
 
   @IndexedEmbedded
   @Field(analyze = Analyze.YES, store = Store.NO)
@@ -102,7 +112,15 @@ public class Profile {
   @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
   private List<Activity> activities;
 
-  public Profile() {}
+  @Column(name = "photo_filename")
+  private String photoFilename;
+
+  /**
+   * Constructor for profile object. Attribute isLocked is defaulted to false when object is created
+   */
+  public Profile() {
+    this.isLocked = false;
+  }
 
   /** Maps users to the activities they have subscribed to/followed */
   @ManyToMany(fetch = FetchType.LAZY)
@@ -265,6 +283,10 @@ public class Profile {
     this.roles = roles;
   }
 
+  public void setLockStatus(boolean status) {
+    this.isLocked = status;
+  }
+
   public void addRole(Role newRole) throws DuplicateRoleException {
     for (Role role : roles) {
       if (role.getRoleName().equals(newRole.getRoleName())) {
@@ -285,8 +307,16 @@ public class Profile {
     throw new RoleNotFoundException();
   }
 
-  public NamedLocation getLocation() {
-    return location;
+  public Location getPrivateLocation() {
+    return privateLocation;
+  }
+
+  public Location getPublicLocation() {
+    return publicLocation;
+  }
+
+  public void setPublicLocation(Location publicLocation) {
+    this.publicLocation = publicLocation;
   }
 
   public void setSubscriptions(final Collection<Activity> subscriptions) {
@@ -310,8 +340,12 @@ public class Profile {
     }
   }
 
-  public void setLocation(NamedLocation location) {
-    this.location = location;
+  public void setPrivateLocation(Location privateLocation) {
+    this.privateLocation = privateLocation;
+  }
+
+  public boolean isLocked() {
+    return isLocked;
   }
 
   /**
@@ -395,8 +429,37 @@ public class Profile {
     this.activities = activities;
   }
 
+  public String getPhotoFilename() {
+    return photoFilename;
+  }
+
+  public void setPhotoFilename(String photoFilename) {
+    this.photoFilename = photoFilename;
+  }
+
   /** Clears all emails except for the primary email in emails */
   private void clearNonPrimaryEmails() {
     emails.removeIf(email -> !email.isPrimary());
+  }
+
+  /**
+   * Generates profile map of json values set for private viewing or public viewing. This method is
+   * not a perfect solution however other solutions would require wide architectural changes
+   *
+   * @param viewPrivate add private members to json
+   * @return profile json map
+   */
+  public Map<String, Object> getJSON(boolean viewPrivate) {
+    // Generate map
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> profileJson = mapper.convertValue(this, Map.class);
+
+    if (viewPrivate) {
+      profileJson.put("location", mapper.convertValue(privateLocation, Map.class));
+    } else {
+      profileJson.put("location", mapper.convertValue(publicLocation, Map.class));
+    }
+
+    return profileJson;
   }
 }

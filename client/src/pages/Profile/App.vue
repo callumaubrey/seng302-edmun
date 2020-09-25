@@ -6,10 +6,12 @@
             <AdminSideBar :loggedInId="loggedInId" :loggedInIsAdmin="loggedInIsAdmin"
                           :userData="userData" v-if="adminAccess"></AdminSideBar>
             <div>
-                <b-row>
-                    <b-img alt="Center image" center height="150px" rounded="circle"
-                           src="https://www.signtech.co.nz/wp-content/uploads/2019/08/facebook-blank-face-blank-300x298.jpg"
-                           width="150px"></b-img>
+                <b-row style="font-size: 6em;" align-content="center">
+                    <b-col>
+                        <UserImage :id="profileId"
+                                   :editable="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin"
+                                   save-on-change></UserImage>
+                    </b-col>
                 </b-row>
                 <b-row><h3></h3></b-row>
                 <b-row align-h="center">
@@ -102,19 +104,12 @@
 
                     </b-tab>
 
-                    <b-tab title="Location Info">
-                        <b-card style="margin: 1em;" title="Location Info:">
-                            <b-col v-if="userData.location">
-                                <b-row>
-                                    City: {{userData.location.city}}
-                                </b-row>
-                                <b-row>
-                                    State: {{userData.location.state}}
-                                </b-row>
-                                <b-row>
-                                    Country: {{userData.location.country}}
-                                </b-row>
-                            </b-col>
+                    <b-tab title="Location Info" @click="addUserLocationToMap">
+                        <b-card style="margin: 1em">
+                            <h4 v-if="location && location.name" class="text-center">
+                                {{location.name}}
+                            </h4>
+                            <map-pane ref="map" :can-hide="true"></map-pane>
                         </b-card>
                     </b-tab>
                     <b-tab style="margin: 1em" title="Activities">
@@ -141,13 +136,17 @@
     import AdminMixin from "../../mixins/AdminMixin";
     import {store} from "../../store";
     import ActivityList from "../../components/Activity/ActivityList";
+    import MapPane from "../../components/MapPane/MapPane";
+    import UserImage from "../../components/Activity/UserImage/UserImage";
 
     const App = {
         name: 'App',
         components: {
+            UserImage,
             ActivityList,
             NavBar,
-            AdminSideBar
+            AdminSideBar,
+            MapPane
         },
         data: function () {
             return {
@@ -156,16 +155,17 @@
                 userData: '',
                 passports: [],
                 activities: [],
+                myActivities: [],
                 additionalEmails: [],
                 isLoggedIn: '',
                 userName: "",
                 locations: [],
                 userRoles: [],
                 profileId: '',
-                location: '',
+                location: null,
                 dob: '',
                 loggedInIsAdmin: false,
-                hidden: null,
+                hidden: null
             }
         },
         computed: {
@@ -189,7 +189,7 @@
                     });
             },
             getProfileData: async function () {
-                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin()
+                this.loggedInIsAdmin = await AdminMixin.methods.checkUserIsAdmin();
                 let currentObj = this;
                 api.getProfile(this.$route.params.id)
                     .then(function (response) {
@@ -215,6 +215,7 @@
 
                         currentObj.location = response.data.location;
                         currentObj.checkHideElements();
+
                     })
                     // eslint-disable-next-line no-unused-vars
                     .catch(function (error) {
@@ -225,7 +226,13 @@
                         }
                     });
             },
-
+            addUserLocationToMap() {
+                if (this.location !== null) {
+                    this.$refs.map.createMarker(1, 3, this.location.latitude, this.location.longitude, this.userData, this.userName);
+                    this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
+                }
+                this.getMyActivities();
+            },
             getCorrectDateFormat: function (date, currentObj) {
                 const dobCorrectFormat = new Date(date + "T00:00");
                 currentObj.dob = dobCorrectFormat.toLocaleDateString();
@@ -238,7 +245,6 @@
                     currentObj.hidden = true;
                 }
             },
-
             getUserId: function () {
                 let currentObj = this;
                 api.getProfileId()
@@ -253,6 +259,21 @@
                 const profileId = this.$route.params.id;
                 this.$router.push('/profiles/' + profileId + '/activities');
             },
+            getMyActivities: function () {
+                let obj = this;
+                let map = obj.$refs.map;
+                map.refreshMap();
+                const profileId = obj.profileId;
+                api.getActivities(profileId)
+                    .then(function (response) {
+                      obj.myActivities = response.data;
+                      for (let i = 0; i < obj.myActivities.length; i++) {
+                          let activity = obj.myActivities[i];
+                          let routeString = "/profiles/" + profileId + "/activities/" + activity.id;
+                          map.createMarker(i, 2, activity.location.latitude, activity.location.longitude, routeString, activity.activityName)
+                      }
+                    })
+            }
         },
         watch: {
             $route: function () {

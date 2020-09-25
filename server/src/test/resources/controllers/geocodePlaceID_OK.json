@@ -1,0 +1,143 @@
+{
+  "result": {
+    "utc_offset": 720,
+    "formatted_address": "Christchurch, New Zealand",
+    "types": [
+      "locality",
+      "political"
+    ],
+    "icon": "https:\/\/maps.gstatic.com\/mapfiles\/place_api\/icons\/geocode-71.png",
+    "address_components": [
+      {
+        "types": [
+          "locality",
+          "political"
+        ],
+        "short_name": "Christchurch",
+        "long_name": "Christchurch"
+      },
+      {
+        "types": [
+          "administrative_area_level_1",
+          "political"
+        ],
+        "short_name": "Canterbury",
+        "long_name": "Canterbury"
+      },
+      {
+        "types": [
+          "country",
+          "political"
+        ],
+        "short_name": "NZ",
+        "long_name": "New Zealand"
+      }
+    ],
+    "photos": [
+      {
+        "photo_reference": "CmRaAAAAsdWoNvIsRZ-keAGk6uiUe0SKwAXc-pC1-CFjyXzTNj7UwpqeyXvNkZXKrpPUixYuciatgaBwc4w-naYRudCy11pFg-ZrWozqVhEXoQST1LdcTisTcTuLD94a4WCYWaGlEhB4YQCx9JZjVh3r2mPdQmyDGhRRKLogjkt_khe73P1Lfj_NCbLK-g",
+        "width": 800,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/109259271041196184706\">Deniseh G.<\/a>"
+        ],
+        "height": 600
+      },
+      {
+        "photo_reference": "CmRaAAAAeN9RgE7_6Df_SO_h3vbr72MjOONsOXs-JDUOj27ZqW2rnZp9_r05CAkP6n6m9S0OubsYPtvCmxqovXzuK8uTiCq2knJ0fgD_gG02ij7Zp8IGqKor9P3nzy3dKLmNbeTkEhBhmmZl_dBxLtRWVuCZqHHfGhS97hlJVSX097o_JPnpOO34iycQiA",
+        "width": 4032,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/103693194049103978354\">瞿虹秋<\/a>"
+        ],
+        "height": 3024
+      },
+      {
+        "photo_reference": "CmRaAAAAX-_MY0dy7x0oBZg-J_4rNLNc5-RRAdMHMO5kZj3iFU7Yo6or5Q1NEPP98zkySLxdes7JEIeJ1LPprOe9ZB1oqro2pLNesYcJPJji_6vPqiR9aUXgChHp4wbh3O628W3cEhCRPdnfcjJ-Uln57i938B49GhS-hmtsxBamDFmwQDl6siJa9Eg",
+        "width": 4032,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/115547351276037607529\">Kok Seng Ng<\/a>"
+        ],
+        "height": 2268
+      },
+      {
+        "photo_reference": "CmRaAAAAXrMCbwulDBI4QHJCtEzaBJgNes7OiOVvvqTUS5OyU-yGpW3-LIcnarV4wHxOAuqwPSkqoJVKw_2qtQ_Toi6wXpysXdhit8HOlGS_MMffPLa2slOHoT6hqiQdjvhLmYopEhCaAE80hrPK0p1bcVt3UeWtGhRo_lLF96wxGsniA1LOa5y_RB9SrQ",
+        "width": 4608,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/105166563183039654018\">Jonathan Scott<\/a>"
+        ],
+        "height": 2304
+      },
+      {
+        "photo_reference": "CmRaAAAANfIc2JL1Z2sWZH-6aBO5kqj2OFBpDFSk-95aHijumyvLMNIURnzKtTIVf3ok62Q5wh9JYeldwR98dXF5dgBEZ8rFg6WEZrOAkkFq4TJ0kwNIoOhBe4wao6xntu_NEiHTEhAwIIKfgCYfNwmEXW2O1-9HGhTFIk10KMOjxLLph8a2r8jY2WL5-A",
+        "width": 4032,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/110456890810872486104\">Jesus Latorre<\/a>"
+        ],
+        "height": 2268
+      },
+      {
+        "photo_reference": "CmRaAAAA2aM01oCB5mzoHk13dDNsluM7Eww4CHxNYLMdQflwRvH21-PdZclvSv5cf4XAhJDr1PeMu0feB8LW1Wh7VaoEzGsAhR4KbX3znivNMv-LIpSknpAde6NmV4fiMpwKhjPTEhBQCdHIsWDANkB2XP2uq0A7GhTtPTaUCK9VMMxo3pPfZJfKmPnMyg",
+        "width": 4032,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/104556478110969071307\">LISA YANG<\/a>"
+        ],
+        "height": 3024
+      },
+      {
+        "photo_reference": "CmRaAAAAn5q35cA1xD8PYiudAGSquCYThIGzk67igur5Tl-QQZdgW1azYAj10V-_dOU0u6M0CFIFJEVLmzBS0qXWweQF4e-M3qp9c9Zc38DJ98D5Xw41QMhxekFe8p_Ceun3Tve8EhCHHZMVbp50Cz3sdjiuBtxZGhRbuqdIAS-k4XGamstZJm223Jy0vg",
+        "width": 3264,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/100608946599847212372\">Weijin Liu<\/a>"
+        ],
+        "height": 1836
+      },
+      {
+        "photo_reference": "CmRaAAAAFna_FxxtBgPnuIwlvAv5O1Kzbm7OIOoLGbT_mLTs-WrD4vJqeWdFLRILcKQlYnwKbWfZoTbCLRnHwpljS-U093hoJkmjJdVL-Bx7cMgfjVMVgHgrZj8hfI64AHwNjohKEhCf_ONOi7N9Tzn3a2heZ5bgGhTofEIvMJPomUJWZVfHVLwvHO8CfA",
+        "width": 4032,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/116707078411191481792\">Dmd Travel<\/a>"
+        ],
+        "height": 3024
+      },
+      {
+        "photo_reference": "CmRaAAAAslqXSr1j0FAvmIp2mA6rBdtguduz44eovaViSa_cyu7I_wDZd3vB_lrpFaW-EEFdJm__ykALpjkFbl_VWy4TGjZMvOMX_CM2lWnv_JwL9OuSc_5NnhNZiiqOxnrFdkA0EhBy84nYF1gBQ2Quzv6FZpmPGhQ7f0SnzfU7mU57hU0NTrEdCh3PNw",
+        "width": 2240,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/107264434786011703262\">Frank Beiboer<\/a>"
+        ],
+        "height": 1488
+      },
+      {
+        "photo_reference": "CmRaAAAAYV7w27ROGc09Odo1npiL9K2Me_TUSNfBcqjDzRKXdAMmfJxyOVuusyBFLR2PY8h048BvdPBgrnDr_-uWfdvN2tYKapO1xLYY7g6y460KMUg44sR3BEV09U8T69onsEWuEhCTydW32IofuLBhLEu0rnjzGhT17menVzsGITQMFtisS64VMgvFAQ",
+        "width": 3036,
+        "html_attributions": [
+          "<a href=\"https:\/\/maps.google.com\/maps\/contrib\/100730420827113788687\">Brian S<\/a>"
+        ],
+        "height": 4048
+      }
+    ],
+    "url": "https:\/\/maps.google.com\/?q=Christchurch,+New+Zealand&ftid=0x6d322f4863c5ed01:0x500ef8684799945",
+    "reference": "ChIJAe3FY0gvMm0RRZl5hIbvAAU",
+    "name": "Christchurch",
+    "geometry": {
+      "viewport": {
+        "southwest": {
+          "lng": 172.424527,
+          "lat": -43.7939872
+        },
+        "northeast": {
+          "lng": 172.7993602,
+          "lat": -43.3963397
+        }
+      },
+      "location": {
+        "lng": 172.6396575,
+        "lat": -43.5319957
+      }
+    },
+    "vicinity": "Christchurch",
+    "adr_address": "<span class=\"locality\">Christchurch<\/span>, <span class=\"country-name\">New Zealand<\/span>",
+    "place_id": "ChIJAe3FY0gvMm0RRZl5hIbvAAU"
+  },
+  "html_attributions": [],
+  "status": "OK"
+}
