@@ -228,14 +228,14 @@
             },
             addUserLocationToMap() {
                 if (this.location !== null) {
-                    this.$refs.map.createMarker(1, 2, this.location.latitude, this.location.longitude, this.userData, this.userName);
+                    this.$refs.map.createMarker(1, 3, this.location.latitude, this.location.longitude, this.userData, this.userName);
                     this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
                 }
                 this.getMyActivities();
             },
             getCorrectDateFormat: function (date, currentObj) {
                 const dobCorrectFormat = new Date(date + "T00:00");
-                currentObj.dob = dobCorrectFormat.toLocaleDateString();
+                currentObj.dob = dobCorrectFormat.toLocaleDateString('en-NZ');
             },
             checkHideElements: function () {
                 let currentObj = this;
@@ -270,7 +270,7 @@
                       for (let i = 0; i < obj.myActivities.length; i++) {
                           let activity = obj.myActivities[i];
                           let routeString = "/profiles/" + profileId + "/activities/" + activity.id;
-                          map.createMarker(i, 3, activity.location.latitude, activity.location.longitude, routeString, activity.activityName)
+                          map.createMarker(i, 2, activity.location.latitude, activity.location.longitude, routeString, activity.activityName)
                       }
                     })
             }
