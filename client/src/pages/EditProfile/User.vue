@@ -593,19 +593,19 @@
             if (response.status == 200) {
               vueObj.activityErrorMessage = null;
               vueObj.activityUpdateMessage = addedActivity
-                  + " was successfully added to activity's";
+                  + " was successfully added";
               vueObj.selectedActivity = null;
             }
           }).catch(function (error) {
             if (error.response.status == 400) {
               vueObj.activityUpdateMessage = "";
               vueObj.activityUpdateMessage = "Failed to add " + addedActivity
-                  + " to activitys, please try again later";
+                  + ", please try again later";
             }
           });
         } else {
           this.activityUpdateMessage = "";
-          this.activityErrorMessage = "Added activity is either null or is already included in you activity's";
+          this.activityErrorMessage = "Could not add activity type, already exists or is empty";
         }
       },
       getActivityTypes() {
