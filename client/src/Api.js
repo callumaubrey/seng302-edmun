@@ -227,8 +227,8 @@ export default {
 
   removeForId: (id) => instance.delete('students/' + id),
 
-  deleteActivity: (activityId) => instance.delete(
-      '/profiles/1/activities/' + activityId),
+  deleteActivity: (profileId, activityId) => instance.delete(
+      `/profiles/${profileId}/activities/${activityId}`),
 
   deleteActivityImage: (activityId) => instance.delete(
       "/profiles/1/activities/" + activityId + "/image"

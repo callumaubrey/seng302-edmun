@@ -168,66 +168,76 @@ public class ActivityMetricController {
 
     String message =
         profile.getFirstname()
-            + " participated in "
+            + " participated in '"
             + metric.getTitle()
-            + " for "
+            + "' for '"
             + activity.getActivityName()
-            + " and recorded ";
+            + "' and recorded ";
 
     if (request.getValue() != null || (request.getStart() != null && request.getEnd() != null)) {
-      ActivityResult result;
-      switch (metricUnit.toString()) {
-        case ("Count"):
-          result = new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
+      if (metricUnit.equals(Unit.Count)) {
+        ActivityResultCount result = new ActivityResultCount(metric, profile, Integer.parseInt(request.getValue()));
+        message += "count: " +  request.getValue();
+        if (request.getSpecialMetric() != null) {
           result.overrideResult(request.getSpecialMetric());
-          activityResultRepository.save(result);
-          message += request.getValue();
-          break;
-        case ("Distance"):
-          result =
-              new ActivityResultDistance(metric, profile, Float.parseFloat(request.getValue()));
+          message += ", overridden by " + request.getSpecialMetric();
+        }
+        activityResultRepository.save(result);
+      } else if (metricUnit.equals(Unit.Distance)) {
+        ActivityResultDistance result =
+            new ActivityResultDistance(metric, profile, Double.parseDouble(request.getValue()));
+        message += "distance: " + request.getValue();
+        if (request.getSpecialMetric() != null) {
           result.overrideResult(request.getSpecialMetric());
-          activityResultRepository.save(result);
-          message += "distance: " + request.getValue() + " km";
-          break;
-        case ("TimeDuration"):
-          // in the format PTnHnMn.nS
-          Duration duration = Duration.parse(request.getValue());
-          result = new ActivityResultDuration(metric, profile, duration);
+          message += ", overridden by " + request.getSpecialMetric();
+        }
+        activityResultRepository.save(result);
+      } else if (metricUnit.equals(Unit.TimeDuration)) {
+        // in the format PTnHnMn.nS
+        Duration duration = Duration.parse(request.getValue());
+        ActivityResultDuration result = new ActivityResultDuration(metric, profile, duration);
+        message += "duration: " + result.getPrettyResult();
+        if (request.getSpecialMetric() != null) {
           result.overrideResult(request.getSpecialMetric());
-          activityResultRepository.save(result);
-          message += "duration: " + request.getValue();
-          break;
-        case ("TimeStartFinish"):
-          result =
-              new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
+          message += ", overridden by " + request.getSpecialMetric();
+        }
+        activityResultRepository.save(result);
+      } else if (metricUnit.equals(Unit.TimeStartFinish)) {
+        ActivityResultStartFinish result =
+            new ActivityResultStartFinish(metric, profile, request.getStart(), request.getEnd());
+        message +=
+            "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+        if (request.getSpecialMetric() != null) {
           result.overrideResult(request.getSpecialMetric());
-          activityResultRepository.save(result);
-          message +=
-              "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
-          break;
+          message += ", overridden by " + request.getSpecialMetric();
+        }
+        activityResultRepository.save(result);
       }
-    } else if (request.getSpecialMetric() != null) {
+    } else if (request.getSpecialMetric() != null) { // when there's no result
       ActivityResult result;
       switch (metricUnit.toString()) {
         case ("Count"):
           result = new ActivityResultCount(metric, profile, null);
           result.overrideResult(request.getSpecialMetric());
+          message += request.getSpecialMetric() + " as special metric";
           activityResultRepository.save(result);
           break;
         case ("Distance"):
           result = new ActivityResultDistance(metric, profile, null);
           result.overrideResult(request.getSpecialMetric());
+          message += request.getSpecialMetric() + " as special metric";
           activityResultRepository.save(result);
           break;
         case ("TimeDuration"):
           result = new ActivityResultDuration(metric, profile, null);
           result.overrideResult(request.getSpecialMetric());
+          message += request.getSpecialMetric() + " as special metric";
           activityResultRepository.save(result);
           break;
         case ("TimeStartFinish"):
           result = new ActivityResultStartFinish(metric, profile, null, null);
           result.overrideResult(request.getSpecialMetric());
+          message += request.getSpecialMetric() + " as special metric";
           activityResultRepository.save(result);
           break;
       }
@@ -404,20 +414,20 @@ public class ActivityMetricController {
     if (loggedInProfile == profile) {
       message +=
           profile.getFirstname()
-              + " edited their results for "
+              + " edited their results for '"
               + metric.getTitle()
-              + " in "
+              + "' in '"
               + activity.getActivityName()
-              + " their new results are: ";
+              + "' their new results are: ";
     } else {
       message +=
           "An event organiser edited "
               + profile.getFirstname()
-              + "'s results for "
+              + "'s results for '"
               + metric.getTitle()
-              + " in "
+              + "' in '"
               + activity.getActivityName()
-              + " their new results are: ";
+              + "' their new results are: ";
     }
     Integer activityResultId;
 
@@ -433,6 +443,7 @@ public class ActivityMetricController {
       ActivityQualificationMetric activityQualificationMetric =
           activityQualificationMetricRepository.getOne(request.getMetricId());
       ActivityResultCount result;
+
       if (request.getValue() != null) {
         result =
             new ActivityResultCount(
@@ -440,11 +451,14 @@ public class ActivityMetricController {
       } else {
         result = new ActivityResultCount(activityQualificationMetric, profile, null);
       }
-      result.overrideResult(request.getSpecialMetric());
+      if (request.getSpecialMetric() != null) {
+        result.overrideResult(request.getSpecialMetric());
+        message += request.getSpecialMetric() + " ";
+      }
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
-      message += "count: " + request.getValue();
+      message += "with count " + request.getValue();
     } else if (metricUnit.equals(Unit.Distance)) {
       Optional<ActivityResultDistance> optionalResult;
       optionalResult = activityResultRepository.findSpecificDistanceResult(resultId);
@@ -460,15 +474,18 @@ public class ActivityMetricController {
       if (request.getValue() != null) {
         result =
             new ActivityResultDistance(
-                activityQualificationMetric, profile, Float.parseFloat(request.getValue()));
+                activityQualificationMetric, profile, Double.parseDouble(request.getValue()));
       } else {
         result = new ActivityResultDistance(activityQualificationMetric, profile, null);
       }
-      result.overrideResult(request.getSpecialMetric());
+      if (request.getSpecialMetric() != null) {
+        result.overrideResult(request.getSpecialMetric());
+        message += request.getSpecialMetric() + " ";
+      }
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
-      message += "distance: " + request.getValue();
+      message += "with distance " + request.getValue();
     } else if (metricUnit.equals(Unit.TimeDuration)) {
       // in the format PTnHnMn.nS
       Optional<ActivityResultDuration> optionalResult =
@@ -488,11 +505,15 @@ public class ActivityMetricController {
       } else {
         result = new ActivityResultDuration(activityQualificationMetric, profile, null);
       }
+      if (request.getSpecialMetric() != null) {
+        result.overrideResult(request.getSpecialMetric());
+        message += request.getSpecialMetric() + " ";
+      }
       result.overrideResult(request.getSpecialMetric());
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
-      message += "duration: " + request.getValue();
+      message += "with duration " + result.getPrettyResult();
     } else if (metricUnit.equals(Unit.TimeStartFinish)) {
       Optional<ActivityResultStartFinish> optionalResult =
           activityResultRepository.findSpecificStartFinishResult(resultId);
@@ -512,12 +533,15 @@ public class ActivityMetricController {
       } else {
         result = new ActivityResultStartFinish(activityQualificationMetric, profile, null, null);
       }
-      result.overrideResult(request.getSpecialMetric());
+      if (request.getSpecialMetric() != null) {
+        result.overrideResult(request.getSpecialMetric());
+        message += request.getSpecialMetric() + " ";
+      }
       result.setId(oldResultId);
       activityResultRepository.delete(oldResult);
       activityResultId = activityResultRepository.save(result).getId();
       message +=
-          "start date/time: " + request.getStart() + " and end date/time: " + request.getEnd();
+          "with start date/time " + request.getStart() + " and end date/time " + request.getEnd();
     } else {
       activityResultId = null;
     }

@@ -12,10 +12,10 @@ public class ActivityResultDistance extends ActivityResult {
   public static final String SQL_SORT_EXPRESSION = "distance_result";
 
   @Column(name = "distance_result")
-  private Float result;
+  private Double result;
 
   public ActivityResultDistance(
-      ActivityQualificationMetric metricId, Profile userId, Float result) {
+      ActivityQualificationMetric metricId, Profile userId, Double result) {
     super(metricId, userId);
     this.result = result;
   }
@@ -23,15 +23,15 @@ public class ActivityResultDistance extends ActivityResult {
   // For testing purposes
   public ActivityResultDistance() {}
 
-  public void setResult(Float result) {
+  public void setResult(Double result) {
     this.result = result;
   }
 
-  public Float getValue() {
+  public Double getValue() {
     return this.result;
   }
 
-  public Float getResult() {
+  public Double getResult() {
     return this.result;
   }
 
