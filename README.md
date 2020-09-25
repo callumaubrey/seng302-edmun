@@ -27,13 +27,39 @@ Custom activity types can also be created and assainged to users.
     - Insert and fill in your database credentials  
     `spring.datasource.username=`  
     `spring.datasource.password=`  
+    
+2. ###### Mail Service
+    - Insert Edmun's spring mail configuration variables
+    `spring.mail.host=smtp.gmail.com`
+    `spring.mail.port=587`
+    `spring.mail.username=edmungoat2020`
+    `spring.mail.password=EdmunGoat2020`
+    `spring.mail.properties.mail.smtp.starttls.enable=true`
+    `spring.mail.properties.mail.smtp.starttls.required=true`
+    `spring.mail.properties.mail.smtp.auth=true`
+    `spring.mail.properties.mail.smtp.connectiontimeout=5000`
+    `spring.mail.properties.mail.smtp.timeout=5000`
+    `spring.mail.properties.mail.smtp.writetimeout=5000`
+    `spring.mail.url = https://csse-s302g7.canterbury.ac.nz/test/#/`
+    
+3. ###### Servlet session and file
+    `spring.servlet.multipart.max-file-size=20MB`
+    `spring.servlet.multipart.max-request-size=20MB`
+    `server.servlet.session.timeout=24h`
 
-2. ###### Default Admin  
+4. ###### Default Admin  
     - Insert the following variables and fill in the default admin credentials  
     `ADMIN_EMAIL=admin@edmun.com`  
     `ADMIN_PASSWORD=Password1`
+    
+5. ###### Image Directory Path
+    `IMAGE.PROFILE.DIRECTORY=./src/main/resources/photos/profile/`
+    `IMAGE.ACTIVITY.DIRECTORY=./src/main/resources/photos/activity/`
 
+6. ###### Google API Key
+    `GOOGLE_API_KEY=AIzaSyCTTv0WSUUBcRQBnRVSrrw5HV-oC-UvS18`
 
+    
 ##### Client (Frotnend/GUI)
 `cd client`
 `npm install`
