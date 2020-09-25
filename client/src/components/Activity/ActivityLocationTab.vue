@@ -127,7 +127,7 @@
       updateMarker: function (lat, lng) {
         this.markerOnMap = true;
         this.$refs.map.removeMarker(1);
-        this.$refs.map.createMarker(1, this.iconColourId, lat, lng);
+        this.$refs.map.createMarker(1, 1, lat, lng);
       },
 
       /**
@@ -136,7 +136,7 @@
       clearLocation: function () {
         this.$refs.map.removeMarker(1);
         if (this.originalLat !== null && this.originalLong !== null) {
-          this.$refs.map.createMarker(1, 0, this.originalLat, this.originalLong);
+          this.$refs.map.createMarker(1, 1, this.originalLat, this.originalLong);
           this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
         }
         this.$refs.location_input.clearLocation();
@@ -162,7 +162,7 @@
        */
       setUsersLocationPin: function () {
         if (this.userLat != null && this.userLong != null) {
-          this.$refs.map.createMarker(2, 1, this.userLat, this.userLong);
+          this.$refs.map.createMarker(2, 3, this.userLat, this.userLong, "Your Location", "Your Location");
         }
         // Centers map on user if activity has no current location
         if (this.activityLat == null || this.activityLong == null) {
@@ -184,7 +184,7 @@
         this.validLocation = this.$refs.location_input.validateLocation();
         this.originalLat = this.activityLat;
         this.originalLong = this.activityLong;
-        this.$refs.map.createMarker(1, 0, this.originalLat, this.originalLong);
+        this.$refs.map.createMarker(1, 2, this.originalLat, this.originalLong);
         this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
       }
     },

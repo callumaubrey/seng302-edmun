@@ -6,7 +6,7 @@
       <b-row style="height: 780px">
         <b-col style="flex: 0 0 20%; font-size: 5em;" class="p-0">
           <div>
-            <UserImage :id="profileId"
+            <UserImage :id="this.$route.params.id"
                        :editable="true"
                        save-on-change style="padding :20px"></UserImage>
             <h4 style="padding-top: 10px ; text-align: center">{{displayName}}</h4>

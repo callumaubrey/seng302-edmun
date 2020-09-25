@@ -234,12 +234,15 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
-                                       :activityId="activityId"
-                                       :path="path"></PathInfoMapCreateEdit>
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()" v-if="this.canEditPath">
+                  <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
+                                         :activityId="activityId"
+                                         :path="path"></PathInfoMapCreateEdit>
               </b-tab>
-
+              <b-tab title="Activity Path" @click="$refs.pathInfoView.refreshMap()" v-else>
+                <h5>Note: Path cannot be edited because a result has already been recorded.</h5>
+                <PathInfoMapView :path="path" ref="pathInfoView"></PathInfoMapView>
+              </b-tab>
               <!-- Metrics Editor -->
               <b-tab>
                 <template v-slot:title>
@@ -285,10 +288,12 @@
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
   import UserImage from "../../components/Activity/UserImage/UserImage";
+  import PathInfoMapView from "@/components/MapPane/PathInfoMapView";
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
+      PathInfoMapView,
       PathInfoMapCreateEdit,
       ActivityMetricsEditor,
       SearchTag,
@@ -337,7 +342,8 @@
           values: []
         },
         authorised: true,
-        path: {}
+        path: {},
+        canEditPath: true
       }
     },
     validations: {
@@ -584,16 +590,18 @@
         let error = false;
 
         currentObj.$refs.image.saveChanges(this.activityId);
-        await currentObj.updatePath().then(() => {
-        }).catch(() => {
-          error = true;
-          currentObj.$root.$bvToast.toast(
-              'Activity updated successfully, path could not be updated. Try again later.',
-              {
-                variant: "warning",
-                solid: true
-              })
-        });
+        if (this.canEditPath) {
+          await currentObj.updatePath().then(() => {
+          }).catch(() => {
+            error = true;
+            currentObj.$root.$bvToast.toast(
+                'Activity updated successfully, path could not be updated. Try again later.',
+                {
+                  variant: "warning",
+                  solid: true
+                })
+          });
+        }
         if (!error) {
           this.$root.$bvToast.toast('Activity updated successfully', {
             variant: "success",
@@ -697,7 +705,24 @@
       onChildClick: function (val) {
         this.selectedVisibility = val
       },
-
+      checkPathCanBeEdited() {
+        api.getActivityMetrics(this.profileId, this.activityId)
+          .then((res) => {
+            for (let i = 0; i < res.data.length; i++) {
+              let row = res.data[i];
+              if (row.editable == false) {
+                this.canEditPath = false;
+              }
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      },
+      refreshPathMaps() {
+        this.$refs.pathInfoCreateEdit.refresh();
+        this.$refs.pathInfoView.refreshMap();
+      }
     },
     mounted: async function () {
       this.activityId = this.$route.params.activityId;
@@ -705,6 +730,7 @@
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
+      this.checkPathCanBeEdited();
     }
   }
 </script>
