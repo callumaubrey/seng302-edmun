@@ -52,9 +52,9 @@
                           :color="circle.color"
                 />
                 <LControl class="control-overlay">
-                  <b-col v-if="pathOverlay">
+                  <b-col v-if="pathOverlay" style="background-color: #F5F5F5; opacity: 90%;">
                     <b-row>
-                      <b-button style="margin: 0.5em" @click="$parent.prevPoint()">Delete End
+                      <b-button style="margin: 0.5em;" @click="$parent.prevPoint() ">Delete End
                         Marker
                       </b-button>
                       <b-button style="margin: 0.5em" @click="$parent.resetMarkerAndPoint()">Reset
@@ -539,13 +539,14 @@
 </script>
 <style>
   .control-overlay {
-    background: #fff;
+    /*background: #fff;*/
     padding: 0 0.5em;
     border: 1px solid #aaa;
     border-radius: 0.1em;
     opacity: 80%;
     padding: 0.5em;
     margin: 0.5em;
+    display: contents;
   }
 
   .fill_space {
