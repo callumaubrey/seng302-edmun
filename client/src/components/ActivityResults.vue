@@ -1,21 +1,21 @@
 <template>
   <div>
     <b-row style="margin-bottom:10px;margin-top:5px;">
-      <b-col>
+      <b-col cols="1">
         <b-btn :disabled="this.currentMetricIndex == 0  ||
           this.metricIds.length == 0" @click="prevMetric()">
           <b-icon icon="arrow-left" aria-hidden="true"></b-icon>
         </b-btn>
       </b-col>
       <b-col>
-        <h3>{{ this.metricTitles[this.currentMetricIndex] }}</h3>
+        <h3 align="center">{{ this.metricTitles[this.currentMetricIndex] }}</h3>
       </b-col>
-      <b-bol>
+      <b-col cols="1">
         <b-btn :disabled="this.currentMetricIndex == this.metricIds.length - 1 ||
           this.metricIds.length == 0" @click="nextMetric()">
           <b-icon icon="arrow-right" aria-hidden="true"></b-icon>
         </b-btn>
-      </b-bol>
+      </b-col>
     </b-row>
     <edit-table-result :result="this.selectedResult" :profileId="profileId" :activityId="activityId"
                        v-on:table-update="updateTable"></edit-table-result>
