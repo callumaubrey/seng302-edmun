@@ -235,7 +235,7 @@
             },
             getCorrectDateFormat: function (date, currentObj) {
                 const dobCorrectFormat = new Date(date + "T00:00");
-                currentObj.dob = dobCorrectFormat.toLocaleDateString();
+                currentObj.dob = dobCorrectFormat.toLocaleDateString('en-NZ');
             },
             checkHideElements: function () {
                 let currentObj = this;

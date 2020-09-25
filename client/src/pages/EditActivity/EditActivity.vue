@@ -234,16 +234,14 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <div v-if="this.canEditPath">
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()" v-if="this.canEditPath">
                   <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
                                          :activityId="activityId"
                                          :path="path"></PathInfoMapCreateEdit>
-                </div>
-                <div v-else>
-                  <h5>Note: Path cannot be edited because a result has already been recorded.</h5>
-                  <PathInfoMapView :path="path"></PathInfoMapView>
-                </div>
+              </b-tab>
+              <b-tab title="Activity Path" @click="$refs.pathInfoView.refreshMap()" v-else>
+                <h5>Note: Path cannot be edited because a result has already been recorded.</h5>
+                <PathInfoMapView :path="path" ref="pathInfoView"></PathInfoMapView>
               </b-tab>
 
               <!-- Metrics Editor -->
