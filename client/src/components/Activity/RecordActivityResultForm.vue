@@ -5,7 +5,7 @@
   <div v-if="!result.isEditMode">
 
     <b-row>
-      <b-col sm="3">
+      <b-col sm="4">
         <b-row style="margin-left: 5px">
           <h6 style="font-weight: bold">{{ result.title }}</h6>
         </b-row>
@@ -14,7 +14,7 @@
         </b-row>
       </b-col>
 
-      <b-col sm="5">
+      <b-col sm="4">
         <div v-if="result.type!=='TimeStartFinish'">
           <h6 style="font-weight: bold"> Result: </h6>
           <h6>{{ result.result }}</h6>
@@ -398,6 +398,12 @@ export default {
             return;
           }
         }
+      } else {
+        if (this.result.type === 'TimeDuration') {
+          this.convertToDurationStringFormat();
+        } else if (this.result.type === 'TimeStartFinish') {
+          this.parseDateTimeInputIntoISODateTimeString();
+        }
       }
       let data = {
         metric_id: this.metricTitleDict[this.result.title],
@@ -421,7 +427,7 @@ export default {
      * Calls PUT activity result endpoint
      */
     editActivityResult() {
-      if (this.specialMetricTitle == null || this.specialMetricTitle === 'None') {
+      if (this.specialMetricTitle === null || this.specialMetricTitle === 'None') {
         if (this.result.type === 'TimeDuration') {
           this.$v.duration.$touch()
           if (this.$v.duration.$anyError) {
@@ -439,6 +445,12 @@ export default {
           if (this.$v.result.$anyError) {
             return;
           }
+        }
+      } else {
+        if (this.result.type === 'TimeDuration') {
+          this.convertToDurationStringFormat();
+        } else if (this.result.type === 'TimeStartFinish') {
+          this.parseDateTimeInputIntoISODateTimeString();
         }
       }
       let data = {
@@ -533,10 +545,10 @@ export default {
 
         this.startFinish.startTime = this.result.result_start.substring(11, 16);
         this.startFinish.endTime = this.result.result_finish.substring(11, 16);
-        if (this.startFinish.startTime == "24:00") {
+        if (this.startFinish.startTime === "24:00") {
           this.startFinish.startTime = null;
         }
-        if (this.startFinish.endTime == "24:00") {
+        if (this.startFinish.endTime === "24:00") {
           this.startFinish.endTime = null;
         }
       }
