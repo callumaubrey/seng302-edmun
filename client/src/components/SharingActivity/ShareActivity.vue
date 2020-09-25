@@ -314,6 +314,7 @@ export default {
           user._rowVariant = 'none';
           this.accessors.users.push(user)
         }
+        this.getProfileImage(this.accessors.users)
         this.computeUserIds();
         this.forceRerender();
       },

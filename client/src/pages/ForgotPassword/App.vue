@@ -30,7 +30,7 @@
         </b-row>
 
         <b-row align-h="center" style="margin-top:10px;">
-          <b-button type="submit" style="width:300px;">Send</b-button>
+          <b-button type="submit" style="width:300px;" :disabled="submitDisabled">Send</b-button>
         </b-row>
       </b-form>
     </b-container>
@@ -50,7 +50,8 @@ export default {
     return {
       email: null,
       emailSent: false,
-      showErrorMessage: false
+      showErrorMessage: false,
+      submitDisabled: false
     }
   },
   validations: {
@@ -74,14 +75,19 @@ export default {
         email: this.email
       };
 
+      this.submitDisabled = true;
       Api.sendForgotPasswordEmail(data)
         .then(() => {
+          this.submitDisabled = false;
           this.emailSent = true;
           this.email = null;
           this.$v.$reset();
         })
         .catch((err) => {
+          this.submitDisabled = false;
           this.showErrorMessage = true;
+          this.email = null;
+          this.$v.$reset();
           console.log(err);
         });
     }
