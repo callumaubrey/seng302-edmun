@@ -1,8 +1,7 @@
 <template>
   <div id="app" v-if="isLoggedIn">
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"/>
-    <div v-if="!displayPage"></div>
-    <div v-else-if="!authorised && !isOrganiser">
+    <div v-if="!authorised && !isOrganiser">
       <ForbiddenMessage/>
     </div>
 
@@ -347,8 +346,7 @@
         path: {},
         canEditPath: true,
         isOrganiser: false,
-        activityOwnerId: null,
-        displayPage: false
+        activityOwnerId: null
       }
     },
     validations: {
@@ -725,7 +723,7 @@
             console.log(err);
           });
       },
-      checkOrganiser(){
+      checkOrganiser() {
         let activityId = this.$route.params.activityId;
         api.getActivityOrganisersNoOffset(activityId)
             .then((res) => {
@@ -734,11 +732,9 @@
                 if (parseInt(row.profile_id) == parseInt(this.profileId)) {
                   this.isOrganiser = true;
                 }
-                this.displayPage = true
               }
             })
             .catch((err) => {
-              this.displayPage = true
               console.log(err);
             })
       }
