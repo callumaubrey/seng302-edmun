@@ -228,7 +228,7 @@
             },
             addUserLocationToMap() {
                 if (this.location !== null) {
-                    this.$refs.map.createMarker(1, 1, this.location.latitude, this.location.longitude, this.userData, this.userName); // this line needs to also give the english address to title, no API for it atm
+                    this.$refs.map.createMarker(1, 3, this.location.latitude, this.location.longitude, this.userData, this.userName);
                     this.$refs.map.setMapCenter(this.location.latitude, this.location.longitude);
                 }
                 this.getMyActivities();
