@@ -61,6 +61,9 @@
       },
       refresh: function () {
           this.$refs.path_editor.refreshMap()
+      },
+      setMapCenter(lat, lng) {
+        this.$refs.path_editor.setMapCenter(lat,lng);
       }
     },
     mounted() {

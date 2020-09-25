@@ -240,7 +240,7 @@
                                          :path="path"></PathInfoMapCreateEdit>
               </b-tab>
               <b-tab title="Activity Path" @click="$refs.pathInfoView.refreshMap()" v-else>
-                <h5>Note: Path cannot be edited because a result has already been recorded.</h5>
+                <h5 class="text-warning">Note: Path cannot be edited because a result has already been recorded.</h5>
                 <PathInfoMapView :path="path" ref="pathInfoView"></PathInfoMapView>
               </b-tab>
               <!-- Metrics Editor -->
@@ -442,7 +442,7 @@
       getActivity: function () {
         let currentObj = this;
         api.getActivity(this.activityId)
-            .then(function (response) {
+            .then((response) => {
               currentObj.form.name = response.data.activityName;
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -462,6 +462,10 @@
               }
               if (response.data.location) {
                 currentObj.locationData = response.data.location;
+                console.log(currentObj.locationData);
+                console.log(this.$refs.pathInfoCreateEdit);
+                this.$refs.pathInfoCreateEdit.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
+                this.$refs.pathInfoView.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
               }
               if (response.data.tags.length > 0) {
                 for (let i = 0; i < response.data.tags.length; i++) {
