@@ -241,6 +241,7 @@
                                          :path="path"></PathInfoMapCreateEdit>
                 </div>
                 <div v-else>
+                  <h5>Note: Path cannot be edited because a result has already been recorded.</h5>
                   <PathInfoMapView :path="path"></PathInfoMapView>
                 </div>
               </b-tab>

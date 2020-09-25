@@ -146,10 +146,16 @@
             <br>
 
             <!-- Location Map Tab -->
-            <b-tab title="Location"
+            <b-tab
                    @click="$refs.mapPane.refreshMap()"
                    v-if="this.location || this.activity.path" active
             class="activity-page-content">
+
+              <!-- Tab Title -->
+              <template v-slot:title>
+                <i class="fas fa-map-marker-alt"></i> Location
+              </template>
+
               <b-card>
                 <h4 v-if="location && location.name" align="center">
                   {{location.name}}
@@ -159,7 +165,11 @@
             </b-tab>
 
             <!-- Participants Tab -->
-            <b-tab title="Participants">
+            <b-tab>
+                <template v-slot:title>
+                  <i class="fas fa-users"></i> Participants
+                </template>
+
                 <b-col align="center" class="activity-page-content">
                   <b-card style="margin-top: 1em" :title="'Members of ' + activityName + ':'">
                     <FollowerUserList :activity-id="parseInt($route.params.activityId)"
@@ -172,14 +182,22 @@
             </b-tab>
 
             <!-- Route Tab -->
-            <b-tab :disabled="activity.path == null" title="Route" @click="$refs.pathInfoMap.refreshMap()" class="activity-page-content">
+            <b-tab :disabled="activity.path == null" @click="$refs.pathInfoMap.refreshMap()" class="activity-page-content">
+              <template v-slot:title>
+                <i class="fas fa-route"></i> Route
+              </template>
+
               <b-card class="activity-page-content"  title="Activities Route:" align="center">
                 <PathInfoMapView ref="pathInfoMap" :path="activity.path"></PathInfoMapView>
               </b-card>
             </b-tab>
 
             <!-- Results and metrics Tab -->
-            <b-tab :disabled="activity.metrics.length == 0" title="Results" class="activity-page-content">
+            <b-tab :disabled="activity.metrics.length == 0" class="activity-page-content">
+              <template v-slot:title>
+                <i class="fas fa-medal"></i> Results
+              </template>
+
               <b-col cols="9">
                 <b-row>
                   <div class="d-flex flex-row flex-nowrap">
