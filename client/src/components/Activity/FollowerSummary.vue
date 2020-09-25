@@ -50,7 +50,7 @@
                             "count": response.data.followers
                         });
                         currentObj.user_groups.push({
-                            "name": "Organizers",
+                            "name": "Organisers",
                             "count": response.data.organisers
                         });
                     })
