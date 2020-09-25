@@ -207,6 +207,9 @@ export default {
     duration: {
       hour: {
         validateHour(val) {
+          if (val.length > 6) {
+            return false
+          }
           this.hour = val;
           let integerRegex = new RegExp("^\\d+$");
           if (!integerRegex.test(val)) {
@@ -302,6 +305,10 @@ export default {
               this.resultErrorMessage = "Count should be an integer value"
               return false
             } else {
+              if (parseInt(val) > 1000000000) {
+                this.resultErrorMessage = "Input is over the max value for this metric";
+                return false;
+              }
               this.resultErrorMessage = null
               return true
             }
@@ -311,6 +318,10 @@ export default {
               this.resultErrorMessage = "Distance should be a float value"
               return false
             } else {
+              if (parseFloat(val) > 1000000000) {
+                this.resultErrorMessage = "Input is over the max value for this metric";
+                return false;
+              }
               this.resultErrorMessage = null
               return true
             }
@@ -331,10 +342,16 @@ export default {
       return metricTitleDict
     },
     prettyStartTime() {
+      if (this.result.result_start == null) {
+        return null
+      }
       let dateSplit = this.result.result_start.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     },
     prettyEndTime() {
+      if (this.result.result_finish == null) {
+        return null
+      }
       let dateSplit = this.result.result_finish.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     }
@@ -400,9 +417,32 @@ export default {
         }
       } else {
         if (this.result.type === 'TimeDuration') {
-          this.convertToDurationStringFormat();
+          if (this.duration.hour != null && this.duration.minute != null && this.duration.second != null) {
+            this.$v.duration.$touch()
+            if (this.$v.duration.$anyError) {
+              return;
+            }
+            this.convertToDurationStringFormat();
+          }
         } else if (this.result.type === 'TimeStartFinish') {
-          this.parseDateTimeInputIntoISODateTimeString();
+          if (this.startFinish.startDate != null && this.startFinish.endDate != null) {
+            this.$v.startFinish.$touch();
+            if (this.$v.startFinish.$anyError) {
+              return;
+            }
+            this.parseDateTimeInputIntoISODateTimeString();
+          }
+        } else {
+          console.log("FLAGG")
+          console.log(this.result.result)
+          if (this.result.result != null && this.result.result !== '') {
+            this.$v.result.$touch();
+            if (this.$v.result.$anyError) {
+              return;
+            }
+          } else {
+            this.result.result = null;
+          }
         }
       }
       let data = {
@@ -448,9 +488,32 @@ export default {
         }
       } else {
         if (this.result.type === 'TimeDuration') {
-          this.convertToDurationStringFormat();
+          if (this.duration.hour != null && this.duration.minute != null && this.duration.second != null) {
+            this.$v.duration.$touch()
+            if (this.$v.duration.$anyError) {
+              return;
+            }
+            this.convertToDurationStringFormat();
+          }
         } else if (this.result.type === 'TimeStartFinish') {
-          this.parseDateTimeInputIntoISODateTimeString();
+          if (this.startFinish.startDate != null && this.startFinish.endDate != null) {
+            this.$v.startFinish.$touch();
+            if (this.$v.startFinish.$anyError) {
+              return;
+            }
+            this.parseDateTimeInputIntoISODateTimeString();
+          }
+        } else {
+          console.log("FLAGG")
+          console.log(this.result.result)
+          if (this.result.result != null && this.result.result !== '') {
+            this.$v.result.$touch();
+            if (this.$v.result.$anyError) {
+              return;
+            }
+          } else {
+            this.result.result = null;
+          }
         }
       }
       let data = {
@@ -540,11 +603,21 @@ export default {
      */
     parseISODateTimeStringIntoDateTimeInput() {
       if (this.result.type === 'TimeStartFinish') {
-        this.startFinish.startDate = this.result.result_start.substring(0, 10);
-        this.startFinish.endDate = this.result.result_finish.substring(0, 10);
+        if (this.result.result_start == null) {
+          this.startFinish.startDate = null
+          this.startFinish.endDate = null
+        } else {
+          this.startFinish.startDate = this.result.result_start.substring(0, 10);
+          this.startFinish.startDate = this.result.result_start.substring(0, 10);
+        }
 
-        this.startFinish.startTime = this.result.result_start.substring(11, 16);
-        this.startFinish.endTime = this.result.result_finish.substring(11, 16);
+        if (this.result.result_finish == null) {
+          this.startFinish.endDate = null;
+          this.startFinish.endTime = null;
+        } else {
+          this.startFinish.endDate = this.result.result_finish.substring(0, 10);
+          this.startFinish.endTime = this.result.result_finish.substring(11, 16);
+        }
         if (this.startFinish.startTime === "24:00") {
           this.startFinish.startTime = null;
         }
