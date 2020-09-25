@@ -463,7 +463,7 @@
         let map = this.$refs.mapPane;
         // checking if user has a location to put on the map
         if (userLocation.data !== null) {
-          map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude,
+          map.createMarker(1, 3, userLocation.data.latitude, userLocation.data.longitude,
               this.profileId, this.activityOwner.firstname);
         }
         // checking if activity has a location to put on the map
