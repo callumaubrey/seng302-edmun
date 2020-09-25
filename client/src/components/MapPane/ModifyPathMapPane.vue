@@ -232,6 +232,10 @@ export default {
 
     refreshMap(){
       this.$refs.map.refreshMap()
+    },
+
+    setMapCenter(lat, lng) {
+      this.$refs.map.setMapCenter(lat,lng);
     }
   },
 }

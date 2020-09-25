@@ -207,15 +207,15 @@ export default {
     duration: {
       hour: {
         validateHour(val) {
-          if (val.length > 6) {
-            return false
-          }
           this.hour = val;
           let integerRegex = new RegExp("^\\d+$");
           if (!integerRegex.test(val)) {
             this.resultErrorMessage = "Hours must be an integer"
             return false
           } else {
+            if (val.length > 6) {
+              return false
+            }
             this.resultErrorMessage = null
             return true
           }
@@ -417,7 +417,9 @@ export default {
         }
       } else {
         if (this.result.type === 'TimeDuration') {
-          if (this.duration.hour != null && this.duration.minute != null && this.duration.second != null) {
+          console.log("FLAGG")
+          console.log(this.duration.hour)
+          if (this.duration.hour !== '' && this.duration.minute !== '' && this.duration.second !== '') {
             this.$v.duration.$touch()
             if (this.$v.duration.$anyError) {
               return;
@@ -433,8 +435,6 @@ export default {
             this.parseDateTimeInputIntoISODateTimeString();
           }
         } else {
-          console.log("FLAGG")
-          console.log(this.result.result)
           if (this.result.result != null && this.result.result !== '') {
             this.$v.result.$touch();
             if (this.$v.result.$anyError) {

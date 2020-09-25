@@ -164,15 +164,6 @@
         if (this.userLat != null && this.userLong != null) {
           this.$refs.map.createMarker(2, 3, this.userLat, this.userLong, "Your Location", "Your Location");
         }
-        // Centers map on user if activity has no current location
-        if (this.activityLat == null || this.activityLong == null) {
-          if (this.userLat != null && this.userLong != null) {
-            this.$refs.map.setMapCenter(this.userLat, this.userLong);
-          } else {
-            this.$refs.map.setMapCenter(-43.53000, 172.62028);
-          }
-
-        }
       },
       /**
        * Sets the current activity location pin on the map if there is one using data from parent
@@ -185,7 +176,18 @@
         this.originalLat = this.activityLat;
         this.originalLong = this.activityLong;
         this.$refs.map.createMarker(1, 2, this.originalLat, this.originalLong);
-        this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
+
+
+        // Centers map on user if activity has no current location
+        if (this.activityLat == null || this.activityLong == null) {
+          if (this.userLat != null && this.userLong != null) {
+            this.$refs.map.setMapCenter(this.userLat, this.userLong);
+          } else {
+            this.$refs.map.setMapCenter(-43.53000, 172.62028);
+          }
+        } else {
+          this.$refs.map.setMapCenter(this.originalLat, this.originalLong);
+        }
       }
     },
     mounted() {

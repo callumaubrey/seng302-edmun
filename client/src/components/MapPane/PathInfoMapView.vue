@@ -34,6 +34,11 @@
              */
             refreshMap() {
                 this.$refs.pathMapPane.refreshMap();
+            },
+
+            setMapCenter(lat, lng) {
+                console.log("PathInfo",lat, lng);
+                this.$refs.pathMapPane.setMapCenter(lat,lng);
             }
         },
         watch: {
