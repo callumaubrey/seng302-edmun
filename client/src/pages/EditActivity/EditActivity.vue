@@ -5,7 +5,7 @@
       <ForbiddenMessage/>
     </div>
 
-    <b-container fluid>
+    <b-container fluid v-else>
       <b-row align-v="start" align-h="center">
         <b-col cols="8" align-self="center">
           <!-- Title -->
