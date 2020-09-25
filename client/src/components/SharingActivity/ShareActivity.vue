@@ -1,9 +1,11 @@
 <template>
-  <div>
-    <div v-if="modal == true">
-      <b-button id="activity-visibility-button" v-b-modal.modal-1 :variant="visibilityButtonColour">
-        {{visibility}}
-      </b-button>
+  <div class="d-inline">
+    <div v-if="modal == true" class="d-inline">
+      <i :class="{'fas':true, 'fa-eye':visibility==='Public'||visibility==='Restricted',
+                  'fa-eye-slash':visibility==='Private'}"
+         :style="{'color': visibilityButtonColour, 'font-size': '2em'}"
+         id="activity-visibility-button" v-b-modal.modal-1>
+      </i>
       <b-modal size="xl" style="padding: 1em" id="modal-1" title="Share" hide-footer hide-header
                @show="updateSelectedValue" body-class="p-0" :static="true" ref="modal-1">
         <b-button-close style="padding: 10px" @click="$bvModal.hide('modal-1')"></b-button-close>
@@ -341,13 +343,13 @@ export default {
       visibilityButtonColour: function () {
         switch (this.visibility.toLowerCase()) {
           case "public":
-            return "success";
+            return "#57ff82";
           case "restricted":
-            return "warning";
+            return "#ffed57";
           case "private":
-            return "danger";
+            return "#ff3133";
           default:
-            return "primary";
+            return "text-primary";
         }
       }
     }
