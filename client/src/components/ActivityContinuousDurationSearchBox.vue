@@ -19,14 +19,16 @@
         <b-row>
             <b-col>
                 <b-collapse id="durationCollapse" v-model="durationButtonPressedState">
-                    <b-row>
-                        <b-col cols="2">
+                    <b-row align-v="center" class="mb-2">
+                        <b-col cols="3">
                             <label>Start date: </label>
                         </b-col>
                         <b-col>
                             <b-form-input id="start-date-input" v-model=startDate type="date" @change="emitDates" :state="validDatesStates" ></b-form-input>
                         </b-col>
-                        <b-col cols="2">
+                    </b-row>
+                    <b-row align-v="center" class="mb-2">
+                        <b-col cols="3">
                             <label>End date: </label>
                         </b-col>
                         <b-col>

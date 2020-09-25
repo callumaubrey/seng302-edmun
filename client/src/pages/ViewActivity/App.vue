@@ -37,24 +37,25 @@
         <FollowerSummary class="text-center"
                          :activityId="parseInt($route.params.activityId)"
                          :key="followSummaryKey"
+                         ref="followSummary"
                          style="color: white"></FollowerSummary>
-        <b-row align-h="center">
-          <ShareActivity :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
-                         :visibility="visibility"
-                         :profileId="profileId"
-                         :activityId="$route.params.activityId"
-                         v-on:componentUpdate="forceRerender"
-                         :key="shareActivityKey"></ShareActivity>
-        </b-row>
 
         <!-- Actions -->
         <b-row align-h="center">
           <FollowUnfollow v-bind:activityId="parseInt(this.$route.params.activityId)"
                           v-bind:activityOwnerId="parseInt(this.$route.params.id)"
-                          v-bind:loggedInId="loggedInId"></FollowUnfollow>
+                          v-bind:loggedInId="loggedInId"
+                          v-on:activityFollowed="activityIsFollowed"></FollowUnfollow>
         </b-row>
         <b-row align="center" v-if="parseInt(profileId) === parseInt(loggedInId) || loggedInIsAdmin">
           <b-col>
+            <ShareActivity style="padding: 0.4em; cursor: pointer"
+                           :modal="parseInt(loggedInId) === parseInt(activityOwner.id)"
+                           :visibility="visibility"
+                           :profileId="profileId"
+                           :activityId="$route.params.activityId"
+                           v-on:componentUpdate="forceRerender"
+                           :key="shareActivityKey"></ShareActivity>
             <i class="fas fa-edit" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer" @click="editActivity()"></i>
             <i class="far fa-trash-alt" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer;" @click="deleteActivity()"></i>
           </b-col>
@@ -461,7 +462,7 @@
         let map = this.$refs.mapPane;
         // checking if user has a location to put on the map
         if (userLocation.data !== null) {
-          map.createMarker(1, 1, userLocation.data.latitude, userLocation.data.longitude,
+          map.createMarker(1, 3, userLocation.data.latitude, userLocation.data.longitude,
               this.profileId, this.activityOwner.firstname);
         }
         // checking if activity has a location to put on the map
@@ -480,6 +481,10 @@
         if (this.activity.path !== null) {
           map.setPath(this.activity.path, true, true);
         }
+      },
+      activityIsFollowed() {
+        this.$refs.followSummary.loadFollowerSummary();
+        this.$refs.followerUserList.getMembers();
       }
 
     }

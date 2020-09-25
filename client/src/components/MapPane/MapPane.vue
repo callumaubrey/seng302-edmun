@@ -269,9 +269,9 @@
           icon = this.redMarker;
         }
         if (iconColour === 3) {
-          icon = this.pathStartMarker
+          icon = this.pathStartMarker;
         } else {
-          icon = this.blueMarker
+          icon = this.blueMarker;
         }
         if (content == null) {
           content = ""
