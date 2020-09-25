@@ -59,7 +59,11 @@
             <i class="fas fa-edit" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer" @click="editActivity()"></i>
             <i class="far fa-trash-alt" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer;" @click="deleteActivity()"></i>
           </b-col>
-
+        </b-row>
+        <b-row align="center" v-else-if="isOrganiser">
+          <b-col>
+            <i class="fas fa-edit" style="color: white; font-size: 2em; padding: 0.4em; cursor: pointer" @click="editActivity()"></i>
+          </b-col>
         </b-row>
 
 <!--        About-->
@@ -270,6 +274,7 @@
         metrics: [],
         followSummaryKey: 0,
         shareActivityKey: 0,
+        isOrganiser: false
       }
     },
     mounted() {
@@ -278,6 +283,7 @@
       this.getLoggedInId();
       this.setProfileId();
       this.checkIsAdmin();
+      this.checkOrganiser();
     },
     methods: {
       getUserName: function () {
@@ -328,7 +334,7 @@
         let profileId = this.$route.params.id;
         let activityId = this.$route.params.activityId;
 
-        if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId))) {
+        if (this.loggedInIsAdmin || (parseInt(this.profileId) === parseInt(this.loggedInId)) || this.isOrganiser) {
           this.$router.push(
               "/profiles/" + profileId + "/activities/" + activityId + "/edit"
           );
@@ -485,8 +491,22 @@
       activityIsFollowed() {
         this.$refs.followSummary.loadFollowerSummary();
         this.$refs.followerUserList.getMembers();
+      },
+      checkOrganiser() {
+        let activityId = this.$route.params.activityId;
+        api.getActivityOrganisersNoOffset(activityId)
+            .then((res) => {
+              for (let i = 0; i < res.data.Organiser.length; i++) {
+                let row = res.data.Organiser[i];
+                if (parseInt(row.profile_id) == parseInt(this.loggedInId)) {
+                  this.isOrganiser = true;
+                }
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            })
       }
-
     }
   };
   export default App;

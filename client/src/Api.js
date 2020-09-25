@@ -53,6 +53,9 @@ export default {
       '/activities/' + activityId + '/members' + "?type=organiser&offset="
       + offset + "&limit=" + limit),
 
+  getActivityOrganisersNoOffset: (activityId) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=organiser"),
+
   getActivityAccessors: (activityId, offset, limit) => instance.get(
       '/activities/' + activityId + '/members' + "?type=accessor&offset="
       + offset + "&limit=" + limit),
