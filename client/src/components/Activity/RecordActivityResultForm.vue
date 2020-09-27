@@ -5,7 +5,7 @@
   <div v-if="!result.isEditMode">
 
     <b-row>
-      <b-col sm="3">
+      <b-col sm="4">
         <b-row style="margin-left: 5px">
           <h6 style="font-weight: bold">{{ result.title }}</h6>
         </b-row>
@@ -14,7 +14,7 @@
         </b-row>
       </b-col>
 
-      <b-col sm="5">
+      <b-col sm="4">
         <div v-if="result.type!=='TimeStartFinish'">
           <h6 style="font-weight: bold"> Result: </h6>
           <h6>{{ result.result }}</h6>
@@ -213,6 +213,9 @@ export default {
             this.resultErrorMessage = "Hours must be an integer"
             return false
           } else {
+            if (val.length > 6) {
+              return false
+            }
             this.resultErrorMessage = null
             return true
           }
@@ -302,6 +305,10 @@ export default {
               this.resultErrorMessage = "Count should be an integer value"
               return false
             } else {
+              if (parseInt(val) > 1000000000) {
+                this.resultErrorMessage = "Input is over the max value for this metric";
+                return false;
+              }
               this.resultErrorMessage = null
               return true
             }
@@ -311,6 +318,10 @@ export default {
               this.resultErrorMessage = "Distance should be a float value"
               return false
             } else {
+              if (parseFloat(val) > 1000000000) {
+                this.resultErrorMessage = "Input is over the max value for this metric";
+                return false;
+              }
               this.resultErrorMessage = null
               return true
             }
@@ -331,10 +342,16 @@ export default {
       return metricTitleDict
     },
     prettyStartTime() {
+      if (this.result.result_start == null) {
+        return null
+      }
       let dateSplit = this.result.result_start.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     },
     prettyEndTime() {
+      if (this.result.result_finish == null) {
+        return null
+      }
       let dateSplit = this.result.result_finish.split("T");
       return dateSplit[0] + " " + dateSplit[1];
     }
@@ -398,6 +415,35 @@ export default {
             return;
           }
         }
+      } else {
+        if (this.result.type === 'TimeDuration') {
+          console.log("FLAGG")
+          console.log(this.duration.hour)
+          if (this.duration.hour !== '' && this.duration.minute !== '' && this.duration.second !== '') {
+            this.$v.duration.$touch()
+            if (this.$v.duration.$anyError) {
+              return;
+            }
+            this.convertToDurationStringFormat();
+          }
+        } else if (this.result.type === 'TimeStartFinish') {
+          if (this.startFinish.startDate != null && this.startFinish.endDate != null) {
+            this.$v.startFinish.$touch();
+            if (this.$v.startFinish.$anyError) {
+              return;
+            }
+            this.parseDateTimeInputIntoISODateTimeString();
+          }
+        } else {
+          if (this.result.result != null && this.result.result !== '') {
+            this.$v.result.$touch();
+            if (this.$v.result.$anyError) {
+              return;
+            }
+          } else {
+            this.result.result = null;
+          }
+        }
       }
       let data = {
         metric_id: this.metricTitleDict[this.result.title],
@@ -421,7 +467,7 @@ export default {
      * Calls PUT activity result endpoint
      */
     editActivityResult() {
-      if (this.specialMetricTitle == null || this.specialMetricTitle === 'None') {
+      if (this.specialMetricTitle === null || this.specialMetricTitle === 'None') {
         if (this.result.type === 'TimeDuration') {
           this.$v.duration.$touch()
           if (this.$v.duration.$anyError) {
@@ -438,6 +484,35 @@ export default {
           this.$v.result.$touch();
           if (this.$v.result.$anyError) {
             return;
+          }
+        }
+      } else {
+        if (this.result.type === 'TimeDuration') {
+          if (this.duration.hour != null && this.duration.minute != null && this.duration.second != null) {
+            this.$v.duration.$touch()
+            if (this.$v.duration.$anyError) {
+              return;
+            }
+            this.convertToDurationStringFormat();
+          }
+        } else if (this.result.type === 'TimeStartFinish') {
+          if (this.startFinish.startDate != null && this.startFinish.endDate != null) {
+            this.$v.startFinish.$touch();
+            if (this.$v.startFinish.$anyError) {
+              return;
+            }
+            this.parseDateTimeInputIntoISODateTimeString();
+          }
+        } else {
+          console.log("FLAGG")
+          console.log(this.result.result)
+          if (this.result.result != null && this.result.result !== '') {
+            this.$v.result.$touch();
+            if (this.$v.result.$anyError) {
+              return;
+            }
+          } else {
+            this.result.result = null;
           }
         }
       }
@@ -528,15 +603,25 @@ export default {
      */
     parseISODateTimeStringIntoDateTimeInput() {
       if (this.result.type === 'TimeStartFinish') {
-        this.startFinish.startDate = this.result.result_start.substring(0, 10);
-        this.startFinish.endDate = this.result.result_finish.substring(0, 10);
+        if (this.result.result_start == null) {
+          this.startFinish.startDate = null
+          this.startFinish.endDate = null
+        } else {
+          this.startFinish.startDate = this.result.result_start.substring(0, 10);
+          this.startFinish.startDate = this.result.result_start.substring(0, 10);
+        }
 
-        this.startFinish.startTime = this.result.result_start.substring(11, 16);
-        this.startFinish.endTime = this.result.result_finish.substring(11, 16);
-        if (this.startFinish.startTime == "24:00") {
+        if (this.result.result_finish == null) {
+          this.startFinish.endDate = null;
+          this.startFinish.endTime = null;
+        } else {
+          this.startFinish.endDate = this.result.result_finish.substring(0, 10);
+          this.startFinish.endTime = this.result.result_finish.substring(11, 16);
+        }
+        if (this.startFinish.startTime === "24:00") {
           this.startFinish.startTime = null;
         }
-        if (this.startFinish.endTime == "24:00") {
+        if (this.startFinish.endTime === "24:00") {
           this.startFinish.endTime = null;
         }
       }

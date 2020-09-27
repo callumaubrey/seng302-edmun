@@ -834,7 +834,7 @@ class ActivityMetricControllerTest {
     Profile profile = profileRepository.findById(id);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
 
     String response =
@@ -866,10 +866,10 @@ class ActivityMetricControllerTest {
     Profile profile = profileRepository.findById(id);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultDistance activityResultDistance1 =
-        new ActivityResultDistance(metric, profile, 4.5f);
+        new ActivityResultDistance(metric, profile, 4.5d);
     activityResultRepository.save(activityResultDistance1);
 
     String response =
@@ -898,13 +898,13 @@ class ActivityMetricControllerTest {
     Profile profile = profileRepository.findById(id);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
 
     Profile profile1 = TestDataGenerator.createExtraProfile(profileRepository);
 
     ActivityResultDistance activityResultDistance1 =
-        new ActivityResultDistance(metric, profile1, 4.5f);
+        new ActivityResultDistance(metric, profile1, 4.5d);
     activityResultRepository.save(activityResultDistance1);
 
     String response =
@@ -1194,7 +1194,7 @@ class ActivityMetricControllerTest {
         .andExpect(status().isOk())
         .andDo(print());
 
-    float distanceFloat = (float) 20.34;
+    double distanceFloat = 20.34;
     ActivityResultDistance distanceResult =
         new ActivityResultDistance(metric, profile1, distanceFloat);
     distanceResult = activityResultRepository.save(distanceResult);
@@ -1265,7 +1265,7 @@ class ActivityMetricControllerTest {
         .andExpect(status().isOk())
         .andDo(print());
 
-    float distanceFloat = (float) 20.34;
+    double distanceFloat = 20.34;
     ActivityResultDistance distanceResult =
         new ActivityResultDistance(metric, profile1, distanceFloat);
     distanceResult = activityResultRepository.save(distanceResult);
@@ -1889,7 +1889,7 @@ class ActivityMetricControllerTest {
             activity, Unit.Distance, activityQualificationMetricRepository);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
   }
 
@@ -2566,7 +2566,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult = new ActivityResultCount(metric1, profile1, 20);
     countResult = activityResultRepository.save(countResult);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2623,7 +2623,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2684,7 +2684,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2750,7 +2750,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult = new ActivityResultCount(metric1, profile1, 20);
     countResult = activityResultRepository.save(countResult);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2810,7 +2810,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =
@@ -2872,7 +2872,7 @@ class ActivityMetricControllerTest {
     ActivityResultCount countResult2 = new ActivityResultCount(metric1, profile1, 30);
     countResult2 = activityResultRepository.save(countResult2);
 
-    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10f);
+    ActivityResultDistance distanceResult = new ActivityResultDistance(metric2, profile1, 10d);
     distanceResult = activityResultRepository.save(distanceResult);
 
     String response =

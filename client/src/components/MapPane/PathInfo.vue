@@ -273,6 +273,8 @@
                     this.generateDirectionInfo();
                 }else {
                     this.keypointInfo = []
+                    this.directionSteps = []
+                    this.directionSegments = []
                 }
             },
             selectedKeypoint: function () {
@@ -282,7 +284,7 @@
 
                 // Set offset for direction info
                 let dir_offset = 0;
-                if(this.selectedKeypoint!==0 && this.path.type == "2STRAIGHT") {
+                if(this.selectedKeypoint!==0) {
                     let keypoint_element = document.getElementById(`PathInfoStepDistanceKeypoint_${this.selectedKeypoint}`);
                     dir_offset = keypoint_element.offsetTop - 74;
                     let dir_tab = document.getElementById("pathInfoDirectionTab");

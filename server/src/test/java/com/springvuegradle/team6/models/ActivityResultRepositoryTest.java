@@ -56,7 +56,7 @@ public class ActivityResultRepositoryTest {
         TestDataGenerator.createDummyActivityMetric(
             activity, Unit.Distance, activityMetricsRepository);
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
 
     List<ActivityResult> results =
@@ -72,10 +72,10 @@ public class ActivityResultRepositoryTest {
             activity, Unit.Distance, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultDistance activityResultDistance2 =
-        new ActivityResultDistance(activityMetrics, profile, 4.0f);
+        new ActivityResultDistance(activityMetrics, profile, 4.0d);
     activityResultRepository.save(activityResultDistance2);
 
     List<ActivityResult> results =
@@ -92,16 +92,16 @@ public class ActivityResultRepositoryTest {
             activity, Unit.Distance, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultDistance activityResultDistance2 =
-        new ActivityResultDistance(activityMetrics, profile, 4.0f);
+        new ActivityResultDistance(activityMetrics, profile, 4.0d);
     activityResultRepository.save(activityResultDistance2);
     ActivityResultDistance activityResultDistance3 =
-        new ActivityResultDistance(activityMetrics, anotherProfile, 4.0f);
+        new ActivityResultDistance(activityMetrics, anotherProfile, 4.0d);
     activityResultRepository.save(activityResultDistance3);
     ActivityResultDistance activityResultDistance4 =
-        new ActivityResultDistance(activityMetrics, profile, 2.0f);
+        new ActivityResultDistance(activityMetrics, profile, 2.0d);
     activityResultRepository.save(activityResultDistance4);
 
     List<ActivityResult> results =
@@ -120,7 +120,7 @@ public class ActivityResultRepositoryTest {
             activity, Unit.TimeDuration, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     Duration duration = Duration.ofSeconds(50);
     ActivityResultDuration activityResultDuration =
@@ -143,10 +143,10 @@ public class ActivityResultRepositoryTest {
             activity, Unit.TimeDuration, activityMetricsRepository);
 
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(activityMetrics, profile, 5.2f);
+        new ActivityResultDistance(activityMetrics, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultDistance activityResultDistance2 =
-        new ActivityResultDistance(activityMetrics2, profile, 4.0f);
+        new ActivityResultDistance(activityMetrics2, profile, 4.0d);
     activityResultRepository.save(activityResultDistance2);
 
     List<ActivityResult> results =
@@ -161,7 +161,7 @@ public class ActivityResultRepositoryTest {
         TestDataGenerator.createDummyActivityMetric(
             activity, Unit.Distance, activityMetricsRepository);
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
 
     List<ActivityResult> results =
@@ -182,10 +182,10 @@ public class ActivityResultRepositoryTest {
         TestDataGenerator.createDummyActivityMetric(
             activity, Unit.Distance, activityMetricsRepository);
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultDistance activityResultDistance2 =
-        new ActivityResultDistance(metric, profile, 5.5f);
+        new ActivityResultDistance(metric, profile, 5.5d);
     activityResultRepository.save(activityResultDistance2);
 
     List<ActivityResult> results =
@@ -199,11 +199,11 @@ public class ActivityResultRepositoryTest {
         TestDataGenerator.createDummyActivityMetric(
             activity, Unit.Distance, activityMetricsRepository);
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     Profile profile2 = TestDataGenerator.createExtraProfile(profileRepository);
     ActivityResultDistance activityResultDistance2 =
-        new ActivityResultDistance(metric, profile2, 5.5f);
+        new ActivityResultDistance(metric, profile2, 5.5d);
     activityResultRepository.save(activityResultDistance2);
 
     List<ActivityResult> results =
@@ -220,7 +220,7 @@ public class ActivityResultRepositoryTest {
         TestDataGenerator.createDummyActivityMetric(
             activity, Unit.Count, activityMetricsRepository);
     ActivityResultDistance activityResultDistance =
-        new ActivityResultDistance(metric, profile, 5.2f);
+        new ActivityResultDistance(metric, profile, 5.2d);
     activityResultRepository.save(activityResultDistance);
     ActivityResultCount activityResultCount = new ActivityResultCount(metric2, profile, 5);
     activityResultRepository.save(activityResultCount);

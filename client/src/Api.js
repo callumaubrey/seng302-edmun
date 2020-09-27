@@ -53,6 +53,9 @@ export default {
       '/activities/' + activityId + '/members' + "?type=organiser&offset="
       + offset + "&limit=" + limit),
 
+  getActivityOrganisersNoOffset: (activityId) => instance.get(
+      '/activities/' + activityId + '/members' + "?type=organiser"),
+
   getActivityAccessors: (activityId, offset, limit) => instance.get(
       '/activities/' + activityId + '/members' + "?type=accessor&offset="
       + offset + "&limit=" + limit),
@@ -227,8 +230,8 @@ export default {
 
   removeForId: (id) => instance.delete('students/' + id),
 
-  deleteActivity: (activityId) => instance.delete(
-      '/profiles/1/activities/' + activityId),
+  deleteActivity: (profileId, activityId) => instance.delete(
+      `/profiles/${profileId}/activities/${activityId}`),
 
   deleteActivityImage: (activityId) => instance.delete(
       "/profiles/1/activities/" + activityId + "/image"
@@ -264,6 +267,9 @@ export default {
 
   deleteMetric: (profileId, activityId, metricId) => instance.delete(
       "/profiles/" + profileId + "/activities/" + activityId + "/" + metricId),
+
+  deleteActivityPath: (profileId, activityId) => instance.delete(
+      `profiles/${profileId}/activities/${activityId}/path`),
 
   sendForgotPasswordEmail: (data) => instance.post(
       "/profiles/resetpassword", data),

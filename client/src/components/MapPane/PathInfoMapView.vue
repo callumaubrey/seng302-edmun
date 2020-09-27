@@ -1,9 +1,9 @@
 <template>
-    <b-row class="mb-5">
+    <b-row>
         <b-col style="padding: 0em; max-width: 30%; background: whitesmoke; margin-top: 8px">
             <PathInfo ref="pathInfo" :path="path" v-model="pathKeypointSelected"></PathInfo>
         </b-col>
-        <b-col style="padding: 0em">
+        <b-col style="padding: 0em;">
             <map-pane ref="pathMapPane" :can-hide="false" @markerSelected="markerClicked"></map-pane>
         </b-col>
     </b-row>
@@ -34,6 +34,11 @@
              */
             refreshMap() {
                 this.$refs.pathMapPane.refreshMap();
+            },
+
+            setMapCenter(lat, lng) {
+                console.log("PathInfo",lat, lng);
+                this.$refs.pathMapPane.setMapCenter(lat,lng);
             }
         },
         watch: {

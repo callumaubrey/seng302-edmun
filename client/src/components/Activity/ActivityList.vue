@@ -41,7 +41,7 @@
 
                 <!-- Location -->
                 <span v-if="activity.location" class="float-right text-secondary activity-location-text">
-                    {{activity.location.city}}, {{activity.location.state}}, {{activity.location.country}}
+                    {{activity.location.name}}
                 </span>
 
             </b-card-title>

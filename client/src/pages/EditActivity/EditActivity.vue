@@ -1,11 +1,11 @@
 <template>
   <div id="app" v-if="isLoggedIn">
     <NavBar v-bind:isLoggedIn="isLoggedIn" v-bind:userName="userName"/>
-    <div v-if="!authorised">
+    <div v-if="!authorised && !isOrganiser">
       <ForbiddenMessage/>
     </div>
 
-    <b-container fluid>
+    <b-container fluid v-else>
       <b-row align-v="start" align-h="center">
         <b-col cols="8" align-self="center">
           <!-- Title -->
@@ -208,7 +208,7 @@
                     <UserImage is-activity
                                editable
                                ref="image"
-                               :id="this.activityId"
+                               :id="activityId"
                                image-warning="The aspect ratio is 16:9. Images that do not follow this ratio will stretch!"
                     >
 
@@ -234,10 +234,14 @@
 
 
               <!-- Activity Path Editor -->
-              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()">
-                <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
-                                       :activityId="activityId"
-                                       :path="path"></PathInfoMapCreateEdit>
+              <b-tab title="Activity Path" @click="$refs.pathInfoCreateEdit.refresh()" v-if="this.canEditPath">
+                  <PathInfoMapCreateEdit ref="pathInfoCreateEdit" :profileId="profileId"
+                                         :activityId="activityId"
+                                         :path="path"></PathInfoMapCreateEdit>
+              </b-tab>
+              <b-tab title="Activity Path" @click="$refs.pathInfoView.refreshMap()" v-else>
+                <h5 class="text-warning">Note: Path cannot be edited because a result has already been recorded.</h5>
+                <PathInfoMapView :path="path" ref="pathInfoView"></PathInfoMapView>
               </b-tab>
 
               <!-- Metrics Editor -->
@@ -285,10 +289,12 @@
   import ActivityLocationTab from "../../components/Activity/ActivityLocationTab";
   import PathInfoMapCreateEdit from "../../components/MapPane/PathInfoMapCreateEdit";
   import UserImage from "../../components/Activity/UserImage/UserImage";
+  import PathInfoMapView from "@/components/MapPane/PathInfoMapView";
 
   export default {
     mixins: [validationMixin, locationMixin],
     components: {
+      PathInfoMapView,
       PathInfoMapCreateEdit,
       ActivityMetricsEditor,
       SearchTag,
@@ -337,7 +343,10 @@
           values: []
         },
         authorised: true,
-        path: {}
+        path: {},
+        canEditPath: true,
+        isOrganiser: false,
+        activityOwnerId: null
       }
     },
     validations: {
@@ -436,7 +445,7 @@
       getActivity: function () {
         let currentObj = this;
         api.getActivity(this.activityId)
-            .then(function (response) {
+            .then((response) => {
               currentObj.form.name = response.data.activityName;
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -456,6 +465,10 @@
               }
               if (response.data.location) {
                 currentObj.locationData = response.data.location;
+                console.log(currentObj.locationData);
+                console.log(this.$refs.pathInfoCreateEdit);
+                this.$refs.pathInfoCreateEdit.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
+                this.$refs.pathInfoView.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
               }
               if (response.data.tags.length > 0) {
                 for (let i = 0; i < response.data.tags.length; i++) {
@@ -463,7 +476,7 @@
                 }
               }
               currentObj.hashtag.values.sort();
-
+              currentObj.activityOwnerId = response.data.profile.id;
               currentObj.$refs.metric_editor.loadMetricData(response.data.metrics);
             })
             .catch(function (error) {
@@ -494,6 +507,7 @@
         this.activityUpdateMessage = "";
         this.$v.form.$touch();
         let userId = this.profileId;
+        let userIdRedirect = this.activityOwnerId;
         if (this.loggedInIsAdmin) {
           userId = this.$route.params.id;
         }
@@ -534,7 +548,7 @@
               .then(async () => {
                 await currentObj.apiAfterActivityEdit(userId, this.activityId)
                 await currentObj.$router.push(
-                    '/profiles/' + userId + '/activities/' + this.activityId);
+                    '/profiles/' + userIdRedirect + '/activities/' + this.activityId);
               })
               .catch(function () {
                 currentObj.$bvToast.toast('Failed to update activity, server error', {
@@ -565,7 +579,7 @@
           };
           api.updateActivity(userId, this.activityId, data)
               .then(async () => {
-                await currentObj.apiAfterActivityEdit(userId, this.activityId);
+                await currentObj.apiAfterActivityEdit();
                 await currentObj.$router.push(
                     '/profiles/' + userId + '/activities/' + this.activityId);
               })
@@ -579,48 +593,23 @@
 
         }
       },
-      apiAfterActivityEdit: async function (userId, activityId) {
+      apiAfterActivityEdit: async function () {
         let currentObj = this;
-        let activityImage = currentObj.$refs.image.image_data
         let error = false;
-        if (activityImage != null) {
-          let formData = new FormData();
-          formData.append("file", currentObj.$refs.image.image_data)
-          await api.updateActivityImage(activityId, formData).then(
-              () => {
 
-              }).catch(() => {
+        currentObj.$refs.image.saveChanges(this.activityId);
+        if (this.canEditPath) {
+          await currentObj.updatePath().then(() => {
+          }).catch(() => {
             error = true;
             currentObj.$root.$bvToast.toast(
-                'Activity updated successfully, but image failed to update.',
+                'Activity updated successfully, path could not be updated. Try again later.',
                 {
                   variant: "warning",
                   solid: true
                 })
-          })
-        } else {
-          await api.deleteActivityImage(activityId).then(
-              () => {
-              }).catch(() => {
-            error = true;
-            currentObj.$root.$bvToast.toast(
-                'Activity updated successfully, but image failed to update.',
-                {
-                  variant: "warning",
-                  solid: true
-                })
-          })
+          });
         }
-        await currentObj.updatePath().then(() => {
-        }).catch(() => {
-          error = true;
-          currentObj.$root.$bvToast.toast(
-              'Activity updated successfully, path could not be updated. Try again later.',
-              {
-                variant: "warning",
-                solid: true
-              })
-        });
         if (!error) {
           this.$root.$bvToast.toast('Activity updated successfully', {
             variant: "success",
@@ -724,7 +713,35 @@
       onChildClick: function (val) {
         this.selectedVisibility = val
       },
-
+      checkPathCanBeEdited() {
+        api.getActivityMetrics(this.profileId, this.activityId)
+          .then((res) => {
+            for (let i = 0; i < res.data.length; i++) {
+              let row = res.data[i];
+              if (row.editable == false) {
+                this.canEditPath = false;
+              }
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      },
+      checkOrganiser() {
+        let activityId = this.$route.params.activityId;
+        api.getActivityOrganisersNoOffset(activityId)
+            .then((res) => {
+              for (let i = 0; i < res.data.Organiser.length; i++) {
+                let row = res.data.Organiser[i];
+                if (parseInt(row.profile_id) == parseInt(this.profileId)) {
+                  this.isOrganiser = true;
+                }
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            })
+      }
     },
     mounted: async function () {
       this.activityId = this.$route.params.activityId;
@@ -732,6 +749,8 @@
       this.getActivity();
       await this.getUserId();
       await this.getUserLocation();
+      this.checkPathCanBeEdited();
+      this.checkOrganiser()
     }
   }
 </script>

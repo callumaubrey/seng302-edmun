@@ -476,6 +476,7 @@ public class UserProfileController {
       return new ResponseEntity<>("Passwords dont match", HttpStatus.BAD_REQUEST);
     }
     profile.setPassword(request.newPassword);
+    profile.setLockStatus(false);
     repository.save(profile);
 
     // Delete token

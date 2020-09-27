@@ -76,7 +76,7 @@
 
         <div v-else
              class="activity_default_img_container user-profile-img fill_space rounded-lg">
-          <b-img :src="require('@/assets/goatonly_navbar.png')" style="max-height: 50%"></b-img>
+          <b-img :src="require('@/assets/goatonly_navbar.png')" style="max-height: 50%; max-width: 40%"></b-img>
         </div>
 
         <!-- Overlay Content -->
@@ -216,7 +216,6 @@
        */
       handleImageUpload: function (event) {
         this.image_data = event.target.files[0];
-        console.log(event.target.files[0])
         this.image_src = URL.createObjectURL(this.image_data);
         this.default_image = false;
 
