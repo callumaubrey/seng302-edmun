@@ -101,6 +101,8 @@ public class SetupDataLoader implements
   //The potential last names for sample users
   private String[] userLastNames = {"Edmun"};
 
+  private String[] gender = {"male", "female"};
+
 
   /**
    * Create a default admin account if it is not found in the database Populates the database with
@@ -112,26 +114,26 @@ public class SetupDataLoader implements
   @Override
   @Transactional
   public void onApplicationEvent(ContextRefreshedEvent event) {
-    if (isAlreadySetup()) {
-      return;
-    }
+//    if (isAlreadySetup()) {
+//      return;
+//    }
     createRoleIfNotFound("ROLE_ADMIN");
     createRoleIfNotFound("ROLE_USER");
     createRoleIfNotFound("ROLE_USER_ADMIN");
-    Role adminRole = roleRepository.findByName("ROLE_ADMIN");
-    Profile user = new Profile();
-    profileRepository.save(user);
-    user.setPassword(adminPassword);
-    Email email = new Email((adminEmail));
-    emailRepository.save(email);
-    user.setPrimaryEmail(email);
-    Collection<Role> roles = new ArrayList<>(Arrays.asList(adminRole));
-    user.setRoles(roles);
+//    Role adminRole = roleRepository.findByName("ROLE_ADMIN");
+//    Profile user = new Profile();
+//    profileRepository.save(user);
+//    user.setPassword(adminPassword);
+//    Email email = new Email((adminEmail));
+//    emailRepository.save(email);
+//    user.setPrimaryEmail(email);
+//    Collection<Role> roles = new ArrayList<>(Arrays.asList(adminRole));
+//    user.setRoles(roles);
 
     if (generateSampleData) {
       System.out.println("----- Generating Sample Data -----");
       createSampleUsers(50);
-      createSampleActivities(50);
+//      createSampleActivities(0);
     }
   }
 
@@ -173,19 +175,49 @@ public class SetupDataLoader implements
     for (int index = 1; index < numberOfUsers + 1; index++) {
       int randomNumFirstName = random.nextInt(1000);
       int randomNumLastName = random.nextInt(1000);
-
+      int  randomGender = random.nextInt(2);
+      Integer randomYear = random.nextInt((2010 - 1940) + 1) + 1940;
+      Integer randomMonth = random.nextInt((12 - 1) + 1) + 1;
+      Integer randomDay = random.nextInt((28 - 1) + 1) + 1;
+      List<ActivityType> activityTypes = new ArrayList<>();
+      activityTypes.add(ActivityType.Bike);
+      activityTypes.add(ActivityType.Hike);
+      activityTypes.add(ActivityType.Run);
+      activityTypes.add(ActivityType.Swim);
+      activityTypes.add(ActivityType.Walk);
+      Random rand = new Random();
+      ActivityType activityType = activityTypes.get(rand.nextInt(activityTypes.size()));
       Role userRole = roleRepository.findByName("ROLE_USER");
       Profile user = new Profile();
       profileRepository.save(user);
 
+      Set<ActivityType> activityTypesSet = new HashSet<>();
+      activityTypesSet.add(activityType);
+      user.setActivityTypes(activityTypesSet);
       user.setFirstname(userFirstNames[randomNumFirstName % userFirstNames.length]);
-      user.setLastname(userLastNames[randomNumLastName % userLastNames.length]);
-      user.setBio("This is a test user");
+      user.setLastname(userFirstNames[randomNumLastName % userFirstNames.length]);
       user.setPassword("Password1");
+      user.setGender(gender[randomGender]);
+      String randomMonthStr;
+      String randomDayStr;
+      if (randomMonth < 10) {
+        randomMonthStr = "0" + randomMonth;
+      } else {
+        randomMonthStr = randomMonth.toString();
+      }
+      if (randomDay < 10) {
+        randomDayStr = "0" + randomDay;
+      } else {
+        randomDayStr = randomDay.toString();
+      }
+
+      String dob = randomYear + "-" + randomMonthStr + "-" + randomDayStr;
+      user.setDob(dob);
+
 
       Email email = new Email(
-          userFirstNames[randomNumFirstName % userFirstNames.length].toLowerCase() + userLastNames[
-              randomNumLastName % userLastNames.length].toLowerCase() + index + "@testemail.com");
+          userFirstNames[randomNumFirstName % userFirstNames.length].toLowerCase() + userFirstNames[
+              randomNumLastName % userFirstNames.length].toLowerCase() + index + "@testemail.com");
       emailRepository.save(email);
       user.setPrimaryEmail(email);
       Collection<Role> roles = new ArrayList<>(Arrays.asList(userRole));
