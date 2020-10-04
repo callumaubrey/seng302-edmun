@@ -444,8 +444,10 @@
       },
       getActivity: function () {
         let currentObj = this;
+        console.log('flag')
         api.getActivity(this.activityId)
             .then((response) => {
+              console.log('flag2')
               currentObj.form.name = response.data.activityName;
               currentObj.form.description = response.data.description;
               currentObj.form.selectedActivityTypes = response.data.activityTypes;
@@ -463,24 +465,27 @@
               } else {
                 currentObj.isContinuous = '0';
               }
-              if (response.data.location) {
-                currentObj.locationData = response.data.location;
-                console.log(currentObj.locationData);
-                console.log(this.$refs.pathInfoCreateEdit);
-                this.$refs.pathInfoCreateEdit.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
-                this.$refs.pathInfoView.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
-              }
               if (response.data.tags.length > 0) {
                 for (let i = 0; i < response.data.tags.length; i++) {
                   currentObj.hashtag.values.push("#" + response.data.tags[i].name);
                 }
               }
               currentObj.hashtag.values.sort();
+              console.log("flag3")
+              console.log(response.data);
               currentObj.activityOwnerId = response.data.profile.id;
+              if (response.data.location) {
+                currentObj.locationData = response.data.location;
+                console.log("flag2.1")
+                console.log(currentObj.$refs.pathInfoCreateEdit);
+                currentObj.$refs.pathInfoCreateEdit.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
+                currentObj.$refs.pathInfoView.setMapCenter(currentObj.locationData.latitude, currentObj.locationData.longitude);
+              }
               currentObj.$refs.metric_editor.loadMetricData(response.data.metrics);
+
             })
             .catch(function (error) {
-              console.log(error.response);
+              console.log(error);
             });
       },
       validateState(name) {
